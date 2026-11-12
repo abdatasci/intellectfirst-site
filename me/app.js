@@ -403,17 +403,18 @@
   /* ---------- admin ---------- */
   async function loadAdmin() { ADMIN = await api('admin/all'); try { ADMIN.att = (await api('admin/attendance')).attendance; } catch (e) { ADMIN.att = {}; } ME.books = ADMIN.books; ME.teachers = ADMIN.teachers; return ADMIN; }
   function adminTabs(on) {
-    return '<div class="tabs2">' + [['students', 'Students'], ['classes', 'Classes'], ['teachers', 'Teachers'], ['books', 'Books'], ['accounts', 'Accounts'], ['import', 'Import'], ['export', 'Export results'], ['placement', 'Placement tests'], ['finance', 'Finance'], ['bot', 'Bot & reminders']].map(function (t) {
+    return '<div class="tabs2">' + [['accounts', 'Accounts'], ['classes', 'Classes'], ['teachers', 'Teachers'], ['books', 'Books'], ['export', 'Export results'], ['placement', 'Placement tests'], ['bot', 'Bot & reminders']].map(function (t) {
       return '<a href="#/admin/' + t[0] + '" class="' + (on === t[0] ? 'on' : '') + '">' + t[1] + '</a>';
     }).join('') + '<a href="/me/ifadmin/" style="background:var(--navy);color:#fff;border-color:var(--navy)">IF Admin ↗</a></div>';
   }
   async function vAdmin(tab) {
     setNav('admin'); if (role() !== 'admin') return go('#/');
-    tab = tab || 'students';
+    if (!tab || tab === 'students' || tab === 'finance' || tab === 'import') tab = 'accounts';
     view.innerHTML = '<p style="margin-top:30px"><span class="spin"></span> Loading school records…</p>';
     await loadAdmin();
-    var head = '<section class="hero" style="padding-bottom:4px"><div class="eyebrow">Administrator</div><h1>School admin</h1><p class="lead">' + ADMIN.students.length + ' students · ' + ADMIN.classes.length + ' classes · ' + ADMIN.teachers.length + ' teachers · ' + ADMIN.accounts.length + ' accounts</p></section>' + adminTabs(tab);
-    ({ students: aStudents, classes: aClasses, teachers: aTeachers, books: aBooks, accounts: aAccounts, import: aImport, export: aExport, placement: aPlacement, finance: aFinance, bot: aBot }[tab] || aStudents)(head);
+    var head = '<section class="hero" style="padding-bottom:4px"><div class="eyebrow">Administrator</div><h1>School admin</h1><p class="lead">' + ADMIN.students.length + ' students · ' + ADMIN.classes.length + ' classes · ' + ADMIN.teachers.length + ' teachers · ' + ADMIN.accounts.length + ' accounts</p></section>' +
+      '<div class="panel wide" style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-bottom:14px"><div style="flex:1;min-width:240px"><b>Students, payments, attendance and results are managed in IF Admin.</b><br><span class="sub">The website reads them from IF Admin automatically: student profiles, teacher views, the assistant and Telegram reminders. A payment marked in IF Admin stops that student\'s reminder.</span></div><a class="btn" href="/me/ifadmin/">Open IF Admin ↗</a></div>' + adminTabs(tab);
+    ({ students: aStudents, classes: aClasses, teachers: aTeachers, books: aBooks, accounts: aAccounts, import: aImport, export: aExport, placement: aPlacement, finance: aFinance, bot: aBot }[tab] || aAccounts)(head);
   }
 
   /* ---------- tuition (student.pay = {fee, dueDay, paid:{'YYYY-MM': 'YYYY-MM-DD'}}) ---------- */

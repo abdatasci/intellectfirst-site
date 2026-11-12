@@ -7,6 +7,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import { getStore } from '@netlify/blobs';
 import { getUser } from '@netlify/identity';
 import bank from '../../a/placement-test/bank.json';
+import { loadStudents, saveStudents } from '../lib/students.mjs';
 
 const MODEL = process.env.PLACEMENT_MODEL || 'claude-sonnet-5-5';
 const S = () => getStore({ name: 'school', consistency: 'strong' });
@@ -108,7 +109,7 @@ export default async (req, context) => {
       course: str(r.course, 160), minutes: Math.round(Number(r.minutes) || 0), studentId: null
     };
     // link to a school record: the signed-in student's record, or a record with the same phone number
-    const students = (await S().get('students', { type: 'json' })) || null;
+    const students = await loadStudents();
     if (students) {
       const key = phoneKey(entry.phone);
       const s = (!staff && profile?.studentId && students.find(x => x.id === profile.studentId)) ||
@@ -119,7 +120,7 @@ export default async (req, context) => {
         const label = LEVELS[Math.floor(overall)] + (overall % 1 ? '+' : '');
         s.tests.push({ id: 't' + entry.id, test: 'IF Placement Test', date: entry.at.slice(0, 10), score: label, max: '', band: label,
           note: Object.entries(skills).map(([k, v]) => `${k[0].toUpperCase() + k.slice(1)} ${LEVELS[Math.floor(v)]}${v % 1 ? '+' : ''}`).join(', ') });
-        await S().setJSON('students', students);
+        await saveStudents(students);
       }
     }
     const list = (await S().get('placements', { type: 'json' })) || [];

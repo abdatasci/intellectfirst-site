@@ -4,6 +4,7 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { getStore } from '@netlify/blobs';
 import seed from './school-seed.json';
+import { loadStudents, loadAttendance } from './students.mjs';
 
 export const MODEL = process.env.ASSISTANT_MODEL || 'claude-sonnet-5-5';
 export const S = () => getStore({ name: 'school', consistency: 'strong' });
@@ -15,6 +16,7 @@ export const SCHOOL = {
 };
 
 export async function doc(name) {
+  if (name === 'students') return loadStudents();
   const v = await S().get(name, { type: 'json' });
   return v || structuredClone(seed[name] || []);
 }
@@ -118,7 +120,7 @@ export async function contextFor(uid) {
     lines.push(`School record: ${s.first} ${s.last}; status ${s.status || 'active'}; level ${s.level || 'not recorded'}.`);
     if (ctx.classes.length) lines.push('Classes:\n' + ctx.classes.map(c => `- ${c.label}: ${c.schedule || 'times not set'}; room ${c.room || '-'}; teacher ${tName(c.teacherId) || '-'}; book ${bName(c.bookId) || '-'}`).join('\n'));
     else lines.push('Classes: none on record yet.');
-    const att = (((await S().get('attendance', { type: 'json' })) || {})[s.id] || []).filter(x => x.m !== 'FZ');
+    const att = ((await loadAttendance())[s.id] || []).filter(x => x.m !== 'FZ');
     if (att.length) { const pr = att.filter(x => x.m === 'P').length; lines.push(`Attendance since ${att[0].d}: ${pr} of ${att.length} lessons attended (${Math.round(pr / att.length * 100)}%), ${att.filter(x => x.m === 'EA').length} excused, ${att.filter(x => x.m === 'UA').length} missed without notice. Last: ${att.slice(-5).map(x => x.d + ' ' + ({ P: 'present', EA: 'excused', UA: 'absent' }[x.m] || x.m)).join('; ')}.`); }
     const tests = (s.tests || []).slice(-6);
     if (tests.length) lines.push('Recent test results:\n' + tests.map(t => `- ${t.date || ''} ${t.test}: ${t.score || t.band || ''}${t.max ? '/' + t.max : ''}${t.note ? ' (' + t.note + ')' : ''}`).join('\n'));

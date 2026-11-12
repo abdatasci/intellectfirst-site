@@ -8,6 +8,7 @@ import { getUser } from '@netlify/identity';
 import { roleForCode, isStaff } from '../lib/codes.mjs';
 import seed from '../lib/school-seed.json';
 import ckey from '../lib/content-key.json';
+import { loadStudents, saveStudents, loadAttendance } from '../lib/students.mjs';
 
 const S = () => getStore({ name: 'school', consistency: 'strong' });
 const U = () => getStore({ name: 'ielts', consistency: 'strong' });
@@ -22,6 +23,7 @@ const RANK = { student: 1, teacher: 2, admin: 3 };
 
 async function doc(name) {
   await migrate();
+  if (name === 'students') return loadStudents();
   const v = await S().get(name, { type: 'json' });
   if (v) return v;
   return structuredClone(seed[name] || []);
@@ -57,7 +59,7 @@ async function migrate() {
   }
   await S().setJSON('version', seed.version);
 }
-const save = (name, v) => S().setJSON(name, v);
+const save = (name, v) => name === 'students' ? saveStudents(v) : S().setJSON(name, v);
 async function getProfile(uid) { return (await U().get(`u/${uid}/profile`, { type: 'json' })) || null; }
 async function putProfile(uid, p) {
   await U().setJSON(`u/${uid}/profile`, p);
@@ -109,7 +111,7 @@ async function canSeeStudent(profile, student) {
   const mine = (await classesForTeacher(profile)).map(c => c.label);
   return (student.classes || []).some(c => mine.includes(c));
 }
-async function attendanceOf(id) { const a = (await S().get('attendance', { type: 'json' })) || {}; return a[id] || []; }
+async function attendanceOf(id) { const a = await loadAttendance(); return a[id] || []; }
 async function studentView(s) {
   const out = { record: s, profile: null, ielts: null, attendance: await attendanceOf(s.id) };
   if (s.uid) {
@@ -510,7 +512,7 @@ export default async (req) => {
       for (const s of list) if (s.pay && +s.pay.fee > 0 && !(+s.pay.dueDay >= 1)) { s.pay.dueDay = day; n++; }
       await save('students', list); return json({ updated: n, students: list });
     }
-    if (path === 'admin/attendance' && method === 'GET') return json({ attendance: (await S().get('attendance', { type: 'json' })) || {} });
+    if (path === 'admin/attendance' && method === 'GET') return json({ attendance: await loadAttendance() });
     if (path === 'admin/finance' && method === 'GET') return json({ entries: await finDoc() });
     if (path === 'admin/finance' && method === 'PUT') {
       const e = cleanEntry(b.item || {}); if (!e) return fail(400, 'entry');
