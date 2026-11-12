@@ -265,6 +265,35 @@ export default async (req) => {
     return json({ comments: s.comments });
   }
 
+  /* ---- export (admin: everything; teachers: their own classes) ---- */
+  if (path === 'export' && method === 'GET') {
+    if (!isStaff(profile.role)) return fail(403, 'staff');
+    const classes = await classesForTeacher(profile);
+    const want = url.searchParams.get('class') || '';
+    const pick = want ? classes.filter(c => c.id === want) : classes;
+    if (want && !pick.length) return fail(404, 'missing');
+    const labels = pick.map(c => c.label), all = !want && profile.role === 'admin';
+    const students = (await doc('students')).filter(s => all || (s.classes || []).some(l => labels.includes(l)));
+    const ieltsOf = async id => ((await U().get(`u/${id}/index`, { type: 'json' })) || []).map(a => ({ at: a.at, skill: a.skill || 'writing', title: a.title || '', task: a.task || '', part: a.part || '', mock: !!a.mock, band: a.band, criteria: a.criteria || null, words: a.words ?? null }));
+    const rows = await Promise.all(students.map(async s => {
+      const p = s.uid ? await getProfile(s.uid) : null;
+      return { id: s.id, first: s.first, last: s.last, classes: s.classes || [], status: s.status || '', level: s.level || '', phone: s.phone || '', parentPhone: s.parentPhone || '',
+        registered: !!p, email: p?.email || s.email || '', since: p?.since || null, lastActive: p?.lastActive || null,
+        tests: s.tests || [], ielts: p ? await ieltsOf(s.uid) : [] };
+    }));
+    // admin, whole school: also student accounts not yet matched to a record
+    if (all) {
+      const dir = (await U().get('directory', { type: 'json' })) || {};
+      for (const [id, d] of Object.entries(dir)) {
+        if (d.role !== 'student' || d.studentId) continue;
+        const p = await getProfile(id);
+        rows.push({ id: '', first: d.name || '', last: '', classes: [], status: 'no school record', level: '', phone: p?.phone || '', parentPhone: '',
+          registered: true, email: d.email || '', since: p?.since || null, lastActive: p?.lastActive || null, tests: [], ielts: await ieltsOf(id) });
+      }
+    }
+    return json({ generatedAt: new Date().toISOString(), by: profile.name, scope: want ? pick[0].label : (all ? 'Whole school' : 'My classes'), rows });
+  }
+
   /* ---- admin ---- */
   if (path.startsWith('admin/')) {
     if (profile.role !== 'admin') return fail(403, 'admin');

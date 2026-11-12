@@ -239,11 +239,12 @@
     setNav('classes'); if (!staff()) return go('#/');
     view.innerHTML = '<p style="margin-top:30px"><span class="spin"></span></p>';
     var d = await api('teach/classes');
-    view.innerHTML = '<section class="hero" style="padding-bottom:10px"><div class="eyebrow">' + (role() === 'admin' ? 'All classes' : 'Teacher') + '</div><h1>My classes</h1></section>' +
+    view.innerHTML = '<section class="hero" style="padding-bottom:10px"><div class="eyebrow">' + (role() === 'admin' ? 'All classes' : 'Teacher') + '</div><h1>My classes</h1><div class="row" style="margin-top:12px"><button class="btn sm" id="exp">Export test results (Excel)</button></div></section>' +
       (d.classes.length ? '<div class="grid">' + d.classes.map(function (c) {
         var b = bookOf(c.bookId), t = teacherOf(c.teacherId);
         return '<a class="card" href="#/class/' + c.id + '"><span class="tag">' + esc(c.room || '') + ' · ' + c.count + ' students</span><h3>' + esc(c.label) + '</h3><p>' + esc(c.schedule || '') + '</p><p>' + (t ? esc(t.name) : '') + (b ? ' · ' + esc(b.title) : '') + '</p><span class="go">Open →</span></a>';
       }).join('') + '</div>' : '<div class="empty">No classes linked to your account yet.</div>');
+    $('#exp').onclick = function () { exportDialog('', d.classes); };
   }
   function studentCard(v) {
     var s = v.record, p = v.profile, i = v.ielts || {}, w = i.writing, sp = i.speaking;
@@ -258,9 +259,10 @@
       var d = await api('teach/class/' + id), c = d.class, b = bookOf(c.bookId), t = teacherOf(c.teacherId);
       var act = d.students.filter(function (v) { return !/withdrawn|finished/i.test(v.record.status || ''); }), past = d.students.filter(function (v) { return /withdrawn|finished/i.test(v.record.status || ''); });
       view.innerHTML = '<div class="row" style="margin-top:18px"><a class="btn ghost sm" href="#/classes">← All classes</a></div>' +
-        '<section class="hero" style="padding:16px 0 10px"><div class="eyebrow">' + esc(c.room || '') + (t ? ' · ' + esc(t.name) : '') + '</div><h1>' + esc(c.label) + '</h1><p class="lead">' + esc(c.schedule || '') + (b ? ' · ' + esc(b.title) + (b.ebook ? ' · <a href="' + esc(b.ebook) + '" target="_blank" rel="noopener">e-book ↗</a>' : '') : '') + '</p></section>' +
+        '<section class="hero" style="padding:16px 0 10px"><div class="eyebrow">' + esc(c.room || '') + (t ? ' · ' + esc(t.name) : '') + '</div><h1>' + esc(c.label) + '</h1><p class="lead">' + esc(c.schedule || '') + (b ? ' · ' + esc(b.title) + (b.ebook ? ' · <a href="' + esc(b.ebook) + '" target="_blank" rel="noopener">e-book ↗</a>' : '') : '') + '</p><div class="row" style="margin-top:12px"><button class="btn sm" id="exp">Export this class\'s results</button></div></section>' +
         '<h3 style="margin:10px 0">Students (' + act.length + ')</h3>' + (act.length ? '<div class="people">' + act.map(studentCard).join('') + '</div>' : '<div class="empty">No students in this class yet.</div>') +
         (past.length ? '<h3 style="margin:22px 0 10px">Former students</h3><div class="people">' + past.map(studentCard).join('') + '</div>' : '');
+      $('#exp').onclick = function () { exportDialog(c.id, [c]); };
     } catch (e) { view.innerHTML = '<div class="empty" style="margin-top:30px">This class could not be loaded.</div>'; }
   }
   async function vStudent(id) {
@@ -283,7 +285,7 @@
   /* ---------- admin ---------- */
   async function loadAdmin() { ADMIN = await api('admin/all'); ME.books = ADMIN.books; ME.teachers = ADMIN.teachers; return ADMIN; }
   function adminTabs(on) {
-    return '<div class="tabs2">' + [['students', 'Students'], ['classes', 'Classes'], ['teachers', 'Teachers'], ['books', 'Books'], ['accounts', 'Accounts'], ['import', 'Import']].map(function (t) {
+    return '<div class="tabs2">' + [['students', 'Students'], ['classes', 'Classes'], ['teachers', 'Teachers'], ['books', 'Books'], ['accounts', 'Accounts'], ['import', 'Import'], ['export', 'Export results']].map(function (t) {
       return '<a href="#/admin/' + t[0] + '" class="' + (on === t[0] ? 'on' : '') + '">' + t[1] + '</a>';
     }).join('') + '</div>';
   }
@@ -293,7 +295,7 @@
     view.innerHTML = '<p style="margin-top:30px"><span class="spin"></span> Loading school records…</p>';
     await loadAdmin();
     var head = '<section class="hero" style="padding-bottom:4px"><div class="eyebrow">Administrator</div><h1>School admin</h1><p class="lead">' + ADMIN.students.length + ' students · ' + ADMIN.classes.length + ' classes · ' + ADMIN.teachers.length + ' teachers · ' + ADMIN.accounts.length + ' accounts</p></section>' + adminTabs(tab);
-    ({ students: aStudents, classes: aClasses, teachers: aTeachers, books: aBooks, accounts: aAccounts, import: aImport }[tab] || aStudents)(head);
+    ({ students: aStudents, classes: aClasses, teachers: aTeachers, books: aBooks, accounts: aAccounts, import: aImport, export: aExport }[tab] || aStudents)(head);
   }
   function opts(list, val, label, empty) { return (empty ? '<option value="">' + empty + '</option>' : '') + list.map(function (x) { return '<option value="' + esc(x.id) + '"' + (x.id === val ? ' selected' : '') + '>' + esc(label(x)) + '</option>'; }).join(''); }
   function aStudents(head) {
@@ -381,6 +383,67 @@
       }).join('') + '</tbody></table></div>';
     view.querySelectorAll('[data-role]').forEach(function (s) { s.onchange = async function () { await api('admin/link', { method: 'POST', body: { uid: s.dataset.role, role: s.value } }); toast('Role updated'); vAdmin('accounts'); }; });
     view.querySelectorAll('[data-link]').forEach(function (s) { s.onchange = async function () { var b = { uid: s.dataset.link }; b[s.dataset.kind] = s.value || null; await api('admin/link', { method: 'POST', body: b }); toast('Link updated'); vAdmin('accounts'); }; });
+  }
+
+  /* ---------- export (Excel) ---------- */
+  function exportForm(classId, classes) {
+    return '<div class="grid2"><div class="full"><label class="f">Class</label><select class="inp" id="xc">' +
+      (classes.length > 1 ? '<option value="">' + (role() === 'admin' ? 'Whole school (all classes)' : 'All my classes') + '</option>' : '') +
+      classes.map(function (c) { return '<option value="' + esc(c.id) + '"' + (c.id === classId ? ' selected' : '') + '>' + esc(c.label) + '</option>'; }).join('') + '</select></div>' +
+      '<div class="full" style="margin-top:10px"><label style="display:flex;gap:8px;align-items:center;font-weight:600"><input type="checkbox" id="xr" checked> Registered students only</label>' +
+      '<label style="display:flex;gap:8px;align-items:center;font-weight:600;margin-top:6px"><input type="checkbox" id="xl"> Include students who left or finished</label></div></div>' +
+      '<p class="small" style="margin-top:10px">The Excel file has three sheets: <b>Students</b> (one row each, with latest scores), <b>Test results</b> (every school test on record) and <b>IELTS</b> (every AI-scored Writing and Speaking attempt with criterion bands).</p>' +
+      '<div class="row" style="margin-top:14px"><button class="btn" id="xgo">Download Excel</button></div><div id="xmsg"></div>';
+  }
+  function wireExport() {
+    $('#xgo').onclick = async function () {
+      var b = this, box = $('#xmsg'); b.disabled = true; b.innerHTML = '<span class="spin"></span> Preparing…'; box.innerHTML = '';
+      try {
+        var cid = $('#xc').value, d = await api('export' + (cid ? '?class=' + encodeURIComponent(cid) : ''));
+        await loadXLSX();
+        var n = buildWorkbook(d, $('#xr').checked, $('#xl').checked);
+        box.innerHTML = n ? '<div class="ok-msg">Downloaded: ' + n + ' student' + (n === 1 ? '' : 's') + '.</div>' : '<div class="err">No students match. Untick "Registered students only" to export everyone on the class list.</div>';
+      } catch (e) { box.innerHTML = '<div class="err">Export failed: ' + esc(e.message || e) + '</div>'; }
+      b.disabled = false; b.textContent = 'Download Excel';
+    };
+  }
+  function exportDialog(classId, classes) {
+    modal('<h2>Export test results</h2><p class="sub">Download an Excel file of your students\' results.</p>' + exportForm(classId, classes));
+    wireExport();
+  }
+  function aExport(head) {
+    view.innerHTML = head + '<div class="panel" style="max-width:640px"><h2>Export test results</h2><p class="sub">Choose the whole school or one class. Registered students are those who created an account and were matched to their school record.</p>' + exportForm('', ADMIN.classes) + '</div>';
+    wireExport();
+  }
+  function buildWorkbook(d, regOnly, withPast) {
+    var rows = d.rows.filter(function (r) { return (!regOnly || r.registered) && (withPast || !/withdrawn|finished|left/i.test(r.status || '')); })
+      .sort(function (a, b) { return ((a.classes[0] || '~') + a.last + a.first).localeCompare((b.classes[0] || '~') + b.last + b.first); });
+    if (!rows.length) return 0;
+    var day = function (iso) { if (!iso) return ''; var t = new Date(iso); return isNaN(t) ? String(iso) : t.toISOString().slice(0, 10); };
+    var num = function (v) { if (v == null || v === '') return ''; var n = Number(String(v).replace(',', '.')); return isNaN(n) ? v : n; };
+    var stat = function (r, skill) { var l = r.ielts.filter(function (a) { return a.skill === skill && typeof a.band === 'number'; }); return l.length ? [l.length, l[l.length - 1].band, Math.max.apply(null, l.map(function (a) { return a.band; }))] : ['', '', '']; };
+    var who = function (r) { return [r.first, r.last, r.classes.join(', ')]; };
+    var S1 = [['First name', 'Surname', 'Classes', 'Status', 'Level', 'Phone', 'Registered', 'Account email', 'Registered on', 'Last active', 'School tests', 'Latest test', 'Latest test date', 'Latest score', 'IELTS Writing attempts', 'Writing latest band', 'Writing best band', 'IELTS Speaking attempts', 'Speaking latest band', 'Speaking best band']];
+    var S2 = [['First name', 'Surname', 'Classes', 'Test', 'Date', 'Score', 'Out of', 'Percent', 'Band / grade', 'Comment']];
+    var keys = ['TA', 'TR', 'CC', 'FC', 'LR', 'GRA', 'P'], S3 = [['First name', 'Surname', 'Classes', 'Date', 'Skill', 'Type', 'Task', 'Overall band', 'Task Achievement', 'Task Response', 'Coherence & Cohesion', 'Fluency & Coherence', 'Lexical Resource', 'Grammar (GRA)', 'Pronunciation', 'Words']];
+    rows.forEach(function (r) {
+      var t = r.tests.slice().sort(function (a, b) { return String(a.date).localeCompare(String(b.date)); }), last = t[t.length - 1], w = stat(r, 'writing'), sp = stat(r, 'speaking');
+      S1.push(who(r).concat([r.status || '', r.level, r.phone, r.registered ? 'Yes' : 'No', r.email, day(r.since), day(r.lastActive), t.length || '', last ? last.test : '', last ? last.date : '', last ? (last.score || '') + (last.max ? '/' + last.max : '') + (last.band ? ' (' + last.band + ')' : '') : '']).concat(w, sp));
+      t.forEach(function (x) { var sc = num(x.score), mx = num(x.max); S2.push(who(r).concat([x.test, x.date || '', sc, mx, typeof sc === 'number' && typeof mx === 'number' && mx ? Math.round(sc / mx * 100) / 100 : '', x.band || '', x.note || ''])); });
+      r.ielts.forEach(function (a) { var c = a.criteria || {}; S3.push(who(r).concat([day(a.at), a.skill === 'speaking' ? 'Speaking' : 'Writing', a.mock ? 'Mock test' : 'Practice', a.title || a.task || '', typeof a.band === 'number' ? a.band : 'not scored']).concat(keys.map(function (k) { return c[k] == null ? '' : c[k]; })).concat([a.words == null ? '' : a.words])); });
+    });
+    var wb = XLSX.utils.book_new();
+    [['Students', S1], ['Test results', S2], ['IELTS', S3]].forEach(function (p) {
+      var data = p[1].length > 1 ? p[1] : p[1].concat([['No results yet']]);
+      var ws = XLSX.utils.aoa_to_sheet(data);
+      ws['!cols'] = data[0].map(function (h, i) { var m = String(h).length; data.forEach(function (row) { m = Math.max(m, String(row[i] == null ? '' : row[i]).length); }); return { wch: Math.min(Math.max(m + 2, 8), 42) }; });
+      ws['!autofilter'] = { ref: XLSX.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: data.length - 1, c: data[0].length - 1 } }) };
+      if (p[0] === 'Test results') for (var i = 1; i < data.length; i++) { var cell = ws[XLSX.utils.encode_cell({ r: i, c: 7 })]; if (cell && typeof cell.v === 'number') cell.z = '0%'; }
+      XLSX.utils.book_append_sheet(wb, ws, p[0]);
+    });
+    var slug = String(d.scope || 'results').replace(/[^\wА-Яа-яЁё-]+/g, '-').replace(/^-|-$/g, '');
+    XLSX.writeFile(wb, 'IF-Academy-results-' + slug + '-' + new Date().toISOString().slice(0, 10) + '.xlsx');
+    return rows.length;
   }
 
   /* ---------- import (Excel / CSV) ---------- */
