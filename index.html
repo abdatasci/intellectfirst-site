@@ -459,7 +459,6 @@
     .chatfab{bottom:calc(80px + env(safe-area-inset-bottom,0px))}
     .totop{bottom:calc(80px + env(safe-area-inset-bottom,0px))!important}
   }
-  .navlinks a[data-i18n="nav_portal"]{display:none}@media (max-width:1440px){.navlinks a[data-i18n="nav_portal"]{display:inline}}
 
   .lvl-note{margin-top:18px;max-width:70ch;color:var(--text-soft);font-size:.95rem;line-height:1.6}.exam-row td{border-top:2px solid var(--border-c)}
   .lc-banner{display:grid;gap:6px;margin:0 0 26px;padding:22px 26px;border-radius:14px;text-decoration:none;color:var(--ink);background:linear-gradient(135deg,var(--sky-soft,#E3F1F8),var(--sky-mid,#C6E3F0));border:1px solid rgba(42,123,166,.28);transition:transform .15s,box-shadow .15s}
@@ -528,17 +527,25 @@
       <div class="navlinks" id="navLinks">
         <a href="#teachers" data-i18n="nav_teachers">Teachers</a>
         <a href="#courses" data-i18n="nav_courses">Courses &amp; Programs</a>
-        <a href="/a/young-learners/" data-i18n="nav_young_learners">Young Learners Centre</a>
         <a href="#pricing" data-i18n="nav_pricing">Pricing</a>
-        <a href="app/index.html" target="_blank" rel="noopener" data-i18n="nav_portal">Learning Hub</a>
-        <a href="#apps" data-i18n="nav_apps">Apps</a>
-        <a href="a/class-catalog/index.html" data-i18n="nav_catalog">Class Catalog</a>
-        <a href="#faqs" data-i18n="nav_faqs">FAQs</a>
+        <div class="nav-dd" id="hubDD">
+          <button type="button" class="nav-dd-btn" aria-expanded="false" aria-haspopup="true"><span data-i18n="nav_hub">Hub</span><svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M2 3.5 5 6.5 8 3.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <div class="nav-dd-menu">
+            <a href="/a/young-learners/"><b data-i18n="nav_young_learners">Young Learners Centre</b><small data-i18n="nav_young_d">Games and tests for kids and teens</small></a>
+            <a href="/a/ielts/"><b data-i18n="nav_ielts">IELTS Centre</b><small data-i18n="nav_ielts_d">Practice tests with AI marking</small></a>
+            <a href="app/index.html" target="_blank" rel="noopener"><b data-i18n="nav_portal">Learning Hub</b><small data-i18n="nav_portal_d">All IF games, tests and exercises</small></a>
+            <a href="/a/placement-test/"><b data-i18n="nav_placement">Placement test</b><small data-i18n="nav_placement_d">Find your level online, free</small></a>
+            <a href="#apps"><b data-i18n="nav_apps">Apps</b><small data-i18n="nav_apps_d">IF English and our learning apps</small></a>
+            <a href="a/class-catalog/index.html"><b data-i18n="nav_catalog">Class Catalog</b><small data-i18n="nav_catalog_d">Every group, level and time</small></a>
+            <a href="#faqs"><b data-i18n="nav_faqs">FAQs</b></a>
+          </div>
+        </div>
         <a href="#contact" data-i18n="nav_contact">Contact</a>
-        <a href="/me/">My account</a>
-        <a href="/me/#/admin">Admin</a>
+        <span class="nav-acct" id="navAcct">
+          <a href="/me/#/login" class="nav-signin" data-i18n="nav_signin">Sign in</a>
+          <a href="/me/#/register" class="nav-reg" data-i18n="nav_register">Create account</a>
+        </span>
         <a href="https://t.me/abliem" target="_blank" rel="noopener" class="cta" data-i18n="nav_cta">Book a free placement test</a>
-
       </div>
     </nav>
   </div>
@@ -1300,7 +1307,7 @@
 
 <script>
   var I18N = {
-    en: { nav_young_learners: "Young Learners Centre", app_pet_games: "PET Games", app_ket_games: "KET Games",
+    en: { nav_hub: "Hub", nav_ielts: "IELTS Centre", nav_placement: "Placement test", nav_signin: "Sign in", nav_register: "Create account", nav_account: "My account", nav_classroom: "IF Classroom", nav_admin: "Admin panel", nav_young_d: "Games and tests for kids and teens", nav_ielts_d: "Practice tests with AI marking", nav_portal_d: "All IF games, tests and exercises", nav_placement_d: "Find your level online, free", nav_apps_d: "IF English and our learning apps", nav_catalog_d: "Every group, level and time", nav_young_learners: "Young Learners Centre", app_pet_games: "PET Games", app_ket_games: "KET Games",
       nav_portal: "Learning Hub",
       tab_home: "Home",
       tab_courses: "Courses",
@@ -1498,7 +1505,7 @@
       foot_cta: "Book a free placement test", foot_contact_title: "Contact", foot_academy_title: "Academy",
       foot_academy_city: "Alfarabi 19, Kostanay 110000, Kazakhstan", foot_bottom_left: "Intellect First — Learn. Think. Lead."
     },
-    ru: { nav_young_learners: "Центр для детей и подростков", app_pet_games: "Игры PET", app_ket_games: "Игры KET",
+    ru: { nav_hub: "Хаб", nav_ielts: "Центр IELTS", nav_placement: "Тест на уровень", nav_signin: "Войти", nav_register: "Создать аккаунт", nav_account: "Мой аккаунт", nav_classroom: "IF Classroom", nav_admin: "Админ-панель", nav_young_d: "Игры и тесты для детей и подростков", nav_ielts_d: "Пробные тесты с ИИ-проверкой", nav_portal_d: "Все игры, тесты и упражнения IF", nav_placement_d: "Узнайте свой уровень онлайн бесплатно", nav_apps_d: "IF English и наши учебные приложения", nav_catalog_d: "Все группы, уровни и время занятий", nav_young_learners: "Центр для детей и подростков", app_pet_games: "Игры PET", app_ket_games: "Игры KET",
       nav_portal: "Кабинет ученика",
       tab_home: "Главная",
       tab_courses: "Курсы",
@@ -1696,7 +1703,7 @@
       foot_cta: "Записаться на бесплатное тестирование", foot_contact_title: "Контакты", foot_academy_title: "Академия",
       foot_academy_city: "пр. Аль-Фараби, 19, Костанай, 110000, Казахстан", foot_bottom_left: "Intellect First — Учись. Думай. Веди."
     },
-    kk: { nav_young_learners: "Жас оқушылар орталығы", app_pet_games: "PET ойындары", app_ket_games: "KET ойындары",
+    kk: { nav_hub: "Хаб", nav_ielts: "IELTS орталығы", nav_placement: "Деңгей тесті", nav_signin: "Кіру", nav_register: "Тіркелу", nav_account: "Менің аккаунтым", nav_classroom: "IF Classroom", nav_admin: "Әкімші панелі", nav_young_d: "Балалар мен жасөспірімдерге ойындар мен тесттер", nav_ielts_d: "ЖИ тексеретін сынақ тесттері", nav_portal_d: "IF-тың барлық ойындары, тесттері мен жаттығулары", nav_placement_d: "Деңгейіңізді онлайн тегін анықтаңыз", nav_apps_d: "IF English және оқу қосымшаларымыз", nav_catalog_d: "Барлық топтар, деңгейлер мен уақыт", nav_young_learners: "Жас оқушылар орталығы", app_pet_games: "PET ойындары", app_ket_games: "KET ойындары",
       nav_portal: "Оқушы кабинеті",
       tab_home: "Басты",
       tab_courses: "Курстар",
@@ -2028,5 +2035,19 @@ lb.querySelector('.g-prev').onclick=()=>show(cur-1);lb.querySelector('.g-next').
 lb.addEventListener('click',e=>{if(e.target===lb||e.target.hasAttribute('data-x'))lb.close()});
 lb.addEventListener('keydown',e=>{if(e.key==='ArrowLeft')show(cur-1);if(e.key==='ArrowRight')show(cur+1)});
 let sx=0;lb.addEventListener('touchstart',e=>sx=e.touches[0].clientX,{passive:true});lb.addEventListener('touchend',e=>{const d=e.changedTouches[0].clientX-sx;if(Math.abs(d)>50)show(cur+(d<0?1:-1))});})();
+</script>
+<script>
+(()=>{const dd=document.getElementById('hubDD');if(dd){const b=dd.querySelector('.nav-dd-btn');const set=o=>{dd.classList.toggle('open',o);b.setAttribute('aria-expanded',o)};
+b.addEventListener('click',e=>{e.stopPropagation();set(!dd.classList.contains('open'))});
+document.addEventListener('click',e=>{if(!dd.contains(e.target))set(false)});document.addEventListener('keydown',e=>{if(e.key==='Escape')set(false)});
+dd.querySelectorAll('.nav-dd-menu a').forEach(a=>a.addEventListener('click',()=>set(false)));}
+const box=document.getElementById('navAcct');if(!box)return;
+let signed=false;try{signed=!!localStorage.getItem('gotrue.user')||/(?:^|; )nf_jwt=/.test(document.cookie)}catch(e){}
+if(!signed)return;
+const L=k=>{try{const l=document.documentElement.lang||'en';return (window.I18N&&I18N[l]&&I18N[l][k])||null}catch(e){return null}};
+box.innerHTML='<a href="/me/" class="nav-reg" data-i18n="nav_account">'+(L('nav_account')||'My account')+'</a>';
+fetch('/api/school/me',{credentials:'same-origin'}).then(r=>r.ok?r.json():null).then(d=>{const r=d&&d.profile&&d.profile.role;
+if(r==='teacher'||r==='admin'){const c=document.createElement('a');c.href='/me/#/classroom';c.className='nav-signin';c.setAttribute('data-i18n','nav_classroom');c.textContent='IF Classroom';box.prepend(c)}
+if(r==='admin'){const a=document.createElement('a');a.href='/me/#/admin';a.className='nav-signin';a.setAttribute('data-i18n','nav_admin');a.textContent=L('nav_admin')||'Admin panel';box.prepend(a)}}).catch(()=>{});})();
 </script>
 </body></html>
