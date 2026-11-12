@@ -55,6 +55,7 @@
     } else who.innerHTML = '';
     $('[data-nav=classes]').hidden = !staff();
     $('[data-nav=admin]').hidden = role() !== 'admin';
+    var ifa = $('[data-nav=ifadmin]'); if (ifa) ifa.hidden = role() !== 'admin';
     $('[data-nav=classroom]').hidden = !role();
     $('[data-nav=assistant]').hidden = !role();
   }
@@ -404,7 +405,7 @@
   function adminTabs(on) {
     return '<div class="tabs2">' + [['students', 'Students'], ['classes', 'Classes'], ['teachers', 'Teachers'], ['books', 'Books'], ['accounts', 'Accounts'], ['import', 'Import'], ['export', 'Export results'], ['placement', 'Placement tests'], ['finance', 'Finance'], ['bot', 'Bot & reminders']].map(function (t) {
       return '<a href="#/admin/' + t[0] + '" class="' + (on === t[0] ? 'on' : '') + '">' + t[1] + '</a>';
-    }).join('') + '</div>';
+    }).join('') + '<a href="/me/ifadmin/" style="background:var(--navy);color:#fff;border-color:var(--navy)">IF Admin ↗</a></div>';
   }
   async function vAdmin(tab) {
     setNav('admin'); if (role() !== 'admin') return go('#/');
