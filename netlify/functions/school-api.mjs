@@ -81,8 +81,12 @@ async function linkByPhone(uid, profile) {
   }
   if (isStaff(profile.role) && !profile.teacherId) {
     const list = await doc('teachers');
+    const words = n => String(n || '').toLowerCase().replace(/[^a-zа-яёәғқңөұүһі\s-]/gi, ' ').split(/\s+/).filter(Boolean);
+    const me = words(profile.name), free = list.filter(t => !t.uid || t.uid === uid);
+    // 1) phone  2) same full name  3) same first name + (no surname on record, or same surname)
     const hit = (hasPhone && list.find(t => phoneKey(t.phone) === key)) ||
-      list.find(t => t.name && profile.name && t.name.toLowerCase() === profile.name.toLowerCase());
+      free.find(t => words(t.name).join(' ') === me.join(' ')) ||
+      (me.length ? free.filter(t => { const w = words(t.name); return w[0] === me[0] && (w.length === 1 || me.length === 1 || w.at(-1) === me.at(-1)); }) : []).find((t, i, arr) => arr.length === 1);
     if (hit && (!hit.uid || hit.uid === uid)) { hit.uid = uid; profile.teacherId = hit.id; await save('teachers', list); }
   }
   return profile;

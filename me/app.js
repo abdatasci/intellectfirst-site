@@ -70,22 +70,22 @@
     setNav('');
     view.innerHTML = panel('Sign in', 'One account for your IF Academy profile, classes and the IELTS Centre.',
       '<form id="f" novalidate><label class="f">Email</label><input class="inp" id="em" type="email" autocomplete="email"><label class="f">Password</label><input class="inp" id="pw" type="password" autocomplete="current-password"><button class="btn" type="submit">Sign in</button></form>' +
-      '<p class="alt"><a href="#/forgot">Forgot password?</a> · New here? <a href="#/register">Create an account</a></p>');
+      '<p class="alt"><a href="#/forgot">Forgot password?</a> · New here? <a href="#/register">Create an account</a><br>Teacher or staff? <a href="#/staff">Staff registration</a></p>');
     $('#f').onsubmit = async function (ev) {
       ev.preventDefault(); var f = ev.target, b = $('button', f); b.disabled = true;
       try { await ID.login($('#em').value.trim(), $('#pw').value); await loadMe(); header(); go(role() ? '#/' : '#/activate'); }
       catch (e) { err(f, authMsg(e)); b.disabled = false; }
     };
   }
-  function vRegister() {
+  function vRegister(isStaff) {
     setNav('');
-    view.innerHTML = panel('Create your account', 'For IF Academy students and teachers. Use the phone number you gave the school, so we can find your record.',
+    view.innerHTML = panel(isStaff ? 'Staff registration' : 'Create your account', isStaff ? 'For IF Academy teachers and staff. Your classes are linked to your account automatically by your name; if not, the administrator links them for you.' : 'For IF Academy students and teachers. Use the phone number you gave the school, so we can find your record.',
       '<form id="f" novalidate><div class="grid2"><div><label class="f">First name</label><input class="inp" id="fn" autocomplete="given-name"></div><div><label class="f">Surname</label><input class="inp" id="ln" autocomplete="family-name"></div></div>' +
-      '<label class="f">Phone number</label><input class="inp" id="ph" type="tel" autocomplete="tel" placeholder="+7 7__ ___ __ __"><p class="hint">Students: your own number or your parent\'s, as given to the school.</p>' +
+      '<label class="f">Phone number</label><input class="inp" id="ph" type="tel" autocomplete="tel" placeholder="+7 7__ ___ __ __">' + (isStaff ? '' : '<p class="hint">Students: your own number or your parent\'s, as given to the school.</p>') +
       '<label class="f">Email</label><input class="inp" id="em" type="email" autocomplete="email">' +
       '<label class="f">Password</label><input class="inp" id="pw" type="password" autocomplete="new-password"><p class="hint">At least 8 characters.</p>' +
-      '<label class="f">Class code</label><input class="inp" id="cc" autocomplete="off"><p class="hint">From your teacher. Teachers use the staff code.</p>' +
-      '<button class="btn" type="submit">Create account</button></form><p class="alt">Already registered? <a href="#/login">Sign in</a></p>');
+      '<label class="f">' + (isStaff ? 'Staff code' : 'Class code') + '</label><input class="inp" id="cc" autocomplete="off"><p class="hint">' + (isStaff ? 'Given to you by the school director.' : 'From your teacher. Teachers use the staff code.') + '</p>' +
+      '<button class="btn" type="submit">Create account</button></form><p class="alt">Already registered? <a href="#/login">Sign in</a>' + (isStaff ? '' : ' · Teacher? <a href="#/staff">Staff registration</a>') + '</p>');
     $('#f').onsubmit = async function (ev) {
       ev.preventDefault(); var f = ev.target, b = $('button', f);
       var name = ($('#fn').value.trim() + ' ' + $('#ln').value.trim()).trim(), ph = $('#ph').value.trim(), em = $('#em').value.trim(), pw = $('#pw').value, cc = $('#cc').value.trim();
@@ -435,7 +435,8 @@
       switch (parts[0]) {
         case '': return vProfile();
         case 'login': return USER && role() ? go('#/') : vLogin();
-        case 'register': return USER && role() ? go('#/') : vRegister();
+        case 'register': return USER && role() ? go('#/') : vRegister(false);
+        case 'staff': return USER && role() ? go('#/') : vRegister(true);
         case 'activate': return vActivate();
         case 'forgot': return vForgot();
         case 'reset': return vReset();
@@ -456,7 +457,7 @@
     }
     await loadMe();
     if (USER && !role()) { var p = lsGet('if.pending'); if (p && p.code) { try { await api('activate', { method: 'POST', body: p }); lsSet('if.pending', null); await loadMe(); } catch (e) {} } }
-    if (!USER && !/^#\/(login|register|forgot|reset)/.test(location.hash)) history.replaceState(null, '', location.pathname + '#/login');
+    if (!USER && !/^#\/(login|register|staff|forgot|reset)/.test(location.hash)) history.replaceState(null, '', location.pathname + '#/login');
     header(); window.addEventListener('hashchange', route); route();
   }
   boot();
