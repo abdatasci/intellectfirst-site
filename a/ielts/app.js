@@ -461,16 +461,33 @@
     }).join('') + '</div></section>';
     h += '<section class="section"><h3>All work</h3>' + (att.length ? '<div class="tscroll" style="margin-top:8px"><table class="t"><thead><tr><th>Date</th><th>Task</th><th>Words</th><th>Band</th><th></th></tr></thead><tbody>' +
       att.slice().reverse().map(function (a) {
-        return '<tr><td>' + when(a.at) + '</td><td>' + (a.mock ? '<span class="badge">Mock</span> ' : '') + (a.skill === 'speaking' ? '<span class="badge ai">Speaking</span> ' + esc(a.title) : 'Task ' + a.part + ' · ' + esc(a.title)) + '</td><td>' + (a.words || '–') + '</td><td><b>' + band(a.band) + '</b></td><td><a href="' + base + a.id + '">Report</a></td></tr>';
+        return '<tr><td>' + when(a.at) + '</td><td>' + (a.mock ? '<span class="badge">Mock</span> ' : '') + (a.skill === 'speaking' ? '<span class="badge ai">Speaking</span> ' + esc(a.title) : 'Task ' + a.part + ' · ' + esc(a.title)) + '</td><td>' + (a.words || '–') + '</td><td><b>' + band(a.band) + '</b></td><td style="white-space:nowrap"><a href="' + base + a.id + '">Report</a> · <button class="linkbtn" data-del="' + a.id + '">Delete</button></td></tr>';
       }).join('') + '</tbody></table></div>' : '<div class="empty" style="margin-top:8px">No marked work yet. <a href="#/writing">Start with a writing task</a>.</div>') + '</section>';
     return h;
+  }
+  function wireDeletes(prefix, refresh) {
+    view.querySelectorAll('[data-del]').forEach(function (b) {
+      b.onclick = async function () {
+        if (!confirm('Delete this result? This cannot be undone.')) return;
+        b.disabled = true;
+        try { await api(prefix + b.dataset.del, { method: 'DELETE' }); await loadMe(); toast('Result deleted'); refresh(); }
+        catch (e) { b.disabled = false; toast('Could not delete. Please try again.'); }
+      };
+    });
   }
   async function vProgress() {
     setNav('progress'); await loadBank();
     if (needAccount('#/progress')) return;
     await loadMe(); header();
-    view.innerHTML = '<section class="hero" style="padding-bottom:6px"><div class="eyebrow">' + esc(ME.profile.name) + '</div><h1>My progress</h1><p class="lead">Every marked essay, your band over time and how each criterion is developing.</p></section>' +
-      progressHtml(ME.profile, ME.attempts || [], '#/report/');
+    view.innerHTML = '<section class="hero" style="padding-bottom:6px"><div class="eyebrow">' + esc(ME.profile.name) + '</div><h1>My progress</h1><p class="lead">Every marked essay and speaking test, your band over time and how each criterion is developing.</p></section>' +
+      progressHtml(ME.profile, ME.attempts || [], '#/report/') +
+      ((ME.attempts || []).length ? '<div class="row" style="margin-top:22px"><button class="btn ghost sm" id="clearall">Clear all my results</button></div>' : '');
+    wireDeletes('attempt/', vProgress);
+    var ca = $('#clearall');
+    if (ca) ca.onclick = async function () {
+      if (!confirm('Delete ALL your marked work and progress? This cannot be undone.')) return;
+      try { await api('clear', { method: 'POST' }); await loadMe(); toast('All results cleared'); vProgress(); } catch (e) { toast('Could not clear. Please try again.'); }
+    };
   }
 
   /* ---------- teacher ---------- */
@@ -487,6 +504,7 @@
         var d = await api('teacher/student/' + uid);
         view.innerHTML = '<div class="row" style="margin-top:18px"><a class="btn ghost sm" href="#/teacher">← All students</a></div><section class="hero" style="padding:18px 0 6px"><div class="eyebrow">Student</div><h1>' + esc(d.profile.name) + '</h1><p class="lead">' + esc(d.profile.email) + ' · joined ' + when(d.profile.since) + '</p></section>' +
           progressHtml(d.profile, d.attempts || [], '#/teacher/' + uid + '/');
+        wireDeletes('teacher/student/' + uid + '/', function () { vTeacher(uid); });
       } else {
         var s = (await api('teacher/students')).students;
         view.innerHTML = '<section class="hero" style="padding-bottom:6px"><div class="eyebrow">Teacher view</div><h1>Students</h1><p class="lead">Everyone registered in the IELTS Centre, most recently active first.</p></section>' +

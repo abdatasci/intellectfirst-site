@@ -80,6 +80,17 @@ async function addAttempt(uid, attempt) {
   const p = await getProfile(uid);
   if (p) { p.lastActive = attempt.at; p.attempts = (p.attempts || 0) + 1; await putProfile(uid, p); }
 }
+async function removeAttempts(uid, ids) {
+  const s = store();
+  const idx = (await s.get(`u/${uid}/index`, { type: 'json' })) || [];
+  const drop = ids === 'all' ? new Set(idx.map(x => x.id)) : new Set(ids);
+  for (const id of drop) { try { await s.delete(`u/${uid}/a/${id}`); } catch {} }
+  const keep = idx.filter(x => !drop.has(x.id));
+  await s.setJSON(`u/${uid}/index`, keep);
+  const p = await getProfile(uid);
+  if (p) { p.attempts = keep.length; p.lastActive = keep.at(-1)?.at || null; await putProfile(uid, p); }
+  return keep;
+}
 async function useQuota(uid, kind, role) {
   const s = store();
   const key = `quota/${today()}/${uid}`;
@@ -264,6 +275,9 @@ export default async (req) => {
     return json({ attempt });
   }
 
+  if (path === 'clear' && method === 'POST') return json({ attempts: await removeAttempts(uid, 'all') });
+  const dm = path.match(/^attempt\/([a-z0-9]+)$/);
+  if (dm && method === 'DELETE') return json({ attempts: await removeAttempts(uid, [dm[1]]) });
   const am = path.match(/^attempt\/([a-z0-9]+)$/);
   if (am && method === 'GET') {
     const a = await store().get(`u/${uid}/a/${am[1]}`, { type: 'json' });
@@ -287,6 +301,7 @@ export default async (req) => {
     }
     const sm = path.match(/^teacher\/student\/([A-Za-z0-9-]+)(?:\/([a-z0-9]+))?$/);
     if (sm) {
+      if (sm[2] && method === 'DELETE') return json({ attempts: await removeAttempts(sm[1], [sm[2]]) });
       if (sm[2]) {
         const a = await store().get(`u/${sm[1]}/a/${sm[2]}`, { type: 'json' });
         return a ? json({ attempt: a }) : fail(404, 'missing');

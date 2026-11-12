@@ -236,3 +236,6 @@ figure.ch svg{width:100%;height:auto;display:block}
 .cue b{font-family:var(--serif);font-size:20px;color:var(--navy);display:block;margin-bottom:6px}
 .cue ul{margin:6px 0 6px 20px}
 .spk textarea.inp{margin-top:12px}
+
+.linkbtn{border:0;background:none;color:var(--bad);font-weight:700;padding:0;font-size:inherit}
+.linkbtn:hover{text-decoration:underline}
