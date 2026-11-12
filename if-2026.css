@@ -429,3 +429,6 @@ button.chatfab{border:0;cursor:pointer;font-family:inherit}
 .x-person-text p{line-height:1.6}
 .x-person-x{position:absolute;top:12px;right:12px;width:40px;height:40px;border-radius:50%;border:0;background:rgba(15,35,66,.08);font-size:24px;line-height:1;cursor:pointer;color:var(--navy);z-index:2}
 @media(max-width:640px){.x-person-body{grid-template-columns:1fr;max-height:90vh;overflow:auto}.x-person-img{max-height:46vh;object-position:top}.x-person-text{padding:22px 20px;overflow:visible}.x-person-x{background:#fff}}
+/* 3D shield in the header */
+.brand img.shield3d{width:auto!important;height:68px!important;background:none!important;box-shadow:none!important;border-radius:0!important}
+@media(max-width:640px){.brand img.shield3d{height:54px!important}}
