@@ -487,6 +487,10 @@
   .staff-msg{margin:0;min-height:1.2em;font-size:.9rem;color:var(--text-soft)}
 </style>
 <link rel="stylesheet" href="academy.css">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=Caveat:wght@600&display=swap">
+<link rel="stylesheet" href="if-2026.css">
+<script>try{if(sessionStorage.getItem("x-seen"))document.documentElement.classList.add("x-seen")}catch(e){}</script>
 </head>
 <body>
 <a class="skip-link" href="#top">Skip to content</a>
@@ -541,26 +545,65 @@
 </header>
 
 <main id="top">
-  <section class="hero" style="border-bottom:1px solid var(--border-c); padding-bottom: 0;">
-    <div class="wrap">
-      <div class="hero-grid">
-        <div>
-          <p class="kicker"><span class="dot"></span><span data-i18n="hero_kicker">Intellect First Academy — established in Kostanay</span></p>
-          <h1 class="headline"><span data-i18n="hero_l1">Learn.</span><br><span data-i18n="hero_l2">Think.</span><br><span data-i18n="hero_l3">Lead.</span></h1>
-          <p class="tagline" data-i18n="hero_tagline">Elevating minds. Creating leaders.</p>
-          <div class="hero-actions">
-            <a href="https://t.me/abliem" target="_blank" rel="noopener" class="cta" data-i18n="hero_cta1">Book a free placement test</a>
-            <a href="#pricing" class="cta outline" data-i18n="hero_cta2">See programs and pricing</a>
-          </div>
-        </div>
-        <div class="hero-visual">
-          <img class="hero-photo" src="media/7f7f038c702594ab6a115950d7a7662c.jpg" alt="Students learning together at IF Academy" width="900" height="1100" fetchpriority="high">
-          <span class="visual-star" aria-hidden="true">✦</span>
-          <a class="language-card english-card" href="#courses"><span class="card-eyebrow">IF Academy · A1—C1</span><strong>English</strong><span data-i18n="course_ge_name">General English</span><span class="card-arrow" aria-hidden="true">↗</span></a>
-          <a class="language-card languages-card" href="app/index.html#languages"><span class="card-eyebrow">IF Learning Hub</span><strong>Қазақша<br>Русский</strong><span data-design="language_practice">Learn &amp; practise</span><span class="card-arrow" aria-hidden="true">↗</span></a>
-        </div>
+  <section class="hero x-hero" id="hero">
+    <div class="x-intro" aria-hidden="true">
+      <svg viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
+        <g fill="none" stroke="currentColor" stroke-width="1">
+          <line x1="0" y1="450" x2="1600" y2="450"/><line x1="800" y1="0" x2="800" y2="900"/>
+          <line x1="0" y1="0" x2="1600" y2="900"/><line x1="1600" y1="0" x2="0" y2="900"/>
+          <circle cx="800" cy="450" r="140"/><circle cx="800" cy="450" r="280"/><circle cx="800" cy="450" r="520"/>
+          <rect x="520" y="170" width="560" height="560"/><rect x="1080" y="170" width="346" height="346"/><rect x="1080" y="516" width="214" height="214"/>
+          <path d="M520 730 A560 560 0 0 1 1080 170 A346 346 0 0 1 1426 516 A214 214 0 0 1 1212 730"/>
+        </g>
+      </svg>
+      <span class="x-intro-mark">IF</span>
+    </div>
+    <div class="x-hero-media" aria-hidden="true"><img src="media/ai/hero.webp" alt="" width="1680" height="944" fetchpriority="high" onerror="this.onerror=null;this.src='media/7f7f038c702594ab6a115950d7a7662c.jpg';this.parentNode.classList.add('photo')"></div>
+    <div class="wrap x-hero-in">
+      <p class="kicker"><span class="dot"></span><span data-i18n="hero_kicker">Intellect First Academy — established in Kostanay</span></p>
+      <h1 class="x-display"><span data-i18n="hero_l1">Learn.</span> <span data-i18n="hero_l2">Think.</span> <em data-i18n="hero_l3">Lead.</em></h1>
+      <p class="x-tag" data-i18n="hero_tagline">Elevating minds. Creating leaders.</p>
+      <div class="hero-actions">
+        <a href="https://t.me/abliem" target="_blank" rel="noopener" class="cta wood" data-i18n="hero_cta1">Book a free placement test</a>
+        <a href="/a/placement-test/" class="cta glass" data-i18n="x_cta3">Online placement test</a>
+        <a href="#pricing" class="cta ghostlink" data-i18n="hero_cta2">See programs and pricing</a>
       </div>
-        <div class="hero-aside">
+      <ul class="x-facts">
+        <li><b>01</b><span data-i18n="x_fact1">Levels A1 → C1, IELTS and Cambridge</span></li>
+        <li><b>02</b><span data-i18n="x_fact2">Native and local teachers</span></li>
+        <li><b>03</b><span data-i18n="x_fact3">Al-Farabi 19, Kostanay</span></li>
+      </ul>
+<div class="x-doodles" aria-hidden="true">
+        <svg class="dd dd-arrow" viewBox="0 0 160 90"><path d="M6 70 C 40 20, 90 10, 120 40 S 140 70, 150 48"/><path d="M138 44 L151 47 L146 60"/></svg>
+        <svg class="dd dd-star s1" viewBox="0 0 40 40"><path d="M20 3 L23 16 L37 20 L23 24 L20 37 L17 24 L3 20 L17 16 Z"/></svg>
+        <svg class="dd dd-star s2" viewBox="0 0 40 40"><path d="M20 3 L23 16 L37 20 L23 24 L20 37 L17 24 L3 20 L17 16 Z"/></svg>
+        <svg class="dd dd-squig" viewBox="0 0 120 30"><path d="M4 18 Q 14 4, 24 18 T 44 18 T 64 18 T 84 18 T 104 18 T 118 14"/></svg>
+      </div>
+      <div class="x-bot" aria-hidden="true">
+        <span class="x-bubble">Hi! Сәлем! Привет!</span>
+        <svg viewBox="0 0 120 150" class="bot">
+          <line x1="60" y1="8" x2="60" y2="24" class="b-stroke"/><circle cx="60" cy="7" r="5" class="b-oak"/>
+          <rect x="22" y="24" width="76" height="56" rx="20" class="b-head"/>
+          <rect x="32" y="34" width="56" height="34" rx="12" class="b-face"/>
+          <circle cx="48" cy="50" r="5" class="b-eye"/><circle cx="72" cy="50" r="5" class="b-eye"/>
+          <path d="M50 60 Q60 67 70 60" class="b-smile"/>
+          <rect x="34" y="86" width="52" height="42" rx="14" class="b-body"/>
+          <circle cx="60" cy="104" r="7" class="b-oak"/>
+          <path d="M34 96 Q16 100 14 116" class="b-arm"/>
+          <g class="b-wave"><path d="M86 96 Q104 90 108 72" class="b-arm"/><circle cx="108" cy="68" r="5" class="b-hand"/></g>
+          <rect x="40" y="130" width="14" height="10" rx="4" class="b-foot"/><rect x="66" y="130" width="14" height="10" rx="4" class="b-foot"/>
+        </svg>
+      </div>
+      <a class="x-scroll" href="#teachers"><span data-i18n="x_scroll">Scroll</span><i></i></a>
+    </div>
+  </section>
+  <section class="x-intro2" aria-label="About IF Academy">
+    <div class="wrap">
+      <figure class="x-photo"><img src="media/7f7f038c702594ab6a115950d7a7662c.jpg" alt="Students learning together at IF Academy" width="900" height="1100" loading="lazy">
+        <svg class="dd dd-loop" viewBox="0 0 200 200" aria-hidden="true"><path d="M30 120 C 10 60, 80 10, 140 30 S 200 120, 150 160 S 50 190, 40 140"/></svg>
+        <svg class="dd dd-star s3" viewBox="0 0 40 40" aria-hidden="true"><path d="M20 3 L23 16 L37 20 L23 24 L20 37 L17 24 L3 20 L17 16 Z"/></svg>
+        <figcaption class="x-hand">our classroom ✶</figcaption></figure>
+      <div class="hero-aside">
           <p data-i18n="hero_aside_p1">Intellect First is an English language academy built around one idea: language fluency is a form of leadership. Our classrooms are small, our instruction is personal, and our standards are set against international benchmarks.</p>
           <p><strong data-i18n="hero_aside_p2">General English · Premium English · IELTS · Corporate · Individual · Business English</strong></p>
         </div>
@@ -573,6 +616,7 @@
         </div>
       </div>
     </div>
+    </div>
     <div class="values">
       <div class="wrap">
         <div class="values-row">
@@ -582,6 +626,7 @@
     </div>
   </section>
 
+  <div class="x-open " style="--img:url('media/ai/courses3d.webp');--fb:url('media/7f7f038c702594ab6a115950d7a7662c.jpg')" aria-hidden="true"><div class="wrap"><span class="x-open-n">02</span><p class="x-open-t" data-i18n="x_open_courses">Courses</p></div></div>
   <section id="courses">
     <div class="wrap">
       <div class="section-head">
@@ -628,6 +673,7 @@
     </div>
   </section>
 
+  <div class="x-open " style="--img:url('media/527114fcfbb6b9043dd4443c84504984.jpg');--fb:url('media/527114fcfbb6b9043dd4443c84504984.jpg')" aria-hidden="true"><div class="wrap"><span class="x-open-n">01</span><p class="x-open-t" data-i18n="x_open_teachers">Teachers</p></div></div>
   <section id="teachers">
     <div class="wrap">
       <div class="section-head">
@@ -719,6 +765,7 @@
     </div>
   </section>
 
+  <div class="x-open" style="--img:url('media/ai/robot3d.webp')" aria-hidden="true"><div class="wrap"><span class="x-open-n">✶</span><p class="x-open-t" data-i18n="fnd_num">Course finder</p></div></div>
   <section id="finder">
     <div class="wrap">
       <div class="section-head"><div><p class="section-num" data-i18n="fnd_num">Course finder</p><h2 class="section-title" data-i18n="fnd_title">Not sure where to start?</h2></div><p class="section-desc" data-i18n="fnd_desc">Answer three quick questions and we will suggest a course.</p></div>
@@ -735,6 +782,7 @@
   </section>
 
 
+  <div class="x-open" style="--img:url('media/ai/globe3d.webp')" aria-hidden="true"><div class="wrap"><span class="x-open-n">03</span><p class="x-open-t" data-i18n="nav_pricing">Pricing</p></div></div>
   <section id="pricing">
     <div class="wrap">
       <div class="section-head">
@@ -954,7 +1002,8 @@
   </section>
 
     
-<section id="apps">
+<div class="x-open apps-open" style="--img:url('media/ai/apps.webp')" aria-hidden="true"><div class="wrap"><span class="x-open-n">04</span><p class="x-open-t" data-i18n="x_open_apps">Apps & games</p></div></div>
+  <section id="apps">
     <div class="wrap">
       <div class="section-head">
         <div>
@@ -1019,6 +1068,7 @@
     </div>
   </section>
 
+  <div class="x-open " style="--img:url('media/0fde7b436f0db4144e42fb2116192607.jpg')" aria-hidden="true"><div class="wrap"><span class="x-open-n">06</span><p class="x-open-t" data-i18n="x_open_life">Life at IF</p></div></div>
   <section id="gallery">
     <div class="wrap">
       <div class="section-head">
@@ -1122,6 +1172,7 @@
     </div>
   </section>
 
+  <div class="x-open " style="--img:url('media/ai/visit3d.webp');--fb:url('media/967e678fd7da0301d59c8801d882a656.jpg')" aria-hidden="true"><div class="wrap"><span class="x-open-n">09</span><p class="x-open-t" data-i18n="x_open_visit">Visit us</p></div></div>
   <section id="location">
     <div class="wrap">
       <div class="section-head">
@@ -1376,7 +1427,7 @@
       hero_kicker: "Intellect First Academy — established in Kostanay",
       hero_l1: "Learn.", hero_l2: "Think.", hero_l3: "Lead.",
       hero_tagline: "Elevating minds. Creating leaders.",
-      hero_cta1: "Book a free placement test", hero_cta2: "See programs and pricing",
+      x_cta3: "Online placement test", x_fact1: "Levels A1 → C1, IELTS and Cambridge", x_fact2: "Native and local teachers", x_fact3: "Al-Farabi 19, Kostanay", x_scroll: "Scroll", x_open_teachers: "Teachers", x_open_courses: "Courses", x_open_apps: "Apps & games", x_open_life: "Life at IF", x_open_visit: "Visit us", hero_cta1: "Book a free placement test", hero_cta2: "See programs and pricing",
       hero_aside_p1: "Intellect First is an English language academy built around one idea: language fluency is a form of leadership. Our classrooms are small, our instruction is personal, and our standards are set against international benchmarks.",
       hero_aside_p2: "General English · Premium English · IELTS · Corporate · Individual · Business English",
       val_1: "Excellence", val_2: "Integrity", val_3: "Innovation", val_4: "Critical thinking",
@@ -1573,7 +1624,7 @@
       hero_kicker: "Академия Intellect First — Костанай",
       hero_l1: "Учись.", hero_l2: "Думай.", hero_l3: "Веди.",
       hero_tagline: "Развиваем мышление. Воспитываем лидеров.",
-      hero_cta1: "Записаться на бесплатное тестирование", hero_cta2: "Программы и цены",
+      x_cta3: "Онлайн-тест уровня", x_fact1: "Уровни A1 → C1, IELTS и Cambridge", x_fact2: "Носители языка и местные преподаватели", x_fact3: "Аль-Фараби 19, Костанай", x_scroll: "Листайте", x_open_teachers: "Преподаватели", x_open_courses: "Курсы", x_open_apps: "Приложения и игры", x_open_life: "Жизнь в IF", x_open_visit: "Приходите к нам", hero_cta1: "Записаться на бесплатное тестирование", hero_cta2: "Программы и цены",
       hero_aside_p1: "Intellect First — школа английского языка, построенная на одной идее: свободное владение языком — это форма лидерства. У нас небольшие группы, персональный подход и стандарты на уровне международных требований.",
       hero_aside_p2: "Общий английский · Premium английский · IELTS · Корпоративное обучение · Индивидуальные занятия · Бизнес-английский",
       val_1: "Совершенство", val_2: "Честность", val_3: "Инновации", val_4: "Критическое мышление",
@@ -1771,7 +1822,7 @@
       hero_kicker: "Intellect First Academy — Қостанайда құрылған",
       hero_l1: "Үйрен.", hero_l2: "Ойла.", hero_l3: "Көшбасшы бол.",
       hero_tagline: "Ойды биіктетеміз. Көшбасшыларды тәрбиелейміз.",
-      hero_cta1: "Тегін деңгей анықтау тесті", hero_cta2: "Бағдарламалар мен бағаларды қарау",
+      x_cta3: "Онлайн деңгей тесті", x_fact1: "A1 → C1 деңгейлері, IELTS және Cambridge", x_fact2: "Ана тілі ағылшын және жергілікті мұғалімдер", x_fact3: "Әл-Фараби 19, Қостанай", x_scroll: "Төмен", x_open_teachers: "Мұғалімдер", x_open_courses: "Курстар", x_open_apps: "Қосымшалар мен ойындар", x_open_life: "IF өмірі", x_open_visit: "Бізге келіңіз", hero_cta1: "Тегін деңгей анықтау тесті", hero_cta2: "Бағдарламалар мен бағаларды қарау",
       hero_aside_p1: "Intellect First — бір идеяға құрылған ағылшын тілі академиясы: тілді еркін меңгеру — көшбасшылықтың бір түрі. Сыныптарымыз шағын, оқыту жеке тәсілмен жүреді, ал біздің стандарттар халықаралық өлшемдерге сәйкес белгіленген.",
       hero_aside_p2: "General English · Premium English · IELTS · Корпоративтік · Жеке · Business English",
       val_1: "Үздіктік", val_2: "Адалдық", val_3: "Инновация", val_4: "Сыни ойлау",
@@ -1878,7 +1929,7 @@
     rv.forEach(function(el){io.observe(el)});
   }else rv.forEach(function(el){el.classList.add('in')});
   // dock + progress + to-top
-  var names={teachers:'Teachers',courses:'Courses',pricing:'Pricing',apps:'Apps',ecosystem:'Ecosystem',gallery:'Gallery',faqs:'FAQs',contact:'Contact'};
+  var names={teachers:'Teachers',courses:'Courses',pricing:'Pricing',apps:'Apps',ecosystem:'Spaces',gallery:'Gallery',faqs:'FAQs',location:'Visit',contact:'Contact'};
   var dock=document.getElementById('dock');
   Object.keys(names).forEach(function(id){var a=document.createElement('a');a.href='#'+id;a.dataset.id=id;a.innerHTML='<span>'+names[id]+'</span>';dock.appendChild(a)});
   var bar=document.getElementById('progress'),tt=document.getElementById('totop');
@@ -1941,4 +1992,19 @@
 <script src="academy-catalog.js"></script>
 <script src="academy.js"></script>
 <script>/* Account email links (confirm, reset password) land on the homepage: send them to the IELTS Centre. */(function(){var h=location.hash;if(/(confirmation_token|recovery_token|invite_token|email_change_token)=/.test(h))location.replace("/me/"+h);})();</script>
+<script>
+/* 2026 design layer: intro once per visit, opener reveals, section index colour */
+(function(){
+  try{ sessionStorage.setItem('x-seen','1'); }catch(e){}
+  var intro=document.querySelector('.x-intro'); if(intro) setTimeout(function(){intro.remove()},2300);
+  var op=document.querySelectorAll('.x-open');
+  if('IntersectionObserver' in window){var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}})},{threshold:.35});op.forEach(function(o){io.observe(o)})}else op.forEach(function(o){o.classList.add('in')});
+  var dock=document.getElementById('dock'), dark=['finder','apps','about','contact'];
+  function tone(){ if(!dock) return; var y=window.innerHeight/2, d=false;
+    dark.forEach(function(id){var el=document.getElementById(id); if(el){var r=el.getBoundingClientRect(); if(r.top<y&&r.bottom>y) d=true;}});
+    document.querySelectorAll('.x-open,.x-hero').forEach(function(el){var r=el.getBoundingClientRect(); if(r.top<y&&r.bottom>y) d=true;});
+    dock.classList.toggle('dark',d); }
+  window.addEventListener('scroll',tone,{passive:true}); tone();
+})();
+</script>
 </body></html>
