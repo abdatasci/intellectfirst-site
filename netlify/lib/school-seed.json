@@ -160,7 +160,7 @@
    "kind": "group",
    "teacherId": "t-abdoulie",
    "bookId": "b-ef-b1",
-   "room": ""
+   "room": "Business Lab"
   },
   {
    "id": "c-ad",
@@ -178,7 +178,7 @@
    "kind": "group",
    "teacherId": "t-abdoulie",
    "bookId": "b-ef-b2",
-   "room": ""
+   "room": "Business Lab"
   },
   {
    "id": "c-b1a",
@@ -214,7 +214,7 @@
    "kind": "group",
    "teacherId": "t-abdoulie",
    "bookId": "b-yl",
-   "room": ""
+   "room": "Business Lab"
   },
   {
    "id": "c-fl1",
@@ -223,7 +223,7 @@
    "kind": "group",
    "teacherId": "t-joseph",
    "bookId": "b-yl",
-   "room": "Business Lab"
+   "room": "Hub"
   },
   {
    "id": "c-ielts",
@@ -232,7 +232,7 @@
    "kind": "group",
    "teacherId": "t-abdoulie",
    "bookId": "b-ielts",
-   "room": ""
+   "room": "Business Lab"
   },
   {
    "id": "c-ind",
@@ -272,7 +272,7 @@
   }
  ],
  "students": [],
- "version": 3,
+ "version": 4,
  "patches": [
   {
    "v": 2,
@@ -323,6 +323,26 @@
     },
     "c-fl1": {
      "schedule": "Sat · Sun 13:15–14:45"
+    }
+   }
+  },
+  {
+   "v": 4,
+   "classes": {
+    "c-b1ad": {
+     "room": "Business Lab"
+    },
+    "c-b2a": {
+     "room": "Business Lab"
+    },
+    "c-fl2": {
+     "room": "Business Lab"
+    },
+    "c-fl1": {
+     "room": "Hub"
+    },
+    "c-ielts": {
+     "room": "Business Lab"
     }
    }
   }
