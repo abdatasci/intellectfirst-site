@@ -505,7 +505,11 @@
   <a href="app/index.html" target="_blank" rel="noopener"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0116 0"/></svg><span data-i18n="tab_portal">Portal</span></a>
   <a href="#contact" data-t="contact"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 01-11.6 7.1L3 21l1.9-6.4A8 8 0 1121 12z"/></svg><span data-i18n="tab_contact">Contact</span></a>
 </nav>
-<a class="chatfab" href="https://t.me/abliem" target="_blank" rel="noopener" aria-label="Telegram"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 3L2 11l6 2.5L10 21l3-5 5 4z"/></svg><span data-i18n="chat_btn">Chat with us</span></a>
+<div class="chatwrap" id="chatWrap"><div class="chatpop" id="chatPop" role="menu" aria-label="Chat with us">
+  <p class="chatpop-h" data-i18n="chat_pick">Message us on</p>
+  <a class="chatopt tg" role="menuitem" href="https://t.me/abliem" target="_blank" rel="noopener"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="12" fill="#229ED9"/><path d="M5.4 11.7l11.3-4.4c.5-.2 1 .1.8.9l-1.9 9c-.1.6-.5.8-1 .5l-2.9-2.1-1.4 1.3c-.2.2-.3.3-.6.3l.2-3 5.4-4.9c.2-.2 0-.3-.3-.1l-6.7 4.2-2.9-.9c-.6-.2-.6-.6.1-.9z" fill="#fff"/></svg><span><b>Telegram</b><small>@abliem</small></span></a>
+  <a class="chatopt wa" role="menuitem" href="https://wa.me/77073810988" target="_blank" rel="noopener"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="12" fill="#25D366"/><path d="M12 5.6a6.4 6.4 0 0 0-5.5 9.7l-.8 3 3.1-.8A6.4 6.4 0 1 0 12 5.6zm3.7 9c-.2.4-.9.8-1.3.9-.3 0-.7.1-2.2-.5-1.9-.8-3.1-2.7-3.2-2.8-.1-.1-.8-1-.8-2s.5-1.4.7-1.6c.2-.2.4-.2.5-.2h.4c.1 0 .3 0 .4.3l.6 1.4c0 .1.1.2 0 .4l-.2.3-.3.3c-.1.1-.2.2-.1.4.1.2.6 1 1.3 1.6.9.8 1.6 1 1.8 1.1.2.1.3.1.4-.1l.6-.7c.1-.2.3-.2.4-.1l1.3.6c.2.1.3.1.4.2 0 .1 0 .5-.1.9z" fill="#fff"/></svg><span><b>WhatsApp</b><small>IF Academy · +7 707 381 0988</small></span></a>
+</div><button type="button" class="chatfab" id="chatBtn" aria-expanded="false" aria-controls="chatPop" aria-label="Chat with us"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 3L2 11l6 2.5L10 21l3-5 5 4z"/></svg><span data-i18n="chat_btn">Chat with us</span></button></div>
 
 
 
@@ -1307,7 +1311,7 @@
 
 <script>
   var I18N = {
-    en: { nav_hub: "Hub", nav_ielts: "IELTS Centre", nav_placement: "Placement test", nav_signin: "Sign in", nav_register: "Create account", nav_account: "My account", nav_classroom: "IF Classroom", nav_admin: "Admin panel", nav_young_d: "Games and tests for kids and teens", nav_ielts_d: "Practice tests with AI marking", nav_portal_d: "All IF games, tests and exercises", nav_placement_d: "Find your level online, free", nav_apps_d: "IF English and our learning apps", nav_catalog_d: "Every group, level and time", nav_young_learners: "Young Learners Centre", app_pet_games: "PET Games", app_ket_games: "KET Games",
+    en: { chat_pick: "Message us on", nav_hub: "Hub", nav_ielts: "IELTS Centre", nav_placement: "Placement test", nav_signin: "Sign in", nav_register: "Create account", nav_account: "My account", nav_classroom: "IF Classroom", nav_admin: "Admin panel", nav_young_d: "Games and tests for kids and teens", nav_ielts_d: "Practice tests with AI marking", nav_portal_d: "All IF games, tests and exercises", nav_placement_d: "Find your level online, free", nav_apps_d: "IF English and our learning apps", nav_catalog_d: "Every group, level and time", nav_young_learners: "Young Learners Centre", app_pet_games: "PET Games", app_ket_games: "KET Games",
       nav_portal: "Learning Hub",
       tab_home: "Home",
       tab_courses: "Courses",
@@ -1505,7 +1509,7 @@
       foot_cta: "Book a free placement test", foot_contact_title: "Contact", foot_academy_title: "Academy",
       foot_academy_city: "Alfarabi 19, Kostanay 110000, Kazakhstan", foot_bottom_left: "Intellect First — Learn. Think. Lead."
     },
-    ru: { nav_hub: "Хаб", nav_ielts: "Центр IELTS", nav_placement: "Тест на уровень", nav_signin: "Войти", nav_register: "Создать аккаунт", nav_account: "Мой аккаунт", nav_classroom: "IF Classroom", nav_admin: "Админ-панель", nav_young_d: "Игры и тесты для детей и подростков", nav_ielts_d: "Пробные тесты с ИИ-проверкой", nav_portal_d: "Все игры, тесты и упражнения IF", nav_placement_d: "Узнайте свой уровень онлайн бесплатно", nav_apps_d: "IF English и наши учебные приложения", nav_catalog_d: "Все группы, уровни и время занятий", nav_young_learners: "Центр для детей и подростков", app_pet_games: "Игры PET", app_ket_games: "Игры KET",
+    ru: { chat_pick: "Напишите нам в", nav_hub: "Хаб", nav_ielts: "Центр IELTS", nav_placement: "Тест на уровень", nav_signin: "Войти", nav_register: "Создать аккаунт", nav_account: "Мой аккаунт", nav_classroom: "IF Classroom", nav_admin: "Админ-панель", nav_young_d: "Игры и тесты для детей и подростков", nav_ielts_d: "Пробные тесты с ИИ-проверкой", nav_portal_d: "Все игры, тесты и упражнения IF", nav_placement_d: "Узнайте свой уровень онлайн бесплатно", nav_apps_d: "IF English и наши учебные приложения", nav_catalog_d: "Все группы, уровни и время занятий", nav_young_learners: "Центр для детей и подростков", app_pet_games: "Игры PET", app_ket_games: "Игры KET",
       nav_portal: "Кабинет ученика",
       tab_home: "Главная",
       tab_courses: "Курсы",
@@ -1703,7 +1707,7 @@
       foot_cta: "Записаться на бесплатное тестирование", foot_contact_title: "Контакты", foot_academy_title: "Академия",
       foot_academy_city: "пр. Аль-Фараби, 19, Костанай, 110000, Казахстан", foot_bottom_left: "Intellect First — Учись. Думай. Веди."
     },
-    kk: { nav_hub: "Хаб", nav_ielts: "IELTS орталығы", nav_placement: "Деңгей тесті", nav_signin: "Кіру", nav_register: "Тіркелу", nav_account: "Менің аккаунтым", nav_classroom: "IF Classroom", nav_admin: "Әкімші панелі", nav_young_d: "Балалар мен жасөспірімдерге ойындар мен тесттер", nav_ielts_d: "ЖИ тексеретін сынақ тесттері", nav_portal_d: "IF-тың барлық ойындары, тесттері мен жаттығулары", nav_placement_d: "Деңгейіңізді онлайн тегін анықтаңыз", nav_apps_d: "IF English және оқу қосымшаларымыз", nav_catalog_d: "Барлық топтар, деңгейлер мен уақыт", nav_young_learners: "Жас оқушылар орталығы", app_pet_games: "PET ойындары", app_ket_games: "KET ойындары",
+    kk: { chat_pick: "Бізге жазыңыз", nav_hub: "Хаб", nav_ielts: "IELTS орталығы", nav_placement: "Деңгей тесті", nav_signin: "Кіру", nav_register: "Тіркелу", nav_account: "Менің аккаунтым", nav_classroom: "IF Classroom", nav_admin: "Әкімші панелі", nav_young_d: "Балалар мен жасөспірімдерге ойындар мен тесттер", nav_ielts_d: "ЖИ тексеретін сынақ тесттері", nav_portal_d: "IF-тың барлық ойындары, тесттері мен жаттығулары", nav_placement_d: "Деңгейіңізді онлайн тегін анықтаңыз", nav_apps_d: "IF English және оқу қосымшаларымыз", nav_catalog_d: "Барлық топтар, деңгейлер мен уақыт", nav_young_learners: "Жас оқушылар орталығы", app_pet_games: "PET ойындары", app_ket_games: "KET ойындары",
       nav_portal: "Оқушы кабинеті",
       tab_home: "Басты",
       tab_courses: "Курстар",
@@ -2049,5 +2053,11 @@ box.innerHTML='<a href="/me/" class="nav-reg" data-i18n="nav_account">'+(L('nav_
 fetch('/api/school/me',{credentials:'same-origin'}).then(r=>r.ok?r.json():null).then(d=>{const r=d&&d.profile&&d.profile.role;
 if(r==='teacher'||r==='admin'){const c=document.createElement('a');c.href='/me/#/classroom';c.className='nav-signin';c.setAttribute('data-i18n','nav_classroom');c.textContent='IF Classroom';box.prepend(c)}
 if(r==='admin'){const a=document.createElement('a');a.href='/me/#/admin';a.className='nav-signin';a.setAttribute('data-i18n','nav_admin');a.textContent=L('nav_admin')||'Admin panel';box.prepend(a)}}).catch(()=>{});})();
+</script>
+<script>
+(()=>{const w=document.getElementById('chatWrap');if(!w)return;const b=document.getElementById('chatBtn');
+const set=o=>{w.classList.toggle('open',o);b.setAttribute('aria-expanded',o)};
+b.addEventListener('click',e=>{e.stopPropagation();set(!w.classList.contains('open'))});
+document.addEventListener('click',e=>{if(!w.contains(e.target))set(false)});document.addEventListener('keydown',e=>{if(e.key==='Escape')set(false)});})();
 </script>
 </body></html>
