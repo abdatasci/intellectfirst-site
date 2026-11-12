@@ -74,7 +74,8 @@ export function upcomingLessons(classes, from = new Date(), days = 8) {
 /* ---------- payments ----------
    student.pay = { fee: 45000, dueDay: 5, paid: { "2026-11": "2026-11-03" } } – set in the Admin panel. */
 export function payStatus(student, now = new Date()) {
-  const p = student?.pay; if (!p || !(+p.dueDay >= 1)) return null;
+  const p = student?.pay; if (!p || student.noFee || (!(+p.dueDay >= 1) && !(+p.fee > 0))) return null;
+  if (!(+p.dueDay >= 1)) { const mk = monthKey(now), on = (p.paid || {})[mk] || null; return { fee: +p.fee || 0, dueDay: 0, month: mk, dueDate: '', daysToDue: null, paid: !!on, paidOn: on, state: on ? 'paid' : 'open' }; }
   const l = local(now), y = l.getUTCFullYear(), mo = l.getUTCMonth();
   const dueDay = Math.min(28, Math.max(1, Math.round(+p.dueDay)));
   const month = `${y}-${String(mo + 1).padStart(2, '0')}`;
@@ -116,10 +117,12 @@ export async function contextFor(uid) {
     lines.push(`School record: ${s.first} ${s.last}; status ${s.status || 'active'}; level ${s.level || 'not recorded'}.`);
     if (ctx.classes.length) lines.push('Classes:\n' + ctx.classes.map(c => `- ${c.label}: ${c.schedule || 'times not set'}; room ${c.room || '-'}; teacher ${tName(c.teacherId) || '-'}; book ${bName(c.bookId) || '-'}`).join('\n'));
     else lines.push('Classes: none on record yet.');
+    const att = (((await S().get('attendance', { type: 'json' })) || {})[s.id] || []).filter(x => x.m !== 'FZ');
+    if (att.length) { const pr = att.filter(x => x.m === 'P').length; lines.push(`Attendance since ${att[0].d}: ${pr} of ${att.length} lessons attended (${Math.round(pr / att.length * 100)}%), ${att.filter(x => x.m === 'EA').length} excused, ${att.filter(x => x.m === 'UA').length} missed without notice. Last: ${att.slice(-5).map(x => x.d + ' ' + ({ P: 'present', EA: 'excused', UA: 'absent' }[x.m] || x.m)).join('; ')}.`); }
     const tests = (s.tests || []).slice(-6);
     if (tests.length) lines.push('Recent test results:\n' + tests.map(t => `- ${t.date || ''} ${t.test}: ${t.score || t.band || ''}${t.max ? '/' + t.max : ''}${t.note ? ' (' + t.note + ')' : ''}`).join('\n'));
     const p = ctx.pay;
-    lines.push(p ? `Tuition: ${money(p.fee) || 'amount not set'} per month, due on day ${p.dueDay}. This month (${p.month}): ${p.paid ? 'PAID on ' + p.paidOn : p.state === 'overdue' ? 'NOT PAID, overdue since ' + p.dueDate : 'not paid yet, due ' + p.dueDate}.` : 'Tuition: no payment plan recorded on the website; the student should ask the administrator.');
+    lines.push(p ? `Tuition: ${money(p.fee) || 'amount not set'} per month${p.dueDay ? ', due on day ' + p.dueDay : ''}. This month (${p.month}): ${p.paid ? 'PAID on ' + p.paidOn : p.state === 'overdue' ? 'NOT PAID, overdue since ' + p.dueDate : p.dueDate ? 'not paid yet, due ' + p.dueDate : 'not paid yet'}.` : 'Tuition: no payment plan recorded on the website; the student should ask the administrator.');
   } else if (profile.role === 'student') {
     lines.push('This account is not yet linked to a school record (the phone number in the profile must match the school record). Class, payment and test details are not available.');
   } else {
@@ -225,7 +228,7 @@ const MONTHS = {
   kk: ['қаңтар', 'ақпан', 'наурыз', 'сәуір', 'мамыр', 'маусым', 'шілде', 'тамыз', 'қыркүйек', 'қазан', 'қараша', 'желтоқсан']
 };
 const fmtDate = (iso, lang) => { const [y, m, d] = iso.split('-').map(Number); return lang === 'en' ? `${d} ${MONTHS.en[m - 1]}` : `${String(d).padStart(2, '0')}.${String(m).padStart(2, '0')}.${y}`; };
-export const localise = (p, lang) => p && ({ ...p, month: MONTHS[lang][+p.month.slice(5) - 1] + ' ' + p.month.slice(0, 4), dueDate: fmtDate(p.dueDate, lang) });
+export const localise = (p, lang) => p && ({ ...p, month: MONTHS[lang][+p.month.slice(5) - 1] + ' ' + p.month.slice(0, 4), dueDate: p.dueDate ? fmtDate(p.dueDate, lang) : '' });
 export const texts = lang => T[lang] || T.en;
 export const langOf = code => /^ru/i.test(code || '') ? 'ru' : /^kk/i.test(code || '') ? 'kk' : 'en';
 
@@ -244,7 +247,7 @@ export function dueReminders({ students, classes, now = new Date() }) {
         out.push({ uid: s.uid, studentId: s.id, kind: 'lessonEve', key: `le:${x.classId}:${x.date}:${x.start}`, lesson: x });
     }
     const p = payStatus(s, now);
-    if (p && !p.paid && hour >= 10 && hour < 13) {
+    if (p && !p.paid && p.dueDay && hour >= 10 && hour < 13) {
       const kind = p.daysToDue === 3 ? 'payBefore' : p.daysToDue === 0 ? 'payDue' : p.daysToDue === -3 ? 'payLate' : null;
       if (kind) out.push({ uid: s.uid, studentId: s.id, kind, key: `p:${kind}:${p.month}`, pay: p });
     }

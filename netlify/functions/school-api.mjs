@@ -109,8 +109,9 @@ async function canSeeStudent(profile, student) {
   const mine = (await classesForTeacher(profile)).map(c => c.label);
   return (student.classes || []).some(c => mine.includes(c));
 }
+async function attendanceOf(id) { const a = (await S().get('attendance', { type: 'json' })) || {}; return a[id] || []; }
 async function studentView(s) {
-  const out = { record: s, profile: null, ielts: null };
+  const out = { record: s, profile: null, ielts: null, attendance: await attendanceOf(s.id) };
   if (s.uid) {
     const p = await getProfile(s.uid);
     if (p) out.profile = { name: p.name, email: p.email, photo: !!p.photo, about: p.about || '', goals: p.goals || '', lastActive: p.lastActive || null };
@@ -191,6 +192,33 @@ function mergeTests(list, rows) {
   return { added, missing: [...new Set(missing)].slice(0, 50) };
 }
 
+
+/* ---------- finance ledger (admin only; Blobs "school" → finance) ----------
+   entry = { id, month:'YYYY-MM', date:'YYYY-MM-DD'|'', type:'income'|'expense', category, amount, note, source? }
+   Marking a student paid adds a "Tuition" income entry automatically (source pay:<studentId>:<month>). */
+const FIN_TYPES = new Set(['income', 'expense']);
+const finDoc = async () => (await S().get('finance', { type: 'json' })) || [];
+function cleanEntry(e) {
+  const amount = Math.round(Math.abs(Number(String(e.amount ?? '').replace(/[^\d.,-]/g, '').replace(/,(?=\d{3}\b)/g, '').replace(',', '.'))) || 0);
+  const month = /^\d{4}-\d{2}$/.test(e.month || '') ? e.month : /^\d{4}-\d{2}/.test(e.date || '') ? String(e.date).slice(0, 7) : '';
+  if (!amount || !month) return null;
+  return { id: e.id || newId('f'), month, date: /^\d{4}-\d{2}-\d{2}$/.test(e.date || '') ? e.date : '', type: FIN_TYPES.has(e.type) ? e.type : 'expense',
+    category: str(e.category, 60) || (e.type === 'income' ? 'Other income' : 'Other'), amount, note: str(e.note, 200), ...(e.source ? { source: str(e.source, 80) } : {}), ...(e.investor ? { investor: true } : {}) };
+}
+async function syncTuition(before, after) {
+  const was = before?.pay?.paid || {}, now = after?.pay?.paid || {};
+  const add = Object.keys(now).filter(m => !was[m]), gone = Object.keys(was).filter(m => !now[m]);
+  if (!add.length && !gone.length) return;
+  let fin = await finDoc();
+  const name = `${after.first || ''} ${after.last || ''}`.trim();
+  fin = fin.filter(e => !gone.some(m => e.source === `pay:${after.id}:${m}`));
+  for (const m of add) {
+    if (fin.some(e => e.source === `pay:${after.id}:${m}`) || !(+after.pay.fee > 0)) continue;
+    fin.push({ id: newId('f'), month: m, date: now[m], type: 'income', category: 'Tuition', amount: Math.round(+after.pay.fee), note: name, source: `pay:${after.id}:${m}` });
+  }
+  await S().setJSON('finance', fin);
+}
+
 /* ---------- routes ---------- */
 export default async (req) => {
   const url = new URL(req.url);
@@ -209,7 +237,7 @@ export default async (req) => {
     if (profile?.studentId) {
       const s = (await doc('students')).find(x => x.id === profile.studentId);
       const classes = (await doc('classes')).filter(c => (s?.classes || []).includes(c.label));
-      out.student = publicStudent(s); out.classes = classes;
+      out.student = publicStudent(s); out.classes = classes; out.attendance = await attendanceOf(profile.studentId);
     }
     if (profile && isStaff(profile.role)) out.teaching = await classesForTeacher(profile);
     if (profile) out.ielts = await ieltsSummary(uid);
@@ -365,9 +393,11 @@ export default async (req) => {
       // save one item (create or update)
       const list = await doc(coll[1]); const item = b.item || {};
       const prefix = { students: 's', classes: 'c', teachers: 't', books: 'b' }[coll[1]];
+      let before = null;
       if (!item.id) { item.id = newId(prefix); list.push(item); }
-      else { const i = list.findIndex(x => x.id === item.id); if (i < 0) list.push(item); else list[i] = { ...list[i], ...item }; }
+      else { const i = list.findIndex(x => x.id === item.id); before = i >= 0 ? structuredClone(list[i]) : null; if (i < 0) list.push(item); else list[i] = { ...list[i], ...item }; }
       await save(coll[1], list);
+      if (coll[1] === 'students' && 'pay' in item) await syncTuition(before, list.find(x => x.id === item.id));
       return json({ [coll[1]]: list });
     }
     const del = path.match(/^admin\/(students|classes|teachers|books)\/([A-Za-z0-9-]+)$/);
@@ -405,6 +435,105 @@ export default async (req) => {
       }
       await putProfile(b.uid, p);
       return json({ profile: p });
+    }
+    if (path === 'admin/import-all' && method === 'POST') {
+      // Full IF Admin export (sheets: Students, Payments, Expenses, Test Results, Attendance)
+      const list = await doc('students');
+      const rows = (b.students || []).slice(0, 3000);
+      const st = mergeStudents(list, rows.map(r => ({ name: r.name, phone: r.phone, classes: r.all_groups || r.group, level: r.level, status: r.status, notes: r.note })));
+      const nk = n => str(n).toLowerCase().replace(/\s+/g, ' ');
+      const RENAMED = Object.assign({}, ...(seed.patches || []).flatMap(p => Object.values(p.classes || {}).filter(c => c.renameFrom).map(c => ({ [c.renameFrom]: c.label }))));
+      const idMap = {};
+      for (const r of rows) {
+        const key = phoneKey(r.phone);
+        const s = (key && key.length >= 10 && list.find(x => phoneKey(x.phone) === key && nk(`${x.first} ${x.last}`) === nk(r.name))) ||
+          list.find(x => nk(`${x.first} ${x.last}`) === nk(r.name)) || (key && key.length >= 10 && list.find(x => phoneKey(x.phone) === key));
+        if (s) { idMap[r.student_id] = s; if (r.no_fee) s.noFee = true; }
+      }
+      // payments → tuition plan + income entries
+      let fin = await finDoc(); const have = new Set(fin.map(e => e.source).filter(Boolean));
+      let income = 0, expenses = 0, plans = 0;
+      const pays = (b.payments || []).slice().sort((x, y) => String(x.month).localeCompare(String(y.month)));
+      const touched = new Set();
+      for (const r of pays) {
+        const s = idMap[r.student_id]; const month = /^\d{4}-\d{2}/.test(r.month || '') ? String(r.month).slice(0, 7) : ''; if (!month) continue;
+        const paid = Math.round(+r.paid || 0), due = Math.round(+r.net_due || 0);
+        if (paid > 0) {
+          const src = `imp-pay:${month}:${r.student_id}`;
+          if (!have.has(src)) { const e = cleanEntry({ month, date: r.payment_date || '', type: 'income', category: 'Tuition', amount: paid, note: [r.student, r.method].filter(Boolean).join(' · '), source: src }); if (e) { fin.push(e); have.add(src); income++; } }
+        }
+        if (!s || s.noFee || !(due > 0)) continue;
+        s.pay = s.pay || { fee: 0, dueDay: 0, paid: {} }; s.pay.paid = s.pay.paid || {};
+        s.pay.fee = due; touched.add(s.id);
+        const dd = /^\d{4}-\d{2}-(\d{2})/.exec(r.due_date || ''); if (dd) s.pay.dueDay = Math.min(28, +dd[1]);
+        if (/^paid$/i.test(r.status || '') || (paid >= due && due > 0)) s.pay.paid[month] = /^\d{4}-\d{2}-\d{2}$/.test(r.payment_date || '') ? r.payment_date : `${month}-01`;
+        else delete s.pay.paid[month];
+      }
+      plans = touched.size;
+      for (const r of (b.expenses || [])) {
+        const src = `imp-exp:${r.expense_id || [r.date, r.category, r.amount, r.description].join('|')}`;
+        if (have.has(src)) continue;
+        const e = cleanEntry({ month: String(r.month || '').slice(0, 7), date: r.date || '', type: 'expense', category: r.category || 'Other', amount: r.amount,
+          note: [r.description, r.staff, r.paid_from ? 'paid from ' + r.paid_from : ''].filter(Boolean).join(' · '), source: src, investor: /own money/i.test(String(r.ruslan || '')) });
+        if (e) { fin.push(e); have.add(src); expenses++; }
+      }
+      await S().setJSON('finance', fin);
+      // test results
+      let tests = 0; const sk = ['grammar', 'vocabulary', 'pronunciation', 'reading', 'listening', 'speaking', 'writing'];
+      for (const r of (b.tests || [])) {
+        const s = idMap[r.student_id]; if (!s) continue;
+        const t = { id: newId('t'), test: str(r.course ? `${r.test} · ${r.course}` : r.test, 120), date: str(r.date, 20), score: str(r.score, 40), max: str(r.max, 20), band: '',
+          note: sk.filter(k => r[k] != null && r[k] !== '').map(k => `${k[0].toUpperCase() + k.slice(1)} ${r[k]}`).join(', ').slice(0, 300) };
+        if (!t.test) continue; s.tests = s.tests || [];
+        if (!s.tests.some(x => x.test === t.test && x.date === t.date && String(x.score) === t.score)) { s.tests.push(t); tests++; }
+      }
+      // attendance: { [studentId]: [{d, c, m}] }  m = P present, UA unexcused, EA excused, FZ frozen
+      const att = (await S().get('attendance', { type: 'json' })) || {}; let marks = 0;
+      for (const r of (b.attendance || [])) {
+        const s = idMap[r.student_id]; if (!s || !/^\d{4}-\d{2}-\d{2}$/.test(r.date || '')) continue;
+        const c = RENAMED[r.group] || str(r.group, 80), m = str(r.mark, 4).toUpperCase(); if (!m) continue;
+        const a = att[s.id] || (att[s.id] = []); const i = a.findIndex(x => x.d === r.date && x.c === c);
+        if (i >= 0) a[i].m = m; else { a.push({ d: r.date, c, m }); marks++; }
+      }
+      for (const k of Object.keys(att)) att[k].sort((x, y) => x.d.localeCompare(y.d));
+      await S().setJSON('attendance', att);
+      await save('students', list);
+      const dir = (await U().get('directory', { type: 'json' })) || {};
+      for (const [id, d] of Object.entries(dir)) if (d.role === 'student' && !d.studentId) { const p = await getProfile(id); if (p?.phone) { const np = await linkByPhone(id, p); if (np.studentId) await putProfile(id, np); } }
+      return json({ students: st, matched: Object.keys(idMap).length, plans, income, expenses, tests, marks, total: list.length });
+    }
+    if (path === 'admin/pay-default' && method === 'POST') {
+      const day = Math.round(+b.dueDay || 0); if (!(day >= 1 && day <= 28)) return fail(400, 'day');
+      const list = await doc('students'); let n = 0;
+      for (const s of list) if (s.pay && +s.pay.fee > 0 && !(+s.pay.dueDay >= 1)) { s.pay.dueDay = day; n++; }
+      await save('students', list); return json({ updated: n, students: list });
+    }
+    if (path === 'admin/attendance' && method === 'GET') return json({ attendance: (await S().get('attendance', { type: 'json' })) || {} });
+    if (path === 'admin/finance' && method === 'GET') return json({ entries: await finDoc() });
+    if (path === 'admin/finance' && method === 'PUT') {
+      const e = cleanEntry(b.item || {}); if (!e) return fail(400, 'entry');
+      const fin = await finDoc(); const i = fin.findIndex(x => x.id === e.id);
+      if (i >= 0) fin[i] = { ...fin[i], ...e }; else fin.push(e);
+      await S().setJSON('finance', fin); return json({ entries: fin });
+    }
+    const fd = path.match(/^admin\/finance\/([A-Za-z0-9-]+)$/);
+    if (fd && method === 'DELETE') { const fin = (await finDoc()).filter(x => x.id !== fd[1]); await S().setJSON('finance', fin); return json({ entries: fin }); }
+    if (path === 'admin/finance/import' && method === 'POST') {
+      const fin = await finDoc(); let added = 0, skipped = 0;
+      const key = e => [e.month, e.type, e.category.toLowerCase(), e.amount, e.note.toLowerCase()].join('|');
+      const have = new Set(fin.map(key));
+      for (const r of (Array.isArray(b.rows) ? b.rows.slice(0, 20000) : [])) {
+        const e = cleanEntry(r); if (!e) { skipped++; continue; }
+        if (have.has(key(e))) { skipped++; continue; }
+        have.add(key(e)); fin.push(e); added++;
+      }
+      await S().setJSON('finance', fin); return json({ added, skipped, total: fin.length });
+    }
+    if (path === 'admin/finance/clear' && method === 'POST') {
+      // remove imported entries for given months (keeps automatic tuition entries)
+      const months = new Set(Array.isArray(b.months) ? b.months : []);
+      const fin = (await finDoc()).filter(e => !(months.has(e.month) && !e.source));
+      await S().setJSON('finance', fin); return json({ entries: fin });
     }
     if (path === 'admin/placements' && method === 'GET') {
       return json({ placements: ((await S().get('placements', { type: 'json' })) || []).slice().reverse() });

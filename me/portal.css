@@ -112,3 +112,10 @@ select.inp{appearance:auto}
 @media(max-width:900px){.asst{grid-template-columns:1fr}.asst-chat{min-height:420px}.msg{max-width:90%}}
 .panel.wide{max-width:none;width:auto}
 .panel.wide .row{display:flex;flex-wrap:wrap;gap:10px}.panel.wide .row .btn{width:auto;margin:0}
+/* finance */
+.finchart svg{width:100%;height:auto;display:block;margin:6px 0 4px}
+.finchart .ch-legend{display:flex;gap:16px;font-size:13px;color:var(--muted);margin-bottom:14px}.finchart .ch-legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px}
+.catl{display:grid;gap:8px}.catl>div{display:grid;grid-template-columns:minmax(0,1fr) 90px auto;gap:10px;align-items:center;font-size:14px}
+.catl i{display:block;height:8px;border-radius:4px;background:var(--oak,#B8895A)}.catl b{text-align:right;font-variant-numeric:tabular-nums}
+.t tfoot th{border-top:2px solid var(--line);text-align:left}
+.box .t .chip2{white-space:nowrap}

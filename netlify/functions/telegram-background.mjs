@@ -42,8 +42,8 @@ function payText(ctx, lang) {
   if (!ctx.pay) return L[lang].nopay;
   const p = localise(ctx.pay, lang);
   const amt = money(p.fee);
-  if (lang === 'en') return p.paid ? `✅ ${p.month}: paid on ${p.paidOn}. Thank you!` : `💳 ${p.month}: ${amt ? amt + ', ' : ''}due ${p.dueDate}${p.state === 'overdue' ? ' (overdue)' : ''}.\nTo pay or ask a question: Telegram @abliem or WhatsApp +7 707 381 0988.`;
-  return p.paid ? `✅ ${p.month}: оплачено ${p.paidOn}. Спасибо!` : `💳 ${p.month}: ${amt ? amt + ', ' : ''}срок ${p.dueDate}${p.state === 'overdue' ? ' (просрочено)' : ''}.\nОплата и вопросы: Telegram @abliem или WhatsApp +7 707 381 0988.`;
+  if (lang === 'en') return p.paid ? `✅ ${p.month}: paid on ${p.paidOn}. Thank you!` : `💳 ${p.month}: ${amt ? amt + ', ' : ''}${p.dueDate ? 'due ' + p.dueDate : 'not paid yet'}${p.state === 'overdue' ? ' (overdue)' : ''}.\nTo pay or ask a question: Telegram @abliem or WhatsApp +7 707 381 0988.`;
+  return p.paid ? `✅ ${p.month}: оплачено ${p.paidOn}. Спасибо!` : `💳 ${p.month}: ${amt ? amt + ', ' : ''}${p.dueDate ? 'срок ' + p.dueDate : 'ещё не оплачено'}${p.state === 'overdue' ? ' (просрочено)' : ''}.\nОплата и вопросы: Telegram @abliem или WhatsApp +7 707 381 0988.`;
 }
 
 export default async (req) => {

@@ -231,6 +231,7 @@
     if (r === 'student') {
       h += classBox(ME.classes);
       h += '<div class="box"><h3>Test results</h3>' + testsTable(st && st.tests) + '</div>';
+      h += attBox(ME.attendance);
       h += ieltsBox(ME.ielts, true);
       h += '<div class="box"><h3>Vocabulary</h3><p class="small" style="margin-bottom:12px">Practise the words for your course with flashcards, audio and games.</p><a class="btn sm" href="/a/if-english/">Open IF English</a></div>';
       h += '<div class="box"><h3>Homework</h3><p class="small">Homework from your teacher will appear here, organised by your book and unit.</p><span class="badge soon">Coming next</span></div>';
@@ -286,7 +287,7 @@
         '<section class="prof">' + avatar(s.uid, s.first + ' ' + s.last, p && p.photo) + '<div><div class="eyebrow">Student · ' + esc((s.classes || []).join(', ')) + '</div><h1>' + esc(s.first + ' ' + s.last) + '</h1>' +
         '<div class="chips">' + statusChip(s.status) + (p ? '<span class="chip2 ok">Registered</span>' : '<span class="chip2 mute">Not registered</span>') + (s.level ? '<span class="chip2">Level ' + esc(s.level) + '</span>' : '') + (p && p.goals ? '<span class="chip2">Goal: ' + esc(p.goals) + '</span>' : '') + '</div></div></section>' +
         '<section class="section cols"><div class="box"><h3>Contact</h3><dl class="kv"><dt>Phone</dt><dd>' + esc(s.phone || '–') + '</dd><dt>Parent</dt><dd>' + esc(s.parent || '–') + '</dd><dt>Parent phone</dt><dd>' + esc(s.parentPhone || '–') + '</dd><dt>Email</dt><dd>' + esc((p && p.email) || s.email || '–') + '</dd><dt>Birthday</dt><dd>' + esc(s.birth || '–') + '</dd></dl>' + (p && p.about ? '<p style="margin-top:10px" class="small">' + esc(p.about) + '</p>' : '') + '</div>' +
-        '<div class="box"><h3>Test results</h3>' + testsTable(s.tests) + '</div>' + ieltsBox(v.ielts) +
+        '<div class="box"><h3>Test results</h3>' + testsTable(s.tests) + '</div>' + attBox(v.attendance) + ieltsBox(v.ielts) +
         '<div class="box"><h3>Teacher comments</h3><div id="cm">' + ((s.comments || []).slice().reverse().map(function (c) { return '<div class="comment">' + esc(c.text) + '<small>' + esc(c.by) + ' · ' + when(c.at) + '</small></div>'; }).join('') || '<p class="small">No comments yet.</p>') + '</div>' +
         '<form id="cf" style="margin-top:12px"><textarea class="inp" rows="2" id="ct" placeholder="Add a comment (visible to teachers and the school)"></textarea><button class="btn sm" style="margin-top:8px">Add comment</button></form></div></section>';
       view.innerHTML = h;
@@ -399,9 +400,9 @@
   }
 
   /* ---------- admin ---------- */
-  async function loadAdmin() { ADMIN = await api('admin/all'); ME.books = ADMIN.books; ME.teachers = ADMIN.teachers; return ADMIN; }
+  async function loadAdmin() { ADMIN = await api('admin/all'); try { ADMIN.att = (await api('admin/attendance')).attendance; } catch (e) { ADMIN.att = {}; } ME.books = ADMIN.books; ME.teachers = ADMIN.teachers; return ADMIN; }
   function adminTabs(on) {
-    return '<div class="tabs2">' + [['students', 'Students'], ['classes', 'Classes'], ['teachers', 'Teachers'], ['books', 'Books'], ['accounts', 'Accounts'], ['import', 'Import'], ['export', 'Export results'], ['placement', 'Placement tests'], ['bot', 'Bot & reminders']].map(function (t) {
+    return '<div class="tabs2">' + [['students', 'Students'], ['classes', 'Classes'], ['teachers', 'Teachers'], ['books', 'Books'], ['accounts', 'Accounts'], ['import', 'Import'], ['export', 'Export results'], ['placement', 'Placement tests'], ['finance', 'Finance'], ['bot', 'Bot & reminders']].map(function (t) {
       return '<a href="#/admin/' + t[0] + '" class="' + (on === t[0] ? 'on' : '') + '">' + t[1] + '</a>';
     }).join('') + '</div>';
   }
@@ -411,7 +412,7 @@
     view.innerHTML = '<p style="margin-top:30px"><span class="spin"></span> Loading school records…</p>';
     await loadAdmin();
     var head = '<section class="hero" style="padding-bottom:4px"><div class="eyebrow">Administrator</div><h1>School admin</h1><p class="lead">' + ADMIN.students.length + ' students · ' + ADMIN.classes.length + ' classes · ' + ADMIN.teachers.length + ' teachers · ' + ADMIN.accounts.length + ' accounts</p></section>' + adminTabs(tab);
-    ({ students: aStudents, classes: aClasses, teachers: aTeachers, books: aBooks, accounts: aAccounts, import: aImport, export: aExport, placement: aPlacement, bot: aBot }[tab] || aStudents)(head);
+    ({ students: aStudents, classes: aClasses, teachers: aTeachers, books: aBooks, accounts: aAccounts, import: aImport, export: aExport, placement: aPlacement, finance: aFinance, bot: aBot }[tab] || aStudents)(head);
   }
 
   /* ---------- tuition (student.pay = {fee, dueDay, paid:{'YYYY-MM': 'YYYY-MM-DD'}}) ---------- */
@@ -419,17 +420,29 @@
   function monthKeyOf(d) { return d.toISOString().slice(0, 7); }
   function monthLabel(k) { var p = k.split('-'); return new Date(Date.UTC(+p[0], +p[1] - 1, 1)).toLocaleDateString('en-GB', { month: 'short', year: 'numeric', timeZone: 'UTC' }); }
   function payState(s) {
-    var p = s && s.pay; if (!p || !(+p.dueDay >= 1)) return null;
-    var n = kzNow(), k = monthKeyOf(n), day = n.getUTCDate(), due = Math.min(28, Math.max(1, +p.dueDay));
-    var paid = (p.paid || {})[k];
+    var p = s && s.pay; if (!p || s.noFee || (!(+p.dueDay >= 1) && !(+p.fee > 0))) return null;
+    var n = kzNow(), k = monthKeyOf(n), day = n.getUTCDate(), paid = (p.paid || {})[k];
+    if (!(+p.dueDay >= 1)) return { month: k, paid: paid, due: 0, fee: +p.fee || 0, state: paid ? 'paid' : 'open' };
+    var due = Math.min(28, Math.max(1, +p.dueDay));
     return { month: k, paid: paid, due: due, fee: +p.fee || 0, state: paid ? 'paid' : day < due ? 'upcoming' : day === due ? 'due' : 'overdue' };
   }
   function money(n) { return n ? '₸' + Math.round(n).toLocaleString('en-US') : ''; }
   function payChip(s) {
     var st = payState(s); if (!st) return '<span class="chip2 mute">No plan</span>';
     if (st.paid) return '<span class="chip2 ok">Paid</span>';
+    if (!st.due) return '<span class="chip2 mute">Not paid · no due day</span>';
     var dd = st.due + ' ' + monthLabel(st.month).split(' ')[0];
     return st.state === 'overdue' ? '<span class="chip2 bad">Overdue · ' + dd + '</span>' : st.state === 'due' ? '<span class="chip2 warn">Due today</span>' : '<span class="chip2 mute">Due ' + dd + '</span>';
+  }
+
+  function attStats(a) { a = (a || []).filter(function (x) { return x.m !== 'FZ'; }); var p = a.filter(function (x) { return x.m === 'P'; }).length; return { n: a.length, p: p, ua: a.filter(function (x) { return x.m === 'UA'; }).length, ea: a.filter(function (x) { return x.m === 'EA'; }).length, pct: a.length ? Math.round(p / a.length * 100) : null }; }
+  function attChip(a) { var t = attStats(a); if (t.pct == null) return '<span class="chip2 mute">—</span>'; return '<span class="chip2 ' + (t.pct >= 85 ? 'ok' : t.pct >= 70 ? 'warn' : 'bad') + '" title="' + t.p + ' present, ' + t.ea + ' excused, ' + t.ua + ' unexcused">' + t.pct + '%</span>'; }
+  function attBox(a) {
+    var t = attStats(a); if (t.pct == null) return '';
+    var recent = (a || []).slice(-12).reverse();
+    var lbl = { P: ['Present', 'ok'], UA: ['Absent', 'bad'], EA: ['Excused', 'warn'], FZ: ['Paused', 'mute'] };
+    return '<div class="box"><h3>Attendance</h3><p style="font-size:32px;font-weight:700;margin:4px 0;color:var(--navy)">' + t.pct + '%</p><p class="small">' + t.p + ' of ' + t.n + ' lessons attended · ' + t.ea + ' excused · ' + t.ua + ' missed</p><div class="chips" style="margin-top:10px">' +
+      recent.map(function (x) { var l = lbl[x.m] || [x.m, 'mute']; return '<span class="chip2 ' + l[1] + '" title="' + esc(x.c) + '">' + esc(x.d.slice(8) + '.' + x.d.slice(5, 7)) + ' · ' + l[0] + '</span>'; }).join('') + '</div></div>';
   }
   function opts(list, val, label, empty) { return (empty ? '<option value="">' + empty + '</option>' : '') + list.map(function (x) { return '<option value="' + esc(x.id) + '"' + (x.id === val ? ' selected' : '') + '>' + esc(label(x)) + '</option>'; }).join(''); }
   function aStudents(head) {
@@ -437,8 +450,8 @@
     function draw() {
       var list = ADMIN.students.filter(function (s) { if (pf) { var st = payState(s); if (pf === 'none' ? st : !st || st.state !== pf) return false; } return !q || (s.first + ' ' + s.last + ' ' + (s.phone || '') + ' ' + (s.classes || []).join(' ')).toLowerCase().indexOf(q) >= 0; })
         .sort(function (a, b) { return (a.last + a.first).localeCompare(b.last + b.first); });
-      $('#tbl').innerHTML = list.length ? '<table class="t"><thead><tr><th>Name</th><th>Phone</th><th>Classes</th><th>Status</th><th>Tuition</th><th>Account</th><th></th></tr></thead><tbody>' + list.map(function (s) {
-        return '<tr><td><b>' + esc(s.first + ' ' + s.last) + '</b></td><td>' + esc(s.phone || '–') + '</td><td>' + esc((s.classes || []).join(', ')) + '</td><td>' + statusChip(s.status) + '</td><td style="white-space:nowrap">' + payChip(s) + (payState(s) && !payState(s).paid ? ' <button class="linkbtn" data-paid="' + s.id + '">Mark paid</button>' : '') + '</td><td>' + (s.uid ? '<span class="chip2 ok">Linked</span>' : '<span class="chip2 mute">—</span>') + '</td><td style="white-space:nowrap"><button class="linkbtn" style="color:var(--navy)" data-ed="' + s.id + '">Edit</button>' + (s.uid ? ' · <a href="#/student/' + s.id + '">Profile</a>' : '') + '</td></tr>';
+      $('#tbl').innerHTML = list.length ? '<table class="t"><thead><tr><th>Name</th><th>Phone</th><th>Classes</th><th>Status</th><th>Attendance</th><th>Tuition</th><th>Account</th><th></th></tr></thead><tbody>' + list.map(function (s) {
+        return '<tr><td><b>' + esc(s.first + ' ' + s.last) + '</b></td><td>' + esc(s.phone || '–') + '</td><td>' + esc((s.classes || []).join(', ')) + '</td><td>' + statusChip(s.status) + '</td><td>' + attChip(ADMIN.att && ADMIN.att[s.id]) + '</td><td style="white-space:nowrap">' + payChip(s) + (payState(s) && !payState(s).paid ? ' <button class="linkbtn" data-paid="' + s.id + '">Mark paid</button>' : '') + '</td><td>' + (s.uid ? '<span class="chip2 ok">Linked</span>' : '<span class="chip2 mute">—</span>') + '</td><td style="white-space:nowrap"><button class="linkbtn" style="color:var(--navy)" data-ed="' + s.id + '">Edit</button>' + (s.uid ? ' · <a href="#/student/' + s.id + '">Profile</a>' : '') + '</td></tr>';
       }).join('') + '</tbody></table>' : '<div class="empty">No students yet. Use <a href="#/admin/import">Import</a> to add your student list, or add one by hand.</div>';
       view.querySelectorAll('[data-ed]').forEach(function (b) { b.onclick = function () { editStudent(ADMIN.students.filter(function (s) { return s.id === b.dataset.ed; })[0]); }; });
       view.querySelectorAll('[data-paid]').forEach(function (b) { b.onclick = async function () {
@@ -448,7 +461,7 @@
         b.disabled = true; await api('admin/students', { method: 'PUT', body: { item: { id: s.id, pay: pay } } }); s.pay = pay; toast('Marked paid'); draw();
       }; });
     }
-    view.innerHTML = head + '<div class="toolbar"><input class="inp" id="q" placeholder="Search name, phone or class"><select class="inp" id="pf" style="max-width:200px"><option value="">All tuition</option><option value="overdue">Overdue</option><option value="due">Due today</option><option value="upcoming">Not yet paid</option><option value="paid">Paid this month</option><option value="none">No plan</option></select><button class="btn sm" id="add">Add student</button></div><div class="tscroll" id="tbl"></div>';
+    view.innerHTML = head + '<div class="toolbar"><input class="inp" id="q" placeholder="Search name, phone or class"><select class="inp" id="pf" style="max-width:200px"><option value="">All tuition</option><option value="overdue">Overdue</option><option value="due">Due today</option><option value="upcoming">Not yet paid</option><option value="open">Unpaid, no due day</option><option value="paid">Paid this month</option><option value="none">No plan</option></select><button class="btn sm" id="add">Add student</button></div><div class="tscroll" id="tbl"></div>';
     $('#q').oninput = function () { q = this.value.toLowerCase().trim(); draw(); };
     $('#pf').onchange = function () { pf = this.value; draw(); };
     $('#add').onclick = function () { editStudent({ first: '', last: '', classes: [], status: 'active', tests: [] }); };
@@ -547,6 +560,164 @@
   }
 
 
+
+  /* ---------- Finance (admin) ---------- */
+  var MONTHS_RX = [/^jan|^янв|^қаң/i, /^feb|^фев|^ақп/i, /^mar|^мар|^нау/i, /^apr|^апр|^сәу/i, /^may|^мая|^май|^мам/i, /^jun|^июн|^мау/i, /^jul|^июл|^шіл/i, /^aug|^авг|^там/i, /^sep|^сен|^қыр/i, /^oct|^окт|^қаз/i, /^nov|^ноя|^қар/i, /^dec|^дек|^жел/i];
+  function parseMonth(v, fallbackYear) {
+    v = String(v == null ? '' : v).trim(); if (!v) return '';
+    var m;
+    if ((m = v.match(/^(\d{4})[-./](\d{1,2})(?:[-./](\d{1,2}))?/))) return m[1] + '-' + ('0' + m[2]).slice(-2);
+    if ((m = v.match(/^(\d{1,2})[./](\d{1,2})[./](\d{2,4})$/))) { var y = m[3].length === 2 ? '20' + m[3] : m[3]; return y + '-' + ('0' + m[2]).slice(-2); } // dd.mm.yyyy
+    if ((m = v.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/))) { var y2 = m[3].length === 2 ? '20' + m[3] : m[3]; return y2 + '-' + ('0' + m[1]).slice(-2); } // m/d/yy (Excel)
+    if ((m = v.match(/^(\d{1,2})[./-](\d{4})$/))) return m[2] + '-' + ('0' + m[1]).slice(-2);
+    for (var i = 0; i < 12; i++) if (MONTHS_RX[i].test(v.replace(/^[^A-Za-zА-Яа-яЁёӘәҒғҚқҢңӨөҰұҮүҺһІі]+/, ''))) {
+      var yy = (v.match(/(\d{4})/) || [])[1] || ((v.match(/['’.\s-](\d{2})\b/) || [])[1] ? '20' + v.match(/['’.\s-](\d{2})\b/)[1] : fallbackYear);
+      return yy ? yy + '-' + ('0' + (i + 1)).slice(-2) : '';
+    }
+    return '';
+  }
+  function parseDate(v) { v = String(v || '').trim(); var m;
+    if ((m = v.match(/^(\d{4})-(\d{2})-(\d{2})/))) return m[0];
+    if ((m = v.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/))) return m[3] + '-' + ('0' + m[2]).slice(-2) + '-' + ('0' + m[1]).slice(-2);
+    return ''; }
+  function num(v) { var s2 = String(v == null ? '' : v).replace(/\s|₸|тг|kzt/gi, ''); if (/,\d{1,2}$/.test(s2)) s2 = s2.replace(/\./g, '').replace(',', '.'); else s2 = s2.replace(/,/g, ''); var n = parseFloat(s2.replace(/[^\d.-]/g, '')); return isFinite(n) ? n : 0; }
+  function kindOf(t) { t = String(t || ''); return /income|доход|приход|поступ|выручк|tuition|оплат|кіріс|revenue/i.test(t) ? 'income' : /expens|расход|затрат|трат|шығыс|cost|salary|зарплат|аренд|rent/i.test(t) ? 'expense' : ''; }
+  var FIN = null;
+  async function aFinance(head) {
+    view.innerHTML = head + '<p><span class="spin"></span> Loading finance…</p>';
+    try { FIN = (await api('admin/finance')).entries; } catch (e) { view.innerHTML = head + '<div class="empty">Could not load finance.</div>'; return; }
+    var range = lsGet('if.finrange') || '12', openMonth = null;
+    function months() { var ms = {}; FIN.forEach(function (e) { ms[e.month] = 1; }); return Object.keys(ms).sort(); }
+    function inRange(m) { if (range === 'all') return true; var n = kzNow(), k = monthKeyOf(n); if (range === 'year') return m.slice(0, 4) === k.slice(0, 4) && m <= k; var d = new Date(Date.UTC(n.getUTCFullYear(), n.getUTCMonth() - (+range - 1), 1)); return m >= monthKeyOf(d) && m <= k; }
+    function tuitionNow() {
+      var k = monthKeyOf(kzNow()), exp = 0, got = 0, owe = [];
+      ADMIN.students.forEach(function (s) { var st = payState(s); if (!st || /withdrawn|finished|frozen/i.test(s.status || '')) return; exp += st.fee; if (st.paid) got += st.fee; else owe.push({ s: s, st: st }); });
+      owe.sort(function (a, b) { return (a.st.due || 99) - (b.st.due || 99); });
+      var noDay = ADMIN.students.filter(function (s) { var st = payState(s); return st && !st.due && !/withdrawn|finished/i.test(s.status || ''); }).length;
+      return { k: k, exp: exp, got: got, owe: owe, noDay: noDay };
+    }
+    function draw() {
+      var ms = months().filter(inRange), by = {};
+      ms.forEach(function (m) { by[m] = { inc: 0, exp: 0 }; });
+      var cats = { income: {}, expense: {} };
+      var inv = 0; FIN.forEach(function (e) { if (!by[e.month]) return; if (e.investor) { by[e.month].inv = (by[e.month].inv || 0) + e.amount; inv += e.amount; return; } if (e.type === 'income') by[e.month].inc += e.amount; else by[e.month].exp += e.amount; cats[e.type][e.category] = (cats[e.type][e.category] || 0) + e.amount; });
+      var tI = 0, tE = 0; ms.forEach(function (m) { tI += by[m].inc; tE += by[m].exp; });
+      var t = tuitionNow();
+      var kpi = '<div class="stats4"><div><b>' + money(tI) + '</b><span>Income</span></div><div><b>' + money(tE) + '</b><span>Expenses</span></div><div><b style="color:' + (tI - tE < 0 ? '#a3261b' : 'var(--navy)') + '">' + (tI - tE < 0 ? '−' : '') + money(Math.abs(tI - tE)) + '</b><span>Profit</span></div><div><b>' + money(t.got) + ' <small style="font-size:14px;color:var(--muted)">/ ' + money(t.exp) + '</small></b><span>Tuition collected, ' + monthLabel(t.k) + '</span></div></div>';
+      var chart = ms.length ? finChart(ms, by) : '<div class="empty">No income or expenses recorded for this period yet. Import your ledger or add entries below.</div>';
+      var table = ms.length ? '<div class="tscroll"><table class="t"><thead><tr><th>Month</th><th style="text-align:right">Income</th><th style="text-align:right">Expenses</th><th style="text-align:right">Profit</th>' + (inv ? '<th style="text-align:right" title="Expenses paid from the investor\'s own money, not from school income">Paid by investor</th>' : '') + '<th></th></tr></thead><tbody>' + ms.slice().reverse().map(function (m) {
+        var p = by[m].inc - by[m].exp; return '<tr><td><b>' + monthLabel(m) + '</b></td><td style="text-align:right">' + money(by[m].inc) + '</td><td style="text-align:right">' + money(by[m].exp) + '</td><td style="text-align:right;color:' + (p < 0 ? '#a3261b' : 'inherit') + '">' + (p < 0 ? '−' : '') + money(Math.abs(p)) + '</td>' + (inv ? '<td style="text-align:right;color:var(--muted)">' + (by[m].inv ? money(by[m].inv) : '–') + '</td>' : '') + '<td><button class="linkbtn" data-m="' + m + '">' + (openMonth === m ? 'Hide' : 'Details') + '</button></td></tr>' +
+          (openMonth === m ? '<tr><td colspan="' + (inv ? 6 : 5) + '">' + entryList(FIN.filter(function (e) { return e.month === m; })) + '</td></tr>' : '');
+      }).join('') + '</tbody><tfoot><tr><th>Total</th><th style="text-align:right">' + money(tI) + '</th><th style="text-align:right">' + money(tE) + '</th><th style="text-align:right">' + (tI - tE < 0 ? '−' : '') + money(Math.abs(tI - tE)) + '</th>' + (inv ? '<th style="text-align:right">' + money(inv) + '</th>' : '') + '<th></th></tr></tfoot></table></div>' : '';
+      function catBox(kind, title) { var c = cats[kind], keys = Object.keys(c).sort(function (a, b) { return c[b] - c[a]; }), tot = keys.reduce(function (n, k) { return n + c[k]; }, 0);
+        return '<div class="box"><h3>' + title + '</h3>' + (keys.length ? '<div class="catl">' + keys.map(function (k) { return '<div><span>' + esc(k) + '</span><i style="width:' + Math.max(2, Math.round(c[k] / tot * 100)) + '%"></i><b>' + money(c[k]) + '</b></div>'; }).join('') + '</div>' : '<p class="small">None in this period.</p>') + '</div>'; }
+      var owe = '<div class="box"><h3>Tuition still open · ' + monthLabel(t.k) + '</h3>' + (t.owe.length ? '<div class="tscroll"><table class="t"><tbody>' + t.owe.map(function (o) { return '<tr><td><b>' + esc(o.s.first + ' ' + o.s.last) + '</b><br><span class="small">' + esc((o.s.classes || []).join(', ')) + '</span></td><td>' + payChip(o.s) + '</td><td style="text-align:right">' + money(o.st.fee) + '</td><td><button class="linkbtn" data-paid="' + o.s.id + '">Mark paid</button></td></tr>'; }).join('') + '</tbody></table></div>' : '<p class="small">' + (t.exp ? 'Everyone has paid this month. 🎉' : 'No tuition plans yet. Add a monthly fee and due day under Students → Edit.') + '</p>') + '</div>';
+      view.innerHTML = head +
+        '<div class="toolbar"><select class="inp" id="rg" style="max-width:220px"><option value="3">Last 3 months</option><option value="6">Last 6 months</option><option value="12">Last 12 months</option><option value="year">This year</option><option value="all">All time</option></select><button class="btn sm" id="addE">Add entry</button><button class="btn ghost sm" id="impE">Import ledger</button><button class="btn ghost sm" id="expE">Download Excel</button></div>' +
+        kpi + '<div class="panel wide"><h2>Income and expenses by month</h2>' + chart + table + '</div>' +
+        '<section class="section cols">' + owe + catBox('income', 'Income by category') + catBox('expense', 'Expenses by category') + '</section>' +
+        (t.noDay ? '<div class="banner" style="margin-top:14px"><b>' + t.noDay + ' students have a monthly fee but no due day</b>, so they get no payment reminders. Set one due day for all of them: <input class="inp" id="ddAll" inputmode="numeric" style="width:80px;display:inline-block;margin:0 6px" placeholder="e.g. 10"><button class="btn sm" id="ddGo">Apply</button> <span class="small">(you can still change individual students under Students → Edit)</span></div>' : '') +
+        '<p class="small" style="margin-top:8px">Private: only administrator accounts can see this page. Marking a student paid adds a Tuition income entry for that month automatically.</p>';
+      $('#rg').value = range; $('#rg').onchange = function () { range = this.value; lsSet('if.finrange', range); draw(); };
+      $('#addE').onclick = function () { editEntry({ type: 'expense', month: monthKeyOf(kzNow()), date: kzNow().toISOString().slice(0, 10) }); };
+      $('#impE').onclick = finImport; $('#expE').onclick = finExport;
+      var dg = $('#ddGo'); if (dg) dg.onclick = async function () { var d = Math.round(+$('#ddAll').value); if (!(d >= 1 && d <= 28)) return toast('Enter a day from 1 to 28.'); dg.disabled = true; var r = await api('admin/pay-default', { method: 'POST', body: { dueDay: d } }); ADMIN.students = r.students; toast('Due day ' + d + ' set for ' + r.updated + ' students'); draw(); };
+      view.querySelectorAll('[data-m]').forEach(function (b) { b.onclick = function () { openMonth = openMonth === b.dataset.m ? null : b.dataset.m; draw(); }; });
+      view.querySelectorAll('[data-fe]').forEach(function (b) { b.onclick = function () { editEntry(FIN.filter(function (e) { return e.id === b.dataset.fe; })[0]); }; });
+      view.querySelectorAll('[data-paid]').forEach(function (b) { b.onclick = async function () {
+        var s = ADMIN.students.filter(function (x) { return x.id === b.dataset.paid; })[0], st = payState(s);
+        if (!confirm('Mark ' + s.first + ' ' + s.last + ' as paid for ' + monthLabel(st.month) + (st.fee ? ' (' + money(st.fee) + ')' : '') + '?')) return;
+        var pay = Object.assign({}, s.pay); pay.paid = Object.assign({}, pay.paid); pay.paid[st.month] = kzNow().toISOString().slice(0, 10);
+        b.disabled = true; await api('admin/students', { method: 'PUT', body: { item: { id: s.id, pay: pay } } }); s.pay = pay; FIN = (await api('admin/finance')).entries; toast('Marked paid'); draw();
+      }; });
+    }
+    function entryList(list) {
+      list = list.slice().sort(function (a, b) { return (a.type > b.type ? -1 : a.type < b.type ? 1 : 0) || b.amount - a.amount; });
+      return '<table class="t" style="margin:4px 0"><tbody>' + list.map(function (e) { return '<tr><td>' + (e.type === 'income' ? '<span class="chip2 ok">Income</span>' : e.investor ? '<span class="chip2 warn">Paid by investor</span>' : '<span class="chip2 mute">Expense</span>') + '</td><td>' + esc(e.category) + (e.note ? '<br><span class="small">' + esc(e.note) + '</span>' : '') + '</td><td>' + esc(e.date || '') + '</td><td style="text-align:right"><b>' + money(e.amount) + '</b></td><td>' + (e.source ? '<span class="small">auto</span>' : '<button class="linkbtn" data-fe="' + e.id + '">Edit</button>') + '</td></tr>'; }).join('') + '</tbody></table>';
+    }
+    function editEntry(e) {
+      var catsList = {}; FIN.forEach(function (x) { catsList[x.category] = 1; });
+      modal('<h2>' + (e.id ? 'Edit entry' : 'Add entry') + '</h2><form id="fe" novalidate><div class="grid2">' +
+        '<div><label class="f">Type</label><select class="inp" name="type"><option value="income"' + (e.type === 'income' ? ' selected' : '') + '>Income</option><option value="expense"' + (e.type !== 'income' ? ' selected' : '') + '>Expense</option></select></div>' +
+        '<div><label class="f">Amount (₸)</label><input class="inp" name="amount" inputmode="numeric" value="' + esc(e.amount || '') + '"></div>' +
+        '<div><label class="f">Month</label><input class="inp" name="month" type="month" value="' + esc(e.month || '') + '"></div>' +
+        '<div><label class="f">Date (optional)</label><input class="inp" name="date" type="date" value="' + esc(e.date || '') + '"></div>' +
+        '<div class="full"><label class="f">Category</label><input class="inp" name="category" list="fcats" value="' + esc(e.category || '') + '" placeholder="e.g. Rent, Salaries, Marketing, Tuition"><datalist id="fcats">' + Object.keys(catsList).concat(['Tuition', 'Rent', 'Salaries', 'Utilities', 'Marketing', 'Books & materials', 'Equipment', 'Taxes', 'Internet & phone', 'Events']).filter(function (v, i, a) { return a.indexOf(v) === i; }).map(function (c) { return '<option value="' + esc(c) + '">'; }).join('') + '</datalist></div>' +
+        '<div class="full"><label class="f">Note</label><input class="inp" name="note" value="' + esc(e.note || '') + '"></div></div>' +
+        '<div class="row" style="margin-top:18px"><button class="btn" type="submit">Save</button>' + (e.id ? '<button class="btn ghost" type="button" id="delE">Delete</button>' : '') + '</div></form>');
+      $('#fe').onsubmit = async function (ev) { ev.preventDefault(); var f = ev.target, it = { id: e.id, type: f.elements.type.value, amount: num(f.elements.amount.value), month: f.elements.month.value, date: f.elements.date.value, category: f.elements.category.value.trim(), note: f.elements.note.value.trim() };
+        if (!it.amount || !it.month) return toast('Enter an amount and a month.');
+        try { FIN = (await api('admin/finance', { method: 'PUT', body: { item: it } })).entries; closeModal(); toast('Saved'); draw(); } catch (x) { toast('Could not save.'); } };
+      var d = $('#delE'); if (d) d.onclick = async function () { if (!confirm('Delete this entry?')) return; FIN = (await api('admin/finance/' + e.id, { method: 'DELETE' })).entries; closeModal(); draw(); };
+    }
+    function finImport() {
+      modal('<h2>Import income and expenses</h2><p class="small">Excel or CSV. Works with a ledger (one row per payment: date, type, category, amount) or a monthly summary (one row per month with Income and Expenses columns). Re-importing the same rows does not duplicate them.</p><label class="btn" style="cursor:pointer;margin-top:10px">Choose file<input type="file" id="ff" accept=".xlsx,.xls,.csv" hidden></label><div id="fmap"></div>');
+      $('#ff').onchange = async function () {
+        var f = this.files[0]; if (!f) return; $('#fmap').innerHTML = '<p><span class="spin"></span> Reading…</p>';
+        try { await loadXLSX(); } catch (e) { $('#fmap').innerHTML = '<div class="err">Could not load the spreadsheet reader.</div>'; return; }
+        var wb = /\.csv$/i.test(f.name) ? XLSX.read((await f.text()).replace(/^﻿/, ''), { type: 'string', raw: true }) : XLSX.read(await f.arrayBuffer(), { type: 'array', cellDates: true });
+        sheet(wb, wb.SheetNames.filter(function (n) { return /financ|income|expens|доход|расход|ledger|summary/i.test(n); })[0] || wb.SheetNames[0]);
+      };
+      function sheet(wb, name) {
+        var rows = XLSX.utils.sheet_to_json(wb.Sheets[name], { header: 1, defval: '', raw: false, dateNF: 'yyyy-mm-dd' });
+        var hi = rows.findIndex(function (r) { return r.filter(function (c) { return String(c).trim(); }).length >= 2; }); if (hi < 0) hi = 0;
+        var H = rows[hi].map(function (h, i) { return String(h).trim() || 'Column ' + (i + 1); }), data = rows.slice(hi + 1).filter(function (r) { return r.some(function (c) { return String(c).trim(); }); });
+        var F = [['month', 'Month or date', /month|date|period|месяц|дата|период|ай|күн/i], ['type', 'Type (income / expense)', /^type$|тип|вид|income.?\/.?expense|direction/i], ['category', 'Category', /categor|катег|статья|item|description|назначен|санат/i], ['amount', 'Amount', /^amount$|sum|сумма|amount|total ?₸|₸/i], ['income', 'Income column', /income|revenue|доход|выручк|приход|кіріс/i], ['expense', 'Expenses column', /expens|cost|расход|затрат|шығыс/i], ['note', 'Note', /note|comment|примеч|коммент|student|name|ученик/i]];
+        var used = {}, g = {}; F.forEach(function (x) { var i = H.findIndex(function (h, k) { return !used[k] && x[2].test(h); }); if (i >= 0) { g[x[0]] = i; used[i] = 1; } });
+        if (g.income != null || g.expense != null) { if (g.amount != null && (g.amount === g.income || g.amount === g.expense)) delete g.amount; }
+        $('#fmap').innerHTML = (wb.SheetNames.length > 1 ? '<label class="f">Sheet</label><select class="inp" id="fsh">' + wb.SheetNames.map(function (n) { return '<option' + (n === name ? ' selected' : '') + '>' + esc(n) + '</option>'; }).join('') + '</select>' : '') +
+          '<p class="small" style="margin-top:12px">' + data.length + ' rows. Match the columns (leave unused ones on “skip”):</p><div class="grid2">' + F.map(function (x) { return '<div><label class="f">' + x[1] + '</label><select class="inp" data-ff="' + x[0] + '"><option value="">— skip —</option>' + H.map(function (h, i) { return '<option value="' + i + '"' + (g[x[0]] === i ? ' selected' : '') + '>' + esc(h) + '</option>'; }).join('') + '</select></div>'; }).join('') +
+          '<div><label class="f">Rows with no type are</label><select class="inp" id="fdef"><option value="expense">Expenses</option><option value="income">Income</option></select></div><div><label class="f">Year (if the month has none)</label><input class="inp" id="fyr" value="' + kzNow().getUTCFullYear() + '"></div></div>' +
+          '<div class="preview-tbl"><table class="t"><thead><tr>' + H.map(function (h) { return '<th>' + esc(h) + '</th>'; }).join('') + '</tr></thead><tbody>' + data.slice(0, 5).map(function (r) { return '<tr>' + H.map(function (h, i) { return '<td>' + esc(r[i]) + '</td>'; }).join('') + '</tr>'; }).join('') + '</tbody></table></div>' +
+          '<div id="fprev" class="small" style="margin-top:10px"></div><div class="row" style="margin-top:12px"><button class="btn" id="fgo">Import</button></div>';
+        var sh = $('#fsh'); if (sh) sh.onchange = function () { sheet(wb, sh.value); };
+        function build() {
+          var map = {}; document.querySelectorAll('[data-ff]').forEach(function (x) { if (x.value !== '') map[x.dataset.ff] = +x.value; });
+          var out = [], bad = 0, lastMonth = '', yr = $('#fyr').value.trim(), def = $('#fdef').value;
+          data.forEach(function (r) {
+            var cell = function (k) { return map[k] == null ? '' : r[map[k]]; };
+            var mc = String(cell('month') || '').trim(), cat = String(cell('category') || '').trim(), note = String(cell('note') || '').trim();
+            if (/^(итого|итог|total|всего|барлығы|жиыны|sum)(\s|:|$)/i.test(mc) || /^(итого|итог|total|всего|барлығы|жиыны)(\s|:|$)/i.test(cat)) return;
+            var m = mc ? parseMonth(mc, yr) : lastMonth; if (mc && m) lastMonth = m;
+            if (!m) { bad++; return; }
+            var date = parseDate(mc);
+            if (map.income != null && num(cell('income'))) out.push({ month: m, date: date, type: 'income', category: cat || 'Income', amount: Math.abs(num(cell('income'))), note: note });
+            if (map.expense != null && num(cell('expense'))) out.push({ month: m, date: date, type: 'expense', category: cat || 'Expenses', amount: Math.abs(num(cell('expense'))), note: note });
+            if (map.amount != null && num(cell('amount'))) { var a = num(cell('amount')), k = kindOf(cell('type')) || kindOf(cat) || (a < 0 ? 'expense' : def); out.push({ month: m, date: date, type: k, category: cat || (k === 'income' ? 'Income' : 'Expenses'), amount: Math.abs(a), note: note }); }
+          });
+          return { out: out, bad: bad };
+        }
+        function prev() { var b = build(), i = 0, e = 0; b.out.forEach(function (x) { if (x.type === 'income') i += x.amount; else e += x.amount; }); $('#fprev').innerHTML = b.out.length + ' entries ready: income ' + money(i) + ', expenses ' + money(e) + (b.bad ? ' · ' + b.bad + ' rows without a recognisable month will be skipped' : ''); }
+        document.querySelectorAll('[data-ff],#fdef,#fyr').forEach(function (x) { x.onchange = prev; x.oninput = prev; }); prev();
+        $('#fgo').onclick = async function () { var b = build(); if (!b.out.length) return toast('Nothing to import: choose the month and amount columns.'); this.disabled = true; this.innerHTML = '<span class="spin"></span> Importing';
+          try { var r = await api('admin/finance/import', { method: 'POST', body: { rows: b.out } }); FIN = (await api('admin/finance')).entries; closeModal(); toast(r.added + ' entries added' + (r.skipped ? ', ' + r.skipped + ' already there or skipped' : '')); range = 'all'; lsSet('if.finrange', range); draw(); }
+          catch (x) { toast('Import failed.'); this.disabled = false; this.textContent = 'Import'; } };
+      }
+    }
+    async function finExport() {
+      await loadXLSX(); var wb = XLSX.utils.book_new(), ms = months(), by = {};
+      FIN.forEach(function (e) { by[e.month] = by[e.month] || { i: 0, x: 0 }; if (e.type === 'income') by[e.month].i += e.amount; else by[e.month].x += e.amount; });
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([['Month', 'Income (₸)', 'Expenses (₸)', 'Profit (₸)']].concat(ms.map(function (m) { return [monthLabel(m), by[m].i, by[m].x, by[m].i - by[m].x]; }))), 'Monthly summary');
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([['Month', 'Date', 'Type', 'Category', 'Amount (₸)', 'Note']].concat(FIN.slice().sort(function (a, b) { return a.month < b.month ? -1 : 1; }).map(function (e) { return [e.month, e.date, e.type, e.category, e.amount, e.note]; }))), 'Entries');
+      XLSX.writeFile(wb, 'IF_Academy_Finance_' + kzNow().toISOString().slice(0, 10) + '.xlsx');
+    }
+    draw();
+  }
+  function finChart(ms, by) {
+    var W = 760, H = 240, pl = 64, pb = 28, pt = 12, max = 1;
+    ms.forEach(function (m) { max = Math.max(max, by[m].inc, by[m].exp); });
+    var step = Math.pow(10, Math.floor(Math.log10(max))), top = Math.ceil(max / step) * step; if (top / step < 4) { step /= 2; }
+    var n = ms.length, gw = (W - pl - 8) / n, bw = Math.max(4, Math.min(22, gw * 0.32)), y = function (v) { return pt + (H - pt - pb) * (1 - v / top); };
+    var g = '';
+    for (var v = 0; v <= top + 1; v += step) g += '<line x1="' + pl + '" x2="' + W + '" y1="' + y(v) + '" y2="' + y(v) + '" stroke="#e7e1d6"/><text x="' + (pl - 8) + '" y="' + (y(v) + 4) + '" text-anchor="end" font-size="11" fill="#7a7f87">' + (v >= 1e6 ? (v / 1e6).toFixed(v % 1e6 ? 1 : 0) + 'M' : v >= 1e3 ? Math.round(v / 1e3) + 'k' : v) + '</text>';
+    var line = [];
+    ms.forEach(function (m, i) { var cx = pl + gw * i + gw / 2, d = by[m];
+      g += '<rect x="' + (cx - bw - 1) + '" y="' + y(d.inc) + '" width="' + bw + '" height="' + (H - pb - y(d.inc)) + '" rx="3" fill="#0F2342"><title>' + monthLabel(m) + ' income ' + money(d.inc) + '</title></rect>';
+      g += '<rect x="' + (cx + 1) + '" y="' + y(d.exp) + '" width="' + bw + '" height="' + (H - pb - y(d.exp)) + '" rx="3" fill="#B8895A"><title>' + monthLabel(m) + ' expenses ' + money(d.exp) + '</title></rect>';
+      if (n <= 14 || i % Math.ceil(n / 12) === 0) g += '<text x="' + cx + '" y="' + (H - 8) + '" text-anchor="middle" font-size="11" fill="#7a7f87">' + monthLabel(m).replace(' 20', ' ’') + '</text>';
+    });
+    return '<div class="finchart"><svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Income and expenses by month">' + g + '</svg><div class="ch-legend"><span><i style="background:#0F2342"></i>Income</span><span><i style="background:#B8895A"></i>Expenses</span></div></div>';
+  }
   async function aBot(head) {
     view.innerHTML = head + '<p><span class="spin"></span> Checking the bot…</p>';
     var st; try { st = await aapi('bot/status'); } catch (e) { view.innerHTML = head + '<div class="empty">Could not load the bot status.</div>'; return; }
@@ -663,8 +834,29 @@
       $('#map').innerHTML = '<p style="margin-top:14px"><span class="spin"></span> Reading…</p>';
       try { await loadXLSX(); } catch (e) { $('#map').innerHTML = '<div class="err">Could not load the spreadsheet reader. Check your connection.</div>'; return; }
       var wb = /\.csv$/i.test(f.name) ? XLSX.read((await f.text()).replace(/^\ufeff/, ''), { type: 'string', raw: true }) : XLSX.read(await f.arrayBuffer(), { type: 'array', cellDates: true });
+      if (wb.SheetNames.indexOf('Students') >= 0 && (wb.SheetNames.indexOf('Payments') >= 0 || wb.SheetNames.indexOf('Expenses') >= 0)) return fullExport(wb);
       showSheet(wb, wb.SheetNames[0]);
     };
+    function fullExport(wb) {
+      function sheet(n) { var ws = wb.Sheets[n]; if (!ws) return []; return XLSX.utils.sheet_to_json(ws, { defval: '', raw: true }).map(function (r) { var o = {}; Object.keys(r).forEach(function (k) { var v = r[k]; o[k] = v instanceof Date ? v.toISOString().slice(0, 10) : v; }); return o; }); }
+      var D = { students: sheet('Students'), payments: sheet('Payments'), expenses: sheet('Expenses'), tests: sheet('Test Results'), attendance: sheet('Attendance') };
+      var sum = function (a, k) { return a.reduce(function (n, r) { return n + (+r[k] || 0); }, 0); };
+      $('#map').innerHTML = '<div class="box" style="margin-top:14px"><h3>IF Admin export detected</h3><p class="small">Everything below is imported in one go. Existing records are updated, nothing is duplicated if you import again, and nothing is deleted.</p><ul class="nlist" style="margin:12px 0">' +
+        '<li><b>' + D.students.length + ' students</b><span>groups, level, phone, status and notes</span></li>' +
+        '<li><b>' + D.payments.length + ' payment rows</b><span>' + money(sum(D.payments, 'paid')) + ' collected · each student\'s monthly fee and paid months</span></li>' +
+        '<li><b>' + D.expenses.length + ' expenses</b><span>' + money(sum(D.expenses, 'amount')) + ' · into Finance, by category</span></li>' +
+        '<li><b>' + D.tests.length + ' test results</b><span>with skill breakdown</span></li>' +
+        '<li><b>' + D.attendance.length + ' attendance marks</b><span>present, excused, unexcused, frozen</span></li></ul>' +
+        '<p class="small">Not imported: Staff (salary details stay in your spreadsheet), Groups (the website keeps its current timetable) and Cash Flow (Finance calculates it).</p>' +
+        '<div class="row" style="margin-top:12px"><button class="btn" id="goAll">Import everything</button></div></div>';
+      $('#goAll').onclick = async function () {
+        this.disabled = true; this.innerHTML = '<span class="spin"></span> Importing…';
+        try {
+          var r = await api('admin/import-all', { method: 'POST', body: D });
+          $('#map').innerHTML = '<div class="ok-msg">Done. Students: ' + r.students.added + ' added, ' + r.students.updated + ' updated (' + r.total + ' in total). Tuition plans: ' + r.plans + '. Finance: ' + r.income + ' payments and ' + r.expenses + ' expenses added. Test results: ' + r.tests + '. Attendance marks: ' + r.marks + '.</div><p class="small" style="margin-top:10px"><a href="#/admin/finance">Open Finance</a> · <a href="#/admin/students">Open Students</a></p>';
+        } catch (e) { this.disabled = false; this.textContent = 'Import everything'; toast('Import failed. Please try again.'); }
+      };
+    }
     function showSheet(wb, name) {
       var rows = XLSX.utils.sheet_to_json(wb.Sheets[name], { header: 1, defval: '', raw: false });
       var hi = rows.findIndex(function (r) { return r.filter(function (c) { return String(c).trim(); }).length >= 2; }); if (hi < 0) hi = 0;
