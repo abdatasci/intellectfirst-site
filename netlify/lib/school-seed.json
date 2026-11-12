@@ -118,139 +118,157 @@
  ],
  "classes": [
   {
-   "id": "c-b1a",
-   "label": "B1 A",
-   "teacherId": "t-abdoulie",
-   "bookId": "b-teens-b1",
-   "schedule": "Wed 15:15–16:45 · Fri 15:15–16:45",
-   "room": "Business Lab",
-   "kind": "group"
+   "id": "c-a2",
+   "label": "A2 Teen",
+   "schedule": "Mon–Wed 16:00",
+   "kind": "group",
+   "teacherId": "t-aitach",
+   "bookId": "",
+   "room": "Hub"
   },
   {
    "id": "c-b1b",
-   "label": "B1 B",
+   "label": "B1 Teen-B",
+   "schedule": "Mon–Wed 16:50",
+   "kind": "group",
    "teacherId": "t-abdoulie",
    "bookId": "b-teens-b1",
-   "schedule": "Mon 16:50–18:20 · Wed 16:50–18:20",
-   "room": "Business Lab",
-   "kind": "group"
+   "room": "Business Lab"
   },
   {
    "id": "c-b1c",
-   "label": "B1 C",
+   "label": "B1 Teen-C",
+   "schedule": "Mon–Fri",
+   "kind": "group",
    "teacherId": "t-abdoulie",
    "bookId": "b-teens-b1",
-   "schedule": "Mon 15:15–16:45 · Fri 16:50–18:20",
-   "room": "Business Lab",
-   "kind": "group"
+   "room": "Business Lab"
   },
   {
    "id": "c-b1d",
-   "label": "B1 D",
+   "label": "B1 Teen-D",
+   "schedule": "Tue–Thu 18:00",
+   "kind": "group",
    "teacherId": "t-abdoulie",
-   "bookId": "b-ef-b1",
-   "schedule": "Tue 18:00–19:30 · Thu 18:00–19:30",
-   "room": "Business Lab",
-   "kind": "group"
+   "bookId": "b-teens-b1",
+   "room": "Business Lab"
   },
   {
-   "id": "c-c1",
-   "label": "C1",
+   "id": "c-b1ad",
+   "label": "B1-Adult",
+   "schedule": "Tue–Thu 12:00–13:30",
+   "kind": "group",
    "teacherId": "t-abdoulie",
-   "bookId": "b-teens-b2",
-   "schedule": "Sat 16:30–18:00 · Sun 13:15–14:45",
-   "room": "Business Lab",
-   "kind": "group"
+   "bookId": "b-ef-b1",
+   "room": ""
+  },
+  {
+   "id": "c-ad",
+   "label": "B1-B2 Adults",
+   "schedule": "Mon–Fri 11:05–12:35",
+   "kind": "group",
+   "teacherId": "",
+   "bookId": "",
+   "room": ""
   },
   {
    "id": "c-b2a",
-   "label": "B2-Adults",
+   "label": "B2 Group A",
+   "schedule": "Tue–Thu 16:25",
+   "kind": "group",
    "teacherId": "t-abdoulie",
    "bookId": "b-ef-b2",
+   "room": ""
+  },
+  {
+   "id": "c-b1a",
+   "label": "B2 Teen B",
+   "schedule": "Wed–Fri 15:15",
+   "kind": "group",
+   "teacherId": "t-abdoulie",
+   "bookId": "",
+   "room": "Business Lab"
+  },
+  {
+   "id": "c-b2t",
+   "label": "C1 Teen",
+   "schedule": "Sat 16:30 · Sun 13:15",
+   "kind": "group",
+   "teacherId": "t-abdoulie",
+   "bookId": "b-teens-b2",
+   "room": "Business Lab"
+  },
+  {
+   "id": "c-cpl",
+   "label": "Couple group",
+   "schedule": "Tue–Thu 16:00–17:00",
+   "kind": "group",
+   "teacherId": "t-aitach",
+   "bookId": "",
+   "room": "Hub"
+  },
+  {
+   "id": "c-fl2",
+   "label": "Flyers Group A (Afternoon)",
+   "schedule": "Sat–Sun 15:00–16:30",
+   "kind": "group",
+   "teacherId": "t-abdoulie",
+   "bookId": "b-yl",
+   "room": ""
+  },
+  {
+   "id": "c-fl1",
+   "label": "Flyers Group B (Morning)",
+   "schedule": "Sat–Sun 10:00",
+   "kind": "group",
+   "teacherId": "t-abdoulie",
+   "bookId": "b-yl",
+   "room": "Business Lab"
+  },
+  {
+   "id": "c-ielts",
+   "label": "IELTS",
+   "schedule": "Mon–Fri 18:30–20:00",
+   "kind": "group",
+   "teacherId": "t-abdoulie",
+   "bookId": "b-ielts",
+   "room": ""
+  },
+  {
+   "id": "c-ind",
+   "label": "Individual (local teacher)",
    "schedule": "",
-   "room": "Business Lab",
-   "kind": "group"
+   "kind": "individual",
+   "teacherId": "",
+   "bookId": "",
+   "room": ""
   },
   {
    "id": "c-pet",
    "label": "PET",
+   "schedule": "Thu–Sun 16:30–18:00",
+   "kind": "group",
    "teacherId": "t-abdoulie",
    "bookId": "b-pet",
-   "schedule": "Thu 16:30–18:00 · Sun 16:30–18:00",
-   "room": "Business Lab",
-   "kind": "group"
+   "room": "Business Lab"
   },
   {
-   "id": "c-ket",
-   "label": "KET",
-   "teacherId": "t-abdoulie",
-   "bookId": "b-ket",
-   "schedule": "Sat 15:00–16:30 · Sun 15:00–16:30",
-   "room": "Business Lab",
-   "kind": "group"
-  },
-  {
-   "id": "c-flyers",
-   "label": "Flyers",
-   "teacherId": "t-abdoulie",
-   "bookId": "b-yl",
-   "schedule": "Thu 10:00–11:30 · Sun 10:00–11:30",
-   "room": "Business Lab",
-   "kind": "group"
-  },
-  {
-   "id": "c-a2t",
-   "label": "A2-Teens",
-   "teacherId": "t-aitach",
-   "bookId": "b-ef-a2",
-   "schedule": "Mon 15:30–17:00 · Wed 15:30–17:00",
-   "room": "Hub",
-   "kind": "group"
-  },
-  {
-   "id": "c-starters-a",
-   "label": "Starters (Aitach)",
-   "teacherId": "t-aitach",
-   "bookId": "b-yl",
-   "schedule": "Tue 11:30–12:30 · Thu 11:30–12:30",
-   "room": "Studio",
-   "kind": "group"
-  },
-  {
-   "id": "c-couples",
-   "label": "Couples group",
-   "teacherId": "t-aitach",
-   "bookId": "",
-   "schedule": "Tue 16:00–17:00 · Thu 16:00–17:00",
-   "room": "Hub",
-   "kind": "group"
-  },
-  {
-   "id": "c-starters-d",
+   "id": "c-st",
    "label": "Starters",
+   "schedule": "Tue–Thu–Sat 16:00",
+   "kind": "group",
    "teacherId": "t-dana",
    "bookId": "b-yl",
-   "schedule": "Tue · Thu · Sat 16:00–17:00",
-   "room": "Studio",
-   "kind": "group"
+   "room": "Studio"
   },
   {
-   "id": "c-movers-j",
-   "label": "Movers",
-   "teacherId": "t-joseph",
+   "id": "c-st2",
+   "label": "Starters B",
+   "schedule": "Tue–Thu 11:30–12:30",
+   "kind": "group",
+   "teacherId": "t-aitach",
    "bookId": "b-yl",
-   "schedule": "Sun 17:00–18:30",
-   "room": "Hub",
-   "kind": "group"
-  },
-  {
-   "id": "c-movers-a",
-   "label": "Movers (Anelya)",
-   "teacherId": "t-anelya",
-   "bookId": "b-yl",
-   "schedule": "Tue 17:00–18:30",
-   "room": "Hub",
-   "kind": "group"
+   "room": "Studio"
   }
  ],
  "students": []

@@ -385,10 +385,10 @@
 
   /* ---------- import (Excel / CSV) ---------- */
   var FIELDS = {
-    students: [['name', 'Full name'], ['first', 'First name'], ['last', 'Surname'], ['phone', 'Phone'], ['classes', 'Class(es)'], ['status', 'Status'], ['email', 'Email'], ['parent', 'Parent'], ['parentPhone', 'Parent phone'], ['birth', 'Date of birth'], ['level', 'Level'], ['notes', 'Notes']],
+    students: [['name', 'Full name'], ['first', 'First name'], ['last', 'Surname'], ['phone', 'Phone'], ['classes', 'Class / group'], ['otherClasses', 'Other classes'], ['status', 'Status'], ['email', 'Email'], ['parent', 'Parent'], ['parentPhone', 'Parent phone'], ['birth', 'Date of birth'], ['level', 'Level'], ['notes', 'Notes']],
     tests: [['name', 'Student name'], ['first', 'First name'], ['last', 'Surname'], ['phone', 'Phone'], ['test', 'Test name'], ['date', 'Date'], ['score', 'Score'], ['max', 'Out of'], ['band', 'Band / grade'], ['note', 'Comment']]
   };
-  var GUESS = { name: /^(full ?name|name|student|фио|имя и фамилия|аты-жөні)$/i, first: /^(first|first name|имя|аты)$/i, last: /^(last|surname|last name|фамилия|тегі)$/i, phone: /phone|тел|номер|whatsapp/i, classes: /class|group|группа|сынып/i, status: /status|статус/i, email: /mail|почта/i, parent: /^(parent|родител)/i, parentPhone: /parent.*(phone|тел)/i, birth: /birth|д\.?р|рожд/i, level: /level|уровень/i, notes: /note|примеч|comment/i, test: /test|exam|тест/i, date: /date|дата/i, score: /score|result|балл|mark/i, max: /out of|max|из/i, band: /band|grade|оценка/i, note: /comment|note/i };
+  var GUESS = { name: /^(full ?name|name|student|фио|имя и фамилия|аты-жөні)$/i, first: /^(first|first name|имя|аты)$/i, last: /^(last|surname|last name|фамилия|тегі)$/i, phone: /phone|тел|номер|whatsapp/i, classes: /^(class|classes|group|class name|group name|группа|класс|сынып)$/i, otherClasses: /other.?(groups?|class)/i, status: /status|статус/i, email: /mail|почта/i, parent: /^(parent|родител)/i, parentPhone: /parent.*(phone|тел)/i, birth: /birth|д\.?р|рожд/i, level: /level|уровень/i, notes: /note|примеч|comment/i, test: /test|exam|тест/i, date: /date|дата/i, score: /score|result|балл|mark/i, max: /out of|max|из/i, band: /band|grade|оценка/i, note: /comment|note/i };
   function loadXLSX() { return window.XLSX ? Promise.resolve() : new Promise(function (res, rej) { var s = document.createElement('script'); s.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js'; s.onload = res; s.onerror = rej; document.head.appendChild(s); }); }
   function aImport(head) {
     view.innerHTML = head + '<div class="box"><h3>Import from Excel or CSV</h3><p class="small" style="margin:6px 0 14px">Upload a spreadsheet with one row per student (or per test result). Existing students are updated, matched by phone number or name; nothing is deleted.</p>' +
@@ -405,7 +405,7 @@
       var hi = rows.findIndex(function (r) { return r.filter(function (c) { return String(c).trim(); }).length >= 2; }); if (hi < 0) hi = 0;
       var headers = rows[hi].map(function (h, i) { return String(h).trim() || 'Column ' + (i + 1); }), data = rows.slice(hi + 1).filter(function (r) { return r.some(function (c) { return String(c).trim(); }); });
       var kind = $('#kind').value, fields = FIELDS[kind];
-      var guess = {}; fields.forEach(function (f) { var i = headers.findIndex(function (h) { return GUESS[f[0]] && GUESS[f[0]].test(h); }); if (i >= 0) guess[f[0]] = i; });
+      var guess = {}, used = {}; fields.forEach(function (f) { var i = headers.findIndex(function (h, k) { return !used[k] && !/(^|[_ ])id$/i.test(h) && GUESS[f[0]] && GUESS[f[0]].test(h); }); if (i >= 0) { guess[f[0]] = i; used[i] = 1; } });
       if (guess.name != null && (guess.first === guess.name || guess.last === guess.name)) { delete guess.first; delete guess.last; }
       $('#map').innerHTML = (wb.SheetNames.length > 1 ? '<label class="f">Sheet</label><select class="inp" id="sh" style="max-width:320px">' + wb.SheetNames.map(function (n) { return '<option' + (n === name ? ' selected' : '') + '>' + esc(n) + '</option>'; }).join('') + '</select>' : '') +
         '<p class="small" style="margin-top:14px">' + data.length + ' rows found. Match your columns to the school fields:</p><div class="grid2">' + fields.map(function (f) {

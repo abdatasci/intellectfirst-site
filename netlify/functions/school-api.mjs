@@ -84,6 +84,7 @@ async function studentView(s) {
 
 /* ---------- import helpers (admin) ---------- */
 function splitName(full) {
+  if (/[()]/.test(str(full))) return { first: str(full, 80), last: '' };
   const parts = str(full).split(/\s+/).filter(Boolean);
   return parts.length > 1 ? { first: parts.slice(0, -1).join(' '), last: parts.at(-1) } : { first: parts[0] || '', last: '' };
 }
@@ -96,14 +97,14 @@ function mergeStudents(list, rows) {
     const key = phoneKey(r.phone);
     let s = (key && key.length >= 10 && list.find(x => phoneKey(x.phone) === key)) ||
       list.find(x => `${x.first} ${x.last}`.toLowerCase() === `${first} ${last}`.toLowerCase());
-    const classes = str(r.classes || r.class, 300).split(/[;,/]+/).map(x => x.trim()).filter(Boolean);
+    const classes = [r.classes || r.class, r.otherClasses].map(v => str(v, 300)).join(';').split(/[;,]+/).map(x => x.trim()).filter(Boolean);
     if (!s) { s = { id: newId('s'), first, last, tests: [] }; list.push(s); added++; } else updated++;
     Object.assign(s, {
       first: first || s.first, last: last || s.last,
       phone: str(r.phone, 40) || s.phone || '', email: str(r.email, 120) || s.email || '',
       parent: str(r.parent, 120) || s.parent || '', parentPhone: str(r.parentPhone, 40) || s.parentPhone || '',
       birth: str(r.birth, 20) || s.birth || '', level: str(r.level, 40) || s.level || '',
-      status: (str(r.status, 20).toLowerCase() || s.status || 'active'),
+      status: ({ left: 'withdrawn', paused: 'frozen', 'on hold': 'frozen', finished: 'finished' }[str(r.status, 20).toLowerCase()] || str(r.status, 20).toLowerCase() || s.status || 'active'),
       classes: classes.length ? classes : (s.classes || []), notes: str(r.notes, 1000) || s.notes || ''
     });
   }
