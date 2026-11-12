@@ -1,0 +1,124 @@
+// IF Assistant API (signed-in users).
+//   POST /api/assistant/chat            {messages:[{role,content}]} → {reply}
+//   GET  /api/assistant/notes           → {notes}         (reminders shown on the website)
+//   POST /api/assistant/notes/read
+//   GET  /api/assistant/telegram        → {ready, bot, linked}
+//   POST /api/assistant/telegram/link   → {url}          (one-time deep link, 30 minutes)
+//   DELETE /api/assistant/telegram      → unlink
+//   admin: GET bot/status, POST bot/setup, GET bot/preview, POST bot/test
+import { getUser } from '@netlify/identity';
+import {
+  S, doc, getProfile, contextFor, reply, allow, tg, tgToken, tgSecret, tgSend, getLinks, saveLinks,
+  dueReminders, reminderText, local, ymd, upcomingLessons, payStatus
+} from '../lib/bot-core.mjs';
+
+const json = (data, status = 200) => Response.json(data, { status, headers: { 'Cache-Control': 'no-store' } });
+const fail = (status, error) => json({ error }, status);
+const isStaff = r => r === 'teacher' || r === 'admin';
+const code = () => Array.from(crypto.getRandomValues(new Uint8Array(12)), b => 'abcdefghijkmnpqrstuvwxyz23456789'[b % 32]).join('');
+
+async function botInfo() { return (await S().get('bot/info', { type: 'json' })) || null; }
+
+export default async (req) => {
+  const url = new URL(req.url);
+  const path = url.pathname.replace(/^\/api\/assistant\/?/, '').replace(/\/$/, '');
+  const method = req.method;
+  let user; try { user = await getUser(); } catch { user = null; }
+  if (!user) return fail(401, 'signin');
+  const profile = await getProfile(user.id);
+  if (!profile?.role) return fail(403, 'activate');
+  const uid = user.id;
+
+  if (path === 'chat' && method === 'POST') {
+    const b = await req.json().catch(() => ({}));
+    const history = (Array.isArray(b.messages) ? b.messages : []).slice(-12);
+    if (!history.length || history.at(-1).role !== 'user' || !String(history.at(-1).content || '').trim()) return fail(400, 'message');
+    if (!(await allow(uid, isStaff(profile.role)))) return fail(429, 'quota');
+    const ctx = await contextFor(uid);
+    try { return json({ reply: await reply(ctx, history) }); }
+    catch (e) { console.error('assistant failed', e?.status, e?.message); return fail(502, 'ai'); }
+  }
+
+  if (path === 'notes' && method === 'GET') {
+    const list = (await S().get(`bot/notes/${uid}`, { type: 'json' })) || [];
+    const ctx = await contextFor(uid);
+    return json({ notes: list.slice().reverse(), next: ctx.lessons.slice(0, 3).map(l => ({ label: l.label, date: l.date, start: l.start, end: l.end, room: l.room })), pay: ctx.pay });
+  }
+  if (path === 'notes/read' && method === 'POST') {
+    const key = `bot/notes/${uid}`, list = (await S().get(key, { type: 'json' })) || [];
+    list.forEach(n => { n.read = true }); await S().setJSON(key, list);
+    return json({ ok: true });
+  }
+
+  if (path === 'telegram' && method === 'GET') {
+    const info = await botInfo(), links = await getLinks();
+    return json({ ready: !!(tgToken() && info?.username), bot: info?.username || null, linked: links[uid] ? { username: links[uid].username || '', at: links[uid].at } : null });
+  }
+  if (path === 'telegram/link' && method === 'POST') {
+    const info = await botInfo();
+    if (!tgToken() || !info?.username) return fail(503, 'bot_not_ready');
+    const c = code();
+    await S().setJSON(`bot/link/${c}`, { uid, exp: Date.now() + 30 * 60000 });
+    return json({ url: `https://t.me/${info.username}?start=${c}`, bot: info.username });
+  }
+  if (path === 'telegram' && method === 'DELETE') {
+    const links = await getLinks(); const l = links[uid];
+    if (l) { delete links[uid]; await saveLinks(links); await S().delete(`bot/chat/${l.chatId}`); }
+    return json({ ok: true });
+  }
+
+  /* ---- admin ---- */
+  if (path.startsWith('bot/')) {
+    if (profile.role !== 'admin') return fail(403, 'admin');
+    if (path === 'bot/status' && method === 'GET') {
+      const info = await botInfo(), links = await getLinks();
+      let hook = null;
+      if (tgToken()) { try { hook = await tg('getWebhookInfo'); } catch (e) { hook = { error: e.message }; } }
+      const students = await doc('students');
+      const withPay = students.filter(s => s.pay && +s.pay.dueDay >= 1).length;
+      const sent = (await S().get(`bot/sent/${ymd(new Date()).slice(0, 7)}`, { type: 'json' })) || {};
+      return json({ token: !!tgToken(), bot: info, webhook: hook && { url: hook.url || '', pending: hook.pending_update_count || 0, lastError: hook.last_error_message || hook.error || '' },
+        linked: Object.keys(links).length, accounts: students.filter(s => s.uid).length, withPay, sentThisMonth: Object.values(sent).reduce((n, a) => n + a.length, 0) });
+    }
+    if (path === 'bot/setup' && method === 'POST') {
+      if (!tgToken()) return fail(400, 'no_token');
+      try {
+        const me = await tg('getMe');
+        const hookUrl = `${url.origin}/.netlify/functions/telegram-background`;
+        await tg('setWebhook', { url: hookUrl, secret_token: await tgSecret(), allowed_updates: ['message'], drop_pending_updates: true });
+        const cmds = [['next', 'Next lessons'], ['pay', 'Tuition status'], ['help', 'What I can do'], ['stop', 'Disconnect this chat']];
+        await tg('setMyCommands', { commands: cmds.map(([command, description]) => ({ command, description })) });
+        await tg('setMyCommands', { commands: [['next', 'Ближайшие занятия'], ['pay', 'Статус оплаты'], ['help', 'Что я умею'], ['stop', 'Отключить чат']].map(([command, description]) => ({ command, description })), language_code: 'ru' });
+        await tg('setMyDescription', { description: 'IF Academy assistant: lesson and payment reminders, your timetable and results, and help with English. Connect from intellectfirst.com → My account → Assistant.' }).catch(() => {});
+        const info = { username: me.username, name: me.first_name, id: me.id, hook: hookUrl, at: new Date().toISOString() };
+        await S().setJSON('bot/info', info);
+        return json({ ok: true, bot: info });
+      } catch (e) { return fail(502, 'telegram: ' + e.message); }
+    }
+    if (path === 'bot/preview' && method === 'GET') {
+      // what the reminder job would send in the next 48 hours (checked every 15 minutes), without sending anything
+      const [students, classes] = await Promise.all([doc('students'), doc('classes')]);
+      const seen = new Set(), out = [], start = Math.ceil(Date.now() / 900000) * 900000;
+      const sentDocs = {};
+      const wasSent = async (t, r) => { const mk = ymd(new Date(t)).slice(0, 7); sentDocs[mk] = sentDocs[mk] || (await S().get(`bot/sent/${mk}`, { type: 'json' })) || {}; return (sentDocs[mk][r.uid] || []).includes(r.key); };
+      for (let t = start; t < start + 48 * 3600000; t += 15 * 60000) {
+        for (const r of dueReminders({ students, classes, now: new Date(t) })) {
+          const k = r.uid + r.key; if (seen.has(k)) continue; seen.add(k);
+          if (await wasSent(t, r)) continue;
+          const s = students.find(x => x.id === r.studentId);
+          out.push({ at: new Date(t).toISOString(), student: `${s.first} ${s.last}`.trim(), kind: r.kind, text: reminderText(r, 'en') });
+        }
+      }
+      return json({ reminders: out.slice(0, 300) });
+    }
+    if (path === 'bot/test' && method === 'POST') {
+      const links = await getLinks(); const l = links[uid];
+      if (!l) return fail(400, 'not_linked');
+      await tgSend(l.chatId, '✅ IF Academy bot test: reminders will arrive in this chat.');
+      return json({ ok: true });
+    }
+  }
+  return fail(404, 'route');
+};
+
+export const config = { path: ['/api/assistant', '/api/assistant/*'] };

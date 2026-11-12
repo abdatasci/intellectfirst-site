@@ -32,6 +32,16 @@
     if (!res.ok) { var e = new Error(data.error || res.status); e.code = data.error; e.status = res.status; throw e; }
     return data;
   }
+  async function aapi(path, opts) {
+    opts = opts || {};
+    var init = { method: opts.method || 'GET', headers: { 'Content-Type': 'application/json' }, credentials: 'same-origin' };
+    if (opts.body) init.body = JSON.stringify(opts.body);
+    var res = await fetch('/api/assistant/' + path, init);
+    if (res.status === 401 && !opts.retried) { try { await ID.refreshSession(); } catch (e) {} return aapi(path, Object.assign({}, opts, { retried: true })); }
+    var data = await res.json().catch(function () { return {}; });
+    if (!res.ok) { var e = new Error(data.error || res.status); e.code = data.error; e.status = res.status; throw e; }
+    return data;
+  }
   async function loadMe() {
     try { USER = await ID.getUser(); } catch (e) { USER = null; }
     if (!USER) { ME = null; return; }
@@ -46,6 +56,7 @@
     $('[data-nav=classes]').hidden = !staff();
     $('[data-nav=admin]').hidden = role() !== 'admin';
     $('[data-nav=classroom]').hidden = !role();
+    $('[data-nav=assistant]').hidden = !role();
   }
   function setNav(k) { document.querySelectorAll('.nav a').forEach(function (a) { a.classList.toggle('on', a.dataset.nav === k); }); }
   function bookOf(id) { return ((ME && ME.books) || []).filter(function (b) { return b.id === id; })[0]; }
@@ -390,7 +401,7 @@
   /* ---------- admin ---------- */
   async function loadAdmin() { ADMIN = await api('admin/all'); ME.books = ADMIN.books; ME.teachers = ADMIN.teachers; return ADMIN; }
   function adminTabs(on) {
-    return '<div class="tabs2">' + [['students', 'Students'], ['classes', 'Classes'], ['teachers', 'Teachers'], ['books', 'Books'], ['accounts', 'Accounts'], ['import', 'Import'], ['export', 'Export results'], ['placement', 'Placement tests']].map(function (t) {
+    return '<div class="tabs2">' + [['students', 'Students'], ['classes', 'Classes'], ['teachers', 'Teachers'], ['books', 'Books'], ['accounts', 'Accounts'], ['import', 'Import'], ['export', 'Export results'], ['placement', 'Placement tests'], ['bot', 'Bot & reminders']].map(function (t) {
       return '<a href="#/admin/' + t[0] + '" class="' + (on === t[0] ? 'on' : '') + '">' + t[1] + '</a>';
     }).join('') + '</div>';
   }
@@ -400,21 +411,46 @@
     view.innerHTML = '<p style="margin-top:30px"><span class="spin"></span> Loading school records…</p>';
     await loadAdmin();
     var head = '<section class="hero" style="padding-bottom:4px"><div class="eyebrow">Administrator</div><h1>School admin</h1><p class="lead">' + ADMIN.students.length + ' students · ' + ADMIN.classes.length + ' classes · ' + ADMIN.teachers.length + ' teachers · ' + ADMIN.accounts.length + ' accounts</p></section>' + adminTabs(tab);
-    ({ students: aStudents, classes: aClasses, teachers: aTeachers, books: aBooks, accounts: aAccounts, import: aImport, export: aExport, placement: aPlacement }[tab] || aStudents)(head);
+    ({ students: aStudents, classes: aClasses, teachers: aTeachers, books: aBooks, accounts: aAccounts, import: aImport, export: aExport, placement: aPlacement, bot: aBot }[tab] || aStudents)(head);
+  }
+
+  /* ---------- tuition (student.pay = {fee, dueDay, paid:{'YYYY-MM': 'YYYY-MM-DD'}}) ---------- */
+  function kzNow() { return new Date(Date.now() + 5 * 3600000); }
+  function monthKeyOf(d) { return d.toISOString().slice(0, 7); }
+  function monthLabel(k) { var p = k.split('-'); return new Date(Date.UTC(+p[0], +p[1] - 1, 1)).toLocaleDateString('en-GB', { month: 'short', year: 'numeric', timeZone: 'UTC' }); }
+  function payState(s) {
+    var p = s && s.pay; if (!p || !(+p.dueDay >= 1)) return null;
+    var n = kzNow(), k = monthKeyOf(n), day = n.getUTCDate(), due = Math.min(28, Math.max(1, +p.dueDay));
+    var paid = (p.paid || {})[k];
+    return { month: k, paid: paid, due: due, fee: +p.fee || 0, state: paid ? 'paid' : day < due ? 'upcoming' : day === due ? 'due' : 'overdue' };
+  }
+  function money(n) { return n ? '₸' + Math.round(n).toLocaleString('en-US') : ''; }
+  function payChip(s) {
+    var st = payState(s); if (!st) return '<span class="chip2 mute">No plan</span>';
+    if (st.paid) return '<span class="chip2 ok">Paid</span>';
+    var dd = st.due + ' ' + monthLabel(st.month).split(' ')[0];
+    return st.state === 'overdue' ? '<span class="chip2 bad">Overdue · ' + dd + '</span>' : st.state === 'due' ? '<span class="chip2 warn">Due today</span>' : '<span class="chip2 mute">Due ' + dd + '</span>';
   }
   function opts(list, val, label, empty) { return (empty ? '<option value="">' + empty + '</option>' : '') + list.map(function (x) { return '<option value="' + esc(x.id) + '"' + (x.id === val ? ' selected' : '') + '>' + esc(label(x)) + '</option>'; }).join(''); }
   function aStudents(head) {
-    var q = '';
+    var q = '', pf = '';
     function draw() {
-      var list = ADMIN.students.filter(function (s) { return !q || (s.first + ' ' + s.last + ' ' + (s.phone || '') + ' ' + (s.classes || []).join(' ')).toLowerCase().indexOf(q) >= 0; })
+      var list = ADMIN.students.filter(function (s) { if (pf) { var st = payState(s); if (pf === 'none' ? st : !st || st.state !== pf) return false; } return !q || (s.first + ' ' + s.last + ' ' + (s.phone || '') + ' ' + (s.classes || []).join(' ')).toLowerCase().indexOf(q) >= 0; })
         .sort(function (a, b) { return (a.last + a.first).localeCompare(b.last + b.first); });
-      $('#tbl').innerHTML = list.length ? '<table class="t"><thead><tr><th>Name</th><th>Phone</th><th>Classes</th><th>Status</th><th>Account</th><th></th></tr></thead><tbody>' + list.map(function (s) {
-        return '<tr><td><b>' + esc(s.first + ' ' + s.last) + '</b></td><td>' + esc(s.phone || '–') + '</td><td>' + esc((s.classes || []).join(', ')) + '</td><td>' + statusChip(s.status) + '</td><td>' + (s.uid ? '<span class="chip2 ok">Linked</span>' : '<span class="chip2 mute">—</span>') + '</td><td style="white-space:nowrap"><button class="linkbtn" style="color:var(--navy)" data-ed="' + s.id + '">Edit</button>' + (s.uid ? ' · <a href="#/student/' + s.id + '">Profile</a>' : '') + '</td></tr>';
+      $('#tbl').innerHTML = list.length ? '<table class="t"><thead><tr><th>Name</th><th>Phone</th><th>Classes</th><th>Status</th><th>Tuition</th><th>Account</th><th></th></tr></thead><tbody>' + list.map(function (s) {
+        return '<tr><td><b>' + esc(s.first + ' ' + s.last) + '</b></td><td>' + esc(s.phone || '–') + '</td><td>' + esc((s.classes || []).join(', ')) + '</td><td>' + statusChip(s.status) + '</td><td style="white-space:nowrap">' + payChip(s) + (payState(s) && !payState(s).paid ? ' <button class="linkbtn" data-paid="' + s.id + '">Mark paid</button>' : '') + '</td><td>' + (s.uid ? '<span class="chip2 ok">Linked</span>' : '<span class="chip2 mute">—</span>') + '</td><td style="white-space:nowrap"><button class="linkbtn" style="color:var(--navy)" data-ed="' + s.id + '">Edit</button>' + (s.uid ? ' · <a href="#/student/' + s.id + '">Profile</a>' : '') + '</td></tr>';
       }).join('') + '</tbody></table>' : '<div class="empty">No students yet. Use <a href="#/admin/import">Import</a> to add your student list, or add one by hand.</div>';
       view.querySelectorAll('[data-ed]').forEach(function (b) { b.onclick = function () { editStudent(ADMIN.students.filter(function (s) { return s.id === b.dataset.ed; })[0]); }; });
+      view.querySelectorAll('[data-paid]').forEach(function (b) { b.onclick = async function () {
+        var s = ADMIN.students.filter(function (x) { return x.id === b.dataset.paid; })[0], st = payState(s);
+        if (!confirm('Mark ' + s.first + ' ' + s.last + ' as paid for ' + monthLabel(st.month) + (st.fee ? ' (' + money(st.fee) + ')' : '') + '?')) return;
+        var pay = Object.assign({}, s.pay); pay.paid = Object.assign({}, pay.paid); pay.paid[st.month] = kzNow().toISOString().slice(0, 10);
+        b.disabled = true; await api('admin/students', { method: 'PUT', body: { item: { id: s.id, pay: pay } } }); s.pay = pay; toast('Marked paid'); draw();
+      }; });
     }
-    view.innerHTML = head + '<div class="toolbar"><input class="inp" id="q" placeholder="Search name, phone or class"><button class="btn sm" id="add">Add student</button></div><div class="tscroll" id="tbl"></div>';
+    view.innerHTML = head + '<div class="toolbar"><input class="inp" id="q" placeholder="Search name, phone or class"><select class="inp" id="pf" style="max-width:200px"><option value="">All tuition</option><option value="overdue">Overdue</option><option value="due">Due today</option><option value="upcoming">Not yet paid</option><option value="paid">Paid this month</option><option value="none">No plan</option></select><button class="btn sm" id="add">Add student</button></div><div class="tscroll" id="tbl"></div>';
     $('#q').oninput = function () { q = this.value.toLowerCase().trim(); draw(); };
+    $('#pf').onchange = function () { pf = this.value; draw(); };
     $('#add').onclick = function () { editStudent({ first: '', last: '', classes: [], status: 'active', tests: [] }); };
     draw();
   }
@@ -427,6 +463,7 @@
       '<div><label class="f">Status</label><select class="inp" name="status">' + ['active', 'frozen', 'withdrawn', 'finished'].map(function (x) { return '<option' + (String(s.status || 'active').toLowerCase() === x ? ' selected' : '') + ' value="' + x + '">' + { active: 'Active', frozen: 'Paused', withdrawn: 'Left', finished: 'Finished' }[x] + '</option>'; }).join('') + '</select></div>' +
       '<div class="full"><label class="f">Classes</label><div class="chips">' + labels.map(function (l) { return '<label class="chip2 mute" style="cursor:pointer"><input type="checkbox" name="cls" value="' + esc(l) + '"' + ((s.classes || []).indexOf(l) >= 0 ? ' checked' : '') + '> ' + esc(l) + '</label>'; }).join('') + '</div></div>' +
       '<div class="full"><label class="f">Notes (staff only)</label><textarea class="inp" name="notes" rows="2">' + esc(s.notes || '') + '</textarea></div></div>' +
+      payEditor(s.pay) +
       '<h3 style="margin-top:18px">Test results</h3><div id="tl">' + testsEditor(s.tests || []) + '</div>' +
       '<div class="row" style="margin-top:18px"><button class="btn" type="submit">Save</button>' + (s.id ? '<button class="btn ghost" type="button" id="del">Delete student</button>' : '') + '</div></form>');
     var tests = (s.tests || []).slice();
@@ -441,10 +478,29 @@
       ['first', 'last', 'phone', 'email', 'parent', 'parentPhone', 'birth', 'level', 'status', 'notes'].forEach(function (k) { item[k] = f.elements[k].value.trim(); });
       item.classes = [].slice.call(f.querySelectorAll('[name=cls]:checked')).map(function (x) { return x.value; });
       item.tests = tests;
+      item.pay = readPay(f, s.pay);
       if (!item.first && !item.last) return toast('Enter a name.');
       await api('admin/students', { method: 'PUT', body: { item: item } }); closeModal(); toast('Saved'); vAdmin('students');
     };
     var d = $('#del'); if (d) d.onclick = async function () { if (!confirm('Delete ' + s.first + ' ' + s.last + '? Their account (if any) stays but is unlinked.')) return; await api('admin/students/' + s.id, { method: 'DELETE' }); closeModal(); vAdmin('students'); };
+  }
+
+  function payEditor(p) {
+    p = p || {}; var n = kzNow(), months = [];
+    for (var i = -3; i <= 1; i++) months.push(monthKeyOf(new Date(Date.UTC(n.getUTCFullYear(), n.getUTCMonth() + i, 1))));
+    return '<h3 style="margin-top:18px">Tuition</h3><p class="small">Used by the assistant and for payment reminders (3 days before, on the day, and 3 days late if not marked paid).</p><div class="grid2">' +
+      '<div><label class="f">Monthly fee (₸)</label><input class="inp" name="payFee" inputmode="numeric" value="' + esc(p.fee || '') + '" placeholder="e.g. 45000"></div>' +
+      '<div><label class="f">Due day of month (1–28)</label><input class="inp" name="payDay" inputmode="numeric" value="' + esc(p.dueDay || '') + '" placeholder="e.g. 5 — leave empty for no reminders"></div>' +
+      '<div class="full"><label class="f">Paid months</label><div class="chips">' + months.map(function (k) {
+        var on = (p.paid || {})[k]; return '<label class="chip2 ' + (on ? 'ok' : 'mute') + '" style="cursor:pointer"><input type="checkbox" name="payM" value="' + k + '"' + (on ? ' checked' : '') + '> ' + monthLabel(k) + (on ? ' · ' + esc(on) : '') + '</label>';
+      }).join('') + '</div></div></div>';
+  }
+  function readPay(f, old) {
+    var fee = Math.round(+String(f.elements.payFee.value).replace(/[^\d]/g, '')) || 0, day = Math.round(+f.elements.payDay.value) || 0;
+    var paid = Object.assign({}, (old && old.paid) || {}), today = kzNow().toISOString().slice(0, 10);
+    [].forEach.call(f.querySelectorAll('[name=payM]'), function (c) { if (c.checked) paid[c.value] = paid[c.value] || today; else delete paid[c.value]; });
+    if (!fee && !day && !Object.keys(paid).length) return null;
+    return { fee: fee, dueDay: day >= 1 && day <= 28 ? day : 0, paid: paid };
   }
   function testsEditor(tests) {
     return (tests.length ? '<table class="t" style="margin-top:6px"><tbody>' + tests.map(function (t, i) { return '<tr><td>' + esc(t.date || '') + '</td><td>' + esc(t.test) + '</td><td>' + esc(t.score || '') + (t.max ? '/' + esc(t.max) : '') + '</td><td><button type="button" class="linkbtn" data-rm="' + i + '">Remove</button></td></tr>'; }).join('') + '</tbody></table>' : '<p class="small">No results yet.</p>') +
@@ -490,6 +546,29 @@
     view.querySelectorAll('[data-link]').forEach(function (s) { s.onchange = async function () { var b = { uid: s.dataset.link }; b[s.dataset.kind] = s.value || null; await api('admin/link', { method: 'POST', body: b }); toast('Link updated'); vAdmin('accounts'); }; });
   }
 
+
+  async function aBot(head) {
+    view.innerHTML = head + '<p><span class="spin"></span> Checking the bot…</p>';
+    var st; try { st = await aapi('bot/status'); } catch (e) { view.innerHTML = head + '<div class="empty">Could not load the bot status.</div>'; return; }
+    var steps = !st.token
+      ? '<div class="panel wide"><h2>1. Create the Telegram bot</h2><ol class="small" style="line-height:1.8"><li>In Telegram, open <b>@BotFather</b> and send <code>/newbot</code>.</li><li>Name it, e.g. <b>IF Academy Assistant</b>, and choose a username ending in <b>bot</b> (e.g. <b>IFAcademyKostanayBot</b>).</li><li>BotFather replies with a <b>token</b>. In Netlify, open <b>Project configuration → Environment variables → Add a variable</b>: key <code>TELEGRAM_BOT_TOKEN</code>, value = the token. Then redeploy (Deploys → Trigger deploy).</li><li>Come back here and press <b>Connect bot</b>.</li></ol><p class="small">Keep the token private: anyone with it can control the bot.</p></div>'
+      : '';
+    var hookOk = st.webhook && st.webhook.url && /telegram-background/.test(st.webhook.url);
+    view.innerHTML = head + steps +
+      '<div class="panel wide"><h2>Telegram bot</h2><p class="sub">' + (st.bot ? 'Bot <b>@' + esc(st.bot.username) + '</b> · ' : '') + (st.token ? 'Token set' : 'No token yet') + ' · Webhook ' + (hookOk ? '<span class="chip2 ok">connected</span>' : '<span class="chip2 warn">not connected</span>') + (st.webhook && st.webhook.lastError ? ' · last error: ' + esc(st.webhook.lastError) : '') + '</p>' +
+      '<div class="row"><button class="btn" id="setup"' + (st.token ? '' : ' disabled') + '>' + (hookOk ? 'Reconnect bot' : 'Connect bot') + '</button><button class="btn ghost" id="tst">Send me a test message</button><a class="btn ghost" href="#/assistant">Link my Telegram</a></div></div>' +
+      '<div class="stats4"><div><b>' + st.linked + '</b><span>chats connected</span></div><div><b>' + st.accounts + '</b><span>student accounts</span></div><div><b>' + st.withPay + '</b><span>students with a tuition plan</span></div><div><b>' + st.sentThisMonth + '</b><span>reminders sent this month</span></div></div>' +
+      '<div class="panel wide"><h2>Coming up (next 48 hours)</h2><p class="sub">What the reminder job will send. Lessons: the evening before (19:00) and 2 hours before. Tuition: 3 days before, on the due day, and 3 days late if not marked paid. Set fees and due days in <a href="#/admin/students">Students → Edit</a>.</p><div id="pv"><span class="spin"></span></div></div>';
+    $('#setup').onclick = async function () { this.disabled = true; try { var r = await aapi('bot/setup', { method: 'POST' }); toast('Bot @' + r.bot.username + ' connected'); aBot(head); } catch (e) { toast('Could not connect: ' + (e.message || e)); this.disabled = false; } };
+    $('#tst').onclick = async function () { try { await aapi('bot/test', { method: 'POST' }); toast('Sent — check Telegram'); } catch (e) { toast(e.code === 'not_linked' ? 'Link your own Telegram first (Assistant page).' : 'Could not send: ' + e.message); } };
+    try {
+      var pv = await aapi('bot/preview');
+      $('#pv').innerHTML = pv.reminders.length ? '<div class="tscroll"><table class="t"><thead><tr><th>When</th><th>Student</th><th>Message</th></tr></thead><tbody>' + pv.reminders.map(function (r) {
+        var d = new Date(new Date(r.at).getTime() + 5 * 3600000);
+        return '<tr><td style="white-space:nowrap">' + d.toISOString().slice(5, 10).split('-').reverse().join('.') + ' ' + d.toISOString().slice(11, 16) + '</td><td>' + esc(r.student) + '</td><td>' + esc(r.text) + '</td></tr>';
+      }).join('') + '</tbody></table></div><p class="small">Only students whose website account is linked to their school record receive reminders. They get them on Telegram once they connect the bot, and always in their account on the website.</p>' : '<div class="empty">Nothing due in the next 48 hours. Reminders go to students whose account is linked to their record; lesson reminders need a time in the class schedule.</div>';
+    } catch (e) { $('#pv').textContent = 'Could not load the preview.'; }
+  }
   async function aPlacement(head) {
     view.innerHTML = head + '<p><span class="spin"></span></p>';
     var L = (await api('admin/placements')).placements || [], LV = ['Pre-A1', 'A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
@@ -613,6 +692,64 @@
     }
   }
 
+
+  /* ---------- IF Assistant ---------- */
+  var CHAT = lsGet('if.chat') || [];
+  async function vAssistant() {
+    setNav('assistant'); if (!USER) return go('#/login');
+    var first = ((ME && ME.profile && ME.profile.name) || '').split(' ')[0];
+    view.innerHTML = '<section class="hero" style="padding-bottom:6px"><div class="eyebrow">IF Assistant</div><h1>Hi' + (first ? ', ' + esc(first) : '') + '!</h1><p class="lead">Ask about your classes, timetable, results or tuition — or practise English. Reminders for lessons and payments appear here and on Telegram.</p></section>' +
+      '<div class="asst"><div class="asst-chat"><div class="msgs" id="msgs" aria-live="polite"></div><form id="cf" class="cform"><textarea class="inp" id="ci" rows="1" maxlength="1500" placeholder="Type a message… (English, Русский, Қазақша)"></textarea><button class="btn" type="submit" aria-label="Send">Send</button></form>' +
+      '<div class="chips sugg" id="sugg">' + ['When is my next lesson?', 'Have I paid for this month?', 'How are my test results?', 'Correct my sentence: "I am agree with you"', 'Give me 5 new B1 words'].map(function (q) { return '<button type="button" class="chip2 mute">' + esc(q) + '</button>'; }).join('') + '</div></div>' +
+      '<aside class="asst-side"><div class="panel" id="tgp"><h2>Telegram</h2><p class="sub"><span class="spin"></span></p></div><div class="panel"><h2>Reminders</h2><div id="notes"><span class="spin"></span></div></div></aside></div>';
+    var box = $('#msgs');
+    function draw() {
+      box.innerHTML = (CHAT.length ? '' : '<div class="msg bot">Hello! I\'m the IF Academy assistant. How can I help today?</div>') + CHAT.map(function (m) { return '<div class="msg ' + (m.role === 'user' ? 'me' : 'bot') + '">' + esc(m.content).replace(/\n/g, '<br>') + '</div>'; }).join('');
+      box.scrollTop = box.scrollHeight;
+    }
+    async function send(text) {
+      text = String(text || '').trim(); if (!text) return;
+      CHAT.push({ role: 'user', content: text }); draw();
+      box.insertAdjacentHTML('beforeend', '<div class="msg bot typing"><i></i><i></i><i></i></div>'); box.scrollTop = box.scrollHeight;
+      $('#ci').value = ''; $('#cf button').disabled = true;
+      try { var r = await aapi('chat', { method: 'POST', body: { messages: CHAT.slice(-12) } }); CHAT.push({ role: 'assistant', content: r.reply }); }
+      catch (e) { CHAT.push({ role: 'assistant', content: e.code === 'quota' ? 'You have reached today\'s message limit. Please try again tomorrow.' : 'Sorry, I couldn\'t answer just now. Please try again.' }); }
+      CHAT = CHAT.slice(-40); lsSet('if.chat', CHAT); $('#cf button').disabled = false; draw(); $('#ci').focus();
+    }
+    draw();
+    $('#cf').onsubmit = function (ev) { ev.preventDefault(); send($('#ci').value); };
+    $('#ci').onkeydown = function (ev) { if (ev.key === 'Enter' && !ev.shiftKey) { ev.preventDefault(); send(this.value); } };
+    $('#sugg').querySelectorAll('button').forEach(function (b) { b.onclick = function () { send(b.textContent); }; });
+    if (CHAT.length) $('#sugg').insertAdjacentHTML('beforeend', '<button type="button" class="linkbtn" id="clr">Clear chat</button>');
+    var clr = $('#clr'); if (clr) clr.onclick = function () { CHAT = []; lsSet('if.chat', null); draw(); clr.remove(); };
+    tgPanel();
+    try {
+      var n = await aapi('notes');
+      var up = (n.next || []).map(function (l) { return '<li><b>' + esc(l.label) + '</b><span>' + esc(l.date.slice(8) + '.' + l.date.slice(5, 7)) + ' · ' + esc(l.start) + (l.end ? '–' + esc(l.end) : '') + (l.room ? ' · ' + esc(l.room) : '') + '</span></li>'; }).join('');
+      var pay = n.pay ? '<p class="small" style="margin:10px 0 0">Tuition ' + esc(monthLabel(n.pay.month)) + ': ' + (n.pay.paid ? '<span class="chip2 ok">Paid</span>' : n.pay.state === 'overdue' ? '<span class="chip2 bad">Overdue</span>' : '<span class="chip2 mute">Due ' + esc(n.pay.dueDate.slice(8) + '.' + n.pay.dueDate.slice(5, 7)) + '</span>') + (n.pay.fee ? ' ' + money(n.pay.fee) : '') + '</p>' : '';
+      $('#notes').innerHTML = (up ? '<h3 class="small" style="margin:0 0 6px">Next lessons</h3><ul class="nlist">' + up + '</ul>' : '') + pay +
+        (n.notes.length ? '<h3 class="small" style="margin:14px 0 6px">Recent reminders</h3><ul class="nlist">' + n.notes.slice(0, 8).map(function (x) { return '<li' + (x.read ? '' : ' class="new"') + '><span>' + esc(x.text) + '</span><small>' + when(x.at) + '</small></li>'; }).join('') + '</ul>' : (up || pay ? '' : '<p class="small">No reminders yet.</p>'));
+      if (n.notes.some(function (x) { return !x.read; })) aapi('notes/read', { method: 'POST' }).catch(function () {});
+    } catch (e) { $('#notes').innerHTML = '<p class="small">Could not load reminders.</p>'; }
+  }
+  async function tgPanel() {
+    var p = $('#tgp'); if (!p) return;
+    try {
+      var t = await aapi('telegram');
+      if (t.linked) {
+        p.innerHTML = '<h2>Telegram</h2><p class="sub"><span class="chip2 ok">Connected</span>' + (t.linked.username ? ' @' + esc(t.linked.username) : '') + '</p><p class="small">Reminders and chat also work in Telegram' + (t.bot ? ' with <a href="https://t.me/' + esc(t.bot) + '" target="_blank" rel="noopener">@' + esc(t.bot) + '</a>' : '') + '.</p><button class="linkbtn" id="tgx">Disconnect</button>';
+        $('#tgx').onclick = async function () { if (!confirm('Stop Telegram reminders?')) return; await aapi('telegram', { method: 'DELETE' }); tgPanel(); };
+      } else if (t.ready) {
+        p.innerHTML = '<h2>Telegram</h2><p class="sub">Get lesson and payment reminders on your phone, and chat with the assistant in Telegram.</p><button class="btn" id="tgc">Connect Telegram</button><p class="small" id="tgh" style="margin-top:8px"></p>';
+        $('#tgc').onclick = async function () {
+          var w = window.open('', '_blank');
+          try { var r = await aapi('telegram/link', { method: 'POST' }); if (w) w.location = r.url; else location.href = r.url;
+            $('#tgh').innerHTML = 'Telegram opened — press <b>Start</b> in the chat with @' + esc(r.bot) + '. Then come back and <a href="#/assistant">refresh</a>.'; }
+          catch (e) { if (w) w.close(); toast('Could not create the link. Try again.'); }
+        };
+      } else p.innerHTML = '<h2>Telegram</h2><p class="sub">The Telegram bot is being set up. For now, reminders appear here.</p>';
+    } catch (e) { p.innerHTML = '<h2>Telegram</h2><p class="sub">Not available right now.</p>'; }
+  }
   /* ---------- router ---------- */
   async function route() {
     closeModal(); window.scrollTo(0, 0);
@@ -632,6 +769,7 @@
         case 'admin': return vAdmin(parts[1]);
         case 'classroom': return vClassroom(parts[1]);
         case 'present': return vPresent(parts[1]);
+        case 'assistant': return vAssistant();
         default: return go('#/');
       }
     } catch (e) { console.error(e); view.innerHTML = '<div class="empty" style="margin-top:30px">Something went wrong loading this page. <a href="#/">Back</a></div>'; }
