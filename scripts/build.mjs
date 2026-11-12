@@ -13,10 +13,10 @@ console.log('Static site copied to dist/');
 // Cache-busting: give the IELTS Centre's scripts, styles and data a version tag that changes
 // with every deploy, so phones never keep running an older copy from the offline cache.
 const V = (process.env.COMMIT_REF || Date.now().toString(36)).slice(0, 10);
-for (const f of ['dist/a/ielts/index.html', 'dist/a/ielts/app.js', 'dist/me/index.html', 'dist/a/placement-test/index.html', 'dist/a/placement-test/pt.js']) {
+for (const f of ['dist/index.html', 'dist/a/ielts/index.html', 'dist/a/ielts/app.js', 'dist/me/index.html', 'dist/a/placement-test/index.html', 'dist/a/placement-test/pt.js']) {
   let s = readFileSync(f, 'utf8');
-  s = s.replace(/((?:src|href)=")((?:\/[a-z0-9\/-]+\/)?[a-z-]+\.(?:js|css))(")/g, `$1$2?v=${V}$3`)
+  s = s.replace(/((?:src|href)=")((?:\/[a-z0-9\/-]+\/)?[a-z0-9-]+\.(?:js|css))(")/g, `$1$2?v=${V}$3`)
        .replace(/fetch\('data\/([a-z]+\.json)'\)/g, `fetch('data/$1?v=${V}')`);
   writeFileSync(f, s);
 }
-console.log('IELTS Centre assets stamped with version', V);
+console.log('Homepage, portal and IELTS Centre assets stamped with version', V);
