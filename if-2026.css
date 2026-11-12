@@ -342,3 +342,12 @@ html.x-seen .x-bubble{animation-delay:.9s}
 .x-team-row figure{animation:teamBob 6s calc(var(--i) * .5s) ease-in-out infinite}
 @keyframes teamBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
 .x-mosaic .wrap{padding-top:40px!important}
+/* real office photo (high resolution original) */
+.x-office{background-position:center 55%}
+/* gallery: never stretch the 760px photos beyond their size */
+.gallery-grid{grid-template-columns:repeat(auto-fill,minmax(260px,1fr))!important;max-width:1240px}
+.shot.wide{grid-column:auto!important}
+.shot.wide img{aspect-ratio:3/2!important}
+.shot{max-width:380px;border-radius:var(--r-md)!important;justify-self:center;width:100%}
+.shot.port{max-width:380px}
+.teacher-portrait{filter:none!important}
