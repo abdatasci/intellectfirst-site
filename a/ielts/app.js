@@ -49,6 +49,7 @@
     return ME;
   }
   function role() { return ME && ME.profile && ME.profile.role; }
+  function staff() { return role() === 'teacher' || role() === 'admin'; }
   function needAccount(next) {
     if (!USER) { lsSet('ielts.next', next || location.hash); go('#/login'); return true; }
     if (!role()) { lsSet('ielts.next', next || location.hash); go('#/activate'); return true; }
@@ -58,10 +59,10 @@
     var who = $('#who');
     if (USER) {
       var n = (ME && ME.profile && ME.profile.name) || USER.name || USER.email;
-      who.innerHTML = '<a class="chip" href="#/progress" title="' + esc(USER.email) + '">' + esc(n.split(' ')[0]) + (role() === 'teacher' ? ' · Teacher' : '') + '</a><button class="btn ghost sm" id="out">Sign out</button>';
+      who.innerHTML = '<a class="chip" href="#/progress" title="' + esc(USER.email) + '">' + esc(n.split(' ')[0]) + (role() === 'admin' ? ' · Admin' : role() === 'teacher' ? ' · Teacher' : '') + '</a><button class="btn ghost sm" id="out">Sign out</button>';
       $('#out').onclick = async function () { try { await ID.logout(); } catch (e) {} USER = null; ME = null; header(); go('#/'); toast('Signed out'); };
     } else who.innerHTML = '<a class="btn sm" href="#/login">Sign in</a>';
-    $('[data-nav=teacher]').hidden = role() !== 'teacher';
+    $('[data-nav=teacher]').hidden = !staff();
   }
   function setNav(k) { document.querySelectorAll('.nav a').forEach(function (a) { a.classList.toggle('on', a.dataset.nav === k); }); }
   function cleanup() { stopFns.forEach(function (f) { try { f(); } catch (e) {} }); stopFns = []; }
@@ -494,7 +495,7 @@
   async function vTeacher(uid, aid) {
     setNav('teacher'); await loadBank();
     if (needAccount('#/teacher')) return;
-    if (role() !== 'teacher') { view.innerHTML = '<div class="empty" style="margin-top:30px">This page is for IF Academy teachers.</div>'; return; }
+    if (!staff()) { view.innerHTML = '<div class="empty" style="margin-top:30px">This page is for IF Academy teachers.</div>'; return; }
     view.innerHTML = '<p style="margin-top:30px"><span class="spin"></span> Loading…</p>';
     try {
       if (uid && aid) {
