@@ -124,7 +124,7 @@
    "kind": "group",
    "teacherId": "t-aitach",
    "bookId": "",
-   "room": "Hub"
+   "room": "Hub or Studio"
   },
   {
    "id": "c-b1b",
@@ -167,9 +167,9 @@
    "label": "B1-B2 Adults",
    "schedule": "Mon–Fri 11:05–12:35",
    "kind": "group",
-   "teacherId": "",
+   "teacherId": "t-abdoulie",
    "bookId": "",
-   "room": ""
+   "room": "Business Lab"
   },
   {
    "id": "c-b2a",
@@ -205,7 +205,7 @@
    "kind": "group",
    "teacherId": "t-aitach",
    "bookId": "",
-   "room": "Hub"
+   "room": "Hub or Studio"
   },
   {
    "id": "c-fl2",
@@ -223,7 +223,7 @@
    "kind": "group",
    "teacherId": "t-joseph",
    "bookId": "b-yl",
-   "room": "Hub"
+   "room": "Hub or Studio"
   },
   {
    "id": "c-ielts",
@@ -241,7 +241,7 @@
    "kind": "individual",
    "teacherId": "",
    "bookId": "",
-   "room": ""
+   "room": "Hub or Studio"
   },
   {
    "id": "c-pet",
@@ -259,7 +259,7 @@
    "kind": "group",
    "teacherId": "t-dana",
    "bookId": "b-yl",
-   "room": "Studio"
+   "room": "Hub or Studio"
   },
   {
    "id": "c-st2",
@@ -268,11 +268,11 @@
    "kind": "group",
    "teacherId": "t-aitach",
    "bookId": "b-yl",
-   "room": "Studio"
+   "room": "Hub or Studio"
   }
  ],
  "students": [],
- "version": 4,
+ "version": 5,
  "patches": [
   {
    "v": 2,
@@ -343,6 +343,33 @@
     },
     "c-ielts": {
      "room": "Business Lab"
+    }
+   }
+  },
+  {
+   "v": 5,
+   "classes": {
+    "c-ad": {
+     "teacherId": "t-abdoulie",
+     "room": "Business Lab"
+    },
+    "c-a2": {
+     "room": "Hub or Studio"
+    },
+    "c-cpl": {
+     "room": "Hub or Studio"
+    },
+    "c-fl1": {
+     "room": "Hub or Studio"
+    },
+    "c-ind": {
+     "room": "Hub or Studio"
+    },
+    "c-st": {
+     "room": "Hub or Studio"
+    },
+    "c-st2": {
+     "room": "Hub or Studio"
     }
    }
   }
