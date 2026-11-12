@@ -174,7 +174,7 @@
   {
    "id": "c-b2a",
    "label": "B2 Teen A",
-   "schedule": "Tue · Thu 16:25",
+   "schedule": "Tue · Thu 16:25–17:55",
    "kind": "group",
    "teacherId": "t-abdoulie",
    "bookId": "b-ef-b2",
@@ -192,7 +192,7 @@
   {
    "id": "c-b2t",
    "label": "C1 Teen",
-   "schedule": "Sat · Sun 16:45",
+   "schedule": "Sat · Sun 16:45–18:15",
    "kind": "group",
    "teacherId": "t-abdoulie",
    "bookId": "b-teens-b2",
@@ -210,7 +210,7 @@
   {
    "id": "c-fl2",
    "label": "Flyers Group A (Afternoon)",
-   "schedule": "Sat · Sun 15:00",
+   "schedule": "Sat · Sun 15:00–16:30",
    "kind": "group",
    "teacherId": "t-abdoulie",
    "bookId": "b-yl",
@@ -219,7 +219,7 @@
   {
    "id": "c-fl1",
    "label": "Flyers Group B (Morning)",
-   "schedule": "Sat · Sun 13:15",
+   "schedule": "Sat · Sun 13:15–14:45",
    "kind": "group",
    "teacherId": "t-joseph",
    "bookId": "b-yl",
@@ -246,7 +246,7 @@
   {
    "id": "c-pet",
    "label": "PET",
-   "schedule": "Sat · Sun 13:00",
+   "schedule": "Sat · Sun 13:00–14:30",
    "kind": "group",
    "teacherId": "t-abdoulie",
    "bookId": "b-pet",
@@ -272,7 +272,7 @@
   }
  ],
  "students": [],
- "version": 2,
+ "version": 3,
  "patches": [
   {
    "v": 2,
@@ -303,6 +303,26 @@
    "teachers": {
     "t-joseph": {
      "name": "Joseph Cjay"
+    }
+   }
+  },
+  {
+   "v": 3,
+   "classes": {
+    "c-b2a": {
+     "schedule": "Tue · Thu 16:25–17:55"
+    },
+    "c-pet": {
+     "schedule": "Sat · Sun 13:00–14:30"
+    },
+    "c-fl2": {
+     "schedule": "Sat · Sun 15:00–16:30"
+    },
+    "c-b2t": {
+     "schedule": "Sat · Sun 16:45–18:15"
+    },
+    "c-fl1": {
+     "schedule": "Sat · Sun 13:15–14:45"
     }
    }
   }
