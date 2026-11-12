@@ -444,6 +444,23 @@
     return '<div class="box"><h3>Attendance</h3><p style="font-size:32px;font-weight:700;margin:4px 0;color:var(--navy)">' + t.pct + '%</p><p class="small">' + t.p + ' of ' + t.n + ' lessons attended · ' + t.ea + ' excused · ' + t.ua + ' missed</p><div class="chips" style="margin-top:10px">' +
       recent.map(function (x) { var l = lbl[x.m] || [x.m, 'mute']; return '<span class="chip2 ' + l[1] + '" title="' + esc(x.c) + '">' + esc(x.d.slice(8) + '.' + x.d.slice(5, 7)) + ' · ' + l[0] + '</span>'; }).join('') + '</div></div>';
   }
+
+  function markPaid(s, done) {
+    var st = payState(s), today = kzNow().toISOString().slice(0, 10);
+    modal('<h2>Mark paid</h2><p class="sub">' + esc(s.first + ' ' + s.last) + ' · ' + monthLabel(st.month) + '</p><form id="mp" novalidate><div class="grid2">' +
+      '<div><label class="f">Amount (₸)</label><input class="inp" name="amt" inputmode="numeric" value="' + (st.fee || '') + '"></div>' +
+      '<div><label class="f">Paid by</label><select class="inp" name="method">' + ['Cash', 'Kaspi Transfer', 'Kaspi Invoice', 'Card', 'Bank transfer', 'Barter', 'Other'].map(function (m) { return '<option>' + m + '</option>'; }).join('') + '</select></div>' +
+      '<div><label class="f">Date</label><input class="inp" name="date" type="date" value="' + today + '"></div></div>' +
+      '<div class="row" style="margin-top:18px"><button class="btn" type="submit">Save payment</button></div></form>');
+    $('#mp').onsubmit = async function (ev) {
+      ev.preventDefault(); var f = ev.target, amt = Math.round(+String(f.elements.amt.value).replace(/[^\d]/g, '')) || 0, d = f.elements.date.value || today;
+      var pay = Object.assign({}, s.pay); pay.paid = Object.assign({}, pay.paid); pay.methods = Object.assign({}, pay.methods); pay.amounts = Object.assign({}, pay.amounts);
+      pay.paid[st.month] = d; pay.methods[st.month] = f.elements.method.value; pay.amounts[st.month] = amt;
+      $('button', f).disabled = true;
+      try { await api('admin/students', { method: 'PUT', body: { item: { id: s.id, pay: pay } } }); s.pay = pay; closeModal(); toast('Payment saved: ' + money(amt) + ' · ' + f.elements.method.value); await done(); }
+      catch (e) { $('button', f).disabled = false; toast('Could not save. Try again.'); }
+    };
+  }
   function opts(list, val, label, empty) { return (empty ? '<option value="">' + empty + '</option>' : '') + list.map(function (x) { return '<option value="' + esc(x.id) + '"' + (x.id === val ? ' selected' : '') + '>' + esc(label(x)) + '</option>'; }).join(''); }
   function aStudents(head) {
     var q = '', pf = '';
@@ -455,10 +472,7 @@
       }).join('') + '</tbody></table>' : '<div class="empty">No students yet. Use <a href="#/admin/import">Import</a> to add your student list, or add one by hand.</div>';
       view.querySelectorAll('[data-ed]').forEach(function (b) { b.onclick = function () { editStudent(ADMIN.students.filter(function (s) { return s.id === b.dataset.ed; })[0]); }; });
       view.querySelectorAll('[data-paid]').forEach(function (b) { b.onclick = async function () {
-        var s = ADMIN.students.filter(function (x) { return x.id === b.dataset.paid; })[0], st = payState(s);
-        if (!confirm('Mark ' + s.first + ' ' + s.last + ' as paid for ' + monthLabel(st.month) + (st.fee ? ' (' + money(st.fee) + ')' : '') + '?')) return;
-        var pay = Object.assign({}, s.pay); pay.paid = Object.assign({}, pay.paid); pay.paid[st.month] = kzNow().toISOString().slice(0, 10);
-        b.disabled = true; await api('admin/students', { method: 'PUT', body: { item: { id: s.id, pay: pay } } }); s.pay = pay; toast('Marked paid'); draw();
+        markPaid(ADMIN.students.filter(function (x) { return x.id === b.dataset.paid; })[0], draw);
       }; });
     }
     view.innerHTML = head + '<div class="toolbar"><input class="inp" id="q" placeholder="Search name, phone or class"><select class="inp" id="pf" style="max-width:200px"><option value="">All tuition</option><option value="overdue">Overdue</option><option value="due">Due today</option><option value="upcoming">Not yet paid</option><option value="open">Unpaid, no due day</option><option value="paid">Paid this month</option><option value="none">No plan</option></select><button class="btn sm" id="add">Add student</button></div><div class="tscroll" id="tbl"></div>';
@@ -625,10 +639,7 @@
       view.querySelectorAll('[data-m]').forEach(function (b) { b.onclick = function () { openMonth = openMonth === b.dataset.m ? null : b.dataset.m; draw(); }; });
       view.querySelectorAll('[data-fe]').forEach(function (b) { b.onclick = function () { editEntry(FIN.filter(function (e) { return e.id === b.dataset.fe; })[0]); }; });
       view.querySelectorAll('[data-paid]').forEach(function (b) { b.onclick = async function () {
-        var s = ADMIN.students.filter(function (x) { return x.id === b.dataset.paid; })[0], st = payState(s);
-        if (!confirm('Mark ' + s.first + ' ' + s.last + ' as paid for ' + monthLabel(st.month) + (st.fee ? ' (' + money(st.fee) + ')' : '') + '?')) return;
-        var pay = Object.assign({}, s.pay); pay.paid = Object.assign({}, pay.paid); pay.paid[st.month] = kzNow().toISOString().slice(0, 10);
-        b.disabled = true; await api('admin/students', { method: 'PUT', body: { item: { id: s.id, pay: pay } } }); s.pay = pay; FIN = (await api('admin/finance')).entries; toast('Marked paid'); draw();
+        markPaid(ADMIN.students.filter(function (x) { return x.id === b.dataset.paid; })[0], async function () { FIN = (await api('admin/finance')).entries; draw(); });
       }; });
     }
     function entryList(list) {

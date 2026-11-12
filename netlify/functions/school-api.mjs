@@ -213,8 +213,9 @@ async function syncTuition(before, after) {
   const name = `${after.first || ''} ${after.last || ''}`.trim();
   fin = fin.filter(e => !gone.some(m => e.source === `pay:${after.id}:${m}`));
   for (const m of add) {
-    if (fin.some(e => e.source === `pay:${after.id}:${m}`) || !(+after.pay.fee > 0)) continue;
-    fin.push({ id: newId('f'), month: m, date: now[m], type: 'income', category: 'Tuition', amount: Math.round(+after.pay.fee), note: name, source: `pay:${after.id}:${m}` });
+    const amt = Math.round(+(after.pay.amounts || {})[m] || +after.pay.fee || 0), method = (after.pay.methods || {})[m];
+    if (fin.some(e => e.source === `pay:${after.id}:${m}`) || !(amt > 0)) continue;
+    fin.push({ id: newId('f'), month: m, date: now[m], type: 'income', category: 'Tuition', amount: amt, note: [name, method].filter(Boolean).join(' · '), source: `pay:${after.id}:${m}` });
   }
   await S().setJSON('finance', fin);
 }
@@ -466,8 +467,9 @@ export default async (req) => {
         s.pay = s.pay || { fee: 0, dueDay: 0, paid: {} }; s.pay.paid = s.pay.paid || {};
         s.pay.fee = due; touched.add(s.id);
         const dd = /^\d{4}-\d{2}-(\d{2})/.exec(r.due_date || ''); if (dd) s.pay.dueDay = Math.min(28, +dd[1]);
+        if (r.method) { s.pay.methods = s.pay.methods || {}; s.pay.methods[month] = s.pay.methods[month] || r.method; }
         if (/^paid$/i.test(r.status || '') || (paid >= due && due > 0)) s.pay.paid[month] = /^\d{4}-\d{2}-\d{2}$/.test(r.payment_date || '') ? r.payment_date : `${month}-01`;
-        else delete s.pay.paid[month];
+        else if (!s.pay.methods?.[month]) delete s.pay.paid[month]; // a payment recorded on the website wins over an older export
       }
       plans = touched.size;
       for (const r of (b.expenses || [])) {
