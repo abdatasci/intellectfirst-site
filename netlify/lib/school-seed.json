@@ -95,7 +95,7 @@
   },
   {
    "id": "t-aitach",
-   "name": "Aitach",
+   "name": "Aitach Nabiyeva",
    "role": "English teacher",
    "phone": "",
    "email": ""
@@ -124,6 +124,13 @@
   {
    "id": "t-alina",
    "name": "Alina Afanasyeva",
+   "role": "English teacher",
+   "phone": "",
+   "email": ""
+  },
+  {
+   "id": "t-olya",
+   "name": "Olya Harutyunyan",
    "role": "English teacher",
    "phone": "",
    "email": ""
@@ -285,7 +292,7 @@
   }
  ],
  "students": [],
- "version": 7,
+ "version": 8,
  "patches": [
   {
    "v": 2,
@@ -409,6 +416,31 @@
       "title": "Work & Life B2–C1",
       "publisher": "IF Academy",
       "ebook": ""
+     }
+    ]
+   }
+  },
+  {
+   "v": 8,
+   "teachers": {
+    "t-aitach": {
+     "name": "Aitach Nabiyeva"
+    },
+    "t-alina": {
+     "name": "Alina Afanasyeva"
+    },
+    "t-joseph": {
+     "name": "Joseph Cjay"
+    }
+   },
+   "add": {
+    "teachers": [
+     {
+      "id": "t-olya",
+      "name": "Olya Harutyunyan",
+      "role": "English teacher",
+      "phone": "",
+      "email": ""
      }
     ]
    }
