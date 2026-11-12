@@ -321,3 +321,24 @@ html.x-seen .x-bubble{animation-delay:.9s}
 /* doodle stickers on openers */
 .x-open::after{content:"";position:absolute;right:6%;top:12%;width:70px;height:70px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cpath d='M20 3 L23 16 L37 20 L23 24 L20 37 L17 24 L3 20 L17 16 Z' fill='none' stroke='%23E9D7BF' stroke-width='2' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat center/contain;animation:ddFloat 6s ease-in-out infinite;opacity:.9}
 @media (prefers-reduced-motion:reduce){.dd path{animation:none;stroke-dashoffset:0}.bot,.b-wave,.x-open::after,.dd-star{animation:none!important}}
+
+/* teachers opener: real portraits, shown near their native size so they stay sharp */
+.x-team{height:auto;min-height:0;flex-direction:column;align-items:stretch;background:var(--navy-deep);padding:56px 0 34px}
+.x-team::after{display:none}
+.x-team-row{display:flex;gap:16px;justify-content:center;padding:0 24px;overflow-x:auto;scrollbar-width:none}
+.x-team-row figure{margin:0;flex:0 0 clamp(150px,15vw,230px);transform:translateY(calc(var(--i) * 0px));animation:ddFloat 7s calc(var(--i) * .6s) ease-in-out infinite}
+.x-team-row figure:nth-child(even){margin-top:34px}
+.x-team-row img{width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:18px;box-shadow:0 24px 50px -24px rgba(0,0,0,.7)}
+.x-team-row figcaption{font:600 22px 'Caveat',cursive;color:var(--oak-light);text-align:center;margin-top:6px}
+.x-team .wrap{padding-top:24px!important}
+/* life opener: mosaic of real photos at natural size */
+.x-mosaic{height:auto;flex-direction:column;align-items:stretch;background:var(--paper-dim);color:var(--navy);padding:40px 0 30px}
+.x-mosaic::after{display:none}
+.x-mosaic-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;max-width:1700px;margin:0 auto;padding:0 24px;width:100%}
+.x-mosaic-grid img{width:100%;aspect-ratio:3/2;object-fit:cover;border-radius:16px;max-width:380px;justify-self:center}
+.x-mosaic-grid img:nth-child(odd){transform:rotate(-1.5deg)}.x-mosaic-grid img:nth-child(even){transform:rotate(1.5deg) translateY(14px)}
+.x-mosaic .x-open-n{color:var(--oak-deep)}
+@media (max-width:760px){.x-mosaic-grid{grid-template-columns:repeat(2,1fr)}.x-mosaic-grid img:nth-child(5){display:none}.x-team-row{justify-content:flex-start}}
+.x-team-row figure{animation:teamBob 6s calc(var(--i) * .5s) ease-in-out infinite}
+@keyframes teamBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+.x-mosaic .wrap{padding-top:40px!important}
