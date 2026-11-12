@@ -20,9 +20,36 @@ export const phoneKey = p => { const d = String(p || '').replace(/\D/g, ''); ret
 const RANK = { student: 1, teacher: 2, admin: 3 };
 
 async function doc(name) {
+  await migrate();
   const v = await S().get(name, { type: 'json' });
   if (v) return v;
   return structuredClone(seed[name] || []);
+}
+/** Apply timetable/teacher updates shipped in school-seed.json "patches" to data already saved in Blobs (once each). */
+let migrated = false;
+async function migrate() {
+  if (migrated) return; migrated = true;
+  const have = (await S().get('version', { type: 'json' })) || 1;
+  if (have >= (seed.version || 1)) return;
+  for (const p of (seed.patches || []).filter(p => p.v > have)) {
+    for (const coll of ['classes', 'teachers']) {
+      if (!p[coll]) continue;
+      const saved = await S().get(coll, { type: 'json' });
+      if (!saved) continue; // nothing saved yet: the seed already has the change
+      for (const [id, ch] of Object.entries(p[coll])) {
+        const it = saved.find(x => x.id === id); if (!it) continue;
+        const { renameFrom, ...fields } = ch; Object.assign(it, fields);
+      }
+      await S().setJSON(coll, saved);
+    }
+    for (const [id, ch] of Object.entries(p.classes || {})) {
+      if (!ch.renameFrom) continue;
+      const st = await S().get('students', { type: 'json' }); if (!st) continue;
+      st.forEach(s => { s.classes = (s.classes || []).map(c => c === ch.renameFrom ? ch.label : c); });
+      await S().setJSON('students', st);
+    }
+  }
+  await S().setJSON('version', seed.version);
 }
 const save = (name, v) => S().setJSON(name, v);
 async function getProfile(uid) { return (await U().get(`u/${uid}/profile`, { type: 'json' })) || null; }
@@ -97,7 +124,8 @@ function mergeStudents(list, rows) {
     const key = phoneKey(r.phone);
     let s = (key && key.length >= 10 && list.find(x => phoneKey(x.phone) === key)) ||
       list.find(x => `${x.first} ${x.last}`.toLowerCase() === `${first} ${last}`.toLowerCase());
-    const classes = [r.classes || r.class, r.otherClasses].map(v => str(v, 300)).join(';').split(/[;,]+/).map(x => x.trim()).filter(Boolean);
+    const RENAMED = Object.assign({}, ...(seed.patches || []).flatMap(p => Object.values(p.classes || {}).filter(c => c.renameFrom).map(c => ({ [c.renameFrom]: c.label }))));
+    const classes = [r.classes || r.class, r.otherClasses].map(v => str(v, 300)).join(';').split(/[;,]+/).map(x => x.trim()).filter(Boolean).map(c => RENAMED[c] || c);
     if (!s) { s = { id: newId('s'), first, last, tests: [] }; list.push(s); added++; } else updated++;
     Object.assign(s, {
       first: first || s.first, last: last || s.last,
