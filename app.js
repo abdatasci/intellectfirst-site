@@ -138,7 +138,7 @@
     var r = []; try { r = JSON.parse(ls('if.recent') || '[]'); } catch (e) {}
     var rec = r.map(function (s) { return pool.filter(function (i) { return i.slug === s; })[0]; }).filter(Boolean).slice(0, 6);
     if (rec.length) host.appendChild(shelf(t('continue'), rec));
-    var picks = ['kids-english', 'sg-edit', 'sg-precise', 'grammar-game-centre', 'taboo', 'ielts-speaking', 'placement-test'].map(function (s) { return pool.filter(function (i) { return i.slug === s; })[0]; }).filter(Boolean);
+    var picks = ['kids-english', 'sg-edit', 'sg-precise', 'grammar-game-centre', 'taboo', 'ielts', 'placement-test'].map(function (s) { return pool.filter(function (i) { return i.slug === s; })[0]; }).filter(Boolean);
     host.appendChild(shelf(t('everyone'), picks));
     var mat = pool.filter(function (i) { return i.skill === 'materials'; });
     if (mat.length) host.appendChild(shelf(tn(TABS.filter(function (x) { return x.id === 'materials'; })[0]), mat));

@@ -1,3 +1,10 @@
+# IF Academy website.
+# Static pages live at the repo root; scripts/build.mjs copies them to dist/ (without
+# node_modules or function sources). Serverless functions live in netlify/functions.
 [build]
-  publish = "."
-  command = ""
+  command = "node scripts/build.mjs"
+  publish = "dist"
+
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"

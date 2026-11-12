@@ -1,0 +1,16 @@
+{
+  "name": "intellectfirst-site",
+  "private": true,
+  "type": "module",
+  "description": "IF Academy website. Static files at the root; serverless functions in netlify/functions.",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^1.8.0",
+    "@google/genai": "^3.2.0",
+    "@netlify/blobs": "^11.1.9",
+    "@netlify/functions": "^6.1.1",
+    "@netlify/identity": "^2.0.1"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2"
+  }
+}
