@@ -7,6 +7,7 @@ import { getStore } from '@netlify/blobs';
 import { getUser } from '@netlify/identity';
 import bank from '../../a/ielts/data/writing.json';
 import keys from '../../keys.json';
+import extra from './ielts-codes.json';
 
 const MODEL_LIVE = process.env.IELTS_MODEL_LIVE || 'claude-haiku-5-5';
 const MODEL_FINAL = process.env.IELTS_MODEL_FINAL || 'claude-sonnet-5-5';
@@ -42,8 +43,17 @@ async function opens(raw, blobB64) {
     return true;
   } catch { return false; }
 }
+async function hashMatch(code, rec) {
+  const subtle = globalThis.crypto.subtle;
+  const km = await subtle.importKey('raw', new TextEncoder().encode(norm(code)), 'PBKDF2', false, ['deriveBits']);
+  const bits = Buffer.from(await subtle.deriveBits({ name: 'PBKDF2', salt: new TextEncoder().encode(rec.salt), iterations: extra.iterations, hash: 'SHA-256' }, km, 256));
+  const want = Buffer.from(rec.hash, 'base64');
+  return bits.length === want.length && (await import('node:crypto')).timingSafeEqual(bits, want);
+}
 async function roleForCode(code) {
   if (!norm(code)) return null;
+  if (await hashMatch(code, extra.teacher)) return 'teacher';
+  if (await hashMatch(code, extra.student)) return 'student';
   if (await opens(await derive(code, 't'), keys.check_t)) return 'teacher';
   if (await opens(await derive(code, 's'), keys.check_s)) return 'student';
   return null;

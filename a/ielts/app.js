@@ -149,7 +149,7 @@
       '<form id="f" novalidate><label class="f" for="nm">Full name</label><input class="inp" id="nm" autocomplete="name" required>' +
       '<label class="f" for="em">Email</label><input class="inp" id="em" type="email" autocomplete="email" required>' +
       '<label class="f" for="pw">Password</label><input class="inp" id="pw" type="password" autocomplete="new-password" minlength="8" required><p class="hint">At least 8 characters.</p>' +
-      '<label class="f" for="cc">Class code</label><input class="inp" id="cc" autocomplete="off" required><p class="hint">The same code you use for IF Academy class materials.</p>' +
+      '<label class="f" for="cc">Class code</label><input class="inp" id="cc" autocomplete="off" required><p class="hint">Your IELTS class code from your teacher.</p>' +
       '<button class="btn" type="submit">Create account</button></form><p class="alt">Already have an account? <a href="#/login">Sign in</a></p>');
     $('#f').onsubmit = async function (ev) {
       ev.preventDefault(); var f = ev.target, b = $('button', f);
