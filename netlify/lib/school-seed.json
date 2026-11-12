@@ -1,0 +1,257 @@
+{
+ "books": [
+  {
+   "id": "b-ef-a1",
+   "title": "English File Elementary (A1)",
+   "publisher": "Oxford University Press",
+   "ebook": "https://www.oxfordlearnersbookshelf.com"
+  },
+  {
+   "id": "b-ef-a2",
+   "title": "English File Pre-intermediate (A2)",
+   "publisher": "Oxford University Press",
+   "ebook": "https://www.oxfordlearnersbookshelf.com"
+  },
+  {
+   "id": "b-ef-b1",
+   "title": "English File Intermediate (B1)",
+   "publisher": "Oxford University Press",
+   "ebook": "https://www.oxfordlearnersbookshelf.com"
+  },
+  {
+   "id": "b-ef-b2",
+   "title": "English File Upper-intermediate (B2)",
+   "publisher": "Oxford University Press",
+   "ebook": "https://www.oxfordlearnersbookshelf.com"
+  },
+  {
+   "id": "b-ef-c1",
+   "title": "English File Advanced (C1)",
+   "publisher": "Oxford University Press",
+   "ebook": "https://www.oxfordlearnersbookshelf.com"
+  },
+  {
+   "id": "b-teens-b1",
+   "title": "English for Teenagers B1–B2",
+   "publisher": "",
+   "ebook": ""
+  },
+  {
+   "id": "b-teens-b2",
+   "title": "English for Teenagers B2–C1",
+   "publisher": "",
+   "ebook": ""
+  },
+  {
+   "id": "b-gold-b2",
+   "title": "Gold Experience B2",
+   "publisher": "Pearson",
+   "ebook": "https://www.pearson.com"
+  },
+  {
+   "id": "b-yl",
+   "title": "Cambridge Young Learners (Starters, Movers, Flyers)",
+   "publisher": "Cambridge University Press & Assessment",
+   "ebook": "https://www.cambridgeone.org"
+  },
+  {
+   "id": "b-ket",
+   "title": "A2 Key (KET) course book",
+   "publisher": "Cambridge University Press & Assessment",
+   "ebook": "https://www.cambridgeone.org"
+  },
+  {
+   "id": "b-pet",
+   "title": "B1 Preliminary (PET) course book",
+   "publisher": "Cambridge University Press & Assessment",
+   "ebook": "https://www.cambridgeone.org"
+  },
+  {
+   "id": "b-giu",
+   "title": "Grammar in Use (Murphy)",
+   "publisher": "Cambridge University Press & Assessment",
+   "ebook": "https://www.cambridgeone.org"
+  },
+  {
+   "id": "b-ielts",
+   "title": "IELTS course materials",
+   "publisher": "",
+   "ebook": ""
+  }
+ ],
+ "teachers": [
+  {
+   "id": "t-abdoulie",
+   "name": "Abdoulie Manneh",
+   "role": "Founder & Director · English",
+   "phone": "",
+   "email": "ab.manneh86@gmail.com"
+  },
+  {
+   "id": "t-aitach",
+   "name": "Aitach",
+   "role": "English teacher",
+   "phone": "",
+   "email": ""
+  },
+  {
+   "id": "t-dana",
+   "name": "Dana Armanova",
+   "role": "English teacher",
+   "phone": "",
+   "email": ""
+  },
+  {
+   "id": "t-joseph",
+   "name": "Joseph Cj",
+   "role": "English teacher",
+   "phone": "",
+   "email": ""
+  },
+  {
+   "id": "t-anelya",
+   "name": "Anelya Amanova",
+   "role": "Manager · English teacher",
+   "phone": "",
+   "email": ""
+  }
+ ],
+ "classes": [
+  {
+   "id": "c-b1a",
+   "label": "B1 A",
+   "teacherId": "t-abdoulie",
+   "bookId": "b-teens-b1",
+   "schedule": "Wed 15:15–16:45 · Fri 15:15–16:45",
+   "room": "Business Lab",
+   "kind": "group"
+  },
+  {
+   "id": "c-b1b",
+   "label": "B1 B",
+   "teacherId": "t-abdoulie",
+   "bookId": "b-teens-b1",
+   "schedule": "Mon 16:50–18:20 · Wed 16:50–18:20",
+   "room": "Business Lab",
+   "kind": "group"
+  },
+  {
+   "id": "c-b1c",
+   "label": "B1 C",
+   "teacherId": "t-abdoulie",
+   "bookId": "b-teens-b1",
+   "schedule": "Mon 15:15–16:45 · Fri 16:50–18:20",
+   "room": "Business Lab",
+   "kind": "group"
+  },
+  {
+   "id": "c-b1d",
+   "label": "B1 D",
+   "teacherId": "t-abdoulie",
+   "bookId": "b-ef-b1",
+   "schedule": "Tue 18:00–19:30 · Thu 18:00–19:30",
+   "room": "Business Lab",
+   "kind": "group"
+  },
+  {
+   "id": "c-c1",
+   "label": "C1",
+   "teacherId": "t-abdoulie",
+   "bookId": "b-teens-b2",
+   "schedule": "Sat 16:30–18:00 · Sun 13:15–14:45",
+   "room": "Business Lab",
+   "kind": "group"
+  },
+  {
+   "id": "c-b2a",
+   "label": "B2-Adults",
+   "teacherId": "t-abdoulie",
+   "bookId": "b-ef-b2",
+   "schedule": "",
+   "room": "Business Lab",
+   "kind": "group"
+  },
+  {
+   "id": "c-pet",
+   "label": "PET",
+   "teacherId": "t-abdoulie",
+   "bookId": "b-pet",
+   "schedule": "Thu 16:30–18:00 · Sun 16:30–18:00",
+   "room": "Business Lab",
+   "kind": "group"
+  },
+  {
+   "id": "c-ket",
+   "label": "KET",
+   "teacherId": "t-abdoulie",
+   "bookId": "b-ket",
+   "schedule": "Sat 15:00–16:30 · Sun 15:00–16:30",
+   "room": "Business Lab",
+   "kind": "group"
+  },
+  {
+   "id": "c-flyers",
+   "label": "Flyers",
+   "teacherId": "t-abdoulie",
+   "bookId": "b-yl",
+   "schedule": "Thu 10:00–11:30 · Sun 10:00–11:30",
+   "room": "Business Lab",
+   "kind": "group"
+  },
+  {
+   "id": "c-a2t",
+   "label": "A2-Teens",
+   "teacherId": "t-aitach",
+   "bookId": "b-ef-a2",
+   "schedule": "Mon 15:30–17:00 · Wed 15:30–17:00",
+   "room": "Hub",
+   "kind": "group"
+  },
+  {
+   "id": "c-starters-a",
+   "label": "Starters (Aitach)",
+   "teacherId": "t-aitach",
+   "bookId": "b-yl",
+   "schedule": "Tue 11:30–12:30 · Thu 11:30–12:30",
+   "room": "Studio",
+   "kind": "group"
+  },
+  {
+   "id": "c-couples",
+   "label": "Couples group",
+   "teacherId": "t-aitach",
+   "bookId": "",
+   "schedule": "Tue 16:00–17:00 · Thu 16:00–17:00",
+   "room": "Hub",
+   "kind": "group"
+  },
+  {
+   "id": "c-starters-d",
+   "label": "Starters",
+   "teacherId": "t-dana",
+   "bookId": "b-yl",
+   "schedule": "Tue · Thu · Sat 16:00–17:00",
+   "room": "Studio",
+   "kind": "group"
+  },
+  {
+   "id": "c-movers-j",
+   "label": "Movers",
+   "teacherId": "t-joseph",
+   "bookId": "b-yl",
+   "schedule": "Sun 17:00–18:30",
+   "room": "Hub",
+   "kind": "group"
+  },
+  {
+   "id": "c-movers-a",
+   "label": "Movers (Anelya)",
+   "teacherId": "t-anelya",
+   "bookId": "b-yl",
+   "schedule": "Tue 17:00–18:30",
+   "room": "Hub",
+   "kind": "group"
+  }
+ ],
+ "students": []
+}

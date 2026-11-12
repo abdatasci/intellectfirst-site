@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>My IF Academy</title>
+<meta name="description" content="IF Academy student and teacher accounts: profile, classes, test results, progress and school administration.">
+<meta name="robots" content="noindex">
+<link rel="icon" href="/brand/favicon-64.png">
+<link rel="stylesheet" href="/a/ielts/style.css">
+<link rel="stylesheet" href="portal.css">
+</head>
+<body>
+<header class="top">
+  <div class="bar">
+    <a class="brand" href="/">
+      <img src="/brand/logo-shield.png" alt="" width="40" height="48">
+      <span><b>IF Academy</b><small>My account</small></span>
+    </a>
+    <span class="spacer"></span>
+    <nav class="nav" id="nav" aria-label="Account">
+      <a href="#/" data-nav="home">Profile</a>
+      <a href="#/classes" data-nav="classes" hidden>My classes</a>
+      <a href="/a/ielts/" data-nav="ielts">IELTS</a>
+      <a href="#/admin" data-nav="admin" hidden>Admin</a>
+    </nav>
+    <div class="who" id="who"></div>
+  </div>
+</header>
+<main id="view" class="wrap" tabindex="-1"></main>
+<div class="modal" id="modal" hidden><div class="modal-box" role="dialog" aria-modal="true"><button class="modal-x" id="modalX" aria-label="Close">×</button><div id="modalBody"></div></div></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script src="/a/ielts/identity.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

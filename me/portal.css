@@ -1,0 +1,55 @@
+/* My IF Academy: builds on the IELTS Centre styles (/a/ielts/style.css). */
+.prof{display:grid;grid-template-columns:auto 1fr;gap:22px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:24px;padding:24px;margin-top:26px}
+.avatar{position:relative;width:120px;height:120px;border-radius:50%;overflow:hidden;background:var(--navy);display:grid;place-items:center;color:#fff;font-family:var(--serif);font-size:44px;font-weight:700;flex:none}
+.avatar img{width:100%;height:100%;object-fit:cover}
+.avatar.sm{width:52px;height:52px;font-size:20px}
+.avatar.md{width:72px;height:72px;font-size:26px}
+.avbtn{position:absolute;inset:auto 0 0 0;background:rgba(11,31,58,.78);color:#fff;border:0;font-size:12.5px;font-weight:700;padding:6px 0}
+.prof h1{margin:6px 0 6px;font-size:clamp(28px,5vw,42px)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.chip2{font-size:13px;font-weight:700;padding:4px 10px;border-radius:999px;background:var(--gold-soft);color:var(--navy)}
+.chip2.navy{background:var(--navy);color:#fff}
+.chip2.ok{background:var(--ok-bg);color:var(--ok)}
+.chip2.warn{background:var(--warn-bg);color:var(--warn)}
+.chip2.mute{background:#eee9df;color:var(--muted)}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+.box{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:20px}
+.box h3{margin-bottom:10px}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:15px}
+.kv dt{color:var(--muted)}
+.kv dd{color:var(--ink);font-weight:600}
+.cls{display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-top:1px solid var(--line)}
+.cls:first-of-type{border-top:0;padding-top:0}
+.cls b{font-family:var(--serif);font-size:19px;color:var(--navy)}
+.cls p{font-size:14px;color:var(--muted)}
+.banner{background:var(--warn-bg);color:var(--warn);border-radius:16px;padding:14px 18px;margin-top:16px;font-size:15px}
+.banner .row{margin-top:10px}
+.people{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.person{display:flex;gap:12px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px 14px;text-decoration:none}
+.person:hover{border-color:var(--gold)}
+.person b{display:block;color:var(--navy);font-family:var(--serif);font-size:18px;line-height:1.2}
+.person small{color:var(--muted);font-size:13px}
+.comment{border-left:3px solid var(--gold);padding:6px 12px;margin-top:10px}
+.comment small{display:block;color:var(--muted);font-size:12.5px}
+/* admin */
+.tabs2{display:flex;gap:6px;flex-wrap:wrap;margin:18px 0}
+.tabs2 a{text-decoration:none;border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 14px;font-weight:700;font-size:14px;color:var(--navy-2)}
+.tabs2 a.on{background:var(--navy);border-color:var(--navy);color:#fff}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.toolbar .inp{max-width:320px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
+.grid2 .full{grid-column:1/-1}
+select.inp{appearance:auto}
+.modal{position:fixed;inset:0;z-index:30;background:rgba(11,31,58,.45);display:flex;align-items:flex-start;justify-content:center;padding:40px 16px;overflow:auto}
+.modal[hidden]{display:none}
+.modal-box{position:relative;background:var(--card);border-radius:22px;padding:26px;width:100%;max-width:640px;box-shadow:0 30px 80px rgba(11,31,58,.3)}
+.modal-x{position:absolute;top:10px;right:14px;border:0;background:none;font-size:28px;color:var(--muted)}
+.cam{width:100%;border-radius:16px;background:#000;aspect-ratio:1/1;object-fit:cover}
+.preview-tbl{max-height:320px;overflow:auto;margin-top:12px}
+.small{font-size:13px;color:var(--muted)}
+@media (max-width:700px){
+  .prof{grid-template-columns:1fr;text-align:center;justify-items:center}
+  .prof .chips{justify-content:center}
+  .grid2{grid-template-columns:1fr}
+  .avatar{width:110px;height:110px}
+}

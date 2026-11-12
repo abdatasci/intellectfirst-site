@@ -1,0 +1,16 @@
+{
+ "note": "IF Academy extra codes (IELTS student, staff, admin). Only PBKDF2 hashes are stored; the codes themselves are not in this repository.",
+ "iterations": 310000,
+ "student": {
+  "salt": "IF-IELTS/student/v1",
+  "hash": "cSAsETTbRSiyAZ0i762czG4neMybagstq2v/YA6q7AA="
+ },
+ "teacher": {
+  "salt": "IF-IELTS/teacher/v1",
+  "hash": "wi7wznWM6gaCrtskHOe+/ahslQIdN/XAYUyMHWzVrAU="
+ },
+ "admin": {
+  "salt": "IF-School/admin/v1",
+  "hash": "cF/gj+/f3SPX2vY54EbwUstKvph/ox4y1Mh8/pP6dY8="
+ }
+}

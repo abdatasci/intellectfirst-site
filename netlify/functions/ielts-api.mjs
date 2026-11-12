@@ -7,8 +7,7 @@ import { getStore } from '@netlify/blobs';
 import { getUser } from '@netlify/identity';
 import bank from '../../a/ielts/data/writing.json';
 import speakBank from '../../a/ielts/data/speaking.json';
-import keys from '../../keys.json';
-import extra from './ielts-codes.json';
+import { roleForCode, isStaff } from '../lib/codes.mjs';
 
 const MODEL_LIVE = process.env.IELTS_MODEL_LIVE || 'claude-haiku-5-5';
 const MODEL_FINAL = process.env.IELTS_MODEL_FINAL || 'claude-sonnet-5-5';
@@ -25,41 +24,6 @@ const today = () => new Date().toISOString().slice(0, 10);
 const words = t => (String(t || '').trim().match(/[A-Za-z0-9'’-]+/g) || []).length;
 const half = x => Math.round(x * 2) / 2;
 const newId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
-
-/* ---------- class / staff code check (same scheme as /if-lock.js) ---------- */
-const SALT = { s: 'IF-Academy/student/v1', t: 'IF-Academy/teacher/v1' };
-const norm = c => String(c || '').replace(/[^A-Za-z0-9]/g, '').toUpperCase();
-const b64d = s => Uint8Array.from(Buffer.from(s, 'base64'));
-async function derive(code, lvl) {
-  const subtle = globalThis.crypto.subtle;
-  const km = await subtle.importKey('raw', new TextEncoder().encode(norm(code)), 'PBKDF2', false, ['deriveBits']);
-  const bits = await subtle.deriveBits({ name: 'PBKDF2', salt: new TextEncoder().encode(SALT[lvl]), iterations: 310000, hash: 'SHA-256' }, km, 256);
-  return new Uint8Array(bits);
-}
-async function opens(raw, blobB64) {
-  try {
-    const subtle = globalThis.crypto.subtle;
-    const k = await subtle.importKey('raw', raw, 'AES-GCM', false, ['decrypt']);
-    const blob = b64d(blobB64);
-    await subtle.decrypt({ name: 'AES-GCM', iv: blob.slice(0, 12) }, k, blob.slice(12));
-    return true;
-  } catch { return false; }
-}
-async function hashMatch(code, rec) {
-  const subtle = globalThis.crypto.subtle;
-  const km = await subtle.importKey('raw', new TextEncoder().encode(norm(code)), 'PBKDF2', false, ['deriveBits']);
-  const bits = Buffer.from(await subtle.deriveBits({ name: 'PBKDF2', salt: new TextEncoder().encode(rec.salt), iterations: extra.iterations, hash: 'SHA-256' }, km, 256));
-  const want = Buffer.from(rec.hash, 'base64');
-  return bits.length === want.length && (await import('node:crypto')).timingSafeEqual(bits, want);
-}
-async function roleForCode(code) {
-  if (!norm(code)) return null;
-  if (await hashMatch(code, extra.teacher)) return 'teacher';
-  if (await hashMatch(code, extra.student)) return 'student';
-  if (await opens(await derive(code, 't'), keys.check_t)) return 'teacher';
-  if (await opens(await derive(code, 's'), keys.check_s)) return 'student';
-  return null;
-}
 
 /* ---------- storage helpers ---------- */
 async function getProfile(uid) { return (await store().get(`u/${uid}/profile`, { type: 'json' })) || null; }
@@ -95,7 +59,7 @@ async function useQuota(uid, kind, role) {
   const s = store();
   const key = `quota/${today()}/${uid}`;
   const q = (await s.get(key, { type: 'json' })) || {};
-  const limit = (role === 'teacher' ? TEACHER_QUOTA : QUOTA)[kind];
+  const limit = (isStaff(role) ? TEACHER_QUOTA : QUOTA)[kind];
   if ((q[kind] || 0) >= limit) return false;
   q[kind] = (q[kind] || 0) + 1;
   await s.setJSON(key, q);
@@ -224,11 +188,13 @@ export default async (req) => {
     const role = await roleForCode(body.code);
     if (!role) return fail(403, 'code');
     const name = String(body.name || user.name || '').trim().slice(0, 80) || user.email.split('@')[0];
-    profile = { ...(profile || {}), name, email: user.email, role, since: profile?.since || new Date().toISOString(), attempts: profile?.attempts || 0 };
+    const rank = { student: 1, teacher: 2, admin: 3 };
+    const finalRole = profile?.role && rank[profile.role] > rank[role] ? profile.role : role;
+    profile = { ...(profile || {}), name, email: user.email, role: finalRole, since: profile?.since || new Date().toISOString(), attempts: profile?.attempts || 0 };
     await putProfile(uid, profile);
     const s = store();
     const dir = (await s.get('directory', { type: 'json' })) || {};
-    dir[uid] = { name, email: user.email, role };
+    dir[uid] = { ...(dir[uid] || {}), name, email: user.email, role: finalRole };
     await s.setJSON('directory', dir);
     return json({ profile });
   }
@@ -243,7 +209,7 @@ export default async (req) => {
     const mode = body.mode === 'final' ? 'final' : 'live';
     if (mode === 'live' && words(text) < 30) return fail(400, 'short');
     if (mode === 'final' && words(text) < 20) return fail(400, 'short');
-    if (!(await useQuota(uid, mode, profile.role))) return fail(429, 'quota', { limit: (profile.role === 'teacher' ? TEACHER_QUOTA : QUOTA)[mode] });
+    if (!(await useQuota(uid, mode, profile.role))) return fail(429, 'quota', { limit: (isStaff(profile.role) ? TEACHER_QUOTA : QUOTA)[mode] });
     let result;
     try { result = await scoreWriting(task, text, mode); }
     catch (e) { console.error('scoring failed', e?.status, e?.message); return fail(502, 'ai', { detail: String(e?.message || e).slice(0, 200) }); }
@@ -264,7 +230,7 @@ export default async (req) => {
       secs: Number(a.secs) || 0, speechSecs: Number(a.speechSecs) || 0, pauses: Number(a.pauses) || 0, longPauses: Number(a.longPauses) || 0,
       conf: a.conf == null ? null : Number(a.conf) }));
     if (answers.reduce((n, a) => n + words(a.text), 0) < 15) return fail(400, 'short');
-    if (!(await useQuota(uid, 'speaking', profile.role))) return fail(429, 'quota', { limit: (profile.role === 'teacher' ? TEACHER_QUOTA : QUOTA).speaking });
+    if (!(await useQuota(uid, 'speaking', profile.role))) return fail(429, 'quota', { limit: (isStaff(profile.role) ? TEACHER_QUOTA : QUOTA).speaking });
     let result;
     try { result = await scoreSpeaking(topic, scope, answers); }
     catch (e) { console.error('speaking failed', e?.status, e?.message); return fail(502, 'ai', { detail: String(e?.message || e).slice(0, 200) }); }
@@ -285,7 +251,7 @@ export default async (req) => {
   }
 
   if (path.startsWith('teacher')) {
-    if (profile.role !== 'teacher') return fail(403, 'teacher');
+    if (!isStaff(profile.role)) return fail(403, 'teacher');
     if (path === 'teacher/students') {
       const dir = (await store().get('directory', { type: 'json' })) || {};
       const rows = await Promise.all(Object.entries(dir).filter(([, d]) => d.role === 'student').map(async ([id, d]) => {
