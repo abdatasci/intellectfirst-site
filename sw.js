@@ -8,7 +8,7 @@ self.addEventListener('fetch', e => {
   const r = e.request; if (r.method !== 'GET') return;
   const u = new URL(r.url);
   /* Live data and sign-in are never cached. */
-  if (u.origin === location.origin && (u.pathname.startsWith('/api/') || u.pathname.startsWith('/.netlify/'))) return;
+  if (u.origin === location.origin && (u.pathname.startsWith('/api/') || u.pathname.startsWith('/.netlify/') || u.pathname.startsWith('/lessons/'))) return;
   if (u.origin !== location.origin) {
     if (/fonts\.(googleapis|gstatic)\.com|cdnjs\.cloudflare\.com/.test(u.host)) e.respondWith(caches.open(CACHE).then(c => c.match(r).then(m => m || fetch(r).then(res => { c.put(r, res.clone()); return res; }))));
     return;

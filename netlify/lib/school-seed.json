@@ -77,6 +77,12 @@
    "title": "IELTS course materials",
    "publisher": "",
    "ebook": ""
+  },
+  {
+   "id": "b-wl",
+   "title": "Work & Life B2–C1",
+   "publisher": "IF Academy",
+   "ebook": ""
   }
  ],
  "teachers": [
@@ -279,7 +285,7 @@
   }
  ],
  "students": [],
- "version": 6,
+ "version": 7,
  "patches": [
   {
    "v": 2,
@@ -390,6 +396,19 @@
       "role": "English teacher",
       "phone": "",
       "email": ""
+     }
+    ]
+   }
+  },
+  {
+   "v": 7,
+   "add": {
+    "books": [
+     {
+      "id": "b-wl",
+      "title": "Work & Life B2–C1",
+      "publisher": "IF Academy",
+      "ebook": ""
      }
     ]
    }

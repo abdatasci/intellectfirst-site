@@ -7,6 +7,7 @@ import { getStore } from '@netlify/blobs';
 import { getUser } from '@netlify/identity';
 import { roleForCode, isStaff } from '../lib/codes.mjs';
 import seed from '../lib/school-seed.json';
+import ckey from '../lib/content-key.json';
 
 const S = () => getStore({ name: 'school', consistency: 'strong' });
 const U = () => getStore({ name: 'ielts', consistency: 'strong' });
@@ -118,6 +119,32 @@ async function studentView(s) {
   return out;
 }
 
+
+/* ---------- lesson slides: content key ----------
+   Slides are published encrypted (/lessons/<deck>/<n>.bin). The key is stored only wrapped with the staff and admin
+   codes (content-key.json); entering one of those codes once unlocks it into Blobs, and staff then receive it signed in. */
+async function unwrapKey(code) {
+  const { norm } = await import('../lib/codes.mjs');
+  const subtle = globalThis.crypto.subtle;
+  for (const k of ['staff', 'admin']) {
+    const w = ckey[k]; if (!w) continue;
+    try {
+      const km = await subtle.importKey('raw', new TextEncoder().encode(norm(code)), 'PBKDF2', false, ['deriveKey']);
+      const kek = await subtle.deriveKey({ name: 'PBKDF2', salt: Buffer.from(w.salt, 'base64'), iterations: ckey.iterations, hash: 'SHA-256' }, km, { name: 'AES-GCM', length: 256 }, false, ['decrypt']);
+      const blob = Buffer.from(w.blob, 'base64');
+      const raw = await subtle.decrypt({ name: 'AES-GCM', iv: blob.subarray(0, 12) }, kek, blob.subarray(12));
+      return Buffer.from(raw).toString('base64');
+    } catch { /* try next */ }
+  }
+  return null;
+}
+async function storeKeyFrom(code) {
+  const k = await unwrapKey(code);
+  if (k) await S().setJSON('contentKey', { key: k, at: new Date().toISOString() });
+  return k;
+}
+const roomName = c => 'IFAcademy-' + String(c.label || c.id).replace(/[^A-Za-z0-9]+/g, '') + '-' + Math.random().toString(36).slice(2, 8);
+
 /* ---------- import helpers (admin) ---------- */
 function splitName(full) {
   if (/[()]/.test(str(full))) return { first: str(full, 80), last: '' };
@@ -200,6 +227,7 @@ export default async (req) => {
       phone: str(b.phone, 40) || profile?.phone || '', role: finalRole, since: profile?.since || new Date().toISOString(), attempts: profile?.attempts || 0 };
     profile = await linkByPhone(uid, profile);
     await putProfile(uid, profile);
+    if (isStaff(role) && !(await S().get('contentKey', { type: 'json' }))) await storeKeyFrom(b.code);
     return json({ profile });
   }
 
@@ -263,6 +291,35 @@ export default async (req) => {
     s.comments.push({ id: newId('c'), by: profile.name, at: new Date().toISOString(), text: str(b.text, 1000) });
     await save('students', list);
     return json({ comments: s.comments });
+  }
+
+  /* ---- IF Classroom: lesson slides key + online rooms ---- */
+  if (path === 'materials' && method === 'GET') {
+    if (!isStaff(profile?.role)) return fail(403, 'staff');
+    const k = await S().get('contentKey', { type: 'json' });
+    return json({ key: k?.key || null, viewer: { name: profile.name, email: profile.email } });
+  }
+  if (path === 'materials/unlock' && method === 'POST') {
+    if (!isStaff(profile?.role)) return fail(403, 'staff');
+    const b = await req.json().catch(() => ({}));
+    const k = await storeKeyFrom(b.code);
+    return k ? json({ key: k }) : fail(403, 'code');
+  }
+  if (path === 'classroom' && method === 'GET') {
+    if (!profile) return fail(403, 'profile');
+    let mine = [];
+    if (isStaff(profile.role)) mine = await classesForTeacher(profile);
+    else if (profile.studentId) {
+      const s = (await doc('students')).find(x => x.id === profile.studentId);
+      mine = (await doc('classes')).filter(c => (s?.classes || []).includes(c.label));
+    }
+    if (mine.some(c => !c.meet)) {
+      const all = await doc('classes');
+      for (const c of all) if (mine.some(m => m.id === c.id) && !c.meet) c.meet = roomName(c);
+      await save('classes', all);
+      mine = all.filter(c => mine.some(m => m.id === c.id));
+    }
+    return json({ classes: mine.map(c => ({ id: c.id, label: c.label, schedule: c.schedule || '', room: c.room || '', bookId: c.bookId || '', teacherId: c.teacherId || '', meet: c.meet })) });
   }
 
   /* ---- export (admin: everything; teachers: their own classes) ---- */
@@ -348,6 +405,9 @@ export default async (req) => {
       }
       await putProfile(b.uid, p);
       return json({ profile: p });
+    }
+    if (path === 'admin/placements' && method === 'GET') {
+      return json({ placements: ((await S().get('placements', { type: 'json' })) || []).slice().reverse() });
     }
     const as = path.match(/^admin\/student\/([A-Za-z0-9-]+)$/);
     if (as && method === 'GET') {

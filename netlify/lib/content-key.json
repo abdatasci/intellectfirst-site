@@ -1,0 +1,11 @@
+{
+ "iterations": 310000,
+ "staff": {
+  "salt": "wYq4+iPm/NNyTXu5MH6hVA==",
+  "blob": "aJBH/zEFe3jrYLzUYdAFy6cs88n1QK/9OyXmk8UqideCehQbr5lak4gRiKdl2tBAAovlKTuAvpGB7nek"
+ },
+ "admin": {
+  "salt": "+34jjKIwH0mMsMmt7ceeuQ==",
+  "blob": "FdzxCK3AiFsPhQ/4HV+uTel9rMlXV1ssMSp6qjHaYu9qGE1G3OmCOLc+uxWJEkN1eAQ1jEWvXMVNtdOl"
+ }
+}

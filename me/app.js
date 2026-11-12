@@ -45,6 +45,7 @@
     } else who.innerHTML = '';
     $('[data-nav=classes]').hidden = !staff();
     $('[data-nav=admin]').hidden = role() !== 'admin';
+    $('[data-nav=classroom]').hidden = !role();
   }
   function setNav(k) { document.querySelectorAll('.nav a').forEach(function (a) { a.classList.toggle('on', a.dataset.nav === k); }); }
   function bookOf(id) { return ((ME && ME.books) || []).filter(function (b) { return b.id === id; })[0]; }
@@ -282,10 +283,114 @@
     } catch (e) { view.innerHTML = '<div class="empty" style="margin-top:30px">This student could not be loaded.</div>'; }
   }
 
+  /* ---------- IF Classroom: online lessons (Jitsi) + lesson slides (view-only) ---------- */
+  var LESSONS = null, CKEY = null, VIEWER = null;
+  var BOOKS_ORDER = ['b-ef-b1', 'b-ef-b2', 'b-ef-c1', 'b-teens-b2', 'b-wl'];
+  function meetUrl(c) { return 'https://meet.jit.si/' + encodeURIComponent(c.meet) + '#userInfo.displayName=%22' + encodeURIComponent((ME && ME.profile && ME.profile.name) || '') + '%22'; }
+  async function lessonsIndex() { if (!LESSONS) { var r = await fetch('/lessons/index.json', { cache: 'no-cache' }); LESSONS = r.ok ? await r.json() : { decks: [] }; } return LESSONS; }
+  async function contentKey() {
+    if (CKEY) return CKEY;
+    var d = await api('materials'); VIEWER = d.viewer;
+    if (!d.key) return null;
+    var raw = Uint8Array.from(atob(d.key), function (c) { return c.charCodeAt(0); });
+    CKEY = await crypto.subtle.importKey('raw', raw, 'AES-GCM', false, ['decrypt']);
+    return CKEY;
+  }
+  async function vClassroom(tab) {
+    setNav('classroom'); if (!role()) return go('#/');
+    view.innerHTML = '<p style="margin-top:30px"><span class="spin"></span></p>';
+    var cl = (await api('classroom')).classes || [];
+    var h = '<section class="hero" style="padding-bottom:6px"><div class="eyebrow">IF Classroom</div><h1>' + (staff() ? 'Teach online and present' : 'Your online lessons') + '</h1><p class="lead">' +
+      (staff() ? 'Start a video lesson for any of your classes, and present your lesson slides from here.' : 'Join your class video lesson at lesson time. Your teacher opens the room first.') + '</p></section>';
+    var online = '<h3 style="margin:' + (staff() ? '34px' : '18px') + ' 0 10px">Online lessons</h3>' + (cl.length ? (staff()
+      ? '<p class="small" style="margin-bottom:10px">Opens a Jitsi video room for the class in a new tab. Share this tab from the call to present your slides.</p><div class="mrows">' + cl.map(function (c) {
+          return '<div class="mrow"><div><b>' + esc(c.label) + '</b><small>' + esc(c.schedule || '') + '</small></div><a class="btn sm" target="_blank" rel="noopener" href="' + esc(meetUrl(c)) + '">Start ↗</a><button class="btn ghost sm" data-copy="' + esc('https://meet.jit.si/' + c.meet) + '">Copy link</button></div>';
+        }).join('') + '</div>'
+      : '<div class="grid">' + cl.map(function (c) {
+          return '<div class="card"><span class="tag">' + esc(c.schedule || 'Online room') + '</span><h3>' + esc(c.label) + '</h3><p>Video lesson room for your class.</p><div class="row" style="margin-top:10px"><a class="btn sm" target="_blank" rel="noopener" href="' + esc(meetUrl(c)) + '">Join lesson ↗</a></div></div>';
+        }).join('') + '</div>')
+      : '<div class="empty">' + (staff() ? 'No classes are linked to your account yet.' : 'Your class is not linked yet. Ask the school to check your phone number.') + '</div>');
+    if (staff()) {
+      var idx = await lessonsIndex(), books = {};
+      idx.decks.forEach(function (d) { (books[d.book] = books[d.book] || []).push(d); });
+      var ids = Object.keys(books).sort(function (a, b) { return (BOOKS_ORDER.indexOf(a) + 99) % 99 - (BOOKS_ORDER.indexOf(b) + 99) % 99; });
+      tab = tab && books[tab] ? tab : (lsGet('ifc:book') && books[lsGet('ifc:book')] ? lsGet('ifc:book') : ids[0]);
+      h += '<h3 style="margin:22px 0 4px">Lesson slides</h3><p class="small">' + idx.decks.length + ' lessons · updated ' + esc(idx.updated || '') + '. Slides open here for presenting and are not downloadable.</p>' +
+        '<div class="tabs2">' + ids.map(function (b) { var bk = bookOf(b); return '<a href="#/classroom/' + b + '" class="' + (b === tab ? 'on' : '') + '">' + esc(bk ? bk.title.replace(/\s*\(.*\)$/, '') : b) + ' <small>' + books[b].length + '</small></a>'; }).join('') + '</div>' +
+        (tab ? '<div class="decks">' + books[tab].map(function (d) { return '<a class="deck" href="#/present/' + d.id + '"><b>' + esc(d.unit) + '</b><span>' + esc(d.title) + '</span><small>' + d.slides + ' slides</small></a>'; }).join('') + '</div>' : '<div class="empty">No lesson slides yet.</div>');
+      if (tab) lsSet('ifc:book', tab);
+    }
+    h += online;
+    view.innerHTML = h;
+    view.querySelectorAll('[data-copy]').forEach(function (b) { b.onclick = function () { (navigator.clipboard ? navigator.clipboard.writeText(b.dataset.copy) : Promise.reject()).then(function () { toast('Link copied'); }, function () { prompt('Copy this link', b.dataset.copy); }); }; });
+  }
+  function unlockBox() {
+    return '<div class="panel" style="max-width:560px;margin-top:24px"><h2>Unlock lesson slides</h2><p class="sub">Slides are stored encrypted. Enter the staff or admin code once and they open for every teacher.</p><form id="uf"><label class="f" for="uc">Staff or admin code</label><input class="inp" id="uc" autocomplete="off" required><button class="btn" style="margin-top:12px">Unlock</button></form></div>';
+  }
+  async function vPresent(id) {
+    setNav('classroom'); if (!staff()) return go('#/');
+    view.innerHTML = '<p style="margin-top:30px"><span class="spin"></span></p>';
+    var idx = await lessonsIndex(), d = idx.decks.filter(function (x) { return x.id === id; })[0];
+    if (!d) { view.innerHTML = '<div class="empty" style="margin-top:30px">This lesson was not found. <a href="#/classroom">Back</a></div>'; return; }
+    var key = await contentKey();
+    if (!key) {
+      view.innerHTML = '<div class="row" style="margin-top:18px"><a class="btn ghost sm" href="#/classroom">← IF Classroom</a></div>' + unlockBox();
+      $('#uf').onsubmit = async function (ev) { ev.preventDefault(); try { await api('materials/unlock', { method: 'POST', body: { code: $('#uc').value } }); CKEY = null; toast('Slides unlocked'); vPresent(id); } catch (e) { err(ev.target, 'That code did not work.'); } };
+      return;
+    }
+    var bk = bookOf(d.book), n = Math.min(Math.max(1, +(lsGet('ifc:pos:' + id) || 1)), d.slides), cache = {}, want = 0;
+    view.innerHTML = '<div class="pres" id="pres"><div class="pvbar"><a class="btn ghost sm" href="#/classroom/' + d.book + '">← Lessons</a><div class="ptitle"><small>' + esc(bk ? bk.title : '') + ' · ' + esc(d.unit) + '</small><b>' + esc(d.title) + '</b></div>' +
+      '<span class="spacer"></span><button class="btn ghost sm" id="pg" title="All slides (G)">Slides</button><button class="btn ghost sm" id="pf" title="Full screen (F)">Present ⛶</button></div>' +
+      '<div class="pstage" id="pst"><canvas id="pc" width="' + d.w + '" height="' + d.h + '"></canvas><button class="pnav l" id="pp" aria-label="Previous">‹</button><button class="pnav r" id="pn" aria-label="Next">›</button><div class="pcount" id="pk"></div></div>' +
+      '<div class="pgrid" id="pgd" hidden>' + Array.from({ length: d.slides }, function (_, i) { return '<button data-go="' + (i + 1) + '">' + (i + 1) + '</button>'; }).join('') + '</div></div>';
+    var cv = $('#pc'), cx = cv.getContext('2d'), wm = VIEWER ? (VIEWER.name + ' · ' + VIEWER.email) : 'IF Academy';
+    cv.oncontextmenu = function (e) { e.preventDefault(); };
+    async function slide(i) {
+      if (cache[i]) return cache[i];
+      cache[i] = (async function () {
+        var r = await fetch('/lessons/' + id + '/' + i + '.bin?v=' + d.v); if (!r.ok) throw new Error('slide ' + i);
+        var buf = new Uint8Array(await r.arrayBuffer());
+        var plain = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: buf.slice(0, 12) }, key, buf.slice(12));
+        return createImageBitmap(new Blob([plain], { type: 'image/webp' }));
+      })();
+      cache[i].catch(function () { delete cache[i]; });
+      Object.keys(cache).forEach(function (k) { if (Math.abs(k - i) > 6) delete cache[k]; });
+      return cache[i];
+    }
+    function mark() {
+      cx.save(); cx.globalAlpha = 0.08; cx.font = '600 ' + Math.round(d.w / 60) + 'px Lato, sans-serif'; cx.translate(d.w / 2, d.h / 2); cx.rotate(-Math.PI / 9);
+      for (var y = -d.h; y < d.h; y += d.h / 4) for (var x = -d.w; x < d.w; x += d.w / 2.2) { var xx = x + ((y / (d.h / 4)) % 2 ? d.w / 4.4 : 0); cx.fillStyle = '#0b1f3a'; cx.fillText(wm, xx, y); cx.fillStyle = '#ffffff'; cx.fillText(wm, xx + 2, y + 2); }
+      cx.restore();
+    }
+    async function show(i) {
+      n = Math.min(Math.max(1, i), d.slides); want = n; lsSet('ifc:pos:' + id, n);
+      $('#pk').textContent = n + ' / ' + d.slides;
+      try { var bm = await slide(n); if (want !== n) return; cx.clearRect(0, 0, d.w, d.h); cx.drawImage(bm, 0, 0, d.w, d.h); mark(); }
+      catch (e) { toast('Could not load slide ' + n); }
+      [n + 1, n + 2, n - 1].forEach(function (k) { if (k >= 1 && k <= d.slides) slide(k).catch(function () {}); });
+    }
+    $('#pp').onclick = function () { show(n - 1); }; $('#pn').onclick = function () { show(n + 1); };
+    cv.onclick = function (e) { var r = cv.getBoundingClientRect(); show(e.clientX - r.left < r.width / 3 ? n - 1 : n + 1); };
+    $('#pg').onclick = function () { $('#pgd').hidden = !$('#pgd').hidden; };
+    $('#pgd').onclick = function (e) { var b = e.target.closest('[data-go]'); if (b) { $('#pgd').hidden = true; show(+b.dataset.go); } };
+    var stage = $('#pres');
+    $('#pf').onclick = function () { if (document.fullscreenElement) document.exitFullscreen(); else (stage.requestFullscreen || stage.webkitRequestFullscreen).call(stage); };
+    document.onkeydown = function (e) {
+      if (!document.getElementById('pc') || /input|textarea/i.test(e.target.tagName)) return;
+      if (['ArrowRight', 'PageDown', ' ', 'Enter'].indexOf(e.key) >= 0) { e.preventDefault(); show(n + 1); }
+      else if (['ArrowLeft', 'PageUp', 'Backspace'].indexOf(e.key) >= 0) { e.preventDefault(); show(n - 1); }
+      else if (e.key === 'Home') show(1); else if (e.key === 'End') show(d.slides);
+      else if (e.key === 'f' || e.key === 'F') $('#pf').click(); else if (e.key === 'g' || e.key === 'G') $('#pg').click();
+    };
+    var tx = null; cv.addEventListener('touchstart', function (e) { tx = e.touches[0].clientX; }, { passive: true });
+    cv.addEventListener('touchend', function (e) { if (tx == null) return; var dx = e.changedTouches[0].clientX - tx; if (Math.abs(dx) > 40) show(dx < 0 ? n + 1 : n - 1); tx = null; });
+    show(n);
+  }
+
   /* ---------- admin ---------- */
   async function loadAdmin() { ADMIN = await api('admin/all'); ME.books = ADMIN.books; ME.teachers = ADMIN.teachers; return ADMIN; }
   function adminTabs(on) {
-    return '<div class="tabs2">' + [['students', 'Students'], ['classes', 'Classes'], ['teachers', 'Teachers'], ['books', 'Books'], ['accounts', 'Accounts'], ['import', 'Import'], ['export', 'Export results']].map(function (t) {
+    return '<div class="tabs2">' + [['students', 'Students'], ['classes', 'Classes'], ['teachers', 'Teachers'], ['books', 'Books'], ['accounts', 'Accounts'], ['import', 'Import'], ['export', 'Export results'], ['placement', 'Placement tests']].map(function (t) {
       return '<a href="#/admin/' + t[0] + '" class="' + (on === t[0] ? 'on' : '') + '">' + t[1] + '</a>';
     }).join('') + '</div>';
   }
@@ -295,7 +400,7 @@
     view.innerHTML = '<p style="margin-top:30px"><span class="spin"></span> Loading school records…</p>';
     await loadAdmin();
     var head = '<section class="hero" style="padding-bottom:4px"><div class="eyebrow">Administrator</div><h1>School admin</h1><p class="lead">' + ADMIN.students.length + ' students · ' + ADMIN.classes.length + ' classes · ' + ADMIN.teachers.length + ' teachers · ' + ADMIN.accounts.length + ' accounts</p></section>' + adminTabs(tab);
-    ({ students: aStudents, classes: aClasses, teachers: aTeachers, books: aBooks, accounts: aAccounts, import: aImport, export: aExport }[tab] || aStudents)(head);
+    ({ students: aStudents, classes: aClasses, teachers: aTeachers, books: aBooks, accounts: aAccounts, import: aImport, export: aExport, placement: aPlacement }[tab] || aStudents)(head);
   }
   function opts(list, val, label, empty) { return (empty ? '<option value="">' + empty + '</option>' : '') + list.map(function (x) { return '<option value="' + esc(x.id) + '"' + (x.id === val ? ' selected' : '') + '>' + esc(label(x)) + '</option>'; }).join(''); }
   function aStudents(head) {
@@ -385,6 +490,24 @@
     view.querySelectorAll('[data-link]').forEach(function (s) { s.onchange = async function () { var b = { uid: s.dataset.link }; b[s.dataset.kind] = s.value || null; await api('admin/link', { method: 'POST', body: b }); toast('Link updated'); vAdmin('accounts'); }; });
   }
 
+  async function aPlacement(head) {
+    view.innerHTML = head + '<p><span class="spin"></span></p>';
+    var L = (await api('admin/placements')).placements || [], LV = ['Pre-A1', 'A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
+    var lab = function (x) { if (x == null) return '–'; var f = Math.floor(x); return LV[f] + (x - f >= .5 && f < 6 ? '+' : ''); };
+    var sk = ['grammar', 'vocabulary', 'reading', 'listening', 'writing', 'speaking'];
+    view.innerHTML = head + '<div class="toolbar"><a class="btn sm" href="/a/placement-test/" target="_blank" rel="noopener">Open the placement test ↗</a><button class="btn ghost sm" id="px"' + (L.length ? '' : ' disabled') + '>Download Excel</button><span class="small">' + L.length + ' results · newest first. Results from students whose phone matches a school record are also added to their test results.</span></div>' +
+      (L.length ? '<div class="tscroll"><table class="t"><thead><tr><th>Date</th><th>Name</th><th>Phone</th><th>Age</th><th>Level</th>' + sk.map(function (k) { return '<th>' + k[0].toUpperCase() + k.slice(1, 5) + '</th>'; }).join('') + '<th>Course</th><th>Record</th></tr></thead><tbody>' +
+        L.map(function (r) { return '<tr><td>' + when(r.at) + '</td><td><b>' + esc(r.name) + '</b>' + (r.email ? '<br><small>' + esc(r.email) + '</small>' : '') + '</td><td>' + esc(r.phone || '') + '</td><td>' + esc({ child: '6–12', teen: '13–17', adult: '18+' }[r.age] || '') + '</td><td><b>' + lab(r.overall) + '</b></td>' +
+          sk.map(function (k) { return '<td>' + lab((r.skills || {})[k]) + '</td>'; }).join('') + '<td>' + esc(r.course || '') + '</td><td>' + (r.studentId ? '<a href="#/student/' + esc(r.studentId) + '">Linked</a>' : '–') + '</td></tr>'; }).join('') + '</tbody></table></div>'
+        : '<div class="empty">No placement tests yet. Share <b>intellectfirst.com/a/placement-test/</b> with new students.</div>');
+    var b = $('#px'); if (b) b.onclick = async function () {
+      await loadXLSX();
+      var rows = [['Date', 'Name', 'Phone', 'Email', 'Age group', 'Overall'].concat(sk.map(function (k) { return k[0].toUpperCase() + k.slice(1); })).concat(['Recommended course', 'Minutes', 'Linked to record'])];
+      L.forEach(function (r) { rows.push([String(r.at || '').slice(0, 10), r.name, r.phone, r.email, r.age, lab(r.overall)].concat(sk.map(function (k) { return lab((r.skills || {})[k]); })).concat([r.course, r.minutes, r.studentId ? 'Yes' : 'No'])); });
+      var wb = XLSX.utils.book_new(), ws = XLSX.utils.aoa_to_sheet(rows); ws['!cols'] = rows[0].map(function () { return { wch: 16 }; });
+      XLSX.utils.book_append_sheet(wb, ws, 'Placement tests'); XLSX.writeFile(wb, 'IF-Academy-placement-tests-' + new Date().toISOString().slice(0, 10) + '.xlsx');
+    };
+  }
   /* ---------- export (Excel) ---------- */
   function exportForm(classId, classes) {
     return '<div class="grid2"><div class="full"><label class="f">Class</label><select class="inp" id="xc">' +
@@ -507,6 +630,8 @@
         case 'class': return vClass(parts[1]);
         case 'student': return vStudent(parts[1]);
         case 'admin': return vAdmin(parts[1]);
+        case 'classroom': return vClassroom(parts[1]);
+        case 'present': return vPresent(parts[1]);
         default: return go('#/');
       }
     } catch (e) { console.error(e); view.innerHTML = '<div class="empty" style="margin-top:30px">Something went wrong loading this page. <a href="#/">Back</a></div>'; }
