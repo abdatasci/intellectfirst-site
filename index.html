@@ -1,0 +1,1938 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0B2545">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="brand/apple-touch-icon.png">
+<link rel="icon" href="brand/favicon-64.png">
+<script src="if-runtime.js"></script>
+<title>Intellect First Academy — Learn. Think. Lead.</title>
+<!-- v3: 3D apps hub, merged with live 1791054871-56d1 -->
+<style>
+  :root {
+    --navy: #0B2545;
+    --navy-deep: #071A33;
+    --ice: #61A5C2;
+    --ice-light: #A9D6E5;
+    --silver: #C9D2DB;
+    --paper: #FBFCFD;
+    --paper-dim: #F2F4F6;
+    --ink: #10233F;
+    --ink-soft: #4C5B70;
+    --line: rgba(11,37,69,0.14);
+    --bg: var(--paper);
+    --bg-raised: #FFFFFF;
+    --text: var(--ink);
+    --text-soft: var(--ink-soft);
+    --border-c: var(--line);
+    --accent: var(--ice);
+  }
+  :root:not([data-theme="light"]) {
+    @media (prefers-color-scheme: dark) {
+      --bg: #0A1830;
+      --bg-raised: #0F2140;
+      --text: #EAF0F6;
+      --text-soft: #A9BAD0;
+      --border-c: rgba(201,210,219,0.18);
+      --paper-dim: #0F2140;
+      --accent: var(--ice-light);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0A1830;
+    --bg-raised: #0F2140;
+    --text: #EAF0F6;
+    --text-soft: #A9BAD0;
+    --border-c: rgba(201,210,219,0.18);
+    --paper-dim: #0F2140;
+    --accent: var(--ice-light);
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Source Sans 3', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .voice, h1, h2, h3, .serif {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+  }
+  a { color: inherit; }
+  img { max-width: 100%; display: block; }
+  .wrap {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 0 32px;
+  }
+  @media (max-width: 640px) { .wrap { padding: 0 20px; } }
+  /* Contain decorative 3D transforms without creating a horizontal scroller. */
+  html, body { overflow-x: clip; }
+
+  /* ---------- Nav ---------- */
+  header.site {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    background: color-mix(in srgb, var(--bg) 88%, transparent);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border-c);
+  }
+  header.site > .wrap { max-width: 1480px; }
+  header.site nav { gap: 32px; }
+  nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 0;
+  }
+  .brand {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+  }
+  .brand img, .brand-word { flex-shrink: 0; }
+  .brand-word { white-space: nowrap; }
+  .brand-word {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-weight: 600;
+    font-size: 19px;
+    color: var(--text);
+  }
+  .brand-word small { display: block; font-family: 'Source Sans 3', sans-serif; font-weight: 400; font-size: 10.5px; letter-spacing: 0.06em; color: var(--text-soft); margin-top: 1px; }
+  .navlinks { display: flex; align-items: center; gap: 30px; }
+  .navlinks a {
+    text-decoration: none;
+    font-size: 14.5px;
+    color: var(--text-soft);
+    transition: color 0.15s ease;
+  }
+  .navlinks a:hover { color: var(--text); }
+  .cta {
+    display: inline-block;
+    background: var(--navy);
+    color: #fff;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 10px 20px;
+    border-radius: 3px;
+    text-decoration: none;
+    border: 1px solid var(--navy);
+    transition: background 0.15s ease, color 0.15s ease;
+    white-space: nowrap;
+  }
+  .cta:hover { background: transparent; color: var(--navy); }
+  @media (max-width: 640px) { .cta { max-width: 100%; white-space: normal; } }
+  .navlinks a.cta,
+  .navlinks a.cta:visited,
+  .navlinks a.cta:hover,
+  .navlinks a.cta:focus {
+    background: var(--navy);
+    color: #fff;
+  }
+  .cta.outline {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--border-c);
+  }
+  .cta.outline:hover { border-color: var(--accent); color: var(--accent); }
+  .lang-toggle { display: inline-flex; border: 1px solid var(--border-c); border-radius: 3px; overflow: hidden; margin-left: 6px; }
+  .lang-btn { background: none; border: none; font-family: 'Source Sans 3', sans-serif; font-size: 12.5px; padding: 6px 11px; color: var(--text-soft); cursor: pointer; }
+  .lang-btn.active { background: var(--navy); color: #fff; }
+  @media (prefers-color-scheme: dark) { .lang-btn.active { background: var(--accent); color: var(--navy-deep); } }
+  :root[data-theme="dark"] .lang-btn.active { background: var(--accent); color: var(--navy-deep); }
+  @media (max-width: 860px) { .lang-toggle { margin-left: 0; margin-top: 4px; } }
+  .menu-btn { display: none; background: none; border: none; color: var(--text); cursor: pointer; padding: 6px; }
+  @media (max-width: 1440px) {
+    .navlinks { position: absolute; top: 100%; left: 0; right: 0; background: var(--bg); flex-direction: column; align-items: flex-start; padding: 4px 20px 20px; border-bottom: 1px solid var(--border-c); gap: 16px; display: none; }
+    .navlinks.open { display: flex; }
+    .navlinks .cta { align-self: flex-start; white-space: normal; }
+    .menu-btn { display: block; flex-shrink: 0; }
+  }
+
+  /* ---------- Hero ---------- */
+  .hero {
+    padding: 108px 0 88px;
+    border-bottom: 1px solid var(--border-c);
+  }
+  .hero-grid {
+    display: grid;
+    grid-template-columns: 1.3fr 0.7fr;
+    gap: 56px;
+    align-items: end;
+  }
+  .hero-grid > * { min-width: 0; }
+  @media (max-width: 860px) { .hero-grid { grid-template-columns: 1fr; } .hero { padding: 76px 0 56px; } }
+  .kicker {
+    font-size: 13px;
+    color: var(--text-soft);
+    margin: 0 0 22px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .kicker .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+  h1.headline {
+    font-size: clamp(42px, 6vw, 72px);
+    line-height: 1.03;
+    margin: 0 0 26px;
+    color: var(--text);
+  }
+  .tagline {
+    font-size: 19px;
+    color: var(--text-soft);
+    max-width: 34ch;
+    margin: 0 0 34px;
+    font-family: Georgia, 'Times New Roman', serif;
+    font-style: italic;
+    font-weight: 400;
+  }
+  .hero-actions { display: flex; gap: 14px; flex-wrap: wrap; }
+  .hero-aside { border-left: 1px solid var(--border-c); padding-left: 28px; }
+  .hero-aside p { font-size: 14.5px; color: var(--text-soft); margin: 0 0 18px; }
+  .hero-aside strong { color: var(--text); font-weight: 500; }
+  @media (max-width: 860px) { .hero-aside { border-left: none; border-top: 1px solid var(--border-c); padding-left: 0; padding-top: 24px; } }
+
+  /* ---------- Values strip ---------- */
+  .values {
+    border-bottom: 1px solid var(--border-c);
+    padding: 26px 0;
+    overflow-x: auto;
+  }
+  .values-row {
+    display: flex;
+    gap: 36px;
+    white-space: nowrap;
+    font-size: 13.5px;
+    color: var(--text-soft);
+  }
+  .values-row span::after { content: '·'; margin-left: 36px; color: var(--border-c); }
+  .values-row span:last-child::after { content: ''; margin-left: 0; }
+
+  /* ---------- Section shell ---------- */
+  section { padding: 92px 0; border-bottom: 1px solid var(--border-c); }
+  section:last-of-type { border-bottom: none; }
+  .section-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 24px;
+    margin-bottom: 54px;
+    flex-wrap: wrap;
+  }
+  .section-num {
+    font-size: 13px;
+    color: var(--text-soft);
+    letter-spacing: 0.04em;
+    margin: 0 0 12px;
+  }
+  h2.section-title {
+    font-size: clamp(28px, 3.6vw, 40px);
+    margin: 0;
+    max-width: 20ch;
+  }
+  .section-desc { font-size: 15.5px; color: var(--text-soft); max-width: 40ch; margin: 0; }
+
+  /* ---------- Programs ---------- */
+  .currency-toggle {
+    display: inline-flex;
+    border: 1px solid var(--border-c);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .currency-toggle button {
+    background: none;
+    border: none;
+    font-family: 'Source Sans 3', sans-serif;
+    font-size: 13px;
+    padding: 8px 16px;
+    color: var(--text-soft);
+    cursor: pointer;
+  }
+  .currency-toggle button.active { background: var(--navy); color: #fff; }
+  :root[data-theme="dark"] .currency-toggle button.active { background: var(--accent); color: var(--navy-deep); }
+  @media (prefers-color-scheme: dark) { .currency-toggle button.active { background: var(--accent); color: var(--navy-deep); } }
+
+  .cat-label {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-style: italic;
+    font-weight: 400;
+    font-size: 15px;
+    color: var(--text-soft);
+    margin: 44px 0 4px;
+  }
+  .program-list:first-of-type, .cat-label:first-child { margin-top: 0; }
+  .program-list { border-top: 1px solid var(--border-c); }
+  .program-row {
+    display: grid;
+    grid-template-columns: 100px 1.4fr 1.6fr auto;
+    gap: 24px;
+    align-items: center;
+    padding: 26px 0;
+    border-bottom: 1px solid var(--border-c);
+  }
+  @media (max-width: 760px) { .program-row { grid-template-columns: 1fr; gap: 8px; padding: 22px 0; } }
+  .prog-code {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-weight: 500;
+    font-size: 14px;
+    color: var(--accent);
+  }
+  .prog-name { font-family: Georgia, 'Times New Roman', serif; font-weight: 500; font-size: 19px; }
+  .prog-desc { font-size: 14.5px; color: var(--text-soft); }
+  .prog-price { font-size: 15px; text-align: right; white-space: nowrap; }
+  .prog-price small { display: block; font-size: 12px; color: var(--text-soft); font-weight: 400; }
+  @media (max-width: 760px) { .prog-price { text-align: left; } }
+  .price-note { font-size: 12.5px; color: var(--text-soft); margin-top: 28px; }
+
+  /* ---------- Ecosystem ---------- */
+  .eco-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--border-c); border: 1px solid var(--border-c); }
+  @media (max-width: 760px) { .eco-grid { grid-template-columns: 1fr; } }
+  .eco-card { background: var(--bg); padding: 36px 30px; }
+  .eco-card .mark { width: 34px; height: 34px; margin-bottom: 22px; }
+  .eco-card h3 { font-size: 20px; margin: 0 0 12px; }
+  .eco-card p { font-size: 14.5px; color: var(--text-soft); margin: 0; }
+
+  /* ---------- Gallery ---------- */
+  .gallery-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+  @media (max-width: 760px) { .gallery-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 480px) { .gallery-grid { grid-template-columns: 1fr; } }
+  .frame {
+    aspect-ratio: 4/5;
+    border: 1px solid var(--border-c);
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    padding: 16px;
+    background: linear-gradient(160deg, var(--paper-dim), var(--bg));
+  }
+  .frame::before, .frame::after {
+    content: '';
+    position: absolute;
+    width: 16px; height: 16px;
+    border: 1px solid var(--accent);
+    opacity: 0.55;
+  }
+  .frame::before { top: 10px; left: 10px; border-right: none; border-bottom: none; }
+  .frame::after { bottom: 10px; right: 10px; border-left: none; border-top: none; }
+  .frame span { font-size: 12.5px; color: var(--text-soft); }
+  .gallery-note { font-size: 13px; color: var(--text-soft); margin-top: 24px; }
+
+  /* ---------- About ---------- */
+  .about-grid { display: grid; grid-template-columns: 0.9fr 1.1fr; gap: 64px; }
+  @media (max-width: 860px) { .about-grid { grid-template-columns: 1fr; gap: 40px; } }
+  .about-grid p { font-size: 16px; color: var(--text-soft); margin: 0 0 18px; }
+  .stat-list { display: flex; flex-direction: column; gap: 22px; }
+  .stat { border-top: 1px solid var(--border-c); padding-top: 16px; }
+  .stat .num { font-family: Georgia, 'Times New Roman', serif; font-size: 28px; color: var(--text); }
+  .stat .lbl { font-size: 13.5px; color: var(--text-soft); }
+
+  /* ---------- Contact / Footer ---------- */
+  footer { padding: 92px 0 40px; }
+  .foot-grid { display: grid; grid-template-columns: 1.3fr 0.7fr 0.7fr; gap: 48px; margin-bottom: 64px; }
+  @media (max-width: 760px) { .foot-grid { grid-template-columns: 1fr; gap: 36px; } }
+  .foot-col h4 { font-size: 13px; color: var(--text-soft); font-weight: 500; margin: 0 0 16px; }
+  .foot-col a, .foot-col p { display: block; font-size: 14.5px; margin: 0 0 10px; text-decoration: none; color: var(--text); }
+  .foot-col a:hover { color: var(--accent); }
+  .foot-bottom { display: flex; justify-content: space-between; align-items: center; padding-top: 28px; border-top: 1px solid var(--border-c); font-size: 12.5px; color: var(--text-soft); flex-wrap: wrap; gap: 12px; }
+
+  /* ---------- 3D + navigation ---------- */
+  #progress{position:fixed;top:0;left:0;height:3px;width:0;background:linear-gradient(90deg,var(--ice),var(--navy));z-index:60}
+  section[id]{scroll-margin-top:84px}
+  .launch{padding:56px 0 72px;perspective:1100px}
+  .launch-scene{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;transform-style:preserve-3d;transform:rotateX(var(--rx,8deg)) rotateY(var(--ry,0deg));transition:transform .25s ease-out}
+  .lcard{display:flex;flex-direction:column;gap:6px;justify-content:flex-end;min-height:150px;padding:20px;border-radius:14px;text-decoration:none;color:#fff;background:linear-gradient(145deg,var(--navy),#16396b);border:1px solid rgba(169,214,229,.35);box-shadow:0 22px 40px -18px rgba(7,26,51,.6),inset 0 1px 0 rgba(255,255,255,.18);transform:translateZ(var(--z)) rotateY(var(--r));transition:transform .25s,box-shadow .25s}
+  .lcard:hover{transform:translateZ(calc(var(--z) + 40px)) rotateY(0) scale(1.03);box-shadow:0 34px 50px -16px rgba(7,26,51,.7)}
+  .lcard b{font-family:Georgia, 'Times New Roman', serif;font-weight:500;font-size:19px;line-height:1.2}
+  .lcard span{font-size:12.5px;color:var(--ice-light);letter-spacing:.04em}
+  @media (max-width:860px){.launch-scene{grid-template-columns:repeat(2,1fr)}.launch{padding:36px 0 52px}}
+  .app-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 28px}
+  .app-tab{font:500 14px 'Source Sans 3',sans-serif;padding:10px 18px;border-radius:999px;border:1px solid var(--border-c);background:var(--bg-raised);color:var(--text-soft);cursor:pointer;transition:all .15s}
+  .app-tab:hover{color:var(--text);border-color:var(--accent)}
+  .app-tab.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+  :root[data-theme="dark"] .app-tab.active{background:var(--accent);color:var(--navy-deep)}
+  @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .app-tab.active{background:var(--accent);color:var(--navy-deep)}}
+  .app-panel{display:none}.app-panel.active{display:block}
+  .panel-note{margin:0 0 24px;color:var(--text-soft);max-width:70ch;font-size:15px}
+  .tile-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:18px;perspective:1000px}
+  .tile{display:block;text-decoration:none;color:var(--text);transform-style:preserve-3d;transition:transform .2s ease-out;will-change:transform;animation:rise .5s both;animation-delay:calc(var(--i)*40ms)}
+  .tile-in{position:relative;display:flex;flex-direction:column;gap:8px;min-height:118px;padding:20px 20px 18px;background:var(--bg-raised);border:1px solid var(--border-c);border-top:3px solid var(--accent);border-radius:12px;box-shadow:0 14px 28px -20px rgba(11,37,69,.55);transition:box-shadow .2s}
+  .tile:hover .tile-in{box-shadow:0 30px 40px -22px rgba(11,37,69,.7)}
+  .tile-n{font-family:Georgia, 'Times New Roman', serif;font-weight:500;font-size:17px;line-height:1.25;transform:translateZ(26px)}
+  .tile-d{font-size:13px;color:var(--text-soft);transform:translateZ(14px)}
+  .tile-go{position:absolute;right:16px;bottom:12px;color:var(--accent);font-size:18px;transform:translateZ(30px)}
+  .lock{align-self:flex-start;font-size:11px;letter-spacing:.06em;text-transform:uppercase;padding:2px 8px;border-radius:999px;background:var(--paper-dim);border:1px solid var(--border-c);color:var(--text-soft)}
+  @keyframes rise{from{opacity:0;transform:translateY(14px) rotateX(-12deg)}to{opacity:1;transform:none}}
+  .reveal{opacity:0;transform:perspective(900px) translateY(36px) rotateX(10deg);transition:opacity .7s,transform .7s}
+  .reveal.in{opacity:1;transform:none}
+  .eco-card{transition:transform .2s ease-out,box-shadow .2s}.eco-card:hover{box-shadow:0 24px 36px -22px rgba(11,37,69,.6)}
+  .dock{position:fixed;right:18px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:10px;z-index:45}
+  .dock a{position:relative;display:block;width:11px;height:11px;border-radius:50%;border:1.5px solid var(--text-soft);background:var(--bg)}
+  .dock a.on{background:var(--accent);border-color:var(--accent);transform:scale(1.3)}
+  .dock a span{position:absolute;right:20px;top:50%;transform:translateY(-50%);white-space:nowrap;font-size:12px;padding:3px 9px;border-radius:6px;background:var(--navy);color:#fff;opacity:0;pointer-events:none;transition:opacity .15s}
+  .dock a:hover span{opacity:1}
+  @media (max-width:1100px){.dock{display:none}}
+  .totop{position:fixed;right:18px;bottom:18px;z-index:45;width:42px;height:42px;border-radius:50%;border:1px solid var(--border-c);background:var(--navy);color:#fff;font-size:18px;cursor:pointer;opacity:0;pointer-events:none;transition:opacity .2s}
+  .totop.show{opacity:1;pointer-events:auto}
+  @media (prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}.tile{animation:none}.launch-scene,.lcard,.tile{transition:none}}
+  a.frame.ig{text-decoration:none;color:var(--text);flex-direction:column;justify-content:flex-end;gap:10px;background:linear-gradient(160deg,var(--navy),#16396b);transition:transform .2s}
+  a.frame.ig:hover{transform:translateY(-4px)}
+  a.frame.ig span{color:#fff;font-size:15px}
+  .ig-ico{font-size:34px!important;color:var(--ice-light)!important}
+  .ig-go{position:absolute;right:16px;top:14px;font-size:18px!important}
+  .shot-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  .shot{margin:0;border:1px solid var(--border-c);background:var(--bg-raised);overflow:hidden;border-radius:4px}
+  .shot img,.shot video{width:100%;height:100%;object-fit:cover;display:block;aspect-ratio:3/2;transition:transform .5s}
+  .shot:hover img{transform:scale(1.04)}
+  .shot figcaption{padding:10px 14px;font-size:13px;color:var(--text-soft);border-top:1px solid var(--border-c)}
+  .shot.wide{grid-column:1/-1}.shot.wide img{aspect-ratio:21/9}
+  .shot.vid video{aspect-ratio:9/16;max-height:420px;background:#000;object-fit:contain}
+  .ig-head{font-size:20px;margin:48px 0 18px}
+  .shot.port img{aspect-ratio:3/4;object-position:center 30%}
+  .shot.vid2 video{aspect-ratio:3/4;max-height:none;background:#000;object-fit:cover}
+  .ig-row{grid-template-columns:repeat(4,1fr)}.ig-row .frame{aspect-ratio:3/2}
+  @media (max-width:760px){.shot-grid{grid-template-columns:repeat(2,1fr)}.ig-row{grid-template-columns:repeat(2,1fr)}.shot.wide img{aspect-ratio:16/9}}
+  @media (max-width:480px){.shot-grid{grid-template-columns:1fr}}
+
+  .loc-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.5fr);gap:28px;align-items:start}
+  @media (max-width:820px){.loc-grid{grid-template-columns:1fr}}
+  .loc-card{background:var(--bg-raised);border:1px solid var(--border-c);padding:30px}
+  .loc-label{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-soft);font-weight:600;margin:0 0 4px}
+  .loc-addr{font-family:Georgia, 'Times New Roman', serif;font-size:19px;line-height:1.35;margin:0 0 20px}
+  .loc-links{display:flex;flex-direction:column;gap:12px;align-items:flex-start;margin:8px 0 0}
+  .loc-alt{color:var(--text-soft);font-size:14px}
+  .loc-map{margin:0}
+  .locmap{width:100%;height:auto;display:block;border:1px solid var(--border-c)}
+  .loc-map figcaption{font-size:13px;color:var(--text-soft);margin-top:10px}
+  .locmap{--m-bg:#F2F4F6;--m-road:#D3DAE2;--m-block:#E4E8ED;--m-me:#A9D6E5;--m-ink:#10233F;--m-soft:#4C5B70;--m-accent:#0B2545}
+  :root:not([data-theme="light"]) .locmap{}
+  @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .locmap{--m-bg:#0A1830;--m-road:#1E3358;--m-block:#13294B;--m-me:#2C5F7D;--m-ink:#EAF0F6;--m-soft:#A9BAD0;--m-accent:#A9D6E5}}
+  :root[data-theme="dark"] .locmap{--m-bg:#0A1830;--m-road:#1E3358;--m-block:#13294B;--m-me:#2C5F7D;--m-ink:#EAF0F6;--m-soft:#A9BAD0;--m-accent:#A9D6E5}
+  .m-bg{fill:var(--m-bg)}.m-road{fill:var(--m-road)}.m-block{fill:var(--m-block)}.m-me{fill:var(--m-me);stroke:var(--m-accent);stroke-width:1.5}
+  .m-dash{stroke:var(--m-bg);stroke-width:1.5;stroke-dasharray:6 6}
+  .m-t{font:500 10.5px 'Source Sans 3',sans-serif;fill:var(--m-soft)}.m-b{font:600 14px 'Source Sans 3',sans-serif;fill:var(--m-ink)}
+  .m-road-t{letter-spacing:.06em;font-size:9.5px}
+  .m-light{fill:#C77A10;stroke:var(--m-bg);stroke-width:2}
+  .m-arrow{stroke:var(--m-accent);stroke-width:2.5;fill:none;stroke-linecap:round;stroke-linejoin:round}
+  .m-pin{fill:var(--m-accent);stroke:var(--m-bg);stroke-width:2}
+  .m-bubble{fill:var(--m-bg);stroke:var(--m-accent);stroke-width:1.5}
+  .m-bt{font:600 15px 'Source Sans 3',sans-serif;fill:var(--m-ink)}
+  @media (max-width:760px){.eco-grid{grid-template-columns:1fr!important}}
+  .navlinks{gap:22px}.navlinks a{white-space:nowrap}
+  @media (max-width:520px){.ig-row{grid-template-columns:1fr!important}}
+  .frame,.shot,.eco-card{min-width:0}
+
+  .steps4{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--border-c);border:1px solid var(--border-c)}
+  .steps4 li{background:var(--bg);padding:28px 24px}.steps4 b{font-family:Georgia, 'Times New Roman', serif;font-size:34px;color:var(--accent);font-weight:500;display:block;line-height:1;margin-bottom:12px}
+  .steps4 h3{font-size:18px;margin:0 0 8px}.steps4 p{margin:0;color:var(--text-soft);font-size:14.5px}
+  @media (max-width:900px){.steps4{grid-template-columns:repeat(2,minmax(0,1fr))}}@media (max-width:520px){.steps4{grid-template-columns:1fr}}
+  .lvl-wrap{overflow-x:auto;border:1px solid var(--border-c)}.lvl-table{border-collapse:collapse;width:100%;min-width:640px;font-size:14.5px}
+  .lvl-table th{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-soft);text-align:left;padding:14px 18px;border-bottom:1px solid var(--border-c);background:var(--bg-raised)}
+  .lvl-table td{padding:14px 18px;border-bottom:1px solid var(--border-c);vertical-align:top}.lvl-table tr:last-child td{border-bottom:0}.lvl-table td b{font-family:Georgia, 'Times New Roman', serif;font-size:20px;font-weight:500}
+  .panel-form{background:var(--bg-raised);border:1px solid var(--border-c);padding:30px;max-width:860px}
+  .f-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:16px;margin-bottom:18px}
+  .panel-form label span{display:block;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-soft);font-weight:600;margin-bottom:6px}
+  .panel-form select,.panel-form input{width:100%;font:inherit;font-size:15px;color:var(--text);background:var(--bg);border:1px solid var(--border-c);border-radius:3px;padding:10px 12px}
+  .panel-form select:focus,.panel-form input:focus{outline:2px solid var(--ice);outline-offset:1px}
+  button.cta{cursor:pointer;font-family:inherit}
+  .f-actions{display:flex;gap:12px;flex-wrap:wrap}
+  .fnd-out{margin-top:22px;border-left:3px solid var(--ice);padding:6px 0 6px 18px}.fnd-out .l{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-soft);font-weight:600;margin:0 0 4px}
+  .fnd-out h3{font-size:22px;margin:0 0 6px}.fnd-out p{margin:0 0 14px;color:var(--text-soft)}
+  .chatfab{position:fixed;left:max(16px,env(safe-area-inset-left,0px));bottom:max(16px,env(safe-area-inset-bottom,0px));z-index:46;display:inline-flex;align-items:center;gap:8px;background:var(--navy);color:#fff;text-decoration:none;font-size:14px;font-weight:500;padding:11px 16px;border-radius:999px;box-shadow:0 10px 24px -10px rgba(11,37,69,.7)}
+  .chatfab:hover{background:#16396b}
+  .tabbar{display:none}
+  @media (max-width:760px){
+    body{padding-bottom:calc(68px + env(safe-area-inset-bottom,0px))}
+    .tabbar{display:grid;grid-template-columns:repeat(5,1fr);position:fixed;left:0;right:0;bottom:0;z-index:50;background:var(--bg-raised);border-top:1px solid var(--border-c);padding:6px max(4px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(4px,env(safe-area-inset-left,0px))}
+    .tabbar a{display:flex;flex-direction:column;align-items:center;gap:2px;text-decoration:none;color:var(--text-soft);font-size:10.5px;font-weight:500;padding:4px 2px;min-width:0}
+    .tabbar a span{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .tabbar a.on{color:var(--accent)}
+    .chatfab{bottom:calc(80px + env(safe-area-inset-bottom,0px))}
+    .totop{bottom:calc(80px + env(safe-area-inset-bottom,0px))!important}
+  }
+  .navlinks a[data-i18n="nav_portal"]{display:none}@media (max-width:1440px){.navlinks a[data-i18n="nav_portal"]{display:inline}}
+
+  .lvl-note{margin-top:18px;max-width:70ch;color:var(--text-soft);font-size:.95rem;line-height:1.6}.exam-row td{border-top:2px solid var(--border-c)}
+  .lc-banner{display:grid;gap:6px;margin:0 0 26px;padding:22px 26px;border-radius:14px;text-decoration:none;color:var(--ink);background:linear-gradient(135deg,var(--sky-soft,#E3F1F8),var(--sky-mid,#C6E3F0));border:1px solid rgba(42,123,166,.28);transition:transform .15s,box-shadow .15s}
+  .lc-banner:hover{transform:translateY(-2px);box-shadow:0 14px 28px -18px rgba(42,123,166,.6)}
+  .lc-kicker{font-size:.75rem;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft)}
+  .lc-title{font-size:1.5rem;line-height:1.2;color:var(--ink)}
+  .lc-desc{max-width:62ch;color:var(--ink-soft);line-height:1.55}
+  .lc-go{justify-self:start;margin-top:8px;padding:10px 18px;border-radius:6px;background:var(--navy);color:#fff;font-weight:600;font-size:.92rem}
+  .gr-hero{margin:0 0 26px;padding:26px 28px;border-radius:16px;background:var(--navy);color:#fff;border:1px solid var(--border-c)}
+  .gr-hero h3{font-family:Georgia, 'Times New Roman', serif;font-weight:500;font-size:clamp(24px,3.4vw,34px);line-height:1.15;margin:6px 0 10px;color:#fff;text-wrap:balance}
+  .gr-hero p{margin:0 0 18px;max-width:62ch;font-size:15px;color:rgba(255,255,255,.82)}
+  .gr-kicker{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--ice-light,#9fc4e8)}
+  .gr-chips{display:flex;flex-wrap:wrap;gap:8px}
+  .gr-chip{display:inline-flex;align-items:center;gap:7px;padding:7px 13px 7px 10px;border-radius:999px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.22);font-size:13.5px;color:#fff}
+  .gr-chip i{font-style:normal;font-size:15px}
+  :root[data-theme="dark"] .gr-hero{background:var(--bg-raised)}
+  @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .gr-hero{background:var(--bg-raised)}}
+  @media (max-width:560px){.gr-hero{padding:20px 18px}}
+  .panel-sub{margin:26px 0 12px;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-soft)}.app-panel>.panel-sub:first-of-type{margin-top:0}
+  .staff-gate{max-width:460px;display:grid;gap:12px;padding:24px;border:1px solid var(--border-c);border-radius:12px;background:var(--bg-raised)}
+  .staff-h{font-size:1.2rem;color:var(--text)}
+  .staff-row{display:flex;gap:10px;flex-wrap:wrap}
+  .staff-row input{flex:1 1 180px;min-width:0;font:inherit;padding:11px 14px;border:1px solid var(--border-c);border-radius:8px;background:var(--bg);color:var(--text);letter-spacing:.12em}
+  .staff-row input:focus-visible{outline:3px solid var(--ice);outline-offset:2px}
+  .staff-msg{margin:0;min-height:1.2em;font-size:.9rem;color:var(--text-soft)}
+</style>
+<link rel="stylesheet" href="academy.css">
+</head>
+<body>
+<a class="skip-link" href="#top">Skip to content</a>
+
+
+<div id="progress"></div>
+<nav class="dock" id="dock" aria-label="Sections"></nav>
+<button class="totop" id="totop" aria-label="Back to top">↑</button>
+<nav class="tabbar" id="tabbar" aria-label="Quick navigation">
+  <a href="#top" data-t="top"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg><span data-i18n="tab_home">Home</span></a>
+  <a href="#courses" data-t="courses"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h12a4 4 0 014 4v12H8a4 4 0 01-4-4z"/><path d="M4 16a4 4 0 014-4h12"/></svg><span data-i18n="tab_courses">Courses</span></a>
+  <a href="#apps" data-t="apps"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg><span data-i18n="tab_apps">Apps</span></a>
+  <a href="app/index.html" target="_blank" rel="noopener"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0116 0"/></svg><span data-i18n="tab_portal">Portal</span></a>
+  <a href="#contact" data-t="contact"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 01-11.6 7.1L3 21l1.9-6.4A8 8 0 1121 12z"/></svg><span data-i18n="tab_contact">Contact</span></a>
+</nav>
+<a class="chatfab" href="https://t.me/abliem" target="_blank" rel="noopener" aria-label="Telegram"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 3L2 11l6 2.5L10 21l3-5 5 4z"/></svg><span data-i18n="chat_btn">Chat with us</span></a>
+
+
+
+<header class="site">
+  <div class="wrap">
+    <nav aria-label="Main navigation">
+      <a href="#top" class="brand">
+        <img src="brand/if-shield-256.webp" srcset="brand/if-shield-256.webp 256w, brand/if-shield-official.png 1254w" sizes="64px" alt="IF Academy official shield" width="64" height="64" style="display:block; object-fit:contain;">
+        <span class="brand-word">IF Academy<small>Intellect First · Kostanay</small></span>
+      </a>
+        <div class="lang-toggle" role="group" aria-label="Language">
+          <button class="lang-btn active" data-lang="en">EN</button>
+          <button class="lang-btn" data-lang="ru">RU</button>
+          <button class="lang-btn" data-lang="kk">KK</button>
+        </div>
+      <button class="menu-btn" id="menuBtn" aria-label="Open menu" aria-controls="navLinks" aria-expanded="false">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M3 6h16M3 11h16M3 16h16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      </button>
+      <div class="navlinks" id="navLinks">
+        <a href="#teachers" data-i18n="nav_teachers">Teachers</a>
+        <a href="#courses" data-i18n="nav_courses">Courses &amp; Programs</a>
+        <a href="/a/young-learners/" data-i18n="nav_young_learners">Young Learners Centre</a>
+        <a href="#pricing" data-i18n="nav_pricing">Pricing</a>
+        <a href="app/index.html" target="_blank" rel="noopener" data-i18n="nav_portal">Learning Hub</a>
+        <a href="#apps" data-i18n="nav_apps">Apps</a>
+        <a href="a/class-catalog/index.html" data-i18n="nav_catalog">Class Catalog</a>
+        <a href="#faqs" data-i18n="nav_faqs">FAQs</a>
+        <a href="#contact" data-i18n="nav_contact">Contact</a>
+        <a href="https://t.me/abliem" target="_blank" rel="noopener" class="cta" data-i18n="nav_cta">Book a free placement test</a>
+
+      </div>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+  <section class="hero" style="border-bottom:1px solid var(--border-c); padding-bottom: 0;">
+    <div class="wrap">
+      <div class="hero-grid">
+        <div>
+          <p class="kicker"><span class="dot"></span><span data-i18n="hero_kicker">Intellect First Academy — established in Kostanay</span></p>
+          <h1 class="headline"><span data-i18n="hero_l1">Learn.</span><br><span data-i18n="hero_l2">Think.</span><br><span data-i18n="hero_l3">Lead.</span></h1>
+          <p class="tagline" data-i18n="hero_tagline">Elevating minds. Creating leaders.</p>
+          <div class="hero-actions">
+            <a href="https://t.me/abliem" target="_blank" rel="noopener" class="cta" data-i18n="hero_cta1">Book a free placement test</a>
+            <a href="#pricing" class="cta outline" data-i18n="hero_cta2">See programs and pricing</a>
+          </div>
+        </div>
+        <div class="hero-visual">
+          <img class="hero-photo" src="media/7f7f038c702594ab6a115950d7a7662c.jpg" alt="Students learning together at IF Academy" width="900" height="1100" fetchpriority="high">
+          <span class="visual-star" aria-hidden="true">✦</span>
+          <a class="language-card english-card" href="#courses"><span class="card-eyebrow">IF Academy · A1—C1</span><strong>English</strong><span data-i18n="course_ge_name">General English</span><span class="card-arrow" aria-hidden="true">↗</span></a>
+          <a class="language-card languages-card" href="app/index.html#languages"><span class="card-eyebrow">IF Learning Hub</span><strong>Қазақша<br>Русский</strong><span data-design="language_practice">Learn &amp; practise</span><span class="card-arrow" aria-hidden="true">↗</span></a>
+        </div>
+      </div>
+        <div class="hero-aside">
+          <p data-i18n="hero_aside_p1">Intellect First is an English language academy built around one idea: language fluency is a form of leadership. Our classrooms are small, our instruction is personal, and our standards are set against international benchmarks.</p>
+          <p><strong data-i18n="hero_aside_p2">General English · Premium English · IELTS · Corporate · Individual · Business English</strong></p>
+        </div>
+      <div class="launch" id="launch">
+        <div class="launch-scene">
+          <a class="lcard" href="#apps" data-go="tests" style="--z:60px;--r:-8deg"><b data-i18n="tab_tests">Test Centres</b><span>A1 → C1</span></a>
+          <a class="lcard" href="#apps" data-go="games" style="--z:20px;--r:-3deg"><b data-i18n="tab_games">Games</b><span data-i18n="launch_games">Vocabulary and grammar</span></a>
+          <a class="lcard" href="#apps" data-go="learn" style="--z:20px;--r:3deg"><b data-i18n="tab_learn">IF Student Hub</b><span data-i18n="launch_hub">Coursebooks and timetable</span></a>
+          <a class="lcard" href="#apps" data-go="staff" style="--z:60px;--r:8deg"><b data-i18n="tab_staff">IF Teacher Hub</b><span data-i18n="launch_staff">Access code required</span></a>
+        </div>
+      </div>
+    </div>
+    <div class="values">
+      <div class="wrap">
+        <div class="values-row">
+          <span data-i18n="val_1">Excellence</span><span data-i18n="val_2">Integrity</span><span data-i18n="val_3">Innovation</span><span data-i18n="val_4">Critical thinking</span><span data-i18n="val_5">Professionalism</span><span data-i18n="val_6">Diversity</span><span data-i18n="val_7">Lifelong learning</span><span data-i18n="val_8">Global perspective</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="courses">
+    <div class="wrap">
+      <div class="section-head">
+        <div>
+          <p class="section-num" data-i18n="sec_courses_num">02 — Courses &amp; Programs</p>
+          <h2 class="section-title" data-i18n="sec_courses_title">What we teach</h2>
+        </div>
+        <p class="section-desc" data-i18n="sec_courses_desc">Full pricing for every course is on the Pricing page below.</p>
+      </div>
+      <div class="eco-grid" style="grid-template-columns:repeat(3,1fr);">
+        <div class="eco-card">
+          <h3 class="serif" style="font-size:19px;" data-i18n="course_ge_name">General English</h3>
+          <p data-i18n="course_ge_desc">Beginner (A1) through Upper-Intermediate (C1), mini-group or individual, local or native instruction.</p>
+        </div>
+        <div class="eco-card">
+          <h3 class="serif" style="font-size:19px;" data-i18n="course_ielts_name">IELTS Preparation</h3>
+          <p data-i18n="course_ielts_desc">Full four-skill preparation with exam strategy, mock tests and individual feedback.</p>
+        </div>
+        <div class="eco-card">
+          <h3 class="serif" style="font-size:19px;" data-i18n="course_ind_name">Individual Lessons</h3>
+          <p data-i18n="course_ind_desc">One-to-one instruction with a local or native-speaking teacher, online or offline.</p>
+        </div>
+        <div class="eco-card">
+          <h3 class="serif" style="font-size:19px;" data-i18n="course_biz_name">Business &amp; Corporate</h3>
+          <p data-i18n="course_biz_desc">Workplace communication, meetings, presentations and custom corporate training.</p>
+        </div>
+        <div class="eco-card">
+          <h3 class="serif" style="font-size:19px;" data-i18n="course_yl_name">Young Learners</h3>
+          <p data-i18n="course_yl_desc">Starters, Movers and Flyers, with Cambridge YLE and PET/KET exam preparation.</p>
+        </div>
+        <div class="eco-card">
+          <h3 class="serif" style="font-size:19px;" data-i18n="course_intensive_name">Weekend &amp; Intensive</h3>
+          <p data-i18n="course_intensive_desc">The Weekend Speaking Intensive and Summer Fast-Track programmes for rapid progress.</p>
+        </div>
+      </div>
+      <div class="course-actions"><a class="cta" href="#pricing" data-i18n="nav_pricing">Pricing</a><a class="cta outline" href="#finder" data-i18n="fnd_num">Course finder</a></div>
+      <div class="eco-card" style="margin-top:18px;border-left:3px solid var(--ice);">
+        <h3 class="serif" style="font-size:19px;" data-i18n="path_h">How our teacher pathway works</h3>
+        <p data-i18n="path_p1">Students at A2 level and below (teens and adults) first study with our local, Russian-speaking teachers for about 3–4 months. They explain grammar clearly in your own language and build a solid base. After that, students move on to lessons with a native speaker.</p>
+        <p data-i18n="path_p2">Young learners follow the same logic: Starters and Movers are taught by local teachers only. Flyers, KET and PET can be taught by local teachers or by native speakers.</p>
+        <p style="margin-top:14px"><a class="cta" href="app/index.html" target="_blank" rel="noopener" data-i18n="portal_cta">Register and take the placement test</a></p>
+        <p class="meta" style="font-size:13px;color:var(--text-soft);margin:10px 0 0;" data-i18n="portal_note">Create a profile first — it is required before the placement test or booking a class.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="teachers">
+    <div class="wrap">
+      <div class="section-head">
+        <div>
+          <p class="section-num" data-i18n="sec_teachers_num">01 — Teachers</p>
+          <h2 class="section-title" data-i18n="sec_teachers_title">The people behind the standard</h2>
+        </div>
+        <p class="section-desc" data-i18n="sec_teachers_desc">A small, qualified team — native-speaking and local instructors, each specialised by age group and level.</p>
+      </div>
+      <div class="eco-grid" style="grid-template-columns:repeat(3,1fr);">
+        <div class="eco-card">
+          <img class="teacher-portrait" src="media/team/abdoulie.webp" alt="Abdoulie Manneh" width="1200" height="1600" loading="lazy" decoding="async">
+          <h3 class="serif" style="font-size:19px;">Abdoulie Manneh</h3>
+          <p class="meta" style="font-size:13px;color:var(--text-soft);margin:2px 0 12px;" data-i18n="teacher_abdoulie_role">Founder &amp; Director, IF Academy</p>
+          <p data-i18n="teacher_abdoulie_desc">Abdoulie Manneh is the founder of IF Academy and its native English-speaking teacher. Originally from The Gambia, he has taught for over 14 years in Africa, Russia and Kazakhstan, including corporate programmes for companies such as Lukoil and Rosatom. He holds degrees from universities in The Gambia, Taiwan and Russia, is TESOL-certified, and is completing a Doctor of Business Administration at Maqsut Narikbayev University.</p>
+          <h4 class="profile-subheading" data-i18n="teacher_abdoulie_philosophy_label">Teaching philosophy:</h4>
+          <p data-i18n="teacher_abdoulie_philosophy">Abdoulie believes a language is learned by using it. His lessons are built on real conversation, debate and games in small, personal classes. Having learned Russian and Arabic himself, he aims to make every lesson challenging and confidence-building. Each student should leave able to say something they couldn't say before.</p>
+        </div>
+        <div class="eco-card">
+          <img class="teacher-portrait teacher-portrait--profile" src="media/team/aitach-portrait.webp" alt="Aitach Nabiyeva" width="540" height="720" loading="lazy" decoding="async">
+          <h3 class="serif" style="font-size:19px;">Aitach Nabiyeva</h3>
+          <p class="meta" style="font-size:13px;color:var(--text-soft);margin:2px 0 12px;" data-i18n="teacher_aitach_role">Local Teacher</p>
+          <p data-i18n="teacher_aitach_desc">I am a passionate English educator committed to making language learning engaging, inspiring, and meaningful. Through a personalised approach and supportive atmosphere, I help students build confidence, develop fluency, and unlock new opportunities through English.</p>
+        </div>
+        <div class="eco-card">
+          <h3 class="serif" style="font-size:19px;">Alina Afanasyeva</h3>
+          <p class="meta" style="font-size:13px;color:var(--text-soft);margin:2px 0 12px;" data-i18n="teacher_alina_role">Local Teacher</p>
+          <p data-i18n="teacher_alina_desc">Teaches kids, teens and adults, from beginner up to B1.</p>
+        </div>
+        <div class="eco-card">
+          <img class="teacher-portrait teacher-portrait--profile" src="media/team/olya-portrait.webp" alt="Olya Harutyunyan" width="600" height="800" loading="lazy" decoding="async">
+          <h3 class="serif" style="font-size:19px;">Olya Harutyunyan</h3>
+          <p class="meta" style="font-size:13px;color:var(--text-soft);margin:2px 0 12px;" data-i18n="teacher_olya_role">English Teacher</p>
+          <p data-i18n="teacher_olya_desc">I am a Foreign Philology Bachelor’s student with a passion for the English language and teaching. My teaching philosophy is to create a supportive, engaging environment where students feel comfortable learning, making mistakes, and expressing themselves. I believe that learning English should be practical, enjoyable, and tailored to each student’s needs.</p>
+        </div>
+        <div class="eco-card">
+          <h3 class="serif" style="font-size:19px;">Joseph Cjay</h3>
+          <p class="meta" style="font-size:13px;color:var(--text-soft);margin:2px 0 12px;" data-i18n="teacher_joseph_role">Substitute Teacher · Native Speaker</p>
+          <p data-i18n="teacher_joseph_desc">Native-speaking substitute teacher; Young learners — Movers, Cambridge YLE preparation.</p>
+        </div>
+        <div class="eco-card">
+          <img class="teacher-portrait teacher-portrait--profile" src="media/team/anelya-portrait.webp" alt="Anelya Amanova" width="600" height="800" loading="lazy" decoding="async">
+          <h3 class="serif" style="font-size:19px;">Anelya Amanova</h3>
+          <p class="meta" style="font-size:13px;color:var(--text-soft);margin:2px 0 12px;" data-i18n="teacher_anelya_role">Manager</p>
+          <p data-i18n="teacher_anelya_desc">I’m the manager at IF Academy. I'm responsible for organising daily operations, coordinating teachers and students, managing schedules, communicating with parents, and ensuring everything runs smoothly. I enjoy working with people, staying organised, and creating a positive and welcoming learning environment!</p>
+        </div>
+        <div class="eco-card">
+          <img class="teacher-portrait teacher-portrait--profile" src="media/team/ekaterina-portrait.webp" alt="Ekaterina Rozhnova" width="600" height="800" loading="lazy" decoding="async">
+          <h3 class="serif" style="font-size:19px;">Ekaterina Rozhnova</h3>
+          <p class="meta" style="font-size:13px;color:var(--text-soft);margin:2px 0 12px;" data-i18n="teacher_ekaterina_role">SMM</p>
+          <p data-i18n="teacher_ekaterina_desc">Responsible for managing the Instagram account, creating content, and developing its visual identity to turn English learning into an engaging, inspiring experience.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+
+  <section id="join">
+    <div class="wrap">
+      <div class="section-head"><div><p class="section-num" data-i18n="join_num">Getting started</p><h2 class="section-title" data-i18n="join_title">How to join, in four steps</h2></div><p class="section-desc" data-i18n="join_desc">From first visit to first lesson, everything happens in one place.</p></div>
+      <ol class="steps4">
+        <li><b>1</b><h3 class="serif" data-i18n="join_s1_t">Create a profile</h3><p data-i18n="join_s1_d"></p></li>
+        <li><b>2</b><h3 class="serif" data-i18n="join_s2_t">Take the placement test</h3><p data-i18n="join_s2_d"></p></li>
+        <li><b>3</b><h3 class="serif" data-i18n="join_s3_t">Choose teacher and group</h3><p data-i18n="join_s3_d"></p></li>
+        <li><b>4</b><h3 class="serif" data-i18n="join_s4_t">Confirm and start</h3><p data-i18n="join_s4_d"></p></li>
+      </ol>
+      <p style="margin-top:28px"><a class="cta" href="app/index.html#join" target="_blank" rel="noopener" data-i18n="join_cta">Start with the portal</a></p>
+    </div>
+  </section>
+
+  <section id="levels">
+    <div class="wrap">
+      <div class="section-head"><div><p class="section-num" data-i18n="lvl_num">Levels</p><h2 class="section-title" data-i18n="lvl_title">What each level means</h2></div><p class="section-desc" data-i18n="lvl_desc">Our levels follow the CEFR scale used by Cambridge and IELTS.</p></div>
+      <div class="lvl-wrap" tabindex="0" role="region" aria-label="CEFR levels"><table class="lvl-table">
+        <thead><tr><th data-i18n="lvl_h_cefr">Level</th><th data-i18n="lvl_h_can">You can…</th><th data-i18n="lvl_h_cam">Cambridge</th><th data-i18n="lvl_h_who">Teacher</th></tr></thead>
+        <tbody>
+          <tr><td><b>A1</b></td><td data-i18n="lvl_c1"></td><td>—</td><td data-i18n="who_local">Local teacher</td></tr>
+          <tr><td><b>A2</b></td><td data-i18n="lvl_c2"></td><td>—</td><td data-i18n="who_then"></td></tr>
+          <tr><td><b>B1</b></td><td data-i18n="lvl_c3"></td><td>—</td><td data-i18n="who_both">Local or native</td></tr>
+          <tr><td><b>B2</b></td><td data-i18n="lvl_c4"></td><td>—</td><td data-i18n="who_both">Local or native</td></tr>
+          <tr><td><b>C1</b></td><td data-i18n="lvl_c5"></td><td>—</td><td data-i18n="who_both">Local or native</td></tr>
+        <tr class="exam-row"><td><b>Exam</b></td><td data-i18n="lvl_exam"></td><td>Flyers · KET · PET</td><td data-i18n="who_both">Local or native</td></tr>
+        </tbody></table></div>
+      <p class="lvl-note" data-i18n="lvl_note"></p>
+    </div>
+  </section>
+
+  <section id="finder">
+    <div class="wrap">
+      <div class="section-head"><div><p class="section-num" data-i18n="fnd_num">Course finder</p><h2 class="section-title" data-i18n="fnd_title">Not sure where to start?</h2></div><p class="section-desc" data-i18n="fnd_desc">Answer three quick questions and we will suggest a course.</p></div>
+      <div class="panel-form">
+        <div class="f-row">
+          <label><span data-i18n="fnd_q1">Who is learning?</span><select id="fnd_who"><option value="child" data-i18n="fnd_child">Child (6–11)</option><option value="teen" data-i18n="fnd_teen" selected>Teen (12–17)</option><option value="adult" data-i18n="fnd_adult">Adult (18+)</option></select></label>
+          <label><span data-i18n="fnd_q2">Main goal</span><select id="fnd_goal"><option value="everyday" data-i18n="fnd_everyday">Everyday English</option><option value="cambridge" data-i18n="fnd_cambridge">Cambridge exam (KET, PET)</option><option value="ielts" data-i18n="fnd_ielts">IELTS</option><option value="business" data-i18n="fnd_business">Business English</option></select></label>
+          <label><span data-i18n="fnd_q3">Current level</span><select id="fnd_lvl"><option value="unsure" data-i18n="fnd_unsure">Not sure</option><option value="beginner" data-i18n="fnd_beginner">Beginner</option><option value="some" data-i18n="fnd_some">Some English</option><option value="confident" data-i18n="fnd_confident">Confident</option></select></label>
+        </div>
+        <button type="button" class="cta" id="fnd_btn" data-i18n="fnd_btn">Suggest a course</button>
+        <div id="fnd_out" class="fnd-out" aria-live="polite" hidden></div>
+      </div>
+    </div>
+  </section>
+
+
+  <section id="pricing">
+    <div class="wrap">
+      <div class="section-head">
+        <div>
+          <p class="section-num" data-i18n="sec01_num">03 — Pricing</p>
+          <h2 class="section-title" data-i18n="sec01_title">A course of study for every ambition</h2>
+        </div>
+        <div class="currency-toggle" role="group" aria-label="Market">
+          <button class="active" data-market="kz" data-i18n="market_kz">Kazakhstan · ₸</button>
+          <button data-market="ru" data-i18n="market_ru">Russia · ₽</button>
+        </div>
+      </div>
+
+      <!-- Kazakhstan market (KZT) — brochure dated 8 Aug 2026 -->
+      <div class="market-panel" data-market-panel="kz">
+        <p class="cat-label" data-i18n="cat_ge_kzt">General English — Beginner (A1) through Upper-Intermediate (C1)</p>
+        <div class="program-list">
+          <div class="program-row">
+            <span class="prog-code">IF · GE‑L</span>
+            <span class="prog-name" data-i18n="name_GE-L">Mini-Group, Local Teacher</span>
+            <span class="prog-desc" data-i18n="desc_GE-L">8 lessons/month, 90 minutes each, small groups.</span>
+            <span class="prog-price"><span class="amount">₸45,000</span><small data-i18n="small_GE-L">per month</small></span>
+          </div>
+          <div class="program-row">
+            <span class="prog-code">IF · GE‑L2</span>
+            <span class="prog-name" data-i18n="name_GE-L">Mini-Group, Local Teacher</span>
+            <span class="prog-desc" data-i18n="desc_GE-L2">8 lessons/month, twice weekly, 60 minutes each, small groups.</span>
+            <span class="prog-price"><span class="amount">₸30,000</span><small data-i18n="small_GE-L">per month</small></span>
+          </div>
+          <div class="program-row">
+            <span class="prog-code">IF · GE‑N</span>
+            <span class="prog-name" data-i18n="name_GE-N">Mini-Group, Native Speaker</span>
+            <span class="prog-desc" data-i18n="desc_GE-N">8 lessons/month, 90 minutes each, maximum speaking practice.</span>
+            <span class="prog-price"><span class="amount">₸65,000</span><small data-i18n="small_GE-N">per month</small></span>
+          </div>
+        </div>
+
+        <p class="cat-label" data-i18n="cat_ielts_kzt">IELTS Preparation — Reading, Listening, Writing, Speaking, strategy &amp; mock tests</p>
+        <div class="program-list">
+          <div class="program-row">
+            <span class="prog-code">IF · IE</span>
+            <span class="prog-name" data-i18n="name_IE">IELTS Group</span>
+            <span class="prog-desc" data-i18n="desc_IE">8 lessons/month, 90 minutes each.</span>
+            <span class="prog-price"><span class="amount">₸75,000</span><small data-i18n="small_IE">per month</small></span>
+          </div>
+        </div>
+
+        <p class="cat-label" data-i18n="cat_ind_kzt">Individual Lessons — personalised around goals and schedule</p>
+        <div class="program-list">
+          <div class="program-row">
+            <span class="prog-code">IF · IL‑L</span>
+            <span class="prog-name" data-i18n="name_IL-L">English, Local Teacher</span>
+            <span class="prog-desc" data-i18n="desc_IL-L">8 lessons/month, twice weekly, 90 minutes each.</span>
+            <span class="prog-price"><span class="amount">₸80,000</span><small data-i18n="small_IL-L">per month</small></span>
+          </div>
+          <div class="program-row">
+            <span class="prog-code">IF · IL‑N</span>
+            <span class="prog-name" data-i18n="name_IL-N">Offline, Native Speaker</span>
+            <span class="prog-desc" data-i18n="desc_IL-N">8 lessons/month, 60 minutes each.</span>
+            <span class="prog-price"><span class="amount">₸95,000</span><small data-i18n="small_IL-N">per month</small></span>
+          </div>
+          <div class="program-row">
+            <span class="prog-code">IF · IL‑N2</span>
+            <span class="prog-name" data-i18n="name_IL-N2">Online, Native Speaker</span>
+            <span class="prog-desc" data-i18n="desc_IL-N2">Twice per week, 60 minutes each.</span>
+            <span class="prog-price"><span class="amount">₸85,000</span><small data-i18n="small_IL-N2">per month</small></span>
+          </div>
+          <div class="program-row">
+            <span class="prog-code">IF · IL‑N3</span>
+            <span class="prog-name" data-i18n="name_IL-N3">Online, Native Speaker</span>
+            <span class="prog-desc" data-i18n="desc_IL-N3">Three times per week, 60 minutes each.</span>
+            <span class="prog-price"><span class="amount">₸110,000</span><small data-i18n="small_IL-N3">per month</small></span>
+          </div>
+          <div class="program-row">
+            <span class="prog-code">IF · IE‑P</span>
+            <span class="prog-name" data-i18n="name_IE-P">IELTS Premium, Native Speaker</span>
+            <span class="prog-desc" data-i18n="desc_IE-P">8 lessons/month, 60 minutes each.</span>
+            <span class="prog-price"><span class="amount">₸110,000</span><small data-i18n="small_IE-P">per month</small></span>
+          </div>
+        </div>
+
+        <p class="cat-label" data-i18n="cat_flex_kzt">Flexible Lesson Packages, Local Teacher — pay-as-you-go, no monthly commitment</p>
+        <div class="program-list">
+          <div class="program-row">
+            <span class="prog-code">IF · FP‑12</span>
+            <span class="prog-name" data-i18n="name_FP12">12-Lesson Package</span>
+            <span class="prog-desc" data-i18n="desc_FP12">60 minutes each, ≈ ₸6,667 per lesson.</span>
+            <span class="prog-price"><span class="amount">₸80,000</span><small data-i18n="small_onetime">one-time</small></span>
+          </div>
+          <div class="program-row">
+            <span class="prog-code">IF · FP‑8</span>
+            <span class="prog-name" data-i18n="name_FP8">8-Lesson Package</span>
+            <span class="prog-desc" data-i18n="desc_FP8">60 minutes each, ₸7,500 per lesson.</span>
+            <span class="prog-price"><span class="amount">₸60,000</span><small data-i18n="small_onetime">one-time</small></span>
+          </div>
+        </div>
+
+        <p class="cat-label" data-i18n="cat_int_kzt">Intensives &amp; corporate</p>
+        <div class="program-list">
+          <div class="program-row">
+            <span class="prog-code">IF · WSI</span>
+            <span class="prog-name" data-i18n="name_WSI">Weekend Speaking Intensive</span>
+            <span class="prog-desc" data-i18n="desc_WSI">Sat &amp; Sun, 3 hours/day, 4 weeks — 24 hours total. For busy professionals.</span>
+            <span class="prog-price"><span class="amount">₸120,000</span><small data-i18n="small_wsi">full 4 weeks</small></span>
+          </div>
+          <div class="program-row">
+            <span class="prog-code">IF · SFT</span>
+            <span class="prog-name" data-i18n="name_SFT">Summer Fast-Track English</span>
+            <span class="prog-desc" data-i18n="desc_SFT">4 days/week, 2 hours/day, 8 weeks — 64 hours total, ≈ 3–4 months of progress.</span>
+            <span class="prog-price"><span class="amount">₸250,000</span><small data-i18n="small_sft">full program</small></span>
+          </div>
+          <div class="program-row">
+            <span class="prog-code">IF · CT</span>
+            <span class="prog-name" data-i18n="name_CT">Corporate Training</span>
+            <span class="prog-desc" data-i18n="desc_CT">Business communication, meetings, presentations, email writing — online &amp; offline.</span>
+            <span class="prog-price"><span class="amount" data-i18n="quote_based">Quote-based</span><small data-i18n="contact_us">contact us</small></span>
+          </div>
+        </div>
+
+        <p class="cat-label" data-i18n="cat_venue_kzt">Venue &amp; space rental — IF Business Lab &amp; Event Space</p>
+        <div class="program-list">
+          <div class="program-row">
+            <span class="prog-code">IF · V‑ST</span>
+            <span class="prog-name">IF Studio</span>
+            <span class="prog-desc" data-i18n="desc_VST">3–5 participants.</span>
+            <span class="prog-price"><span class="amount">₸10,000</span><small data-i18n="small_perhour">per hour</small></span>
+          </div>
+          <div class="program-row">
+            <span class="prog-code">IF · V‑BL</span>
+            <span class="prog-name">IF Business Lab</span>
+            <span class="prog-desc" data-i18n="desc_VBL">6–10 participants.</span>
+            <span class="prog-price"><span class="amount">₸15,000</span><small data-i18n="small_perhour">per hour</small></span>
+          </div>
+          <div class="program-row">
+            <span class="prog-code">IF · V‑HB</span>
+            <span class="prog-name">IF Hub</span>
+            <span class="prog-desc" data-i18n="desc_VHB">10–18 participants.</span>
+            <span class="prog-price"><span class="amount">₸18,000</span><small data-i18n="small_perhour">per hour</small></span>
+          </div>
+          <div class="program-row">
+            <span class="prog-code">IF · V‑FL</span>
+            <span class="prog-name" data-i18n="name_VFL">Full Venue Rental</span>
+            <span class="prog-desc" data-i18n="desc_VFL">Up to 40 participants.</span>
+            <span class="prog-price"><span class="amount">₸60,000</span><small data-i18n="small_perevent">per event</small></span>
+          </div>
+        </div>
+        <p class="price-note" data-i18n="pricenote_kzt">Pricing per the Programs &amp; Pricing brochure dated August 8, 2026. All programs begin with a free placement test.</p>
+      </div>
+
+      <!-- Russia market (RUB) — live pricing page, intellectfirst.com -->
+      <div class="market-panel" data-market-panel="ru" style="display:none;">
+        <p class="cat-label" data-i18n="cat_ge_rub">General English</p>
+        <div class="program-list">
+          <div class="program-row">
+            <span class="prog-code">IF · GE‑NN</span>
+            <span class="prog-name" data-i18n="name_GENN">Mini Group, Non-Native</span>
+            <span class="prog-desc" data-i18n="desc_online">Online.</span>
+            <span class="prog-price"><span class="amount">₽10,336</span><small data-i18n="small_permonth">per month</small></span>
+          </div>
+          <div class="program-row">
+            <span class="prog-code">IF · GE‑NT</span>
+            <span class="prog-name" data-i18n="name_GENT">Mini Group, Native</span>
+            <span class="prog-desc" data-i18n="desc_online">Online.</span>
+            <span class="prog-price"><span class="amount">₽15,200</span><small data-i18n="small_permonth">per month</small></span>
+          </div>
+          <div class="program-row">
+            <span class="prog-code">IF · GE‑DL</span>
+            <span class="prog-name" data-i18n="name_GEDL">Dual, Non-Native + Native</span>
+            <span class="prog-desc" data-i18n="desc_minigrouponline">Mini-group, online.</span>
+            <span class="prog-price"><span class="amount">₽15,200</span><small data-i18n="small_permonth">per month</small></span>
+          </div>
+          <div class="program-row">
+            <span class="prog-code">IF · GE‑IN</span>
+            <span class="prog-name" data-i18n="name_GEIN">Individual, Non-Native</span>
+            <span class="prog-desc" data-i18n="desc_online">Online.</span>
+            <span class="prog-price"><span class="amount">₽12,920</span><small data-i18n="small_permonth">per month</small></span>
+          </div>
+          <div class="program-row">
+            <span class="prog-code">IF · GE‑IT</span>
+            <span class="prog-name" data-i18n="name_GEIT">Individual, Native</span>
+            <span class="prog-desc" data-i18n="desc_online">Online.</span>
+            <span class="prog-price"><span class="amount">₽19,000</span><small data-i18n="small_permonth">per month</small></span>
+          </div>
+        </div>
+
+        <p class="cat-label" data-i18n="cat_examb_rub">Exam &amp; Business English</p>
+        <div class="program-list">
+          <div class="program-row">
+            <span class="prog-code">IF · EB‑NN</span>
+            <span class="prog-name" data-i18n="name_GENN">Mini Group, Non-Native</span>
+            <span class="prog-desc" data-i18n="desc_online">Online.</span>
+            <span class="prog-price"><span class="amount">₽11,886</span><small data-i18n="small_permonth">per month</small></span>
+          </div>
+          <div class="program-row">
+            <span class="prog-code">IF · EB‑NT</span>
+            <span class="prog-name" data-i18n="name_GENT">Mini Group, Native</span>
+            <span class="prog-desc" data-i18n="desc_online">Online.</span>
+            <span class="prog-price"><span class="amount">₽17,480</span><small data-i18n="small_permonth">per month</small></span>
+          </div>
+          <div class="program-row">
+            <span class="prog-code">IF · EB‑IN</span>
+            <span class="prog-name" data-i18n="name_GEIN">Individual, Non-Native</span>
+            <span class="prog-desc" data-i18n="desc_online">Online.</span>
+            <span class="prog-price"><span class="amount">₽14,858</span><small data-i18n="small_permonth">per month</small></span>
+          </div>
+          <div class="program-row">
+            <span class="prog-code">IF · EB‑IT</span>
+            <span class="prog-name" data-i18n="name_GEIT">Individual, Native</span>
+            <span class="prog-desc" data-i18n="desc_online">Online.</span>
+            <span class="prog-price"><span class="amount">₽21,850</span><small data-i18n="small_permonth">per month</small></span>
+          </div>
+        </div>
+        <p class="price-note" data-i18n="pricenote_rub">Pricing as listed on intellectfirst.com for the Russian market. All programs begin with a free placement test.</p>
+      </div>
+      <p style="margin-top:36px; font-size:14.5px;"><a href="a/class-catalog/index.html" style="text-decoration:underline; color:var(--accent);" data-i18n="catalog_link">Browse the full class catalog</a> <span data-i18n="catalog_link_tail"> — see exact days and times for every group class currently running.</span></p>
+    </div>
+  </section>
+
+    
+<section id="apps">
+    <div class="wrap">
+      <div class="section-head">
+        <div>
+          <p class="section-num" data-i18n="sec_apps_num">04 — Apps</p>
+          <h2 class="section-title" data-i18n="sec_apps_title">Everything in one place</h2>
+        </div>
+        <p class="section-desc" data-i18n="sec_apps_desc">Placement tests, vocabulary arenas, games, the IF Hub and our teacher tools — pick a level, open an app, start practising.</p>
+      </div>
+      <a class="lc-banner" href="app/index.html" target="_blank" rel="noopener">
+        <span class="lc-kicker" data-i18n="lc_kicker">IF Learning Centre</span>
+        <span class="lc-title serif" data-i18n="lc_title"></span>
+        <span class="lc-desc" data-i18n="lc_desc"></span>
+        <span class="lc-go" data-i18n="lc_go"></span>
+      </a>
+      <div class="directory-tools">
+        <label><span data-design="search">Search learning apps</span><input id="directory-search" type="search" autocomplete="off" placeholder="Search apps, books, levels…"></label>
+        <label><span data-design="category">Category</span><select id="directory-category"><option value="all" data-design="all">All categories</option><option value="vocabulary" data-design="vocabulary">Vocabulary</option><option value="grammar" data-design="grammar">Grammar</option><option value="mixed" data-design="games">Games &amp; practice</option><option value="test" data-design="tests">Tests</option><option value="languages" data-design="languages">Kazakh &amp; Russian</option><option value="materials" data-design="materials">Materials</option><option value="staff" data-design="staff">Staff &amp; information</option><option value="other" data-design="other">More apps</option></select></label>
+        <label><span data-design="level">Level</span><select id="directory-level"><option value="all" data-design="all_levels">All levels</option><option>A1</option><option>A2</option><option>B1</option><option>B2</option><option>C1</option></select></label>
+      </div>
+      <p id="directory-status" role="status" aria-live="polite"></p>
+      <div id="academy-directory" class="directory-grid"></div>
+      <div class="app-tabs" role="tablist"><button class="app-tab active" data-cat="learn" data-i18n="tab_learn"></button><button class="app-tab" data-cat="tests" data-i18n="tab_tests"></button><button class="app-tab" data-cat="games" data-i18n="tab_games"></button><button class="app-tab" data-cat="staff" data-i18n="tab_staff"></button></div>
+      <div class="app-stage">
+<div class="app-panel active" data-panel="learn"><p class="panel-note" data-i18n="note_learn"></p><div class="tile-grid"><a class="tile" href="app/index.html" target="_blank" rel="noopener" style="--i:0"><span class="tile-in"><span class="tile-n">IF Hub</span><span class="tile-d" data-i18n="app_hub"></span><span class="tile-go">↗</span></span></a><a class="tile" href="a/class-catalog/index.html" target="_blank" rel="noopener" style="--i:1"><span class="tile-in"><span class="tile-n">Class Catalog</span><span class="tile-d" data-i18n="app_catalog"></span><span class="tile-go">↗</span></span></a></div></div>
+<div class="app-panel" data-panel="tests"><p class="panel-note" data-i18n="note_tests"></p><div class="tile-grid"><a class="tile" href="a/ef-a1-tests/index.html" target="_blank" rel="noopener" style="--i:0"><span class="tile-in"><span class="tile-n">Test Centre · A1</span><span class="tile-go">↗</span></span></a><a class="tile" href="a/ef-a2-tests/index.html" target="_blank" rel="noopener" style="--i:1"><span class="tile-in"><span class="tile-n">Test Centre · A2</span><span class="tile-go">↗</span></span></a><a class="tile" href="a/ef-a2-tests/index.html" target="_blank" rel="noopener" style="--i:2"><span class="tile-in"><span class="tile-n">Test Centre · Pre-Intermediate</span><span class="tile-go">↗</span></span></a><a class="tile" href="a/ef-b1-tests/index.html" target="_blank" rel="noopener" style="--i:3"><span class="tile-in"><span class="tile-n">Test Centre · B1</span><span class="tile-go">↗</span></span></a><a class="tile" href="a/ef-b2-tests/index.html" target="_blank" rel="noopener" style="--i:4"><span class="tile-in"><span class="tile-n">Test Centre · B2</span><span class="tile-go">↗</span></span></a><a class="tile" href="a/ef-c1-tests/index.html" target="_blank" rel="noopener" style="--i:5"><span class="tile-in"><span class="tile-n">Test Centre · C1</span><span class="tile-go">↗</span></span></a></div></div>
+<div class="app-panel" data-panel="games"><div class="gr-hero"><div class="gr-kicker" data-i18n="gr_kicker"></div><h3 data-i18n="gr_title"></h3><p data-i18n="gr_desc"></p><div class="gr-chips"><span class="gr-chip"><i>💥</i><span data-i18n="gr_blast"></span></span><span class="gr-chip"><i>🗺️</i><span data-i18n="gr_treasure"></span></span><span class="gr-chip"><i>🎣</i><span data-i18n="gr_fishing"></span></span><span class="gr-chip"><i>🏁</i><span data-i18n="gr_race"></span></span><span class="gr-chip"><i>🏭</i><span data-i18n="gr_factory"></span></span><span class="gr-chip"><i>☕</i><span data-i18n="gr_cafe"></span></span><span class="gr-chip"><i>🛡️</i><span data-i18n="gr_defense"></span></span><span class="gr-chip"><i>👾</i><span data-i18n="gr_boss"></span></span><span class="gr-chip"><i>🧠</i><span data-i18n="gr_memory"></span></span><span class="gr-chip"><i>🎈</i><span data-i18n="gr_balloon"></span></span><span class="gr-chip"><i>🔤</i><span data-i18n="gr_search"></span></span></div></div><p class="panel-sub" data-i18n="games_sub_v"></p><div class="tile-grid"><a class="tile" href="a/kazakh-a1-b1/index.html" target="_blank" rel="noopener" style="--i:12"><span class="tile-in"><span class="tile-n">Game Room · Қазақша A1–A2</span><span class="tile-go">↗</span></span></a></div><p class="panel-sub" data-i18n="games_sub_g"></p><div class="tile-grid"><a class="tile" href="a/grammar-in-use-quest/index.html" target="_blank" rel="noopener" style="--i:6"><span class="tile-in"><span class="tile-n">Grammar in Use Quest</span><span class="tile-go">↗</span></span></a></div></div>
+<div class="app-panel" data-panel="staff"><p class="panel-note" data-i18n="staff_p"></p>
+<form class="staff-gate" id="staffGate" autocomplete="off"><label class="staff-h serif" for="staffCode" data-i18n="staff_h"></label>
+<div class="staff-row"><input id="staffCode" type="password" autocomplete="off" spellcheck="false" data-i18n-ph="staff_ph" placeholder="Access code"><button class="cta" type="submit" data-i18n="staff_go"></button></div>
+<p class="staff-msg" id="staffMsg" role="status" aria-live="polite"></p></form>
+<div id="staffOut" hidden><div class="tile-grid" id="staffGrid"></div><p style="margin-top:18px"><button class="cta outline" type="button" id="staffLock" data-i18n="staff_lock"></button></p></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="ecosystem">
+    <div class="wrap">
+      <div class="section-head">
+        <div>
+          <p class="section-num" data-i18n="sec02_num">05 — Ecosystem</p>
+          <h2 class="section-title" data-i18n="sec02_title">Three spaces, one standard</h2>
+        </div>
+        <p class="section-desc" data-i18n="sec02_desc">Beyond the classroom, Intellect First runs a small ecosystem of spaces built for practice, immersion and production.</p>
+      </div>
+      <div class="eco-grid">
+        <div class="eco-card">
+          <svg class="mark" viewBox="0 0 34 34" fill="none"><circle cx="17" cy="17" r="15.5" stroke="var(--accent)" stroke-width="1.4"/><path d="M11 17h12M17 11v12" stroke="var(--accent)" stroke-width="1.4"/></svg>
+          <h3>IF Hub</h3>
+          <p data-i18n="eco1_desc">Speaking clubs, debates, public speaking practice and current-affairs discussion — where fluency meets confidence.</p>
+        </div>
+        <div class="eco-card">
+          <svg class="mark" viewBox="0 0 34 34" fill="none"><rect x="4" y="4" width="26" height="26" stroke="var(--accent)" stroke-width="1.4"/><path d="M4 13h26M13 13v17" stroke="var(--accent)" stroke-width="1.4"/></svg>
+          <h3>IF Lab</h3>
+          <p data-i18n="eco2_desc">Intensive small-group work, IELTS-focused sessions and workshops for professional development.</p>
+        </div>
+        <div class="eco-card">
+          <svg class="mark" viewBox="0 0 34 34" fill="none"><path d="M6 6h22v22H6z" stroke="var(--accent)" stroke-width="1.4"/><path d="M13 12l9 5-9 5v-10z" stroke="var(--accent)" stroke-width="1.4" stroke-linejoin="round"/></svg>
+          <h3>IF Studio</h3>
+          <p data-i18n="eco3_desc">Individual and online lessons, video production and podcasts — content that extends learning beyond the room.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="gallery">
+    <div class="wrap">
+      <div class="section-head">
+        <div>
+          <p class="section-num" data-i18n="sec03_num">06 — Gallery</p>
+          <h2 class="section-title" data-i18n="sec03_title">Life at the academy</h2>
+        </div>
+        <p class="section-desc" data-i18n="sec03_desc">Real moments from our classes and events — students, teachers and the IF community.</p>
+      </div>
+      <div class="shot-grid">
+        <figure class="shot wide"><img src="media/0fde7b436f0db4144e42fb2116192607.jpg" alt="The IF Academy community together in the pine forest" loading="lazy"><figcaption data-i18n="cap_feat"></figcaption></figure>
+        <figure class="shot "><img src="media/7f7f038c702594ab6a115950d7a7662c.jpg" alt="Students in class at IF Academy" loading="lazy"><figcaption data-i18n="cap_class"></figcaption></figure>
+        <figure class="shot "><img src="media/aa481d66c9aa47d29e6cfcbfc0f9e8eb.jpg" alt="Hoops and balloons game at the IF Academy event" loading="lazy"><figcaption data-i18n="cap_hoops"></figcaption></figure>
+        <figure class="shot "><img src="media/72d3438e51e68b446ad16a8a7407f22b.jpg" alt="Lunch together at the IF Academy event" loading="lazy"><figcaption data-i18n="cap_lunch"></figcaption></figure>
+        <figure class="shot "><img src="media/84f37e4cc4b4a41c838bacab00269d93.jpg" alt="Team challenge at the IF Academy event" loading="lazy"><figcaption data-i18n="cap_chain"></figcaption></figure>
+        <figure class="shot "><img src="media/c8ebcf391f9a912ce0d9da987c4faead.jpg" alt="Students with team badges at the event" loading="lazy"><figcaption data-i18n="cap_badges"></figcaption></figure>
+        <figure class="shot "><img src="media/527114fcfbb6b9043dd4443c84504984.jpg" alt="Teacher and students at the event" loading="lazy"><figcaption data-i18n="cap_chat"></figcaption></figure>
+        
+      </div>
+      <h3 class="ig-head serif" data-i18n="aw_head">Awards day</h3>
+      <div class="shot-grid">
+        <figure class="shot wide"><img src="media/967e678fd7da0301d59c8801d882a656.jpg" alt="Director presenting achievement awards at the IF Academy event" loading="lazy"><figcaption data-i18n="cap_aw_speech"></figcaption></figure>
+        <figure class="shot port"><img src="media/a10979eadb3565b59b4d70ebae469480.jpg" alt="IELTS Achievement Award presentation" loading="lazy"><figcaption data-i18n="cap_aw_ielts"></figcaption></figure>
+        <figure class="shot port"><img src="media/01720926aadc0fe2aae064425625d016.jpg" alt="Student receiving an IELTS Achievement Award" loading="lazy"><figcaption data-i18n="cap_aw_ielts2"></figcaption></figure>
+        <figure class="shot port"><img src="media/f0359026b32176e2d1ac05f3eef9904e.jpg" alt="Annual Achievement Certificate presentation" loading="lazy"><figcaption data-i18n="cap_aw_year"></figcaption></figure>
+        <figure class="shot port"><img src="media/16ec0186ef7e81cf15a5a0f5745adbee.jpg" alt="Teaching Excellence Award presentation" loading="lazy"><figcaption data-i18n="cap_aw_teach"></figcaption></figure>
+        <figure class="shot port"><img src="media/7fc12bd25e4ef660509d00b61d9dca7a.jpg" alt="Learning Journey Awards with notebooks" loading="lazy"><figcaption data-i18n="cap_aw_journey"></figcaption></figure>
+        
+      </div>
+      <h3 class="ig-head serif" data-i18n="cafe_head">Cyber café weekend</h3>
+      <div class="shot-grid">
+        
+        
+        
+      </div>
+      <h3 class="ig-head serif" data-i18n="ig_head">More on Instagram</h3>
+      <div class="gallery-grid ig-row">
+        <a class="frame ig" href="https://www.instagram.com/p/Dajz-LlDFq7/" target="_blank" rel="noopener"><span class="ig-ico">▶</span><span data-i18n="ig_post">Watch on Instagram — our lessons &amp; events</span><span class="ig-go">↗</span></a>
+        <a class="frame ig" href="https://www.instagram.com/reel/DebUhnfsdF-/" target="_blank" rel="noopener"><span class="ig-ico">▶</span><span data-i18n="ig_reel">Watch the reel on Instagram</span><span class="ig-go">↗</span></a>
+        <a class="frame ig" href="https://www.instagram.com/reel/DedjpzxsTKb/" target="_blank" rel="noopener"><span class="ig-ico">▶</span><span data-i18n="ig_reel">Watch the reel on Instagram</span><span class="ig-go">↗</span></a>
+        <a class="frame ig" href="https://www.instagram.com/reel/DeGozLPMgxt/" target="_blank" rel="noopener"><span class="ig-ico">▶</span><span data-i18n="ig_reel">Watch the reel on Instagram</span><span class="ig-go">↗</span></a>
+      </div>
+    </div>
+  </section>
+
+  <section id="faqs">
+    <div class="wrap">
+      <div class="section-head">
+        <div>
+          <p class="section-num" data-i18n="sec_faqs_num">07 — FAQs</p>
+          <h2 class="section-title" data-i18n="sec_faqs_title">Questions, answered</h2>
+        </div>
+      </div>
+      <div class="faq-list">
+        <details><summary class="serif" data-i18n="faq_q1">How do I get started?</summary><p class="prog-desc" data-i18n="faq_a1">Book a free placement test through Telegram or email — we'll assess your level and recommend the right class.</p></details>
+        <details><summary class="serif" data-i18n="faq_q2">What levels do you teach?</summary><p class="prog-desc" data-i18n="faq_a2">Beginner (A1) through Upper-Intermediate (C1) for General English, plus Cambridge exam tracks (Starters, Movers, Flyers, KET, PET) for young learners.</p></details>
+        <details><summary class="serif" data-i18n="faq_q3">Are classes online or in person?</summary><p class="prog-desc" data-i18n="faq_a3">Both — General English for the Russian market runs online; classes in Kazakhstan run in person across our three spaces (IF Business Lab, IF Hub, IF Studio).</p></details>
+        <details><summary class="serif" data-i18n="faq_q4">Do you offer corporate or group training?</summary><p class="prog-desc" data-i18n="faq_a4">Yes — Corporate Training is quote-based and customised to your organisation, available online and offline.</p></details>
+        <details><summary class="serif" data-i18n="faq_q5">Need to change a class time or teacher?</summary><p class="prog-desc" data-i18n="faq_a5">Contact the academy directly and we'll arrange it.</p></details>
+      </div>
+    </div>
+  </section>
+
+  <section id="about">
+    <div class="wrap">
+      <div class="about-grid">
+        <div>
+          <p class="section-num" data-i18n="sec04_num">08 — About</p>
+          <h2 class="section-title" style="margin-bottom:22px;" data-i18n="sec04_title">Built on one conviction</h2>
+          <p data-i18n="about_p1">Intellect First was founded on the conviction that language instruction should be judged the way any serious education is judged — by rigour, by outcomes, and by the calibre of the people delivering it.</p>
+          <p data-i18n="about_p2">Every class is led by qualified instructors, held to international standards, and built around small groups so that no student goes unheard. The result is an academy that operates less like a language centre and more like a proper school of thought.</p>
+        </div>
+        <div class="stat-list">
+          <div class="stat"><div class="num" data-i18n="stat1_num">Excellence</div><div class="lbl" data-i18n="stat1_lbl">Held as the operating standard, not a marketing word</div></div>
+          <div class="stat"><div class="num" data-i18n="stat2_num">Small groups</div><div class="lbl" data-i18n="stat2_lbl">3–6 students in General English, so instruction stays personal</div></div>
+          <div class="stat"><div class="num" data-i18n="stat3_num">Global perspective</div><div class="lbl" data-i18n="stat3_lbl">Curriculum benchmarked against international standards</div></div>
+          <div class="stat"><div class="num" data-i18n="stat4_num">Native instruction</div><div class="lbl" data-i18n="stat4_lbl">Available through the Premium English track</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+
+  <section id="trial">
+    <div class="wrap">
+      <div class="section-head"><div><p class="section-num" data-i18n="trial_num">Enquiry</p><h2 class="section-title" data-i18n="trial_title">Ask for a free trial or consultation</h2></div><p class="section-desc" data-i18n="trial_desc">Tell us a little about the student and we will reply on Telegram.</p></div>
+      <div class="panel-form">
+        <div class="f-row">
+          <label><span data-i18n="trial_name">Student’s name</span><input id="tr_name" autocomplete="name"></label>
+          <label><span data-i18n="trial_contact">Your phone or Telegram</span><input id="tr_contact" autocomplete="tel" placeholder="+7 … / @username"></label>
+        </div>
+        <div class="f-row">
+          <label><span data-i18n="trial_who">Who is learning?</span><select id="tr_who"><option value="child" data-i18n="fnd_child">Child (6–11)</option><option value="teen" data-i18n="fnd_teen" selected>Teen (12–17)</option><option value="adult" data-i18n="fnd_adult">Adult (18+)</option></select></label>
+          <label><span data-i18n="trial_goal">Main goal</span><select id="tr_goal"><option value="everyday" data-i18n="fnd_everyday">Everyday English</option><option value="cambridge" data-i18n="fnd_cambridge">Cambridge exam (KET, PET)</option><option value="ielts" data-i18n="fnd_ielts">IELTS</option><option value="business" data-i18n="fnd_business">Business English</option></select></label>
+          <label><span data-i18n="trial_time">Best time</span><select id="tr_time"><option value="morning" data-i18n="time_morning">Morning</option><option value="afternoon" data-i18n="time_afternoon">Afternoon</option><option value="evening" data-i18n="time_evening" selected>Evening</option><option value="weekend" data-i18n="time_weekend">Weekend</option></select></label>
+        </div>
+        <div class="f-actions"><a class="cta" id="tr_send" href="https://t.me/abliem" target="_blank" rel="noopener" data-i18n="trial_send">Send on Telegram</a><button type="button" class="cta outline" id="tr_copy" data-i18n="trial_copy">Copy message</button></div>
+        <p class="meta" style="font-size:13px;color:var(--text-soft);margin:12px 0 0" data-i18n="trial_note"></p>
+      </div>
+    </div>
+  </section>
+
+  <section id="location">
+    <div class="wrap">
+      <div class="section-head">
+        <div>
+          <p class="section-num" data-i18n="loc_num">09 — Visit</p>
+          <h2 class="section-title" data-i18n="loc_title">Find us in Kostanay</h2>
+        </div>
+        <p class="section-desc" data-i18n="loc_desc">Intellect First Academy (IF Academy) is on Al-Farabi Avenue, a short walk from the Gloriya Hotel.</p>
+      </div>
+      <div class="loc-grid">
+        <div class="loc-card">
+          <p class="loc-label" data-i18n="loc_addr_label">Address</p>
+          <p class="loc-addr"><strong>Intellect First Academy</strong> (IF Academy)<br><span data-i18n="loc_addr">Alfarabi 19, Kostanay 110000, Kazakhstan</span></p>
+          <p class="loc-label" data-i18n="loc_post_label">Postcode</p>
+          <p class="loc-addr">110000</p>
+          <p class="loc-label" data-i18n="loc_coord_label">Coordinates</p>
+          <p class="loc-addr">53.208857, 63.642115</p>
+          <p class="loc-links">
+            <a class="cta" href="https://yandex.com/maps/?pt=63.642115,53.208857&amp;z=18&amp;l=map" target="_blank" rel="noopener" data-i18n="loc_yandex">Open in Yandex Maps</a>
+            <a class="loc-alt" href="https://www.google.com/maps/search/?api=1&amp;query=53.208857,63.642115" target="_blank" rel="noopener" data-i18n="loc_google">Open in Google Maps</a>
+          </p>
+        </div>
+        <figure class="loc-map">
+          <svg viewBox="0 0 520 330" role="img" aria-labelledby="locmap-t" class="locmap">
+            <title id="locmap-t">Map: Intellect First Academy, Al-Farabi Avenue 19, Kostanay</title>
+            <rect width="520" height="330" class="m-bg"/>
+            <rect x="50" y="0" width="36" height="330" class="m-road"/>
+            <rect x="0" y="120" width="520" height="50" class="m-road"/>
+            <line x1="0" y1="145" x2="520" y2="145" class="m-dash"/>
+            <line x1="68" y1="0" x2="68" y2="330" class="m-dash"/>
+            <rect x="130" y="40" width="170" height="68" rx="4" class="m-block"/>
+            <text x="215" y="78" text-anchor="middle" class="m-t">Gloriya Hotel</text>
+            <rect x="312" y="40" width="110" height="68" rx="4" class="m-block"/>
+            <rect x="98" y="178" width="250" height="46" rx="4" class="m-me"/>
+            <text x="330" y="205" text-anchor="end" class="m-t m-b">19</text>
+            <rect x="356" y="178" width="72" height="46" rx="4" class="m-block"/>
+            <text x="392" y="205" text-anchor="middle" class="m-t">Shou-Design</text>
+            <rect x="434" y="178" width="72" height="46" rx="4" class="m-block"/>
+            <text x="470" y="205" text-anchor="middle" class="m-t">Kultura</text>
+            <text x="296" y="139" class="m-t m-road-t">AL-FARABI AVE · ӘЛ-ФАРАБИ ДАҢҒЫЛЫ</text>
+            <circle cx="95" cy="114" r="5" class="m-light"/>
+            <rect x="96" y="122" width="190" height="40" rx="6" class="m-bubble"/>
+            <text x="108" y="139" class="m-bt">IF Academy</text>
+            <text x="108" y="154" class="m-t">Al-Farabi Ave 19 · 110000</text>
+            <path d="M108 162 L108 171" class="m-arrow"/>
+            <path d="M108 172 l-4 -7 m4 7 l4 -7" class="m-arrow"/>
+            <rect x="99" y="176" width="18" height="5" rx="1" fill="#fff" class="m-door"/>
+            <circle cx="108" cy="178" r="6" class="m-pin"/><circle cx="108" cy="178" r="2.4" fill="#fff"/>
+          </svg>
+          <figcaption data-i18n="loc_note">Schematic map, not to scale. The arrow marks the entrance of building 19 on the Al-Farabi Avenue side, not the courtyard, by the traffic lights.</figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+<footer id="contact">
+  <div class="wrap">
+    <div class="foot-grid">
+      <div class="foot-col">
+        <h4 data-i18n="foot_begin_title">Begin here</h4>
+        <p style="max-width: 34ch; color: var(--text-soft); font-size: 15px;" data-i18n="foot_begin_desc">Every programme starts with a free placement test. Get in touch and we'll place you in the right class.</p>
+        <a href="https://t.me/abliem" target="_blank" rel="noopener" class="cta" style="margin-top: 8px;" data-i18n="foot_cta">Book a free placement test</a>
+      </div>
+      <div class="foot-col">
+        <h4 data-i18n="foot_contact_title">Contact</h4>
+        <a href="mailto:mannebdul@yandex.ru">mannebdul@yandex.ru</a>
+        <a href="https://t.me/abliem" target="_blank" rel="noopener">Telegram: @abliem</a>
+        <a href="https://t.me/Iflanguage_bot" target="_blank" rel="noopener">Telegram bot: @Iflanguage_bot</a>
+        <a href="tel:+77474690567">+7 747 469 0567</a>
+        <a href="https://instagram.com/intellect.first" target="_blank" rel="noopener">@intellect.first</a>
+      </div>
+      <div class="foot-col">
+        <h4 data-i18n="foot_academy_title">Academy</h4>
+        <p style="color: var(--text-soft); font-size: 14.5px; margin-bottom:4px;"><strong style="color:var(--text);font-weight:600;">Intellect First Academy</strong> (IF Academy)</p>
+        <p style="color: var(--text-soft); font-size: 14.5px;" data-i18n="foot_academy_city">Alfarabi 19, Kostanay 110000, Kazakhstan</p>
+        <a href="#teachers" data-i18n="nav_teachers">Teachers</a>
+        <a href="#pricing" data-i18n="nav_pricing">Pricing</a>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <span style="display:flex; align-items:center; gap:10px;">
+        <img src="brand/if-shield-256.webp" srcset="brand/if-shield-256.webp 256w, brand/if-shield-official.png 1254w" sizes="64px" alt="" width="28" height="28" style="display:block; object-fit:contain;">
+        <span data-i18n="foot_bottom_left">Intellect First — Learn. Think. Lead.</span>
+      </span>
+      <span>&copy; 2026 Intellect First Academy</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+  var menuBtn = document.getElementById('menuBtn');
+  var navLinks = document.getElementById('navLinks');
+  function setMenuOpen(open) {
+    navLinks.classList.toggle('open', open);
+    menuBtn.setAttribute('aria-expanded', String(open));
+    menuBtn.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+  }
+  menuBtn.addEventListener('click', function () {
+    setMenuOpen(!navLinks.classList.contains('open'));
+  });
+  navLinks.querySelectorAll('a').forEach(function (a) {
+    a.addEventListener('click', function () { setMenuOpen(false); });
+  });
+
+  var marketBtns = document.querySelectorAll('.currency-toggle button');
+  var marketPanels = document.querySelectorAll('.market-panel');
+  marketBtns.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      marketBtns.forEach(function (b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      var market = btn.getAttribute('data-market');
+      marketPanels.forEach(function (panel) {
+        panel.style.display = panel.getAttribute('data-market-panel') === market ? '' : 'none';
+      });
+    });
+  });
+</script>
+
+<script>
+  var I18N = {
+    en: { nav_young_learners: "Young Learners Centre", app_pet_games: "PET Games", app_ket_games: "KET Games",
+      nav_portal: "Learning Hub",
+      tab_home: "Home",
+      tab_courses: "Courses",
+      tab_apps: "Apps",
+      tab_portal: "Portal",
+      tab_contact: "Contact",
+      chat_btn: "Chat with us",
+      join_num: "Getting started",
+      join_title: "How to join, in four steps",
+      join_desc: "From first visit to first lesson, everything happens in one place.",
+      join_s1_t: "Create a profile",
+      join_s1_d: "Register once. It is required before the test or any booking.",
+      join_s2_t: "Take the placement test",
+      join_s2_d: "Thirty questions for teens and adults, twenty for children. You get your level straight away.",
+      join_s3_t: "Choose teacher and group",
+      join_s3_d: "See each teacher’s free hours and pick a group that fits your level and schedule.",
+      join_s4_t: "Confirm and start",
+      join_s4_d: "The manager confirms the group, time and first payment on Telegram.",
+      join_cta: "Start with the portal",
+      lvl_num: "Levels",
+      lvl_title: "What each level means",
+      lvl_desc: "Our levels follow the CEFR scale used by Cambridge and IELTS.",
+      lvl_h_cefr: "Level",
+      lvl_h_can: "You can…",
+      lvl_h_cam: "Cambridge",
+      lvl_h_who: "Teacher",
+      lvl_c1: "Introduce yourself and use simple everyday phrases.",
+      lvl_c2: "Handle routine tasks and talk about your life and plans.",
+      lvl_c3: "Cope with most travel, study and work situations.",
+      lvl_c4: "Follow fast speech and argue a point clearly.",
+      lcs_num: "04 — IF Learning Centre", lcs_title: "Your learning, in one place", lcs_desc: "The IF Learning Centre brings every test, vocabulary arena, game and coursebook page together, with a level filter and search. Pick a block to start.", lcs_main: "Open the IF Learning Centre", lcs_open: "Open", lcs_hero: "Open the IF Learning Centre", nav_apps: "Apps", tab_apps: "Apps", lcs_b1_n: "11", lcs_b1_t: "Test Centres", lcs_b1_d: "Placement test plus English File, Teenagers and PET tests, marked automatically.", lcs_b2_n: "12", lcs_b2_t: "Vocabulary Arenas", lcs_b2_d: "Team and solo word games from Movers to C1, plus KET, PET and IELTS.", lcs_b3_n: "11", lcs_b3_t: "Game Room", lcs_b3_d: "Eleven arcade games in every level, plus Taboo, quests and Grammar in Use.", lcs_b4_n: "Hub", lcs_b4_t: "IF Hub & Class Catalog", lcs_b4_d: "Coursebooks and levels, and the days and times of every group class.", games_sub_v: "Choose your level", games_sub_g: "More games: quests, arcades and grammar", launch_games: "Game Room · 11 games", launch_staff: "Access code required", staff_h: "Staff access", staff_p: "IF Teacher Hub is for Intellect First teachers. Enter the access code you were given. Administrator tools open with the administrator code.", staff_ph: "Access code", staff_go: "Unlock", staff_bad: "That code did not work. Check it and try again.", staff_lock: "Lock again", staff_t: "Teachers", staff_a: "Administrator only", staff_wait: "Checking…", staff_ok: "Unlocked", lc_kicker: "IF Learning Centre", lc_title: "One place for every IF test and vocabulary arena", lc_desc: "All Test Centres and Vocabulary Arenas, from A1 to C1 and the Cambridge exams, with a level filter and search.", lc_go: "Open the IF Learning Centre", lvl_c5: "Use English flexibly and precisely for study and work.", lvl_note: "A1–C1 follow the same programme books for teens and adults. Materials are mostly Cambridge and Oxford coursebooks plus other online resources. Cambridge exam preparation (Flyers, KET, PET) is taught as separate courses, not as part of B1.", lvl_exam: "Cambridge exam preparation, separate courses",
+      who_local: "Local teacher",
+      who_then: "Local teacher for 3–4 months, then native",
+      who_both: "Local or native",
+      fnd_num: "Course finder",
+      fnd_title: "Not sure where to start?",
+      fnd_desc: "Answer three quick questions and we will suggest a course.",
+      fnd_q1: "Who is learning?",
+      fnd_child: "Child (6–11)",
+      fnd_teen: "Teen (12–17)",
+      fnd_adult: "Adult (18+)",
+      fnd_q2: "Main goal",
+      fnd_everyday: "Everyday English",
+      fnd_cambridge: "Cambridge exam (KET, PET)",
+      fnd_ielts: "IELTS",
+      fnd_business: "Business English",
+      fnd_q3: "Current level",
+      fnd_unsure: "Not sure",
+      fnd_beginner: "Beginner",
+      fnd_some: "Some English",
+      fnd_confident: "Confident",
+      fnd_btn: "Suggest a course",
+      fnd_label: "Our suggestion",
+      fnd_test: "Take the placement test",
+      trial_num: "Enquiry",
+      trial_title: "Ask for a free trial or consultation",
+      trial_desc: "Tell us a little about the student and we will reply on Telegram.",
+      trial_name: "Student’s name",
+      trial_contact: "Your phone or Telegram",
+      trial_who: "Who is learning?",
+      trial_goal: "Main goal",
+      trial_time: "Best time",
+      time_morning: "Morning",
+      time_afternoon: "Afternoon",
+      time_evening: "Evening",
+      time_weekend: "Weekend",
+      trial_send: "Send on Telegram",
+      trial_copy: "Copy message",
+      trial_copied: "Copied",
+      trial_note: "This opens Telegram with your message ready to send. Nothing is stored on this page.",
+      loc_num: "09 — Visit",
+      loc_title: "Find us in Kostanay",
+      loc_desc: "Intellect First Academy (IF Academy) is on Al-Farabi Avenue, a short walk from the Gloriya Hotel.",
+      loc_addr_label: "Address",
+      loc_addr: "Alfarabi 19, Kostanay 110000, Kazakhstan",
+      loc_post_label: "Postcode",
+      loc_coord_label: "Coordinates",
+      loc_yandex: "Open in Yandex Maps",
+      loc_google: "Open in Google Maps",
+      loc_note: "Schematic map, not to scale. The arrow marks the entrance of building 19 on the Al-Farabi Avenue side, not the courtyard, by the traffic lights.",
+      path_h: "How our teacher pathway works",
+      path_p1: "Students at A2 level and below (teens and adults) first study with our local, Russian-speaking teachers for about 3–4 months. They explain grammar clearly in your own language and build a solid base. After that, students move on to lessons with a native speaker.",
+      path_p2: "Young learners follow the same logic: Starters and Movers are taught by local teachers only. Flyers, KET and PET can be taught by local teachers or by native speakers.",
+      portal_cta: "Register and take the placement test",
+      portal_note: "Create a profile first — it is required before the placement test or booking a class.",
+      cap_feat: "The IF family — students and teachers together", cap_class: "In the classroom", cap_hoops: "Games day: hoops and balloons",
+      cap_lunch: "Lunch together after the games", cap_chain: "Team challenge", cap_badges: "Team badges and good humour",
+      cap_chat: "Teachers and students, off the clock", cap_video: "A student video about their teacher", aw_head: "Awards day", cap_aw_speech: "Awards day: celebrating our students' progress", cap_aw_ielts: "IELTS Achievement Awards", cap_aw_ielts2: "A proud IELTS result", cap_aw_year: "Annual Achievement Certificates", cap_aw_teach: "Teaching Excellence Award", cap_aw_journey: "Learning Journey Awards", cap_debate: "Debate practice in class", cafe_head: "Cyber café weekend", cap_cafe1: "Intellect First Weekend: our PET group at the cyber café", cap_cafe2: "Speaking English while gaming with foreign English speakers", cap_fun: "A funny conversation in Russian", ig_head: "More on Instagram",
+      ig_post: "Watch on Instagram — our lessons & events", ig_reel: "Watch the reel on Instagram",
+      nav_apps: "Apps", sec_apps_num: "04 — Apps", sec_apps_title: "Everything in one place",
+      sec_apps_desc: "Placement tests, vocabulary arenas, games, the IF Hub and our teacher tools — pick a level, open an app, start practising.",
+      tab_learn: "IF Student Hub", tab_tests: "Test Centres", tab_vocab: "Vocabulary Arenas", tab_games: "Games", tab_staff: "IF Teacher Hub",
+      note_learn: "For students: the IF Hub brings coursebooks, levels and games together, and the Class Catalog shows every group's days and times.",
+      note_tests: "Check your level with a test for each CEFR stage, from A1 to C1.",
+      note_vocab: "Fast, competitive vocabulary practice for every level and exam.",
+      note_games: "The Game Room is the main place for games: eleven arcade games in every level, plus extra quests and arcades.", gr_kicker: "Main games hub", gr_title: "The Game Room", gr_desc: "Eleven arcade games on your own vocabulary. Pick your level below and the Game Room opens inside it, next to the Quick Quiz and Match games.", gr_blast: "Blast", gr_treasure: "Treasure Hunt", gr_fishing: "Fishing", gr_race: "Race", gr_factory: "Factory", gr_cafe: "Café", gr_defense: "Monster Defense", gr_boss: "Boss Battle", gr_memory: "Memory", gr_balloon: "Balloon Pop", gr_search: "Word Search",
+      note_staff: "For Intellect First teachers and administrators. These apps hold school records and need staff access.",
+      app_hub: "Coursebooks, levels and games", app_catalog: "Days and times of every group class",
+      app_teacherhub: "Lesson tools for teachers", app_dash: "Class overview for teachers",
+      app_ops: "Profiles, schedule and attendance", app_studb: "Student records",
+      staff_only: "Staff only", launch_hub: "Coursebooks and timetable",
+      nav_programs: "Programs", nav_catalog: "Class Catalog", nav_ecosystem: "Ecosystem", nav_gallery: "Gallery",
+      nav_teachers: "Teachers", nav_courses: "Courses & Programs", nav_pricing: "Pricing", nav_faqs: "FAQs",
+      sec_teachers_num: "01 — Teachers", sec_teachers_title: "The people behind the standard",
+      sec_teachers_desc: "A small, qualified team — native-speaking and local instructors, each specialised by age group and level.",
+      teacher_abdoulie_role: "Founder & Director, IF Academy",
+      teacher_abdoulie_desc: "Abdoulie Manneh is the founder of IF Academy and its native English-speaking teacher. Originally from The Gambia, he has taught for over 14 years in Africa, Russia and Kazakhstan, including corporate programmes for companies such as Lukoil and Rosatom. He holds degrees from universities in The Gambia, Taiwan and Russia, is TESOL-certified, and is completing a Doctor of Business Administration at Maqsut Narikbayev University.",
+      teacher_abdoulie_philosophy_label: "Teaching philosophy:",
+      teacher_abdoulie_philosophy: "Abdoulie believes a language is learned by using it. His lessons are built on real conversation, debate and games in small, personal classes. Having learned Russian and Arabic himself, he aims to make every lesson challenging and confidence-building. Each student should leave able to say something they couldn't say before.",
+      teacher_aitach_role: "Local Teacher", teacher_aitach_desc: "I am a passionate English educator committed to making language learning engaging, inspiring, and meaningful. Through a personalised approach and supportive atmosphere, I help students build confidence, develop fluency, and unlock new opportunities through English.",
+      teacher_alina_role: "Local Teacher", teacher_alina_desc: "Teaches kids, teens and adults, from beginner up to B1.",
+      teacher_olya_role: "English Teacher", teacher_olya_desc: "I am a Foreign Philology Bachelor’s student with a passion for the English language and teaching. My teaching philosophy is to create a supportive, engaging environment where students feel comfortable learning, making mistakes, and expressing themselves. I believe that learning English should be practical, enjoyable, and tailored to each student’s needs.",
+      teacher_joseph_role: "Substitute Teacher · Native Speaker", teacher_joseph_desc: "Native-speaking substitute teacher; Young learners — Movers, Cambridge YLE preparation.",
+      teacher_anelya_role: "Manager", teacher_anelya_desc: "I’m the manager at IF Academy. I'm responsible for organising daily operations, coordinating teachers and students, managing schedules, communicating with parents, and ensuring everything runs smoothly. I enjoy working with people, staying organised, and creating a positive and welcoming learning environment!",
+      teacher_ekaterina_role: "SMM", teacher_ekaterina_desc: "Responsible for managing the Instagram account, creating content, and developing its visual identity to turn English learning into an engaging, inspiring experience.",
+      sec_courses_num: "02 — Courses & Programs", sec_courses_title: "What we teach",
+      sec_courses_desc: "Full pricing for every course is on the Pricing page below.",
+      course_ge_name: "General English", course_ge_desc: "A1, A2, B1, B2 and C1 in General and Business English: one programme for teens and adults, in mini-groups or individually. A1–A2 students study with local teachers for the first 3–4 months; native-speaker lessons open from B1.",
+      course_ielts_name: "IELTS Preparation", course_ielts_desc: "Full four-skill preparation with exam strategy, mock tests and individual feedback.",
+      course_ind_name: "Individual Lessons", course_ind_desc: "One-to-one instruction with a local or native-speaking teacher, online or offline.",
+      course_biz_name: "Business & Corporate", course_biz_desc: "Workplace communication, meetings, presentations and custom corporate training.",
+      course_yl_name: "Young Learners", course_yl_desc: "Starters and Movers with local teachers; Flyers, KET and PET with local teachers or native speakers. Cambridge YLE and KET/PET exam preparation.",
+      course_intensive_name: "Weekend & Intensive", course_intensive_desc: "The Weekend Speaking Intensive and Summer Fast-Track programmes for rapid progress.",
+      sec_faqs_num: "07 — FAQs", sec_faqs_title: "Questions, answered",
+      faq_q1: "How do I get started?", faq_a1: "Book a free placement test through Telegram or email — we'll assess your level and recommend the right class.",
+      faq_q2: "What levels do you teach?", faq_a2: "Beginner (A1) through Upper-Intermediate (C1) for General English, plus Cambridge exam tracks (Starters, Movers, Flyers, KET, PET) for young learners.",
+      faq_q3: "Are classes online or in person?", faq_a3: "Both — General English for the Russian market runs online; classes in Kazakhstan run in person across our three spaces (IF Business Lab, IF Hub, IF Studio).",
+      faq_q4: "Do you offer corporate or group training?", faq_a4: "Yes — Corporate Training is quote-based and customised to your organisation, available online and offline.",
+      faq_q5: "Need to change a class time or teacher?", faq_a5: "Contact the academy directly and we'll arrange it.",
+      nav_about: "About", nav_contact: "Contact", nav_cta: "Book a free placement test",
+      hero_kicker: "Intellect First Academy — established in Kostanay",
+      hero_l1: "Learn.", hero_l2: "Think.", hero_l3: "Lead.",
+      hero_tagline: "Elevating minds. Creating leaders.",
+      hero_cta1: "Book a free placement test", hero_cta2: "See programs and pricing",
+      hero_aside_p1: "Intellect First is an English language academy built around one idea: language fluency is a form of leadership. Our classrooms are small, our instruction is personal, and our standards are set against international benchmarks.",
+      hero_aside_p2: "General English · Premium English · IELTS · Corporate · Individual · Business English",
+      val_1: "Excellence", val_2: "Integrity", val_3: "Innovation", val_4: "Critical thinking",
+      val_5: "Professionalism", val_6: "Diversity", val_7: "Lifelong learning", val_8: "Global perspective",
+      sec01_num: "03 — Pricing", sec01_title: "A course of study for every ambition",
+      market_kz: "Kazakhstan · ₸", market_ru: "Russia · ₽",
+      cat_ge_kzt: "General English — Beginner (A1) through Upper-Intermediate (C1)",
+      cat_ielts_kzt: "IELTS Preparation — Reading, Listening, Writing, Speaking, strategy & mock tests",
+      cat_ind_kzt: "Individual Lessons — personalised around goals and schedule",
+      cat_flex_kzt: "Flexible Lesson Packages, Local Teacher — pay-as-you-go, no monthly commitment",
+      cat_int_kzt: "Intensives & corporate",
+      cat_venue_kzt: "Venue & space rental — IF Business Lab & Event Space",
+      "name_GE-L": "Mini-Group, Local Teacher", "desc_GE-L2": "8 lessons/month, twice weekly, 60 minutes each, small groups.", "desc_GE-L": "8 lessons/month, 90 minutes each, small groups.",
+      "name_GE-N": "Mini-Group, Native Speaker", "desc_GE-N": "8 lessons/month, 90 minutes each, maximum speaking practice.",
+      name_IE: "IELTS Group", desc_IE: "8 lessons/month, 90 minutes each.",
+      "name_IL-L": "English, Local Teacher", "desc_IL-L": "8 lessons/month, twice weekly, 90 minutes each.",
+      "name_IL-N": "Offline, Native Speaker", "desc_IL-N": "8 lessons/month, 60 minutes each.",
+      "name_IL-N2": "Online, Native Speaker", "desc_IL-N2": "Twice per week, 60 minutes each.",
+      "name_IL-N3": "Online, Native Speaker", "desc_IL-N3": "Three times per week, 60 minutes each.",
+      "name_IE-P": "IELTS Premium, Native Speaker", "desc_IE-P": "8 lessons/month, 60 minutes each.",
+      small_permonth: "per month",
+      "small_GE-L": "per month", "small_GE-N": "per month", small_IE: "per month", "small_IE-P": "per month",
+      "small_IL-L": "per month", "small_IL-N": "per month", "small_IL-N2": "per month", "small_IL-N3": "per month",
+      name_FP12: "12-Lesson Package", desc_FP12: "60 minutes each, ≈ ₸6,667 per lesson.",
+      name_FP8: "8-Lesson Package", desc_FP8: "60 minutes each, ₸7,500 per lesson.",
+      small_onetime: "one-time",
+      name_WSI: "Weekend Speaking Intensive", desc_WSI: "Sat & Sun, 3 hours/day, 4 weeks — 24 hours total. For busy professionals.", small_wsi: "full 4 weeks",
+      name_SFT: "Summer Fast-Track English", desc_SFT: "4 days/week, 2 hours/day, 8 weeks — 64 hours total, ≈ 3–4 months of progress.", small_sft: "full program",
+      name_CT: "Corporate Training", desc_CT: "Business communication, meetings, presentations, email writing — online & offline.",
+      quote_based: "Quote-based", contact_us: "contact us",
+      desc_VST: "3–5 participants.", desc_VBL: "6–10 participants.", desc_VHB: "10–18 participants.",
+      name_VFL: "Full Venue Rental", desc_VFL: "Up to 40 participants.",
+      small_perhour: "per hour", small_perevent: "per event",
+      pricenote_kzt: "Pricing per the Programs & Pricing brochure dated August 8, 2026. All programs begin with a free placement test.",
+      cat_ge_rub: "General English", cat_examb_rub: "Exam & Business English",
+      name_GENN: "Mini Group, Non-Native", name_GENT: "Mini Group, Native", name_GEDL: "Dual, Non-Native + Native",
+      name_GEIN: "Individual, Non-Native", name_GEIT: "Individual, Native",
+      desc_online: "Online.", desc_minigrouponline: "Mini-group, online.",
+      pricenote_rub: "Pricing as listed on intellectfirst.com for the Russian market. All programs begin with a free placement test.",
+      catalog_link: "Browse the full class catalog",
+      catalog_link_tail: " — see exact days and times for every group class currently running.",
+      sec02_num: "05 — Ecosystem", sec02_title: "Three spaces, one standard",
+      sec02_desc: "Beyond the classroom, Intellect First runs a small ecosystem of spaces built for practice, immersion and production.",
+      eco1_desc: "Speaking clubs, debates, public speaking practice and current-affairs discussion — where fluency meets confidence.",
+      eco2_desc: "Intensive small-group work, IELTS-focused sessions and workshops for professional development.",
+      eco3_desc: "Individual and online lessons, video production and podcasts — content that extends learning beyond the room.",
+      sec03_num: "06 — Gallery", sec03_title: "Life at the academy",
+      sec03_desc: "Real moments from our classes and events — students, teachers and the IF community.",
+      frame_1: "General English — mini-group session", frame_2: "IF Hub — speaking club", frame_3: "IELTS mock testing",
+      frame_4: "IF Studio — recording session", frame_5: "Corporate training on-site", frame_6: "Student showcase and graduation",
+      gallery_note: "Placeholder frames — send through your academy photography and we'll drop it straight in.",
+      sec04_num: "08 — About", sec04_title: "Built on one conviction",
+      about_p1: "Intellect First was founded on the conviction that language instruction should be judged the way any serious education is judged — by rigour, by outcomes, and by the calibre of the people delivering it.",
+      about_p2: "Every class is led by qualified instructors, held to international standards, and built around small groups so that no student goes unheard. The result is an academy that operates less like a language centre and more like a proper school of thought.",
+      stat1_num: "Excellence", stat1_lbl: "Held as the operating standard, not a marketing word",
+      stat2_num: "Small groups", stat2_lbl: "3–6 students in General English, so instruction stays personal",
+      stat3_num: "Global perspective", stat3_lbl: "Curriculum benchmarked against international standards",
+      stat4_num: "Native instruction", stat4_lbl: "Available through the Premium English track",
+      foot_begin_title: "Begin here", foot_begin_desc: "Every programme starts with a free placement test. Get in touch and we'll place you in the right class.",
+      foot_cta: "Book a free placement test", foot_contact_title: "Contact", foot_academy_title: "Academy",
+      foot_academy_city: "Alfarabi 19, Kostanay 110000, Kazakhstan", foot_bottom_left: "Intellect First — Learn. Think. Lead."
+    },
+    ru: { nav_young_learners: "Центр для детей и подростков", app_pet_games: "Игры PET", app_ket_games: "Игры KET",
+      nav_portal: "Кабинет ученика",
+      tab_home: "Главная",
+      tab_courses: "Курсы",
+      tab_apps: "Приложения",
+      tab_portal: "Кабинет",
+      tab_contact: "Контакты",
+      chat_btn: "Написать нам",
+      join_num: "Как начать",
+      join_title: "Как записаться: четыре шага",
+      join_desc: "От первого визита до первого урока — всё в одном месте.",
+      join_s1_t: "Создайте профиль",
+      join_s1_d: "Регистрация один раз. Она обязательна перед тестом и любой записью.",
+      join_s2_t: "Пройдите тест на уровень",
+      join_s2_d: "Тридцать вопросов для подростков и взрослых, двадцать — для детей. Уровень вы узнаёте сразу.",
+      join_s3_t: "Выберите преподавателя и группу",
+      join_s3_d: "Смотрите свободные часы преподавателей и выбирайте группу под свой уровень и расписание.",
+      join_s4_t: "Подтвердите и начинайте",
+      join_s4_d: "Менеджер подтвердит группу, время и первую оплату в Telegram.",
+      join_cta: "Начать в кабинете",
+      lvl_num: "Уровни",
+      lvl_title: "Что означает каждый уровень",
+      lvl_desc: "Наши уровни соответствуют шкале CEFR, которую используют Cambridge и IELTS.",
+      lvl_h_cefr: "Уровень",
+      lvl_h_can: "Вы умеете…",
+      lvl_h_cam: "Cambridge",
+      lvl_h_who: "Преподаватель",
+      lvl_c1: "Представиться и использовать простые повседневные фразы.",
+      lvl_c2: "Решать бытовые задачи, рассказывать о жизни и планах.",
+      lvl_c3: "Справляться с большинством ситуаций в поездках, учёбе и на работе.",
+      lvl_c4: "Понимать быструю речь и чётко аргументировать мнение.",
+      lcs_num: "04 — IF Learning Centre", lcs_title: "Всё обучение в одном месте", lcs_desc: "IF Learning Centre объединяет все тесты, словарные арены, игры и страницы учебников — с фильтром по уровню и поиском. Выберите раздел и начните.", lcs_main: "Открыть IF Learning Centre", lcs_open: "Открыть", lcs_hero: "Открыть IF Learning Centre", nav_apps: "Приложения", tab_apps: "Приложения", lcs_b1_n: "11", lcs_b1_t: "Test Centres", lcs_b1_d: "Тест уровня, а также тесты English File, Teenagers и PET с автоматической проверкой.", lcs_b2_n: "12", lcs_b2_t: "Vocabulary Arenas", lcs_b2_d: "Командные и одиночные словарные игры от Movers до C1, а также KET, PET и IELTS.", lcs_b3_n: "11", lcs_b3_t: "Игровая комната", lcs_b3_d: "Одиннадцать аркадных игр на каждом уровне, а также Taboo, квесты и Grammar in Use.", lcs_b4_n: "Hub", lcs_b4_t: "IF Hub и каталог занятий", lcs_b4_d: "Учебники и уровни, а также дни и время каждой групповой группы.", games_sub_v: "Выберите уровень", games_sub_g: "Ещё игры: квесты, аркады и грамматика", launch_games: "Игровая комната · 11 игр", launch_staff: "Нужен код доступа", staff_h: "Доступ для сотрудников", staff_p: "IF Teacher Hub — для преподавателей Intellect First. Введите выданный вам код доступа. Инструменты администратора открываются кодом администратора.", staff_ph: "Код доступа", staff_go: "Открыть", staff_bad: "Код не подошёл. Проверьте его и попробуйте ещё раз.", staff_lock: "Закрыть снова", staff_t: "Преподаватели", staff_a: "Только администратор", staff_wait: "Проверка…", staff_ok: "Открыто", lc_kicker: "IF Learning Centre", lc_title: "Все тесты и словарные арены IF в одном месте", lc_desc: "Все Test Centres и Vocabulary Arenas — от A1 до C1 и экзаменов Cambridge, с фильтром по уровню и поиском.", lc_go: "Открыть IF Learning Centre", lvl_c5: "Гибко и точно использовать английский в учёбе и работе.", lvl_note: "Уровни A1–C1 идут по одним и тем же учебникам для подростков и взрослых. Материалы — в основном учебники Cambridge и Oxford и другие онлайн-ресурсы. Подготовка к экзаменам Cambridge (Flyers, KET, PET) — отдельные курсы, а не часть уровня B1.", lvl_exam: "Подготовка к экзаменам Cambridge, отдельные курсы",
+      who_local: "Местный преподаватель",
+      who_then: "Местный преподаватель 3–4 месяца, затем носитель",
+      who_both: "Местный или носитель",
+      fnd_num: "Подбор курса",
+      fnd_title: "Не знаете, с чего начать?",
+      fnd_desc: "Ответьте на три коротких вопроса, и мы предложим курс.",
+      fnd_q1: "Кто учится?",
+      fnd_child: "Ребёнок (6–11)",
+      fnd_teen: "Подросток (12–17)",
+      fnd_adult: "Взрослый (18+)",
+      fnd_q2: "Главная цель",
+      fnd_everyday: "Повседневный английский",
+      fnd_cambridge: "Экзамен Cambridge (KET, PET)",
+      fnd_ielts: "IELTS",
+      fnd_business: "Деловой английский",
+      fnd_q3: "Текущий уровень",
+      fnd_unsure: "Не уверен(а)",
+      fnd_beginner: "Начинающий",
+      fnd_some: "Немного знаю",
+      fnd_confident: "Уверенный",
+      fnd_btn: "Подобрать курс",
+      fnd_label: "Наша рекомендация",
+      fnd_test: "Пройти тест на уровень",
+      trial_num: "Заявка",
+      trial_title: "Запишитесь на бесплатное пробное занятие или консультацию",
+      trial_desc: "Расскажите немного об ученике, и мы ответим в Telegram.",
+      trial_name: "Имя ученика",
+      trial_contact: "Ваш телефон или Telegram",
+      trial_who: "Кто учится?",
+      trial_goal: "Главная цель",
+      trial_time: "Удобное время",
+      time_morning: "Утро",
+      time_afternoon: "День",
+      time_evening: "Вечер",
+      time_weekend: "Выходные",
+      trial_send: "Отправить в Telegram",
+      trial_copy: "Скопировать сообщение",
+      trial_copied: "Скопировано",
+      trial_note: "Откроется Telegram с готовым сообщением. На этой странице ничего не сохраняется.",
+      loc_num: "09 — Как нас найти",
+      loc_title: "Мы в Костанае",
+      loc_desc: "Intellect First Academy (IF Academy) находится на проспекте Аль-Фараби, в нескольких минутах ходьбы от гостиницы «Глория».",
+      loc_addr_label: "Адрес",
+      loc_addr: "пр. Аль-Фараби, 19, Костанай, 110000, Казахстан",
+      loc_post_label: "Индекс",
+      loc_coord_label: "Координаты",
+      loc_yandex: "Открыть в Яндекс Картах",
+      loc_google: "Открыть в Google Maps",
+      loc_note: "Схема, без масштаба. Стрелка показывает вход в здание 19 со стороны проспекта Аль-Фараби, а не со двора, у светофора.",
+      path_h: "Как устроен путь с преподавателями",
+      path_p1: "Ученики уровня A2 и ниже (подростки и взрослые) сначала занимаются с нашими местными русскоговорящими преподавателями около 3–4 месяцев. Они понятно объясняют грамматику на родном языке и помогают построить прочную основу. После этого ученики переходят на занятия с носителем языка.",
+      path_p2: "Для детей логика та же: на уровнях Starters и Movers занятия ведут только местные преподаватели. На уровнях Flyers, KET и PET можно заниматься как с местным преподавателем, так и с носителем языка.",
+      portal_cta: "Зарегистрироваться и пройти тест",
+      portal_note: "Сначала создайте профиль — он обязателен перед тестом и записью на занятие.",
+      cap_feat: "Семья IF — студенты и преподаватели вместе", cap_class: "На занятии", cap_hoops: "День игр: обручи и шарики",
+      cap_lunch: "Общий обед после игр", cap_chain: "Командное испытание", cap_badges: "Командные значки и хорошее настроение",
+      cap_chat: "Преподаватели и студенты в неформальной обстановке", cap_video: "Видео студентов о своём преподавателе", aw_head: "День наград", cap_aw_speech: "День наград: отмечаем успехи наших студентов", cap_aw_ielts: "Награды за результаты IELTS", cap_aw_ielts2: "Отличный результат IELTS", cap_aw_year: "Сертификаты за год обучения", cap_aw_teach: "Награда за преподавание", cap_aw_journey: "Награды «Путь обучения»", cap_debate: "Дебаты на занятии", cafe_head: "Выходные в компьютерном клубе", cap_cafe1: "Intellect First Weekend: группа PET в компьютерном клубе", cap_cafe2: "Говорим по-английски во время игр с носителями языка из других стран", cap_fun: "Весёлый разговор по-русски", ig_head: "Ещё в Instagram",
+      ig_post: "Смотреть в Instagram — наши уроки и события", ig_reel: "Смотреть рилс в Instagram",
+      nav_apps: "Приложения", sec_apps_num: "04 — Приложения", sec_apps_title: "Всё в одном месте",
+      sec_apps_desc: "Тесты уровня, словарные арены, игры, IF Hub и инструменты для преподавателей — выберите уровень, откройте приложение и начните практику.",
+      tab_learn: "IF Student Hub", tab_tests: "Тесты", tab_vocab: "Словарные арены", tab_games: "Игры", tab_staff: "IF Teacher Hub",
+      note_learn: "Для учеников: IF Hub объединяет учебники, уровни и игры, а Каталог занятий показывает дни и время каждой группы.",
+      note_tests: "Проверьте свой уровень тестом для каждой ступени CEFR — от A1 до C1.",
+      note_vocab: "Быстрая соревновательная практика лексики для каждого уровня и экзамена.",
+      note_games: "Игровая комната — главное место для игр: одиннадцать аркадных игр на каждом уровне, а также дополнительные квесты и аркады.", gr_kicker: "Главный игровой центр", gr_title: "Игровая комната", gr_desc: "Одиннадцать аркадных игр на вашей лексике. Выберите уровень ниже, и в нём откроется игровая комната рядом с Quick Quiz и Match.", gr_blast: "Blast", gr_treasure: "Охота за сокровищами", gr_fishing: "Рыбалка", gr_race: "Гонка", gr_factory: "Фабрика", gr_cafe: "Кафе", gr_defense: "Защита от монстров", gr_boss: "Битва с боссом", gr_memory: "Память", gr_balloon: "Воздушные шары", gr_search: "Поиск слов",
+      note_staff: "Для преподавателей и администраторов Intellect First. Эти приложения содержат данные школы и требуют доступа сотрудника.",
+      app_hub: "Учебники, уровни и игры", app_catalog: "Дни и время всех групповых занятий",
+      app_teacherhub: "Инструменты для уроков", app_dash: "Обзор классов для преподавателей",
+      app_ops: "Профили, расписание и посещаемость", app_studb: "Данные учеников",
+      staff_only: "Только для сотрудников", launch_hub: "Учебники и расписание",
+      nav_programs: "Программы", nav_catalog: "Каталог занятий", nav_ecosystem: "Экосистема", nav_gallery: "Галерея",
+      nav_teachers: "Преподаватели", nav_courses: "Курсы и программы", nav_pricing: "Цены", nav_faqs: "Вопросы",
+      sec_teachers_num: "01 — Преподаватели", sec_teachers_title: "Люди, которые задают стандарт",
+      sec_teachers_desc: "Небольшая квалифицированная команда — преподаватели-носители языка и местные преподаватели, каждый специализируется на своей возрастной группе и уровне.",
+      teacher_abdoulie_role: "Основатель и директор IF Academy",
+      teacher_abdoulie_desc: "Абдули Манне — основатель IF Academy и преподаватель — носитель английского языка. Родом из Гамбии, он более 14 лет преподаёт в Африке, России и Казахстане, в том числе ведёт корпоративные программы для таких компаний, как «Лукойл» и «Росатом». Он имеет дипломы университетов Гамбии, Тайваня и России, сертификацию TESOL и завершает обучение по программе Doctor of Business Administration в Maqsut Narikbayev University.",
+      teacher_abdoulie_philosophy_label: "Подход к преподаванию:",
+      teacher_abdoulie_philosophy: "Абдули убеждён, что язык осваивается через практику. Его занятия строятся на живом общении, дискуссиях и играх в небольших группах с индивидуальным вниманием к каждому. Сам изучавший русский и арабский языки, он стремится сделать каждый урок содержательным и укрепляющим уверенность. После занятия каждый ученик должен уметь сказать то, чего раньше сказать не мог.",
+      teacher_aitach_role: "Местный преподаватель", teacher_aitach_desc: "Я увлечённый преподаватель английского языка и стремлюсь делать обучение интересным, вдохновляющим и осмысленным. Благодаря индивидуальному подходу и поддерживающей атмосфере я помогаю ученикам обрести уверенность, развить беглость речи и открыть новые возможности с помощью английского языка.",
+      teacher_alina_role: "Местный преподаватель", teacher_alina_desc: "Преподаёт детям, подросткам и взрослым — от начального уровня до B1.",
+      teacher_olya_role: "Преподаватель английского языка", teacher_olya_desc: "Я учусь на бакалавриате по специальности «Иностранная филология» и увлечена английским языком и преподаванием. Мой подход — создавать поддерживающую и интересную среду, в которой ученикам комфортно учиться, ошибаться и выражать свои мысли. Я считаю, что изучение английского должно быть практичным, приятным и учитывать потребности каждого ученика.",
+      teacher_joseph_role: "Заменяющий преподаватель · носитель языка", teacher_joseph_desc: "Преподаватель-носитель языка на замене; дети — Movers, подготовка к Cambridge YLE.",
+      teacher_anelya_role: "Менеджер", teacher_anelya_desc: "Я менеджер IF Academy. Я отвечаю за организацию ежедневной работы, координацию преподавателей и учеников, составление расписания, общение с родителями и слаженную работу академии. Мне нравится работать с людьми, поддерживать порядок и создавать позитивную и гостеприимную атмосферу для обучения!",
+      teacher_ekaterina_role: "SMM-менеджер", teacher_ekaterina_desc: "Отвечает за ведение аккаунта в Instagram, создание контента и развитие его визуального стиля, чтобы сделать изучение английского увлекательным и вдохновляющим.",
+      sec_courses_num: "02 — Курсы и программы", sec_courses_title: "Чему мы учим",
+      sec_courses_desc: "Полные цены на каждый курс — в разделе «Цены» ниже.",
+      course_ge_name: "Общий английский", course_ge_desc: "A1, A2, B1, B2 и C1 по General и Business English: единая программа для подростков и взрослых, мини-группы или индивидуально. Ученики A1–A2 первые 3–4 месяца занимаются с местными преподавателями; занятия с носителем языка открываются с уровня B1.",
+      course_ielts_name: "Подготовка к IELTS", course_ielts_desc: "Полная подготовка по четырём навыкам, экзаменационные стратегии, пробные тесты и индивидуальная обратная связь.",
+      course_ind_name: "Индивидуальные занятия", course_ind_desc: "Занятия один на один с местным преподавателем или носителем языка, онлайн или очно.",
+      course_biz_name: "Бизнес и корпоративное обучение", course_biz_desc: "Деловое общение, встречи, презентации и индивидуальное корпоративное обучение.",
+      course_yl_name: "Детские программы", course_yl_desc: "Starters и Movers — с местными преподавателями; Flyers, KET и PET — с местными преподавателями или носителями языка. Подготовка к Cambridge YLE и KET/PET.",
+      course_intensive_name: "Выходной и интенсивный формат", course_intensive_desc: "Интенсив разговорной речи выходного дня и летний ускоренный курс для быстрого прогресса.",
+      sec_faqs_num: "07 — Вопросы", sec_faqs_title: "Ответы на вопросы",
+      faq_q1: "Как начать?", faq_a1: "Запишитесь на бесплатное тестирование через Telegram или email — мы определим ваш уровень и подберём группу.",
+      faq_q2: "Какие уровни вы преподаёте?", faq_a2: "От начального (A1) до продвинутого (C1) по общему английскому, а также подготовка к Cambridge-экзаменам (Starters, Movers, Flyers, KET, PET) для детей.",
+      faq_q3: "Занятия онлайн или очно?", faq_a3: "И то, и другое — общий английский для российского рынка идёт онлайн; занятия в Казахстане проходят очно в наших трёх пространствах (IF Business Lab, IF Hub, IF Studio).",
+      faq_q4: "Есть ли корпоративное или групповое обучение?", faq_a4: "Да — корпоративное обучение оформляется по запросу и настраивается под вашу организацию, доступно онлайн и очно.",
+      faq_q5: "Нужно изменить время занятия или преподавателя?", faq_a5: "Свяжитесь с академией напрямую, и мы всё организуем.",
+      nav_about: "О нас", nav_contact: "Контакты", nav_cta: "Бесплатный тест",
+      hero_kicker: "Академия Intellect First — Костанай",
+      hero_l1: "Учись.", hero_l2: "Думай.", hero_l3: "Веди.",
+      hero_tagline: "Развиваем мышление. Воспитываем лидеров.",
+      hero_cta1: "Записаться на бесплатное тестирование", hero_cta2: "Программы и цены",
+      hero_aside_p1: "Intellect First — школа английского языка, построенная на одной идее: свободное владение языком — это форма лидерства. У нас небольшие группы, персональный подход и стандарты на уровне международных требований.",
+      hero_aside_p2: "Общий английский · Premium английский · IELTS · Корпоративное обучение · Индивидуальные занятия · Бизнес-английский",
+      val_1: "Совершенство", val_2: "Честность", val_3: "Инновации", val_4: "Критическое мышление",
+      val_5: "Профессионализм", val_6: "Многообразие", val_7: "Непрерывное обучение", val_8: "Глобальное мышление",
+      sec01_num: "03 — Цены", sec01_title: "Курс обучения для любых целей",
+      market_kz: "Казахстан · ₸", market_ru: "Россия · ₽",
+      cat_ge_kzt: "Общий английский — от начального (A1) до продвинутого (C1)",
+      cat_ielts_kzt: "Подготовка к IELTS — чтение, аудирование, письмо, говорение, стратегии и пробные тесты",
+      cat_ind_kzt: "Индивидуальные занятия — по вашим целям и расписанию",
+      cat_flex_kzt: "Гибкие пакеты занятий с местным преподавателем — оплата по факту, без обязательств на месяц",
+      cat_int_kzt: "Интенсивы и корпоративное обучение",
+      cat_venue_kzt: "Аренда помещений — IF Business Lab и площадка для мероприятий",
+      "name_GE-L": "Мини-группа, местный преподаватель", "desc_GE-L2": "8 занятий в месяц, 2 раза в неделю по 60 минут, малые группы.", "desc_GE-L": "8 занятий в месяц по 90 минут, малые группы.",
+      "name_GE-N": "Мини-группа, носитель языка", "desc_GE-N": "8 занятий в месяц по 90 минут, максимум разговорной практики.",
+      name_IE: "Группа IELTS", desc_IE: "8 занятий в месяц по 90 минут.",
+      "name_IL-L": "Английский, местный преподаватель", "desc_IL-L": "8 занятий в месяц, дважды в неделю по 90 минут.",
+      "name_IL-N": "Очно, носитель языка", "desc_IL-N": "8 занятий в месяц по 60 минут.",
+      "name_IL-N2": "Онлайн, носитель языка", "desc_IL-N2": "Два раза в неделю по 60 минут.",
+      "name_IL-N3": "Онлайн, носитель языка", "desc_IL-N3": "Три раза в неделю по 60 минут.",
+      "name_IE-P": "IELTS Премиум, носитель языка", "desc_IE-P": "8 занятий в месяц по 60 минут.",
+      small_permonth: "в месяц",
+      "small_GE-L": "в месяц", "small_GE-N": "в месяц", small_IE: "в месяц", "small_IE-P": "в месяц",
+      "small_IL-L": "в месяц", "small_IL-N": "в месяц", "small_IL-N2": "в месяц", "small_IL-N3": "в месяц",
+      name_FP12: "Пакет на 12 занятий", desc_FP12: "по 60 минут, ≈ ₸6 667 за занятие.",
+      name_FP8: "Пакет на 8 занятий", desc_FP8: "по 60 минут, ₸7 500 за занятие.",
+      small_onetime: "разово",
+      name_WSI: "Интенсив разговорной речи выходного дня", desc_WSI: "Сб и Вс, по 3 часа в день, 4 недели — всего 24 часа. Для занятых профессионалов.", small_wsi: "за 4 недели",
+      name_SFT: "Летний ускоренный курс английского", desc_SFT: "4 дня в неделю по 2 часа, 8 недель — всего 64 часа, ≈ прогресс за 3–4 месяца.", small_sft: "за весь курс",
+      name_CT: "Корпоративное обучение", desc_CT: "Деловое общение, встречи, презентации, деловая переписка — онлайн и очно.",
+      quote_based: "По запросу", contact_us: "свяжитесь с нами",
+      desc_VST: "3–5 участников.", desc_VBL: "6–10 участников.", desc_VHB: "10–18 участников.",
+      name_VFL: "Аренда всего помещения", desc_VFL: "До 40 участников.",
+      small_perhour: "в час", small_perevent: "за мероприятие",
+      pricenote_kzt: "Цены указаны по брошюре «Программы и цены» от 8 августа 2026 года. Каждая программа начинается с бесплатного тестирования.",
+      cat_ge_rub: "Общий английский", cat_examb_rub: "Экзамены и бизнес-английский",
+      name_GENN: "Мини-группа, не носитель языка", name_GENT: "Мини-группа, носитель языка", name_GEDL: "Смешанная, носитель + не носитель",
+      name_GEIN: "Индивидуально, не носитель языка", name_GEIT: "Индивидуально, носитель языка",
+      desc_online: "Онлайн.", desc_minigrouponline: "Мини-группа, онлайн.",
+      pricenote_rub: "Цены указаны на сайте intellectfirst.com для российского рынка. Каждая программа начинается с бесплатного тестирования.",
+      catalog_link: "Смотреть полный каталог занятий",
+      catalog_link_tail: " — точные дни и время всех текущих групповых занятий.",
+      sec02_num: "05 — Экосистема", sec02_title: "Три пространства, один стандарт",
+      sec02_desc: "Помимо занятий, Intellect First создаёт пространства для практики, погружения в язык и творчества.",
+      eco1_desc: "Speaking-клубы, дебаты, практика публичных выступлений и обсуждение новостей — где свобода речи становится уверенностью.",
+      eco2_desc: "Интенсивная работа в малых группах, занятия по подготовке к IELTS и мастер-классы для профессионального роста.",
+      eco3_desc: "Индивидуальные и онлайн-занятия, видеопродакшн и подкасты — контент, который продолжает обучение за пределами класса.",
+      sec03_num: "06 — Галерея", sec03_title: "Жизнь академии",
+      sec03_desc: "Настоящие моменты наших занятий и событий — студенты, преподаватели и сообщество IF.",
+      frame_1: "Общий английский — занятие в мини-группе", frame_2: "IF Hub — speaking-клуб", frame_3: "Пробное тестирование IELTS",
+      frame_4: "IF Studio — запись", frame_5: "Корпоративное обучение на выезде", frame_6: "Выпускной и достижения студентов",
+      gallery_note: "Место для фотографий — пришлите снимки академии, и мы сразу их добавим.",
+      sec04_num: "08 — О нас", sec04_title: "Основано на одном убеждении",
+      about_p1: "Intellect First основана на убеждении, что обучение языку нужно оценивать так же строго, как и любое серьёзное образование — по требовательности, результатам и уровню тех, кто его даёт.",
+      about_p2: "Каждое занятие ведут квалифицированные преподаватели по международным стандартам, в малых группах, где услышан каждый студент. В результате получается не просто языковой центр, а настоящая школа мышления.",
+      stat1_num: "Совершенство", stat1_lbl: "Рабочий стандарт, а не маркетинговое слово",
+      stat2_num: "Малые группы", stat2_lbl: "3–6 студентов на курсе общего английского — для личного подхода",
+      stat3_num: "Глобальное мышление", stat3_lbl: "Программа ориентирована на международные стандарты",
+      stat4_num: "Носитель языка", stat4_lbl: "Доступно на курсе Premium English",
+      foot_begin_title: "Начните здесь", foot_begin_desc: "Каждая программа начинается с бесплатного тестирования. Свяжитесь с нами, и мы подберём подходящую группу.",
+      foot_cta: "Записаться на бесплатное тестирование", foot_contact_title: "Контакты", foot_academy_title: "Академия",
+      foot_academy_city: "пр. Аль-Фараби, 19, Костанай, 110000, Казахстан", foot_bottom_left: "Intellect First — Учись. Думай. Веди."
+    },
+    kk: { nav_young_learners: "Жас оқушылар орталығы", app_pet_games: "PET ойындары", app_ket_games: "KET ойындары",
+      nav_portal: "Оқушы кабинеті",
+      tab_home: "Басты",
+      tab_courses: "Курстар",
+      tab_apps: "Қосымшалар",
+      tab_portal: "Кабинет",
+      tab_contact: "Байланыс",
+      chat_btn: "Бізге жазыңыз",
+      join_num: "Қалай бастау керек",
+      join_title: "Қалай жазылу керек: төрт қадам",
+      join_desc: "Алғашқы кіруден алғашқы сабаққа дейін — бәрі бір жерде.",
+      join_s1_t: "Профиль жасаңыз",
+      join_s1_d: "Бір рет тіркеліңіз. Тест тапсыру немесе кез келген жазылу алдында ол міндетті.",
+      join_s2_t: "Деңгей анықтау тестін тапсырыңыз",
+      join_s2_d: "Жасөспірімдер мен ересектерге отыз сұрақ, балаларға жиырма. Деңгейіңізді бірден білесіз.",
+      join_s3_t: "Мұғалім мен топты таңдаңыз",
+      join_s3_d: "Мұғалімдердің бос сағаттарын көріп, деңгейіңіз бен кестеңізге сай топты таңдаңыз.",
+      join_s4_t: "Растап, бастаңыз",
+      join_s4_d: "Менеджер топты, уақытты және алғашқы төлемді Telegram арқылы растайды.",
+      join_cta: "Кабинеттен бастау",
+      lvl_num: "Деңгейлер",
+      lvl_title: "Әр деңгей нені білдіреді",
+      lvl_desc: "Біздің деңгейлер Cambridge және IELTS қолданатын CEFR шкаласына сәйкес келеді.",
+      lvl_h_cefr: "Деңгей",
+      lvl_h_can: "Сіз біле аласыз…",
+      lvl_h_cam: "Cambridge",
+      lvl_h_who: "Мұғалім",
+      lvl_c1: "Өзіңізді таныстыру және қарапайым күнделікті сөз тіркестерін қолдану.",
+      lvl_c2: "Күнделікті істерді шешу, өмірің мен жоспарың туралы айту.",
+      lvl_c3: "Саяхатта, оқуда және жұмыста көптеген жағдайды шешу.",
+      lvl_c4: "Жылдам сөйлеуді түсіну және пікірді нақты дәлелдеу.",
+      lcs_num: "04 — IF Learning Centre", lcs_title: "Бүкіл оқу — бір жерде", lcs_desc: "IF Learning Centre барлық тесттерді, сөздік арналарын, ойындар мен оқулық беттерін деңгей сүзгісімен және іздеумен біріктіреді. Бөлімді таңдап, бастаңыз.", lcs_main: "IF Learning Centre ашу", lcs_open: "Ашу", lcs_hero: "IF Learning Centre ашу", nav_apps: "Қосымшалар", tab_apps: "Қосымшалар", lcs_b1_n: "11", lcs_b1_t: "Test Centres", lcs_b1_d: "Деңгей тесті, English File, Teenagers және PET тесттері, автоматты тексеріспен.", lcs_b2_n: "12", lcs_b2_t: "Vocabulary Arenas", lcs_b2_d: "Movers-тен C1-ге дейінгі командалық және жеке сөздік ойындары, сондай-ақ KET, PET және IELTS.", lcs_b3_n: "11", lcs_b3_t: "Ойын бөлмесі", lcs_b3_d: "Әр деңгейде он бір аркада ойыны, сондай-ақ Taboo, квесттер және Grammar in Use.", lcs_b4_n: "Hub", lcs_b4_t: "IF Hub және сабақ каталогы", lcs_b4_d: "Оқулықтар мен деңгейлер, әр топтық сабақтың күндері мен уақыты.", games_sub_v: "Деңгейді таңдаңыз", games_sub_g: "Тағы ойындар: квесттер, аркадалар және грамматика", launch_games: "Ойын бөлмесі · 11 ойын", launch_staff: "Рұқсат коды қажет", staff_h: "Қызметкерлерге рұқсат", staff_p: "IF Teacher Hub — Intellect First мұғалімдеріне арналған. Берілген рұқсат кодын енгізіңіз. Әкімші құралдары әкімші кодымен ашылады.", staff_ph: "Рұқсат коды", staff_go: "Ашу", staff_bad: "Код дұрыс емес. Тексеріп, қайта көріңіз.", staff_lock: "Қайта жабу", staff_t: "Мұғалімдер", staff_a: "Тек әкімші", staff_wait: "Тексерілуде…", staff_ok: "Ашылды", lc_kicker: "IF Learning Centre", lc_title: "Барлық IF тесттері мен сөздік арналары бір жерде", lc_desc: "A1-ден C1-ге дейінгі және Cambridge емтихандарына арналған барлық Test Centres пен Vocabulary Arenas, деңгей сүзгісі және іздеумен.", lc_go: "IF Learning Centre ашу", lvl_c5: "Оқу мен жұмыста ағылшын тілін икемді әрі нақты қолдану.", lvl_note: "A1–C1 деңгейлері жасөспірімдер мен ересектерге бірдей оқулықтармен өтеді. Материалдар — негізінен Cambridge және Oxford оқулықтары мен басқа онлайн-ресурстар. Cambridge емтихандарына дайындық (Flyers, KET, PET) — B1 деңгейінің бөлігі емес, бөлек курстар.", lvl_exam: "Cambridge емтихандарына дайындық, бөлек курстар",
+      who_local: "Жергілікті мұғалім",
+      who_then: "3–4 ай жергілікті мұғалім, содан кейін ана тілі ағылшын тілі болатын оқытушы",
+      who_both: "Жергілікті немесе ана тілі ағылшын тілі болатын",
+      fnd_num: "Курс таңдау",
+      fnd_title: "Қайдан бастарыңызды білмейсіз бе?",
+      fnd_desc: "Үш қысқа сұраққа жауап беріңіз, біз курс ұсынамыз.",
+      fnd_q1: "Кім оқиды?",
+      fnd_child: "Бала (6–11)",
+      fnd_teen: "Жасөспірім (12–17)",
+      fnd_adult: "Ересек (18+)",
+      fnd_q2: "Негізгі мақсат",
+      fnd_everyday: "Күнделікті ағылшын тілі",
+      fnd_cambridge: "Cambridge емтиханы (KET, PET)",
+      fnd_ielts: "IELTS",
+      fnd_business: "Іскерлік ағылшын тілі",
+      fnd_q3: "Қазіргі деңгей",
+      fnd_unsure: "Белгісіз",
+      fnd_beginner: "Бастаушы",
+      fnd_some: "Аздап білемін",
+      fnd_confident: "Сенімдімін",
+      fnd_btn: "Курс таңдау",
+      fnd_label: "Біздің ұсынысымыз",
+      fnd_test: "Деңгей анықтау тестін тапсыру",
+      trial_num: "Өтінім",
+      trial_title: "Тегін сынақ сабағына немесе кеңеске жазылыңыз",
+      trial_desc: "Оқушы туралы аздап айтыңыз, біз Telegram-да жауап береміз.",
+      trial_name: "Оқушының аты",
+      trial_contact: "Телефоныңыз немесе Telegram",
+      trial_who: "Кім оқиды?",
+      trial_goal: "Негізгі мақсат",
+      trial_time: "Қолайлы уақыт",
+      time_morning: "Таңертең",
+      time_afternoon: "Түстен кейін",
+      time_evening: "Кешке",
+      time_weekend: "Демалыс күндері",
+      trial_send: "Telegram-ға жіберу",
+      trial_copy: "Хабарламаны көшіру",
+      trial_copied: "Көшірілді",
+      trial_note: "Telegram дайын хабарламамен ашылады. Бұл бетте ештеңе сақталмайды.",
+      loc_num: "09 — Бізді қалай табуға болады",
+      loc_title: "Біз Қостанайдамыз",
+      loc_desc: "Intellect First Academy (IF Academy) Әл-Фараби даңғылында, «Глория» қонақ үйінен бірнеше минуттық жерде орналасқан.",
+      loc_addr_label: "Мекенжай",
+      loc_addr: "Әл-Фараби даңғылы, 19, Қостанай, 110000, Қазақстан",
+      loc_post_label: "Пошта индексі",
+      loc_coord_label: "Координаттар",
+      loc_yandex: "Яндекс Карталарда ашу",
+      loc_google: "Google Maps-та ашу",
+      loc_note: "Схема, масштабсыз. Нұсқар 19-үйдің кіреберісін Әл-Фараби даңғылы жағынан (аула жағынан емес), бағдаршам жанында көрсетеді.",
+      path_h: "Мұғалімдермен оқу жолы қалай құрылған",
+      path_p1: "A2 деңгейіндегі және одан төмен оқушылар (жасөспірімдер мен ересектер) алдымен біздің жергілікті, орыс тілді мұғалімдерімізбен шамамен 3–4 ай оқиды. Олар грамматиканы ана тілінде түсінікті түсіндіріп, берік негіз қалайды. Осыдан кейін оқушылар ана тілі ағылшын тілі болатын оқытушымен сабаққа ауысады.",
+      path_p2: "Кішкентай оқушыларға да сол қағида қолданылады: Starters және Movers деңгейлерін тек жергілікті мұғалімдер жүргізеді. Flyers, KET және PET деңгейлерін жергілікті мұғалім де, ана тілі ағылшын тілі болатын оқытушы да жүргізе алады.",
+      portal_cta: "Тіркеліп, деңгей анықтау тестін тапсыру",
+      portal_note: "Алдымен профиль жасаңыз — тест тапсыру немесе сабаққа жазылу алдында ол міндетті.",
+      course_ge_desc: "General және Business English бойынша A1, A2, B1, B2 және C1: жасөспірімдер мен ересектерге арналған бір бағдарлама, шағын топта немесе жеке. A1–A2 оқушылары алғашқы 3–4 айда жергілікті мұғалімдермен оқиды; ана тілі ағылшын тілі болатын оқытушымен сабақ B1 деңгейінен ашылады.", course_yl_desc: "Starters және Movers — жергілікті мұғалімдермен; Flyers, KET және PET — жергілікті мұғалімдермен немесе ана тілі ағылшын тілі болатын оқытушылармен. Cambridge YLE және KET/PET-ке дайындық.",
+      cap_feat: "IF отбасы — оқушылар мен мұғалімдер бірге", cap_class: "Сыныпта", cap_hoops: "Ойын күні: шеңберлер мен шарлар",
+      cap_lunch: "Ойыннан кейін бірге түскі ас", cap_chain: "Команда сынағы", cap_badges: "Команда белгілері және көңілді көңіл-күй",
+      cap_chat: "Мұғалімдер мен оқушылар, сабақтан тыс", cap_video: "Оқушының мұғалімі туралы бейнесі", aw_head: "Марапаттау күні", cap_aw_speech: "Марапаттау күні: оқушыларымыздың жетістіктерін атап өтеміз", cap_aw_ielts: "IELTS жетістік марапаттары", cap_aw_ielts2: "IELTS-тегі мақтанышқа лайық нәтиже", cap_aw_year: "Жылдық жетістік сертификаттары", cap_aw_teach: "Үздік оқытушы марапаты", cap_aw_journey: "Оқу жолы марапаттары", cap_debate: "Сыныптағы пікірсайыс жаттығуы", cafe_head: "Киберкафедегі демалыс күні", cap_cafe1: "Intellect First демалыс күні: PET тобымыз киберкафеде", cap_cafe2: "Шетелдік ағылшын тілінде сөйлейтіндермен ойнап, ағылшынша сөйлесу", cap_fun: "Орысша күлкілі әңгіме", ig_head: "Instagram-да тағы да",
+      ig_post: "Instagram-да қараңыз — сабақтарымыз бен іс-шараларымыз", ig_reel: "Instagram-дағы рилсті қараңыз",
+      nav_apps: "Қосымшалар", sec_apps_num: "04 — Қосымшалар", sec_apps_title: "Бәрі бір жерде",
+      sec_apps_desc: "Деңгей анықтау тестілері, сөздік арналары, ойындар, IF Hub және мұғалімдерге арналған құралдар — деңгейді таңдап, қосымшаны ашып, жаттығуды бастаңыз.",
+      tab_learn: "IF Student Hub", tab_tests: "Тест орталықтары", tab_vocab: "Сөздік арналары", tab_games: "Ойындар", tab_staff: "IF Teacher Hub",
+      note_learn: "Оқушыларға арналған: IF Hub оқулықтарды, деңгейлерді және ойындарды біріктіреді, ал Сыныптар каталогы әр топтың күндері мен уақытын көрсетеді.",
+      note_tests: "A1-ден C1-ге дейінгі CEFR-дің әр кезеңі бойынша тест тапсырып, деңгейіңізді тексеріңіз.",
+      note_vocab: "Әр деңгей мен емтихан үшін жылдам, бәсекелі сөздік жаттығуы.",
+      note_games: "Ойын бөлмесі — ойындардың негізгі орны: әр деңгейде он бір аркада ойыны, сондай-ақ қосымша квесттер мен аркадалар.", gr_kicker: "Негізгі ойын орталығы", gr_title: "Ойын бөлмесі", gr_desc: "Өз лексикаңыздағы он бір аркада ойыны. Төменнен деңгейді таңдаңыз, ол жерде Quick Quiz және Match қасында ойын бөлмесі ашылады.", gr_blast: "Blast", gr_treasure: "Қазына аулау", gr_fishing: "Балық аулау", gr_race: "Жарыс", gr_factory: "Фабрика", gr_cafe: "Кафе", gr_defense: "Құбыжықтардан қорғану", gr_boss: "Бастықпен шайқас", gr_memory: "Жады", gr_balloon: "Әуе шарлары", gr_search: "Сөз іздеу",
+      note_staff: "Intellect First мұғалімдері мен әкімшілеріне арналған. Бұл қосымшаларда мектеп жазбалары сақталады, қызметкер рұқсаты қажет.",
+      app_hub: "Оқулықтар, деңгейлер және ойындар", app_catalog: "Әр топтық сабақтың күндері мен уақыты",
+      app_teacherhub: "Мұғалімдерге арналған сабақ құралдары", app_dash: "Мұғалімдерге арналған сыныптарға шолу",
+      app_ops: "Профильдер, кесте және қатысу", app_studb: "Оқушылар жазбалары",
+      staff_only: "Тек қызметкерлерге", launch_hub: "Оқулықтар мен кесте",
+      nav_programs: "Бағдарламалар", nav_catalog: "Сыныптар каталогы", nav_ecosystem: "Экожүйе", nav_gallery: "Галерея",
+      nav_teachers: "Мұғалімдер", nav_courses: "Курстар", nav_pricing: "Бағалар", nav_faqs: "Сұрақ-жауап",
+      sec_teachers_num: "01 — Мұғалімдер", sec_teachers_title: "Стандарттың артындағы адамдар",
+      sec_teachers_desc: "Шағын, білікті команда — ана тілі ағылшын тілі болатын және жергілікті оқытушылар, әрқайсысы жас тобы мен деңгейі бойынша маманданған.",
+      teacher_abdoulie_role: "IF Academy негізін қалаушысы және директоры",
+      teacher_abdoulie_desc: "Абдули Манне — IF Academy негізін қалаушысы және ана тілі ағылшын тілі болатын оқытушысы. Гамбиядан шыққан ол Африкада, Ресейде және Қазақстанда 14 жылдан астам сабақ беріп келеді, соның ішінде «Лукойл» және «Росатом» сияқты компанияларға корпоративтік бағдарламалар жүргізген. Оның Гамбия, Тайвань және Ресей университеттерінің дипломдары мен TESOL сертификаты бар. Қазір Maqsut Narikbayev University-де Doctor of Business Administration бағдарламасын аяқтап жатыр.",
+      teacher_abdoulie_philosophy_label: "Оқыту ұстанымы:",
+      teacher_abdoulie_philosophy: "Абдули тілді қолдану арқылы үйренуге болады деп сенеді. Оның шағын топтардағы сабақтары шынайы әңгімеге, пікірталасқа және ойындарға негізделіп, әр оқушыға жеке көңіл бөлінеді. Өзі орыс және араб тілдерін үйренгендіктен, әр сабақты оқушыны алға жетелейтін әрі сенімін нығайтатын етуге тырысады. Әр оқушы сабақтан бұрын айта алмаған ойын жеткізе алатындай болып шығуы керек.",
+      teacher_aitach_role: "Жергілікті мұғалім", teacher_aitach_desc: "Мен ағылшын тілін үйретуге құштар ұстазбын. Тіл үйренуді қызықты, шабыттандыратын әрі мағыналы етуге ұмтыламын. Жеке тәсіл мен қолдау көрсететін орта арқылы оқушылардың өзіне деген сенімін арттыруға, еркін сөйлеуін дамытуға және ағылшын тілі арқылы жаңа мүмкіндіктерге жол ашуға көмектесемін.",
+      teacher_alina_role: "Жергілікті мұғалім", teacher_alina_desc: "Балаларға, жасөспірімдерге және ересектерге бастапқы деңгейден B1-ге дейін сабақ береді.",
+      teacher_olya_role: "Ағылшын тілі мұғалімі", teacher_olya_desc: "Мен «Шетел филологиясы» мамандығы бойынша бакалавриатта оқимын, ағылшын тіліне және оқытуға құштармын. Менің оқыту ұстанымым — оқушылар өздерін еркін сезініп, үйренуге, қателесуге және ойын білдіруге мүмкіндік алатын қолдаушы әрі қызықты орта құру. Ағылшын тілін үйрену тәжірибеге бағытталған, қызықты және әр оқушының қажеттілігіне бейімделген болуы керек деп санаймын.",
+      teacher_joseph_role: "Алмастырушы мұғалім · ана тілі ағылшын тілі", teacher_joseph_desc: "Ана тілі ағылшын тілі болатын алмастырушы мұғалім; кішкентай оқушылар — Movers, Cambridge YLE дайындығы.",
+      teacher_anelya_role: "Менеджер", teacher_anelya_desc: "Мен IF Academy менеджерімін. Күнделікті жұмысты ұйымдастыруға, мұғалімдер мен оқушылардың жұмысын үйлестіруге, сабақ кестесін басқаруға, ата-аналармен байланыс орнатуға және академия жұмысының бірқалыпты жүруіне жауаптымын. Адамдармен жұмыс істегенді, жұмысты жүйелі ұйымдастырғанды және оқуға қолайлы, жылы әрі жағымды орта қалыптастырғанды ұнатамын!",
+      teacher_ekaterina_role: "SMM маманы", teacher_ekaterina_desc: "Ағылшын тілін үйренуді қызықты әрі шабыттандыратын тәжірибеге айналдыру үшін Instagram аккаунтын жүргізуге, контент жасауға және оның визуалды стилін дамытуға жауапты.",
+      sec_courses_num: "02 — Курстар мен бағдарламалар", sec_courses_title: "Біз не оқытамыз",
+      sec_courses_desc: "Әр курстың толық бағасы төмендегі «Бағалар» бөлімінде.",
+      course_ge_name: "General English", 
+      course_ielts_name: "IELTS-ке дайындық", course_ielts_desc: "Төрт дағды бойынша толық дайындық: емтихан стратегиясы, сынақ тесттер және жеке кері байланыс.",
+      course_ind_name: "Жеке сабақтар", course_ind_desc: "Жергілікті мұғаліммен немесе ана тілі ағылшын тілі болатын оқытушымен жеке сабақ, онлайн немесе офлайн.",
+      course_biz_name: "Бизнес және корпоративтік", course_biz_desc: "Жұмыс орнындағы қарым-қатынас, кездесулер, презентациялар және корпоративтік оқытудың жеке бағдарламалары.",
+      course_yl_name: "Кішкентай оқушылар", 
+      course_intensive_name: "Демалыс күндері және қарқынды курстар", course_intensive_desc: "Жылдам нәтиже беретін Weekend Speaking Intensive және Summer Fast-Track бағдарламалары.",
+      sec_faqs_num: "07 — Жиі қойылатын сұрақтар", sec_faqs_title: "Сұрақтарға жауап",
+      faq_q1: "Қалай бастаймын?", faq_a1: "Telegram немесе электрондық пошта арқылы тегін деңгей анықтау тестіне жазылыңыз — біз деңгейіңізді бағалап, лайықты сыныпты ұсынамыз.",
+      faq_q2: "Қандай деңгейлерді оқытасыздар?", faq_a2: "General English бойынша бастапқы деңгейден (A1) жоғары-орташаға (C1) дейін, сондай-ақ кішкентай оқушыларға арналған Cambridge емтихан бағыттары (Starters, Movers, Flyers, KET, PET).",
+      faq_q3: "Сабақтар онлайн ба, әлде кездесіп өте ме?", faq_a3: "Екеуі де — Ресей нарығына арналған General English онлайн өтеді; Қазақстандағы сабақтар үш кеңістігімізде (IF Business Lab, IF Hub, IF Studio) жүзбе-жүз өтеді.",
+      faq_q4: "Корпоративтік немесе топтық оқыту бар ма?", faq_a4: "Иә — корпоративтік оқыту ұйымыңызға бейімделіп, жеке баға ұсыныспен жасалады, онлайн және офлайн қолжетімді.",
+      faq_q5: "Сабақ уақытын немесе мұғалімді ауыстыру керек пе?", faq_a5: "Академияға тікелей хабарласыңыз, біз барлығын реттейміз.",
+      nav_about: "Біз туралы", nav_contact: "Байланыс", nav_cta: "Тегін деңгей тесті",
+      hero_kicker: "Intellect First Academy — Қостанайда құрылған",
+      hero_l1: "Үйрен.", hero_l2: "Ойла.", hero_l3: "Көшбасшы бол.",
+      hero_tagline: "Ойды биіктетеміз. Көшбасшыларды тәрбиелейміз.",
+      hero_cta1: "Тегін деңгей анықтау тесті", hero_cta2: "Бағдарламалар мен бағаларды қарау",
+      hero_aside_p1: "Intellect First — бір идеяға құрылған ағылшын тілі академиясы: тілді еркін меңгеру — көшбасшылықтың бір түрі. Сыныптарымыз шағын, оқыту жеке тәсілмен жүреді, ал біздің стандарттар халықаралық өлшемдерге сәйкес белгіленген.",
+      hero_aside_p2: "General English · Premium English · IELTS · Корпоративтік · Жеке · Business English",
+      val_1: "Үздіктік", val_2: "Адалдық", val_3: "Инновация", val_4: "Сыни ойлау",
+      val_5: "Кәсібилік", val_6: "Әралуандық", val_7: "Өмір бойы білім алу", val_8: "Жаһандық көзқарас",
+      sec01_num: "03 — Бағалар", sec01_title: "Әр мақсатқа лайық оқу курсы",
+      market_kz: "Қазақстан · ₸", market_ru: "Ресей · ₽",
+      cat_ge_kzt: "General English — бастапқы деңгейден (A1) жоғары-орташаға (C1) дейін",
+      cat_ielts_kzt: "IELTS-ке дайындық — Reading, Listening, Writing, Speaking, стратегия және сынақ тесттер",
+      cat_ind_kzt: "Жеке сабақтар — мақсаттар мен кестеге бейімделген",
+      cat_flex_kzt: "Икемді сабақ пакеттері, жергілікті мұғалім — сабақ үшін төлеңіз, айлық міндеттемесіз",
+      cat_int_kzt: "Қарқынды курстар және корпоративтік",
+      cat_venue_kzt: "Кеңістік жалға беру — IF Business Lab & Event Space",
+      "name_GE-L": "Шағын топ, жергілікті мұғалім", "desc_GE-L2": "Айына 8 сабақ, аптасына 2 рет, әрқайсысы 60 минут, шағын топтар.", "desc_GE-L": "Айына 8 сабақ, әрқайсысы 90 минут, шағын топтар.",
+      "name_GE-N": "Шағын топ, ана тілі ағылшын тілі болатын оқытушы", "desc_GE-N": "Айына 8 сабақ, әрқайсысы 90 минут, ең көп сөйлеу жаттығуы.",
+      name_IE: "IELTS тобы", desc_IE: "Айына 8 сабақ, әрқайсысы 90 минут.",
+      "name_IL-L": "Ағылшын тілі, жергілікті мұғалім", "desc_IL-L": "Айына 8 сабақ, аптасына екі рет, әрқайсысы 90 минут.",
+      "name_IL-N": "Офлайн, ана тілі ағылшын тілі болатын оқытушы", "desc_IL-N": "Айына 8 сабақ, әрқайсысы 60 минут.",
+      "name_IL-N2": "Онлайн, ана тілі ағылшын тілі болатын оқытушы", "desc_IL-N2": "Аптасына екі рет, әрқайсысы 60 минут.",
+      "name_IL-N3": "Онлайн, ана тілі ағылшын тілі болатын оқытушы", "desc_IL-N3": "Аптасына үш рет, әрқайсысы 60 минут.",
+      "name_IE-P": "IELTS Premium, ана тілі ағылшын тілі болатын оқытушы", "desc_IE-P": "Айына 8 сабақ, әрқайсысы 60 минут.",
+      small_permonth: "айына",
+      "small_GE-L": "айына", "small_GE-N": "айына", small_IE: "айына", "small_IE-P": "айына",
+      "small_IL-L": "айына", "small_IL-N": "айына", "small_IL-N2": "айына", "small_IL-N3": "айына",
+      name_FP12: "12 сабақтық пакет", desc_FP12: "Әрқайсысы 60 минут, бір сабақ ≈ ₸6 667.",
+      name_FP8: "8 сабақтық пакет", desc_FP8: "Әрқайсысы 60 минут, бір сабақ ₸7 500.",
+      small_onetime: "бір реттік",
+      name_WSI: "Weekend Speaking Intensive", desc_WSI: "Сенбі мен жексенбі, күніне 3 сағат, 4 апта — барлығы 24 сағат. Жұмыспен тығыз адамдарға арналған.", small_wsi: "толық 4 апта",
+      name_SFT: "Summer Fast-Track English", desc_SFT: "Аптасына 4 күн, күніне 2 сағат, 8 апта — барлығы 64 сағат, ≈ 3–4 айлық прогресс.", small_sft: "толық бағдарлама",
+      name_CT: "Корпоративтік оқыту", desc_CT: "Іскерлік қарым-қатынас, кездесулер, презентациялар, хат жазу — онлайн және офлайн.",
+      quote_based: "Жеке баға ұсыныспен", contact_us: "бізбен байланысыңыз",
+      desc_VST: "3–5 қатысушы.", desc_VBL: "6–10 қатысушы.", desc_VHB: "10–18 қатысушы.",
+      name_VFL: "Бүкіл кеңістікті жалға алу", desc_VFL: "40 қатысушыға дейін.",
+      small_perhour: "сағатына", small_perevent: "іс-шара үшін",
+      pricenote_kzt: "Бағалар 2026 жылғы 8 тамыздағы «Бағдарламалар мен бағалар» брошюрасына сәйкес. Барлық бағдарламалар тегін деңгей анықтау тестінен басталады.",
+      cat_ge_rub: "General English", cat_examb_rub: "Емтихан және Business English",
+      name_GENN: "Шағын топ, жергілікті мұғалім", name_GENT: "Шағын топ, ана тілі ағылшын тілі болатын оқытушы", name_GEDL: "Қос формат: жергілікті + ана тілі ағылшын тілі болатын оқытушы",
+      name_GEIN: "Жеке, жергілікті мұғалім", name_GEIT: "Жеке, ана тілі ағылшын тілі болатын оқытушы",
+      desc_online: "Онлайн.", desc_minigrouponline: "Шағын топ, онлайн.",
+      pricenote_rub: "Бағалар Ресей нарығы үшін intellectfirst.com сайтында көрсетілгендей. Барлық бағдарламалар тегін деңгей анықтау тестінен басталады.",
+      catalog_link: "Сыныптардың толық каталогын қараңыз",
+      catalog_link_tail: " — қазір жұмыс істеп тұрған әр топтық сабақтың нақты күндері мен уақытын көріңіз.",
+      sec02_num: "05 — Экожүйе", sec02_title: "Үш кеңістік, бір стандарт",
+      sec02_desc: "Сыныптан тыс Intellect First жаттығуға, тілге еніп кетуге және шығармашылыққа арналған шағын кеңістіктер экожүйесін жүргізеді.",
+      eco1_desc: "Сөйлесу клубтары, пікірсайыстар, шешендік өнер жаттығулары және өзекті жаңалықтарды талқылау — еркін сөйлеу сенімділікпен кездесетін жер.",
+      eco2_desc: "Қарқынды шағын топтық жұмыс, IELTS-ке бағытталған сабақтар және кәсіби дамуға арналған шеберханалар.",
+      eco3_desc: "Жеке және онлайн сабақтар, бейне түсіру және подкасттар — оқуды сынып қабырғасынан тыс жалғастыратын контент.",
+      sec03_num: "06 — Галерея", sec03_title: "Академиядағы өмір",
+      sec03_desc: "Сабақтарымыз бен іс-шараларымыздан нақты сәттер — оқушылар, мұғалімдер және IF қауымдастығы.",
+      frame_1: "General English — шағын топтық сабақ", frame_2: "IF Hub — сөйлесу клубы", frame_3: "IELTS сынақ тестілеуі",
+      frame_4: "IF Studio — жазу сессиясы", frame_5: "Корпоративтік оқыту — ұйымның өзінде", frame_6: "Оқушылар көрсетілімі және бітіру",
+      gallery_note: "Уақытша кадрлар — академия фотоларын жіберіңіз, біз бірден қоямыз.",
+      sec04_num: "08 — Біз туралы", sec04_title: "Бір сенімге құрылған",
+      about_p1: "Intellect First тіл оқытуды кез келген маңызды білім сияқты — қатаңдығымен, нәтижесімен және оны жүргізетін адамдардың деңгейімен бағалау керек деген сеніммен құрылды.",
+      about_p2: "Әр сабақты білікті оқытушылар жүргізеді, халықаралық стандарттарға сай келеді және шағын топтарға құрылған, сондықтан бірде-бір оқушы тыңдалмай қалмайды. Нәтижесінде академия тіл орталығынан гөрі шын мәнінде ой мектебі сияқты жұмыс істейді.",
+      stat1_num: "Үздіктік", stat1_lbl: "Маркетингтік сөз емес, жұмыс стандарты ретінде ұсталады",
+      stat2_num: "Шағын топтар", stat2_lbl: "General English бойынша 3–6 оқушы, сондықтан оқыту жеке қалпында қалады",
+      stat3_num: "Жаһандық көзқарас", stat3_lbl: "Оқу бағдарламасы халықаралық стандарттармен салыстырылған",
+      stat4_num: "Ана тілі ағылшын тілі болатын оқытушы", stat4_lbl: "Premium English бағыты арқылы қолжетімді",
+      foot_begin_title: "Осы жерден бастаңыз", foot_begin_desc: "Әр бағдарлама тегін деңгей анықтау тестінен басталады. Бізбен байланысыңыз, біз сізді лайықты сыныпқа орналастырамыз.",
+      foot_cta: "Тегін деңгей анықтау тесті", foot_contact_title: "Байланыс", foot_academy_title: "Академия",
+      foot_academy_city: "Әл-Фараби даңғылы, 19, Қостанай, 110000, Қазақстан", foot_bottom_left: "Intellect First — Үйрен. Ойла. Көшбасшы бол."
+    }
+  };
+
+  function applyLang(lang) {
+    document.querySelectorAll('[data-i18n]').forEach(function (el) {
+      var key = el.getAttribute('data-i18n');
+      var dict = I18N[lang] || I18N.en;
+      if (dict[key] !== undefined) el.textContent = dict[key];
+    });
+    document.querySelectorAll('[data-i18n-ph]').forEach(function(el){var d=I18N[lang]||I18N.en,k=el.getAttribute('data-i18n-ph');if(d[k]!==undefined)el.setAttribute('placeholder',d[k])});
+    document.documentElement.setAttribute('lang', lang);
+    document.querySelectorAll('.lang-btn').forEach(function (b) {
+      b.classList.toggle('active', b.getAttribute('data-lang') === lang);
+    });
+    try { localStorage.setItem('if_lang', lang); } catch (e) {}
+  }
+
+  document.querySelectorAll('.lang-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () { applyLang(btn.getAttribute('data-lang')); });
+  });
+
+  var savedLang = 'en';
+  try { savedLang = localStorage.getItem('if_lang') || 'en'; } catch (e) {}
+  applyLang(savedLang === 'ru' || savedLang === 'kk' ? savedLang : 'en');
+</script>
+
+
+<script>
+(function(){
+  var reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // app tabs
+  function showCat(c){
+    document.querySelectorAll('.app-tab').forEach(function(t){t.classList.toggle('active',t.dataset.cat===c)});
+    document.querySelectorAll('.app-panel').forEach(function(p){p.classList.toggle('active',p.dataset.panel===c)});
+  }
+  document.querySelectorAll('.app-tab').forEach(function(t){t.addEventListener('click',function(){showCat(t.dataset.cat)})});
+  document.querySelectorAll('.lcard').forEach(function(c){c.addEventListener('click',function(){showCat(c.dataset.go)})});
+  // reveal on scroll
+  var rv=document.querySelectorAll('section .section-head, .eco-card, .gallery-grid, #faqs .wrap > *:not(.section-head)');
+  rv.forEach(function(el){el.classList.add('reveal')});
+  if('IntersectionObserver' in window){
+    var io=new IntersectionObserver(function(en){en.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}})},{threshold:.08});
+    rv.forEach(function(el){io.observe(el)});
+  }else rv.forEach(function(el){el.classList.add('in')});
+  // dock + progress + to-top
+  var names={teachers:'Teachers',courses:'Courses',pricing:'Pricing',apps:'Apps',ecosystem:'Ecosystem',gallery:'Gallery',faqs:'FAQs',contact:'Contact'};
+  var dock=document.getElementById('dock');
+  Object.keys(names).forEach(function(id){var a=document.createElement('a');a.href='#'+id;a.dataset.id=id;a.innerHTML='<span>'+names[id]+'</span>';dock.appendChild(a)});
+  var bar=document.getElementById('progress'),tt=document.getElementById('totop');
+  tt.addEventListener('click',function(){window.scrollTo({top:0,behavior:reduce?'auto':'smooth'})});
+  function onScroll(){
+    var h=document.documentElement,max=h.scrollHeight-h.clientHeight;
+    bar.style.width=(max>0?h.scrollTop/max*100:0)+'%';
+    tt.classList.toggle('show',h.scrollTop>600);
+    var cur='';Object.keys(names).forEach(function(id){var el=document.getElementById(id);if(el&&el.getBoundingClientRect().top<window.innerHeight*.4)cur=id});
+    dock.querySelectorAll('a').forEach(function(a){a.classList.toggle('on',a.dataset.id===cur)});
+  }
+  window.addEventListener('scroll',onScroll,{passive:true});onScroll();
+})();
+</script>
+
+<script>
+(function(){
+  var RES={"en": {"starters": ["Starters (ages 6–8, Cambridge Pre-A1)", "Songs, games and stories with a local teacher."], "movers": ["Movers (ages 8–10, Cambridge A1)", "Full sentences about daily life with a local teacher."], "flyers": ["Flyers (ages 9–11, Cambridge A2)", "Longer conversations; local or native teacher."], "ket_pet": ["KET, then PET (Cambridge A2 and B1)", "Exam preparation; local or native teacher. A placement test confirms where you start."], "ge_a1": ["General English A1", "Start from zero with a local teacher."], "ge_a2": ["General English A2", "Local teacher for the first 3–4 months, then a native speaker."], "ge_b1": ["General English B1 or above", "Local or native teacher. A placement test confirms your exact level."], "ielts": ["IELTS Preparation (entry level B1)", "Four skills, mock tests and feedback. A placement test confirms you are ready."], "business": ["Business & Corporate English", "Meetings, presentations and workplace communication. A placement test sets the starting group."], "test": ["Take the free placement test first", "Your level decides which course and teacher type are open to you."]}, "ru": {"starters": ["Starters (6–8 лет, Cambridge Pre-A1)", "Песни, игры и истории с местным преподавателем."], "movers": ["Movers (8–10 лет, Cambridge A1)", "Полные предложения о повседневной жизни с местным преподавателем."], "flyers": ["Flyers (9–11 лет, Cambridge A2)", "Более длинные разговоры; местный преподаватель или носитель."], "ket_pet": ["KET, затем PET (Cambridge A2 и B1)", "Подготовка к экзамену; местный преподаватель или носитель. Тест уровня покажет, с чего начать."], "ge_a1": ["General English A1", "Старт с нуля с местным преподавателем."], "ge_a2": ["General English A2", "Первые 3–4 месяца с местным преподавателем, затем с носителем языка."], "ge_b1": ["General English B1 и выше", "Местный преподаватель или носитель. Тест уровня уточнит ваш уровень."], "ielts": ["Подготовка к IELTS (вход с B1)", "Четыре навыка, пробные тесты и обратная связь. Тест уровня подтвердит готовность."], "business": ["Деловой и корпоративный английский", "Встречи, презентации и рабочее общение. Тест уровня определит стартовую группу."], "test": ["Сначала пройдите бесплатный тест на уровень", "Уровень определяет, какие курсы и типы преподавателей вам доступны."]}, "kk": {"starters": ["Starters (6–8 жас, Cambridge Pre-A1)", "Жергілікті мұғаліммен әндер, ойындар және әңгімелер."], "movers": ["Movers (8–10 жас, Cambridge A1)", "Жергілікті мұғаліммен күнделікті өмір туралы толық сөйлемдер."], "flyers": ["Flyers (9–11 жас, Cambridge A2)", "Ұзағырақ әңгімелер; жергілікті мұғалім немесе ана тілі ағылшын тілі болатын оқытушы."], "ket_pet": ["KET, содан кейін PET (Cambridge A2 және B1)", "Емтиханға дайындық; жергілікті мұғалім немесе ана тілі ағылшын тілі болатын оқытушы. Деңгей тесті қайдан бастау керегін көрсетеді."], "ge_a1": ["General English A1", "Жергілікті мұғаліммен нөлден бастау."], "ge_a2": ["General English A2", "Алғашқы 3–4 ай жергілікті мұғаліммен, содан кейін ана тілі ағылшын тілі болатын оқытушымен."], "ge_b1": ["General English B1 және одан жоғары", "Жергілікті мұғалім немесе ана тілі ағылшын тілі болатын оқытушы. Деңгей тесті нақты деңгейіңізді растайды."], "ielts": ["IELTS-ке дайындық (B1 деңгейінен)", "Төрт дағды, сынақ тесттер және кері байланыс. Деңгей тесті дайын екеніңізді растайды."], "business": ["Бизнес және корпоративтік ағылшын тілі", "Кездесулер, презентациялар және жұмыс орнындағы қарым-қатынас. Деңгей тесті бастапқы топты анықтайды."], "test": ["Алдымен тегін деңгей анықтау тестін тапсырыңыз", "Деңгейіңіз қандай курстар мен мұғалім түрлері ашық екенін анықтайды."]}};
+  var PORTAL="app/index.html";
+  var lang=function(){var l=document.documentElement.getAttribute('lang');return RES[l]?l:'en'};
+  var $=function(i){return document.getElementById(i)};
+  function pick(){var w=$('fnd_who').value,g=$('fnd_goal').value,l=$('fnd_lvl').value;
+    if(w==='child'){return l==='beginner'?'starters':l==='some'?'movers':l==='confident'?'flyers':'test'}
+    if(g==='ielts')return 'ielts';if(g==='business')return 'business';
+    if(l==='unsure')return 'test';
+    if(g==='cambridge')return 'ket_pet';
+    return l==='beginner'?'ge_a1':l==='some'?'ge_a2':'ge_b1'}
+  var out=$('fnd_out');
+  var lastKey=null;
+  function showRes(){if(!lastKey)return;var L=lang(),r=RES[L][lastKey];
+    var lab=document.querySelector('[data-i18n="fnd_label"]');
+    out.hidden=false;out.innerHTML='';
+    var a=document.createElement('p');a.className='l';a.textContent=({"en": "Our suggestion", "ru": "Наша рекомендация", "kk": "Біздің ұсынысымыз"})[L];
+    var h=document.createElement('h3');h.className='serif';h.textContent=r[0];
+    var p=document.createElement('p');p.textContent=r[1];
+    var c=document.createElement('a');c.className='cta';c.href=PORTAL+'#join';c.target='_blank';c.rel='noopener';c.textContent=({"en": "Take the placement test", "ru": "Пройти тест на уровень", "kk": "Деңгей анықтау тестін тапсыру"})[L];
+    out.appendChild(a);out.appendChild(h);out.appendChild(p);out.appendChild(c)}
+  $('fnd_btn').addEventListener('click',function(){lastKey=pick();showRes()});
+  document.querySelectorAll('.lang-btn').forEach(function(b){b.addEventListener('click',function(){setTimeout(function(){showRes();upd()},0)})});
+  var LAB=null;
+  function msg(){var L=lang(),M=L==='kk'?'ru':L;var d=({"en": {"h": "Trial lesson request — Intellect First Academy", "n": "Student", "c": "Contact", "w": "Who is learning", "g": "Goal", "t": "Best time"}, "ru": {"h": "Заявка на пробное занятие — Intellect First Academy", "n": "Ученик", "c": "Контакт", "w": "Кто учится", "g": "Цель", "t": "Удобное время"}})[M];
+    var v=function(id){var s=$(id);return s.options[s.selectedIndex].textContent};
+    return [d.h,d.n+': '+($('tr_name').value||'—'),d.c+': '+($('tr_contact').value||'—'),d.w+': '+v('tr_who'),d.g+': '+v('tr_goal'),d.t+': '+v('tr_time')].join('\n')}
+  function upd(){$('tr_send').href='https://t.me/abliem?text='+encodeURIComponent(msg())}
+  ['tr_name','tr_contact','tr_who','tr_goal','tr_time'].forEach(function(i){$(i).addEventListener('input',upd);$(i).addEventListener('change',upd)});
+  $('tr_copy').addEventListener('click',function(){var b=this;upd();var txt=msg();var done=function(){b.textContent=({"en": "Copied", "ru": "Скопировано", "kk": "Көшірілді"})[lang()];setTimeout(function(){b.textContent=({"en": "Copy message", "ru": "Скопировать сообщение", "kk": "Хабарламаны көшіру"})[lang()]},1800)};
+    if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(txt).then(done,function(){});});
+  upd();
+  var ids=['courses','apps','contact'],tabs=document.querySelectorAll('#tabbar a[data-t]');
+  function onS(){var cur='top';ids.forEach(function(id){var e=document.getElementById(id);if(e&&e.getBoundingClientRect().top<window.innerHeight*.5)cur=id});
+    tabs.forEach(function(a){a.classList.toggle('on',a.getAttribute('data-t')===cur)})}
+  window.addEventListener('scroll',onS,{passive:true});onS();
+})();
+</script>
+<script>(function(){var g=document.getElementById("staffGate");if(!g)return;g.addEventListener("submit",function(e){e.preventDefault();try{sessionStorage.setItem("if.pw",document.getElementById("staffCode").value)}catch(x){}location.href="login/index.html?next=app/index.html"});})();</script>
+
+
+
+<script src="if-bar.js" data-root="" data-slug="home"></script>
+<script src="academy-catalog.js"></script>
+<script src="academy.js"></script>
+</body></html>

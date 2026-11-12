@@ -1,0 +1,184 @@
+<!doctype html><html><head><script src="../../if-runtime.js"></script><link rel="manifest" href="../../manifest.webmanifest"><link rel="apple-touch-icon" href="../../brand/apple-touch-icon.png"><meta name="theme-color" content="#0B2545"><style>select{max-width:100%}</style><link rel="icon" href="../../brand/favicon-64.png"><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>KET Booster Arcade — 16 units</title>
+<style>
+:root{--navy:#14204A;--navy2:#22306A;--navy3:#2C3C80;--ice:#CADCFC;--gold:#C9A13A;--goldl:#E3C46A;--white:#fff;--green:#3FA55E;--red:#D9534F;--ink:#1B2340;
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--navy:#0F1838;--navy2:#1C2858}}
+:root[data-theme="dark"]{--navy:#0F1838;--navy2:#1C2858}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*:before,*:after{box-sizing:inherit}
+html,body{margin:0;min-height:100%}
+body{background:var(--navy);color:var(--white);font-family:Calibri,"Segoe UI",Candara,"Helvetica Neue",Arial,sans-serif;font-size:17px}
+h1,h2,h3{font-family:Cambria,Georgia,"Times New Roman",serif;margin:0}
+.wrap{max-width:860px;margin:0 auto;padding:20px 18px 40px}
+.top{display:flex;align-items:center;gap:12px}
+.top svg{width:42px;height:48px;flex:none}
+.brand{font-size:14px;color:var(--ice)}
+.brand b{color:var(--goldl);display:block;font-size:16px}
+button{font:inherit;cursor:pointer;border:none;border-radius:12px}
+button:focus-visible{outline:3px solid var(--goldl);outline-offset:3px}
+.hero{margin:28px 0 18px}
+.hero h1{font-size:clamp(34px,7vw,56px);line-height:1.05}
+.hero p{color:var(--ice);max-width:60ch;line-height:1.5}
+.modes{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px;margin-top:18px}
+.mode{background:var(--navy2);border-radius:18px;padding:22px;text-align:left;color:var(--white);border:2px solid transparent;transition:border-color .15s,transform .15s}
+.mode:hover{border-color:var(--goldl);transform:translateY(-2px)}
+.mode .em{font-size:40px}
+.mode h2{font-size:24px;margin:8px 0 6px;color:var(--goldl)}
+.mode p{margin:0;color:var(--ice);line-height:1.45;font-size:15px}
+.mode .best{margin-top:12px;font-size:13px;color:var(--goldl)}
+label.nm{display:block;margin-top:20px;color:var(--ice);font-size:15px}
+input.nm{margin-top:6px;width:100%;max-width:320px;padding:12px 14px;border-radius:12px;border:2px solid var(--navy3);background:var(--navy2);color:var(--white);font:inherit}
+.hud{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:18px 0 12px;flex-wrap:wrap}
+.pill{background:var(--navy2);border-radius:999px;padding:8px 14px;font-weight:700;font-size:15px}
+.pill.gold{background:var(--gold);color:var(--navy)}
+.bar{height:12px;background:var(--navy2);border-radius:99px;overflow:hidden}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--goldl),var(--gold));width:100%;transition:width .1s linear}
+.bar.low i{background:var(--red)}
+.tag{display:inline-block;background:var(--navy3);color:var(--goldl);border-radius:8px;padding:4px 10px;font-size:13px;font-weight:700;margin-top:16px}
+.q{font-family:Cambria,Georgia,serif;font-size:clamp(22px,4.2vw,30px);line-height:1.3;margin:12px 0 18px}
+.opts{display:grid;gap:12px}
+.opt{background:var(--white);color:var(--ink);text-align:left;padding:16px 18px;font-size:18px;display:flex;gap:12px;align-items:center;border:3px solid transparent}
+.opt .k{background:var(--navy);color:var(--goldl);width:32px;height:32px;border-radius:50%;display:grid;place-items:center;font-weight:700;flex:none}
+.opt:hover:not(:disabled){border-color:var(--gold)}
+.opt.ok{background:#E3F4E8;border-color:var(--green)}
+.opt.no{background:#FBE7E6;border-color:var(--red)}
+.opt:disabled{cursor:default}
+.fb{min-height:54px;margin-top:14px;color:var(--ice);line-height:1.45}
+.fb b{color:var(--goldl)}
+.pop{position:fixed;left:50%;top:28%;transform:translate(-50%,0);font-family:Cambria,Georgia,serif;font-size:44px;font-weight:700;color:var(--goldl);pointer-events:none;animation:pop .8s ease-out forwards}
+@keyframes pop{0%{opacity:0;transform:translate(-50%,20px) scale(.8)}30%{opacity:1;transform:translate(-50%,0) scale(1.1)}100%{opacity:0;transform:translate(-50%,-40px) scale(1)}}
+.next{background:var(--gold);color:var(--navy);font-weight:700;padding:14px 22px;margin-top:8px}
+.ghost{background:transparent;color:var(--ice);border:2px solid var(--navy3);padding:12px 18px}
+.build{min-height:74px;background:var(--navy2);border-radius:16px;padding:12px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;border:2px dashed var(--navy3)}
+.build.shake{animation:sh .35s}
+@keyframes sh{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+.tiles{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}
+.tile{background:var(--white);color:var(--ink);font-weight:700;padding:12px 16px;font-size:19px;box-shadow:0 3px 0 var(--gold)}
+.tile:hover{transform:translateY(-2px)}
+.placed{background:var(--goldl);color:var(--navy);border-radius:10px;padding:10px 14px;font-weight:700;font-size:19px}
+select.nm{display:block}
+.clue{color:var(--ice);margin:8px 0 12px}
+.result{text-align:center;margin-top:30px}
+.result .big{font-family:Cambria,Georgia,serif;font-size:72px;color:var(--goldl);line-height:1}
+.stars{font-size:40px;letter-spacing:6px;margin:10px 0}
+.review{text-align:left;background:var(--navy2);border-radius:16px;padding:16px 18px;margin-top:20px}
+.review li{margin:8px 0;line-height:1.4;color:var(--ice)}
+.review li b{color:var(--white)}
+.row{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:18px}
+.hidden{display:none}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 230">  <defs>    <linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E3C46A"/><stop offset="1" stop-color="#B8912E"/></linearGradient>  </defs>  <path d="M100 8 L182 36 V110 C182 160 146 196 100 220 C54 196 18 160 18 110 V36 Z" fill="url(#g)"/>  <path d="M100 20 L170 44 V110 C170 153 139 184 100 206 C61 184 30 153 30 110 V44 Z" fill="#14204A"/>  <polygon points="100,34 105,48 120,48 108,57 112,71 100,62 88,71 92,57 80,48 95,48" fill="#E3C46A"/>  <text x="100" y="140" text-anchor="middle" font-family="Cambria, Georgia, serif" font-weight="700" font-size="64" fill="#FFFFFF">IF</text>  <g fill="none" stroke="#E3C46A" stroke-width="3" stroke-linecap="round">    <path d="M58 170 C48 150 46 124 52 100"/><path d="M142 170 C152 150 154 124 148 100"/>  </g>  <g fill="#E3C46A">    <ellipse cx="50" cy="112" rx="4" ry="8" transform="rotate(-25 50 112)"/><ellipse cx="49" cy="130" rx="4" ry="8" transform="rotate(-10 49 130)"/><ellipse cx="52" cy="148" rx="4" ry="8" transform="rotate(10 52 148)"/><ellipse cx="59" cy="164" rx="4" ry="8" transform="rotate(30 59 164)"/>    <ellipse cx="150" cy="112" rx="4" ry="8" transform="rotate(25 150 112)"/><ellipse cx="151" cy="130" rx="4" ry="8" transform="rotate(10 151 130)"/><ellipse cx="148" cy="148" rx="4" ry="8" transform="rotate(-10 148 148)"/><ellipse cx="141" cy="164" rx="4" ry="8" transform="rotate(-30 141 164)"/>  </g></svg><div class="brand"><b>IF Academy</b>A2 Key (KET) · Exam Booster · 16 units</div></div>
+
+  <section id="home">
+    <div class="hero"><h1>KET Booster Arcade</h1><p>The end-of-unit challenge for all 16 Exam Booster units. Choose your unit, then beat the clock!</p></div>
+    <label class="nm" for="unit">Unit</label><select class="nm" id="unit"></select><label class="nm" for="pname">Your name</label>
+    <input class="nm" id="pname" maxlength="20" placeholder="e.g. Aliya">
+    <div class="modes">
+      <button class="mode" id="goQuiz"><div class="em">⏱️</div><h2>Exam Sprint</h2><p>8 unit questions (or 20 from all units). 15 seconds each. Answer fast for bonus points; 3 in a row doubles your score.</p><div class="best" id="bestQ"></div></button>
+      <button class="mode" id="goGame"><div class="em">🧩</div><h2>Sentence Rush</h2><p>60 seconds. Tap the words in the right order to build sentences from the unit. One word is a trap!</p><div class="best" id="bestG"></div></button>
+    </div>
+  </section>
+
+  <section id="quiz" class="hidden">
+    <div class="hud"><span class="pill" id="qNum">1 / 20</span><span class="pill" id="qStreak">🔥 0</span><span class="pill gold" id="qScore">0 pts</span></div>
+    <div class="bar" id="qBar"><i></i></div>
+    <span class="tag" id="qTag"></span>
+    <div class="q" id="qText"></div>
+    <div class="opts" id="qOpts"></div>
+    <div class="fb" id="qFb" aria-live="polite"></div>
+    <button class="next hidden" id="qNext">Next question</button>
+  </section>
+
+  <section id="game" class="hidden">
+    <div class="hud"><span class="pill" id="gDone">✅ 0</span><span class="pill" id="gTime">⏱ 60s</span><span class="pill gold" id="gScore">0 pts</span></div>
+    <div class="bar" id="gBar"><i></i></div>
+    <p class="clue" id="gClue"></p>
+    <div class="build" id="gBuild" aria-live="polite"></div>
+    <div class="tiles" id="gTiles"></div>
+    <div class="row"><button class="ghost" id="gUndo">Undo</button><button class="ghost" id="gSkip">Skip (−5s)</button></div>
+  </section>
+
+  <section id="result" class="hidden">
+    <div class="result">
+      <h2 id="rTitle">Well done!</h2>
+      <div class="big" id="rScore">0</div><div style="color:var(--ice)">points</div>
+      <div class="stars" id="rStars"></div>
+      <p id="rMsg" style="color:var(--ice)"></p>
+      <div class="row"><button class="next" id="rAgain">Play again</button><button class="ghost" id="rHome">Choose a mode</button></div>
+      <div class="review hidden" id="rReview"></div>
+    </div>
+  </section>
+</div>
+<script>
+const UNITS=[{"n":1,"id":"RW1","name":"Reading & Writing Part 1","topics":["Daily Life","Places & Buildings","Services"],"quiz":[["She ______ gets up late. She's never late for school!",["always","usually","never"],2],["My dad ______ to work by bus.",["go","goes","going"],1],["Where can you send a letter?",["post office","chemist's","station"],0],["\"Is there a bank ______ here?\"",["near","next","opposite"],0],["NO PARKING means …",["you can park here","you can't leave your car here","the car park is full"],1],["You can buy medicine at the …",["library","chemist's","museum"],1],["I ______ have breakfast at 7.",["usually","am usually","usual"],0],["\"Please arrive early\" is …",["a question","an instruction","a price"],1]],"rush":[["I usually have breakfast at seven","always"],["Is there a chemist near here","it"],["What time does the museum open","do"],["She is never late for school","go"]]},{"n":2,"id":"RW2","name":"Reading & Writing Part 2","topics":["Shopping","Food & Drink","House & Home"],"quiz":[["How ______ apples do you want?",["much","many","lot"],1],["I spent all my money ______ sweets.",["for","on","at"],1],["\"Can I ______ the bill, please?\"",["have","make","take"],0],["You look at the ______ to choose food.",["bill","menu","waiter"],1],["The cat is ______ the bed and the wall.",["between","next","opposite"],0],["You keep your clothes in a …",["wardrobe","shelf","sofa"],0],["\"______ you like a drink?\"",["Do","Would","Are"],1],["A ______ chair is nice to sit on.",["comfortable","cheap","modern"],0]],"rush":[["How much does this jacket cost","many"],["I would like the chicken please","like"],["The lamp is next to the bed","at"],["Could we have the bill please","take"]]},{"n":3,"id":"RW3","name":"Reading & Writing Part 3","topics":["Social Interaction","Feelings & Experiences","Hobbies & Leisure"],"quiz":[["\"Would you like to come?\" — \"______\"",["I'd love to.","Yes, I like.","I come."],0],["______ does the film start? — At 7.",["Where","When","Who"],1],["Have you ______ been to London?",["ever","yet","since"],0],["I've lived here ______ five years.",["since","for","ago"],1],["She hasn't finished ______.",["yet","already","just"],0],["______ we meet at the station?",["Shall","Let's","Do"],0],["Let's ______ a film tonight.",["watch","to watch","watching"],0],["\"I'm afraid I can't\" is a …",["polite yes","polite no","question"],1]],"rush":[["Would you like to come to my party","coming"],["Have you ever been to Astana","went"],["Shall we meet outside the cinema","meeting"],["I have lived here for two years","since"]]},{"n":4,"id":"RW4","name":"Reading & Writing Part 4","topics":["The Natural World","Education & Study","Travel & Holidays"],"quiz":[["There are lots of trees in a …",["desert","forest","lake"],1],["\"I don't like snakes.\" — \"Me ______.\"",["too","neither","so"],1],["Yesterday we ______ to the museum.",["go","went","goed"],1],["I didn't ______ my homework.",["finish","finished","finishing"],0],["If you do well in an exam, you …",["pass","fail","miss"],0],["______ right at the crossroads.",["Turn","Turning","To turn"],0],["The bank is ______ your left.",["in","on","at"],1],["A document for travel abroad is a …",["ticket","passport","map"],1]],"rush":[["We went to the lake last summer","goed"],["Did you pass your exam","passed"],["Turn left at the crossroads","turning"],["The bank is on your right","in"]]},{"n":5,"id":"RW5","name":"Reading & Writing Part 5","topics":["Sports & Games","Entertainment & Media","Transport"],"quiz":[["I ______ karate every Tuesday.",["go","play","do"],2],["We ______ skiing in winter.",["go","play","do"],0],["I ______ TV when my friend called.",["watched","was watching","am watching"],1],["How about ______ to the cinema?",["go","to go","going"],2],["The ______ played for two hours.",["band","ticket","stage"],0],["A train is ______ than a bus.",["fast","faster","fastest"],1],["This is the ______ comfortable seat.",["more","most","much"],1],["In 2050, cars ______ fly.",["will","are","do"],0]],"rush":[["I was playing tennis when it started to rain","played"],["How about going to a concert","go"],["Planes are faster than trains","more"],["People will travel by drone","to"]]},{"n":6,"id":"RW6","name":"Reading & Writing Part 6","topics":["The Weather","Clothes","People"],"quiz":[["You hold this when it rains: …",["scarf","umbrella","uniform"],1],["It's very ______ today — look at the sun!",["sun","sunny","suns"],1],["This bag isn't yours. It's ______.",["my","mine","me"],1],["I love these trainers. I wear ______ every day.",["they","them","their"],1],["You wear ______ on your hands.",["gloves","trainers","scarf"],0],["\"What is she like?\" — \"______\"",["She's tall.","She's kind.","She likes pizza."],1],["He ______ short, dark hair.",["is","has","have"],1],["Someone who makes you laugh is …",["shy","lazy","funny"],2]],"rush":[["What is the weather like today","as"],["This scarf is mine","my"],["She has long curly hair","is"],["He is tall and very friendly","has"]]},{"n":7,"id":"RW7","name":"Reading & Writing Part 7","topics":["Daily Life","Social Interaction","Travel & Holidays"],"quiz":[["I get up ______ 7 o'clock.",["in","on","at"],2],["We play tennis ______ Mondays.",["on","in","at"],0],["______ I come in, please?",["May","Might","Do"],0],["I ______ my cousin tomorrow — it's planned.",["meet","am meeting","met"],1],["It ______ rain later — take an umbrella.",["might","can","may to"],0],["Last summer we ______ to the sea.",["go","went","goes"],1],["I ______ some souvenirs.",["buyed","bought","buy"],1],["Next year I'm going ______ Paris.",["visit","to visit","visiting"],1]],"rush":[["I catch the bus at eight","on"],["What are you doing this weekend","do"],["Last year we went to Turkey","go"],["I am going to visit my aunt","will"]]},{"n":8,"id":"RW8","name":"Reading & Writing Part 8","topics":["Hobbies & Leisure","Sport & Activities","Food & Drink"],"quiz":[["I prefer tea ______ coffee.",["than","to","for"],1],["I'd rather ______ at home.",["stay","to stay","staying"],0],["Your surname is your …",["first name","family name","nickname"],1],["Money to join a club is a …",["fee","form","member"],0],["______ the eggs in hot water.",["Bake","Boil","Mix"],1],["Milk and cheese are …",["vegetables","dairy","fruit"],1],["First, ______ the apples.",["cut","cutting","to cut"],0],["Add ______ sugar.",["an","some","many"],1]],"rush":[["I prefer painting to singing","than"],["I would rather stay at home","to"],["First cut the apples","cutting"],["Mix the flour and the sugar","mixing"]]},{"n":9,"id":"RW9","name":"Reading & Writing Part 9","topics":["Health & Exercise","Personal Identification","Entertainment & Media"],"quiz":[["Yesterday I ______ to the gym.",["go","went","am going"],1],["Next week I'm ______ join a club.",["going to","will","go"],0],["Swimming helps you keep ______.",["healthy","fit","gym"],1],["My uncle's daughter is my …",["aunt","cousin","niece"],1],["I ______ two brothers.",["have got","has got","am"],0],["A funny film is a …",["cartoon","comedy","series"],1],["Which is correct?",["on monday","On Monday","on Monday"],2],["\"______ a great film.\"",["Its","It's","It is'"],1]],"rush":[["Yesterday I went to the gym","go"],["I have got two cousins","has"],["My sister's name is Dana","sisters"],["We watched a comedy on Friday","watch"]]},{"n":10,"id":"L1","name":"Listening Part 1","topics":["Services & Places","Shopping & Numbers","Education & Study"],"quiz":[["8.45 = ______",["quarter past eight","quarter to nine","half past eight"],1],["My birthday is ______ the 5th of May.",["in","on","at"],1],["We go skiing ______ January.",["in","on","at"],0],["You hear \"thirTEEN\". The number is …",["13","30","33"],0],["\"How much ______ the jeans?\"",["is","are","do"],1],["Money you get back is …",["change","discount","price"],0],["Yesterday we ______ a test.",["have","had","are having"],1],["Tonight I'm going to ______.",["revise","revised","revising"],0]],"rush":[["The film starts at half past seven","on"],["How much are these shoes","is"],["I am going to revise tonight","will"],["My birthday is on the fifth of May","in"]]},{"n":11,"id":"L2","name":"Listening Part 2","topics":["Food & Drink","Hobbies & Shopping","Countries & Sports"],"quiz":[["______ apples are delicious. (near, plural)",["This","These","Those"],1],["Can I have ______ bread?",["a","some","many"],1],["How ______ eggs do you need?",["much","many","lot"],1],["I enjoy ______ comics.",["read","reading","to reading"],1],["\"______ I help you?\"",["Shall","Do","Am"],0],["People in Spain speak …",["Spain","Spanish","Spainish"],1],["Why don't you ______ karate?",["try","trying","to try"],0],["He's from Japan. He's …",["Japan","Japanese","Japanish"],1]],"rush":[["Those biscuits look very nice","that"],["I enjoy playing chess with my grandad","play"],["Why don't you try judo","trying"],["She speaks Spanish and French","Spain"]]},{"n":12,"id":"L3","name":"Listening Part 3","topics":["Leisure Time","Social Media & Technology","Travel & Holidays"],"quiz":[["Children under 3 go in ______.",["free","freely","cheap"],0],["The museum is open ______ 9 to 5.",["from","since","at"],0],["English ______ in many countries.",["speaks","is spoken","spoken"],1],["The phone ______ in 1876.",["was invented","is invented","invented"],0],["A secret word for your account is a …",["post","password","screen"],1],["You show this at the plane gate: …",["guidebook","boarding pass","timetable"],1],["We ______ to visit Georgia.",["are going","go","will going"],0],["\"It's cold.\" — \"I ______ close the window.\"",["will","am","going"],0]],"rush":[["The museum closes at six","close"],["This photo was taken in Almaty","took"],["We are going to visit Georgia","will"],["The phone was invented in 1876","is"]]},{"n":13,"id":"L4","name":"Listening Part 4","topics":["Making Plans","Health, Medicine & Exercise","Dates & Services"],"quiz":[["\"The phone's ringing!\" — \"I ______ answer it.\"",["will","am going to","am"],0],["I fell asleep ______ the film.",["until","during","since"],1],["You ______ see a doctor.",["should","should to","shoulds"],0],["Your knee is in your …",["arm","leg","head"],1],["22nd = …",["twenty-two","twenty-second","twenty-twoth"],1],["The festival is ______ August.",["in","on","at"],0],["\"What's the ______?\" — \"I've got a headache.\"",["matter","date","problem with"],0],["A time to see the dentist is an …",["event","appointment","deadline"],1]],"rush":[["You should drink more water","to"],["I am going to see my grandma","will"],["My birthday is on the third of March","in"],["I will wait until six","during"]]},{"n":14,"id":"L5","name":"Listening Part 5","topics":["House & Home","Entertainment & Media","Education & Study"],"quiz":[["Where ______ live?",["you do","do you","you"],1],["______ your flat big?",["Is","Does","Are"],0],["77 = …",["double seven","seven twice","two seven"],0],["______ forget your ticket!",["Not","Don't","No"],1],["You ______ run by the pool!",["mustn't","don't have to","must"],0],["It's free — you ______ pay.",["mustn't","don't have to","have to"],1],["He ______ wear a uniform.",["have to","has to","must to"],1],["You live on the fifth …",["floor","balcony","garden"],0]],"rush":[["Where do you live","are"],["Please leave a message after the beep","leaving"],["You must wear a helmet","to"],["You do not have to pay","must"]]},{"n":15,"id":"S1","name":"Speaking Part 1","topics":["Personal Identification","Daily Life","Places & Buildings"],"quiz":[["Where ______ from?",["you are","are you","do you"],1],["I live ______ my parents.",["with","by","at"],0],["I ______ get up at 7.",["usually","am usually","usual"],0],["I go swimming ______.",["twice a week","a week twice","twice week"],0],["\"______ do you play chess?\" — \"Once a week.\"",["How often","How much","When often"],0],["A place with too many people is …",["quiet","crowded","empty"],1],["______ two cinemas in my town.",["There is","There are","It has"],1],["I like it ______ it's quiet.",["because","so","but"],0]],"rush":[["Where do you come from","are"],["I usually get up at seven","am"],["I go to the park twice a week","in"],["There are two cinemas in my town","is"]]},{"n":16,"id":"S2","name":"Speaking Part 2","topics":["Hobbies & Leisure","Sport","Holidays & Travel"],"quiz":[["Leaves fall in …",["spring","autumn","summer"],1],["We go skiing ______ winter.",["in","on","at"],0],["\"price?\" → How much ______?",["it costs","does it cost","cost it"],1],["______ the club meet on Mondays?",["Do","Does","Is"],1],["Send a ball with your hand: …",["kick","throw","dive"],1],["The flight ______ at 9 tomorrow.",["leaves","left","leaving"],0],["Last summer we ______ the ferry.",["take","took","taken"],1],["There and back ticket = …",["single","return","flight"],1]],"rush":[["How much does it cost","costs"],["Does the club meet on Mondays","do"],["Last summer we took the ferry","take"],["We are going to fly to Dubai","will"]]}];
+const $=id=>document.getElementById(id);
+const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+function show(id){["home","quiz","game","result"].forEach(s=>$(s).classList.toggle("hidden",s!==id));window.scrollTo(0,0)}
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function pop(t){const d=document.createElement("div");d.className="pop";d.textContent=t;document.body.appendChild(d);setTimeout(()=>d.remove(),800)}
+function name(){return ($("pname").value.trim()||"Player")}
+function refreshBest(){if(typeof sel==="undefined")return;const q=store.get(bk("djd_q")),g=store.get(bk("djd_g"));$("bestQ").textContent=q?"Best on this device: "+q:"";$("bestG").textContent=g?"Best on this device: "+g:""}
+const sel=document.getElementById("unit");sel.innerHTML='<option value="0">All units (mixed)</option>'+UNITS.map(u=>'<option value="'+u.n+'">Unit '+u.n+" — "+u.name+" ("+u.topics.join(", ")+")</option>").join("");
+function pickQ(){const v=+sel.value;let qs=v?UNITS[v-1].quiz:shuffle(UNITS.flatMap(u=>u.quiz)).slice(0,20);return qs.map(q=>({t:v?UNITS[v-1].name:"Mixed",q:q[0],o:q[1],a:q[2],e:"Answer: <b>"+q[1][q[2]]+"</b>"}))}
+function pickS(){const v=+sel.value;const src=v?UNITS[v-1].rush:UNITS.flatMap(u=>u.rush);return src.map(r=>[r[0],r[1],"Build the sentence"])}
+function bk(k){return k+"_"+sel.value}
+sel.onchange=refreshBest;
+refreshBest();
+let last="quiz";
+/* QUIZ */
+let qi,qs,score,streak,tick,tLeft,wrong,qList;
+const QT=15;
+function startQuiz(){last="quiz";qList=shuffle(pickQ());qi=0;score=0;streak=0;wrong=[];show("quiz");askQ()}
+function askQ(){const q=qList[qi];$("qNum").textContent=(qi+1)+" / "+qList.length;$("qScore").textContent=score+" pts";$("qStreak").textContent="🔥 "+streak;
+ $("qTag").textContent=q.t;$("qText").innerHTML=q.q;$("qFb").innerHTML="";$("qNext").classList.add("hidden");
+ const box=$("qOpts");box.innerHTML="";
+ q.o.forEach((o,i)=>{const b=document.createElement("button");b.className="opt";b.innerHTML='<span class="k">'+"ABCD"[i]+'</span><span>'+o+'</span>';b.onclick=()=>answer(i);box.appendChild(b)});
+ tLeft=QT;updBar();clearInterval(tick);tick=setInterval(()=>{tLeft-=.1;updBar();if(tLeft<=0){clearInterval(tick);answer(-1)}},100)}
+function updBar(){const w=Math.max(0,tLeft/QT*100);$("qBar").firstElementChild.style.width=w+"%";$("qBar").classList.toggle("low",tLeft<5)}
+function answer(i){clearInterval(tick);const q=qList[qi];const btns=[...$("qOpts").children];btns.forEach((b,k)=>{b.disabled=true;if(k===q.a)b.classList.add("ok");if(k===i&&i!==q.a)b.classList.add("no")});
+ if(i===q.a){streak++;let pts=100+Math.round(tLeft*10);if(streak>=3)pts*=2;score+=pts;pop("+"+pts+(streak>=3?" 🔥x2":""));$("qFb").innerHTML="<b>Correct!</b> "+q.e}
+ else{streak=0;wrong.push(q);$("qFb").innerHTML="<b>"+(i<0?"Time's up!":"Not quite.")+"</b> "+q.e}
+ $("qScore").textContent=score+" pts";$("qStreak").textContent="🔥 "+streak;
+ const n=$("qNext");n.textContent=qi<qList.length-1?"Next question":"See my score";n.classList.remove("hidden");n.focus()}
+$("qNext").onclick=()=>{qi++;if(qi<qList.length)askQ();else endQuiz()};
+function endQuiz(){const max=qList.length*300;const pct=score/max;const correct=qList.length-wrong.length;
+ const best=+store.get(bk("djd_q"))||0;if(score>best)store.set(bk("djd_q"),score);refreshBest();
+ finish(score,pct>.55?3:pct>.35?2:1,name()+", you got "+correct+" / "+qList.length+" correct."+(score>best?" New best score on this device!":""),wrong.map(q=>"<li><b>"+q.q.replace(/<[^>]+>/g,"")+"</b><br>"+q.o[q.a]+"</li>"))}
+/* GAME */
+let gs,gTimer,gT,gDone,gOrder,gPlaced,gTiles,gDeck;
+function startGame(){last="game";gs=0;gDone=0;gT=60;gDeck=shuffle(pickS());show("game");nextSent();clearInterval(gTimer);
+ gTimer=setInterval(()=>{gT-=.1;$("gTime").textContent="⏱ "+Math.ceil(Math.max(0,gT))+"s";$("gBar").firstElementChild.style.width=Math.max(0,Math.min(100,gT/60*100))+"%";$("gBar").classList.toggle("low",gT<10);if(gT<=0){clearInterval(gTimer);endGame()}},100)}
+function nextSent(){if(!gDeck.length)gDeck=shuffle(pickS());const s=gDeck.pop();gOrder=s[0].split(" ");gPlaced=[];$("gClue").textContent=s[2]+" — tap the words in order. One word doesn't belong!";
+ gTiles=shuffle(gOrder.concat([s[1]]).map((w,i)=>({w,id:i})));renderG()}
+function renderG(){$("gBuild").innerHTML=gPlaced.length?gPlaced.map(w=>'<span class="placed">'+w+'</span>').join(""):'<span style="color:var(--ice)">Your sentence appears here…</span>';
+ const t=$("gTiles");t.innerHTML="";gTiles.forEach(o=>{const b=document.createElement("button");b.className="tile";b.textContent=o.w;b.onclick=()=>tap(o,b);t.appendChild(b)});
+ $("gDone").textContent="✅ "+gDone;$("gScore").textContent=gs+" pts"}
+function tap(o,b){const need=gOrder[gPlaced.length];if(o.w===need){gPlaced.push(o.w);gTiles=gTiles.filter(x=>x!==o);gs+=10;
+  if(gPlaced.length===gOrder.length){gDone++;gs+=50;gT=Math.min(60,gT+5);pop("+60 ⏱+5s");renderG();setTimeout(nextSent,450);return}renderG()}
+ else{gT-=2;const bd=$("gBuild");bd.classList.remove("shake");void bd.offsetWidth;bd.classList.add("shake");pop("−2s")}}
+$("gUndo").onclick=()=>{if(!gPlaced.length)return;const w=gPlaced.pop();gTiles.push({w,id:Math.random()});gs=Math.max(0,gs-10);renderG()};
+$("gSkip").onclick=()=>{gT-=5;nextSent()};
+function endGame(){const best=+store.get(bk("djd_g"))||0;if(gs>best)store.set(bk("djd_g"),gs);refreshBest();
+ finish(gs,gDone>=6?3:gDone>=3?2:1,name()+", you built "+gDone+" sentence"+(gDone===1?"":"s")+"."+(gs>best?" New best score on this device!":""),[])}
+function finish(sc,st,msg,rev){show("result");$("rScore").textContent=sc;$("rStars").textContent="★".repeat(st)+"☆".repeat(3-st);
+ $("rTitle").textContent=st===3?"Superstar!":st===2?"Great work!":"Good try — play again!";$("rMsg").textContent=msg;
+ const r=$("rReview");if(rev.length){r.innerHTML="<h3 style='color:var(--goldl)'>Review these</h3><ul>"+rev.join("")+"</ul>";r.classList.remove("hidden")}else r.classList.add("hidden")}
+$("goQuiz").onclick=startQuiz;$("goGame").onclick=startGame;
+$("rAgain").onclick=()=>last==="quiz"?startQuiz():startGame();$("rHome").onclick=()=>{clearInterval(tick);clearInterval(gTimer);show("home")};
+</script>
+<script src="../_shared/bad18c98/ifr-results.js"></script>
+<script src="../_shared/2f7465db/if-flashcards.js"></script>
+</body>
+</html>
+
+<script src="../../if-bar.js" data-root="../../index.html" data-slug="ket-booster"></script></body></html>

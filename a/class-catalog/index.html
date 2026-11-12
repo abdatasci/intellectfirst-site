@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><script src="../../if-runtime.js"></script><link rel="manifest" href="../../manifest.webmanifest"><link rel="apple-touch-icon" href="../../brand/apple-touch-icon.png"><meta name="theme-color" content="#0B2545"><style>select{max-width:100%}</style><link rel="icon" href="../../brand/favicon-64.png">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Intellect First — Class Catalog</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #0B2545; --navy-deep: #071A33; --ice: #61A5C2; --ice-light: #A9D6E5;
+    --silver: #C9D2DB; --paper: #FBFCFD; --paper-dim: #F2F4F6; --ink: #10233F; --ink-soft: #4C5B70;
+    --line: rgba(11,37,69,0.14);
+    --bg: var(--paper); --bg-raised: #FFFFFF; --text: var(--ink); --text-soft: var(--ink-soft);
+    --border-c: var(--line); --accent: var(--ice);
+    --room-bl: #61A5C2; --room-hub: #B4831F; --room-st: #6B7FD7;
+  }
+  :root:not([data-theme="light"]) { @media (prefers-color-scheme: dark) {
+    --bg: #0A1830; --bg-raised: #0F2140; --text: #EAF0F6; --text-soft: #A9BAD0;
+    --border-c: rgba(201,210,219,0.18); --paper-dim: #0F2140; --accent: var(--ice-light);
+  }}
+  :root[data-theme="dark"] {
+    --bg: #0A1830; --bg-raised: #0F2140; --text: #EAF0F6; --text-soft: #A9BAD0;
+    --border-c: rgba(201,210,219,0.18); --paper-dim: #0F2140; --accent: var(--ice-light);
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin:0; background:var(--bg); color:var(--text); font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif; font-size:16px; line-height:1.6; -webkit-font-smoothing:antialiased; }
+  .serif, h1, h2, h3 { font-family:'Fraunces',Georgia,serif; font-weight:500; letter-spacing:-0.01em; }
+  a { color:inherit; }
+  .wrap { max-width:1120px; margin:0 auto; padding:0 32px; }
+  @media (max-width:640px){ .wrap{ padding:0 20px; } }
+
+  header.site { position:sticky; top:0; z-index:40; background:color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter:blur(10px); border-bottom:1px solid var(--border-c); }
+  nav { display:flex; align-items:center; justify-content:space-between; padding:18px 0; }
+  .brand { display:flex; align-items:center; gap:10px; text-decoration:none; }
+  .brand-word { font-family:'Fraunces',serif; font-weight:600; font-size:19px; color:var(--text); }
+  .brand-word small { display:block; font-family:'Inter',sans-serif; font-weight:400; font-size:10.5px; letter-spacing:0.06em; color:var(--text-soft); margin-top:1px; }
+  .cta { display:inline-block; background:var(--navy); color:#fff; font-size:14px; font-weight:500; padding:10px 20px; border-radius:3px; text-decoration:none; border:1px solid var(--navy); transition:background .15s ease,color .15s ease; white-space:nowrap; }
+  .cta:hover { background:transparent; color:var(--navy); }
+  .cta.outline { background:transparent; color:var(--text); border:1px solid var(--border-c); }
+  .cta.outline:hover { border-color:var(--accent); color:var(--accent); }
+  @media (prefers-color-scheme: dark) { .cta:hover { color: var(--accent); } }
+
+  .hero { padding:64px 0 40px; border-bottom:1px solid var(--border-c); }
+  .kicker { font-size:13px; color:var(--text-soft); margin:0 0 18px; display:flex; align-items:center; gap:10px; }
+  .kicker .dot { width:6px; height:6px; border-radius:50%; background:var(--accent); }
+  h1.headline { font-size:clamp(34px,5vw,54px); line-height:1.05; margin:0 0 18px; }
+  .lede { font-size:17px; color:var(--text-soft); max-width:58ch; margin:0 0 28px; }
+
+  .controls { display:flex; flex-wrap:wrap; gap:12px; align-items:center; justify-content:space-between; padding:22px 0; border-bottom:1px solid var(--border-c); }
+  .daytabs { display:flex; gap:4px; background:var(--paper-dim); border:1px solid var(--border-c); border-radius:4px; padding:4px; overflow-x:auto; }
+  .daytabs button { border:none; background:none; font-family:'Inter',sans-serif; font-size:13px; padding:8px 14px; border-radius:3px; color:var(--text-soft); cursor:pointer; white-space:nowrap; }
+  .daytabs button.active { background:var(--navy); color:#fff; }
+  @media (prefers-color-scheme: dark) { .daytabs button.active { background:var(--accent); color:var(--navy-deep); } }
+  :root[data-theme="dark"] .daytabs button.active { background:var(--accent); color:var(--navy-deep); }
+
+  .filters { display:flex; gap:10px; flex-wrap:wrap; }
+  .filters select { padding:9px 12px; border:1px solid var(--border-c); border-radius:3px; background:var(--bg-raised); color:var(--text); font-family:'Inter',sans-serif; font-size:13.5px; }
+
+  .legend { display:flex; gap:18px; font-size:12.5px; color:var(--text-soft); padding:18px 0 0; flex-wrap:wrap; }
+  .legend span { display:inline-flex; align-items:center; gap:6px; }
+  .legend .dot { width:8px; height:8px; border-radius:50%; }
+
+  section.catalog { padding:8px 0 80px; }
+  .class-list { display:flex; flex-direction:column; gap:0; margin-top:18px; border-top:1px solid var(--border-c); }
+  .class-row { display:grid; grid-template-columns:110px 3px 1.6fr 1fr auto; gap:18px; align-items:center; padding:18px 4px; border-bottom:1px solid var(--border-c); }
+  @media (max-width:760px) { .class-row { grid-template-columns:1fr; gap:6px; padding:16px 4px; } .class-row .room-bar { display:none; } }
+  .time { font-family:'Fraunces',serif; font-size:14.5px; white-space:nowrap; }
+  .room-bar { width:3px; height:30px; border-radius:2px; }
+  .room-bar.bl { background:var(--room-bl); } .room-bar.hub { background:var(--room-hub); } .room-bar.st { background:var(--room-st); }
+  .class-name { font-family:'Fraunces',serif; font-size:16.5px; }
+  .class-name .tag { font-family:'Inter',sans-serif; font-size:11.5px; color:var(--text-soft); margin-left:8px; border:1px solid var(--border-c); border-radius:20px; padding:2px 9px; }
+  .teacher { font-size:13.5px; color:var(--text-soft); }
+  .room-tag { font-size:11px; padding:3px 9px; border-radius:20px; border:1px solid var(--border-c); color:var(--text-soft); white-space:nowrap; text-align:right; }
+  .empty-state { border:1px dashed var(--border-c); border-radius:4px; padding:40px 24px; text-align:center; color:var(--text-soft); margin-top:18px; }
+
+  .cat-note { font-size:13px; color:var(--text-soft); margin-top:26px; }
+
+  footer { padding:60px 0 40px; border-top:1px solid var(--border-c); margin-top:20px; }
+  .foot-row { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px; }
+  .foot-row .cta { margin-left:auto; }
+</style>
+</head>
+<body>
+
+<header class="site">
+  <div class="wrap">
+    <nav>
+      <a href="../../index.html" class="brand" id="homeLink">
+        <svg width="30" height="34" viewBox="0 0 30 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M15 1L28 6.5V16C28 24.5 22.5 30.5 15 33C7.5 30.5 2 24.5 2 16V6.5L15 1Z" stroke="var(--navy)" stroke-width="1.6" fill="none"/>
+          <path d="M15 1L28 6.5V16C28 24.5 22.5 30.5 15 33" stroke="var(--accent)" stroke-width="1.6" fill="none"/>
+          <text x="15" y="21" text-anchor="middle" font-family="Fraunces, serif" font-size="12" font-weight="600" fill="var(--navy)">IF</text>
+        </svg>
+        <span class="brand-word">Intellect First<small>Kostanay, Kazakhstan</small></span>
+      </a>
+      <a href="../../index.html#contact" class="cta" id="bookLink">Book a free placement test</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="wrap">
+      <p class="kicker"><span class="dot"></span>Class Catalog</p>
+      <h1 class="headline">Find your class, at a glance.</h1>
+      <p class="lede">Every recurring class currently running at the academy — browse by day or by programme, see the teacher and room, and book a free placement test to join. Individual and corporate lessons are scheduled directly with the academy and aren't listed here.</p>
+    </div>
+  </section>
+
+  <div class="wrap">
+    <div class="controls">
+      <div class="daytabs" id="dayTabs"></div>
+      <div class="filters">
+        <select id="programFilter">
+          <option value="">All programmes</option>
+          <option value="General English">General English</option>
+          <option value="Exam Preparation">Exam Preparation (KET / PET / IELTS-track)</option>
+          <option value="Young Learners">Young Learners (Starters / Movers / Flyers)</option>
+          <option value="Teens">Teens</option>
+          <option value="Adults">Adults &amp; Couples</option>
+        </select>
+      </div>
+    </div>
+    <div class="legend">
+      <span><span class="dot" style="background:var(--room-bl)"></span>IF Business Lab</span>
+      <span><span class="dot" style="background:var(--room-hub)"></span>IF Hub</span>
+      <span><span class="dot" style="background:var(--room-st)"></span>IF Studio</span>
+    </div>
+  </div>
+
+  <section class="catalog">
+    <div class="wrap">
+      <div id="listArea"></div>
+      <p class="cat-note">Schedule shown reflects the current confirmed timetable and may adjust between terms. Prices and programme details are on the <a href="../../index.html#programs" id="pricingLink" style="text-decoration:underline;">Programs &amp; Pricing</a> page.</p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap foot-row">
+    <span class="serif" style="font-size:15px;">Intellect First — Learn. Think. Lead.</span>
+    <a href="../../index.html#contact" class="cta" id="bookLink2">Book a free placement test</a>
+  </div>
+</footer>
+
+<script>
+  var DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  var state = { day: 'All', program: '' };
+
+  // Public-safe recurring classes only — individual named lessons are excluded for privacy.
+  var CLASSES = [
+    { teacherName: 'Abdoulie Manneh', dayOfWeek: 'Mon', startTime: '15:15', endTime: '16:45', className: 'B1 Teens — Group C', room: 'IF Business Lab', category: 'Teens' },
+    { teacherName: 'Abdoulie Manneh', dayOfWeek: 'Mon', startTime: '16:50', endTime: '18:20', className: 'B1 Teens — Group B', room: 'IF Business Lab', category: 'Teens' },
+    { teacherName: 'Abdoulie Manneh', dayOfWeek: 'Tue', startTime: '16:20', endTime: '17:50', className: 'B2–C1 Teens', room: 'IF Business Lab', category: 'Teens' },
+    { teacherName: 'Abdoulie Manneh', dayOfWeek: 'Tue', startTime: '18:00', endTime: '19:30', className: 'B1 Teens — Group D', room: 'IF Business Lab', category: 'Teens' },
+    { teacherName: 'Abdoulie Manneh', dayOfWeek: 'Wed', startTime: '15:15', endTime: '16:45', className: 'B1 Teens — Group A', room: 'IF Business Lab', category: 'Teens' },
+    { teacherName: 'Abdoulie Manneh', dayOfWeek: 'Wed', startTime: '16:50', endTime: '18:20', className: 'B1 Teens — Group B', room: 'IF Business Lab', category: 'Teens' },
+    { teacherName: 'Abdoulie Manneh', dayOfWeek: 'Thu', startTime: '10:00', endTime: '11:30', className: 'Flyers', tag: 'Cambridge YLE Prep', room: 'IF Business Lab', category: 'Young Learners' },
+    { teacherName: 'Abdoulie Manneh', dayOfWeek: 'Thu', startTime: '15:00', endTime: '16:30', className: 'KET Prep', tag: 'Afternoon', room: 'IF Business Lab', category: 'Exam Preparation' },
+    { teacherName: 'Abdoulie Manneh', dayOfWeek: 'Thu', startTime: '16:45', endTime: '18:15', className: 'PET Prep', tag: 'Cambridge PET', room: 'IF Business Lab', category: 'Exam Preparation' },
+    { teacherName: 'Abdoulie Manneh', dayOfWeek: 'Thu', startTime: '18:00', endTime: '19:30', className: 'B1 Teens — Group D', room: 'IF Business Lab', category: 'Teens' },
+    { teacherName: 'Abdoulie Manneh', dayOfWeek: 'Fri', startTime: '15:15', endTime: '16:45', className: 'B1 Teens — Group A', room: 'IF Business Lab', category: 'Teens' },
+    { teacherName: 'Abdoulie Manneh', dayOfWeek: 'Fri', startTime: '16:50', endTime: '18:20', className: 'B1 Teens — Group C', room: 'IF Business Lab', category: 'Teens' },
+    { teacherName: 'Abdoulie Manneh', dayOfWeek: 'Sat', startTime: '16:45', endTime: '18:15', className: 'Movers', tag: 'Cambridge YLE Prep', room: 'IF Hub', category: 'Young Learners' },
+    { teacherName: 'Abdoulie Manneh', dayOfWeek: 'Sun', startTime: '10:00', endTime: '11:30', className: 'Flyers', tag: 'Cambridge YLE Prep', room: 'IF Business Lab', category: 'Young Learners' },
+    { teacherName: 'Abdoulie Manneh', dayOfWeek: 'Sun', startTime: '13:15', endTime: '14:45', className: 'B2–C1 Teens', room: 'IF Business Lab', category: 'Teens' },
+    { teacherName: 'Abdoulie Manneh', dayOfWeek: 'Sun', startTime: '15:00', endTime: '16:30', className: 'KET Prep', tag: 'Afternoon', room: 'IF Business Lab', category: 'Exam Preparation' },
+    { teacherName: 'Abdoulie Manneh', dayOfWeek: 'Sun', startTime: '16:45', endTime: '18:15', className: 'PET Prep', tag: 'Cambridge PET', room: 'IF Business Lab', category: 'Exam Preparation' },
+
+    { teacherName: 'Aitach Nabiyeva', dayOfWeek: 'Mon', startTime: '15:30', endTime: '17:00', className: 'A2 Teens', room: 'IF Hub', category: 'Teens' },
+    { teacherName: 'Aitach Nabiyeva', dayOfWeek: 'Tue', startTime: '11:30', endTime: '12:30', className: 'Starters', tag: 'Cambridge YLE Prep', room: 'IF Studio', category: 'Young Learners' },
+    { teacherName: 'Aitach Nabiyeva', dayOfWeek: 'Tue', startTime: '16:00', endTime: '17:00', className: "Couple's Group", room: 'IF Hub', category: 'Adults' },
+    { teacherName: 'Aitach Nabiyeva', dayOfWeek: 'Wed', startTime: '15:30', endTime: '17:00', className: 'A2 Teens', room: 'IF Studio', category: 'Teens' },
+    { teacherName: 'Aitach Nabiyeva', dayOfWeek: 'Thu', startTime: '09:30', endTime: '11:00', className: 'Movers', tag: 'Morning Shift', room: 'IF Hub', category: 'Young Learners' },
+    { teacherName: 'Aitach Nabiyeva', dayOfWeek: 'Thu', startTime: '11:30', endTime: '12:30', className: 'Starters', tag: 'Cambridge YLE Prep', room: 'IF Studio', category: 'Young Learners' },
+    { teacherName: 'Aitach Nabiyeva', dayOfWeek: 'Thu', startTime: '16:00', endTime: '17:00', className: "Couple's Group", room: 'IF Hub', category: 'Adults' },
+
+    { teacherName: 'Dana Armanova', dayOfWeek: 'Tue', startTime: '16:00', endTime: '17:00', className: 'Starters', tag: 'Cambridge YLE Prep', room: 'IF Studio', category: 'Young Learners' },
+    { teacherName: 'Dana Armanova', dayOfWeek: 'Thu', startTime: '16:00', endTime: '17:00', className: 'Starters', tag: 'Cambridge YLE Prep', room: 'IF Studio', category: 'Young Learners' },
+    { teacherName: 'Dana Armanova', dayOfWeek: 'Sat', startTime: '16:00', endTime: '17:00', className: 'Starters', tag: 'Cambridge YLE Prep', room: 'IF Studio', category: 'Young Learners' },
+    { teacherName: 'Dana Armanova', dayOfWeek: 'Sat', startTime: '17:15', endTime: '18:45', className: 'Movers', tag: 'Dual-format', room: 'IF Hub', category: 'Young Learners' },
+
+    { teacherName: 'Joseph', dayOfWeek: 'Sun', startTime: '17:15', endTime: '18:45', className: 'Movers', tag: 'Dual-format', room: 'IF Hub', category: 'Young Learners' }
+  ];
+
+  function roomClass(room) {
+    if (room === 'IF Business Lab') return 'bl';
+    if (room === 'IF Hub') return 'hub';
+    if (room === 'IF Studio') return 'st';
+    return '';
+  }
+  function timeToMinutes(t) {
+    var p = t.split(':');
+    return (parseInt(p[0],10)||0)*60 + (parseInt(p[1],10)||0);
+  }
+
+  function buildDayTabs() {
+    var el = document.getElementById('dayTabs');
+    var days = ['All'].concat(DAYS);
+    el.innerHTML = '';
+    days.forEach(function (d) {
+      var b = document.createElement('button');
+      b.textContent = d;
+      if (d === state.day) b.classList.add('active');
+      b.addEventListener('click', function () {
+        state.day = d;
+        buildDayTabs();
+        renderList();
+      });
+      el.appendChild(b);
+    });
+  }
+
+  function renderList() {
+    var area = document.getElementById('listArea');
+    var list = CLASSES.slice();
+    if (state.day !== 'All') list = list.filter(function (c) { return c.dayOfWeek === state.day; });
+    if (state.program) {
+      list = list.filter(function (c) {
+        if (state.program === 'General English') return c.category === 'Teens' || c.category === 'Adults';
+        return c.category === state.program;
+      });
+    }
+    list.sort(function (a, b) {
+      if (a.dayOfWeek !== b.dayOfWeek) return DAYS.indexOf(a.dayOfWeek) - DAYS.indexOf(b.dayOfWeek);
+      return timeToMinutes(a.startTime) - timeToMinutes(b.startTime);
+    });
+
+    if (list.length === 0) {
+      area.innerHTML = '<div class="empty-state"><p>No classes match this filter.</p></div>';
+      return;
+    }
+
+    var html = '<div class="class-list">';
+    list.forEach(function (c) {
+      html += '<div class="class-row">' +
+        '<span class="time">' + c.dayOfWeek + ' ' + c.startTime + '–' + c.endTime + '</span>' +
+        '<span class="room-bar ' + roomClass(c.room) + '"></span>' +
+        '<span class="class-name serif">' + c.className + (c.tag ? '<span class="tag">' + c.tag + '</span>' : '') + '</span>' +
+        '<span class="teacher">' + c.teacherName + '</span>' +
+        '<span class="room-tag">' + c.room + '</span>' +
+        '</div>';
+    });
+    html += '</div>';
+    area.innerHTML = html;
+  }
+
+  document.getElementById('programFilter').addEventListener('change', function (e) {
+    state.program = e.target.value;
+    renderList();
+  });
+
+  buildDayTabs();
+  renderList();
+</script>
+
+<script src="../../if-bar.js" data-root="../../index.html" data-slug="class-catalog"></script></body>
+</html>

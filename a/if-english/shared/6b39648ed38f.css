@@ -1,0 +1,55 @@
+
+/* grammar additions */
+.gap{display:inline-block;min-width:3.2em;border-bottom:3px solid var(--gold);padding:0 .15em;font-weight:800;color:var(--gold)}
+.gap.filled{color:var(--good);border-color:var(--good)}
+.gap.shown{color:var(--fg);border-color:var(--gold);background:color-mix(in srgb,var(--gold) 18%,transparent);border-radius:6px 6px 0 0}
+.gap.struck{color:var(--bad);border-color:var(--bad);text-decoration:line-through}
+.gsent{line-height:1.5;font-weight:600}
+.fix{margin-top:12px;font-size:.8em;color:var(--muted);font-weight:600}
+.why{max-width:760px;margin:14px auto 0;background:var(--bg);border:1px solid var(--line);border-radius:14px;padding:14px 18px;font-size:17px;line-height:1.45}
+.why b{color:var(--block)}
+.ltr{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:50%;background:var(--navy);color:var(--onaccent);font-size:15px;font-weight:800;margin-right:8px;flex:none}
+.opts button{display:flex;align-items:center;justify-content:center;text-align:center}
+.opts button:disabled{cursor:default}
+.opts button.wrong .ltr,.opts button.right .ltr{background:var(--onaccent);color:var(--navy)}
+.rulef{font-family:var(--body);font-size:clamp(22px,3.4vw,32px);line-height:1.3}
+.ex{font-family:var(--display);font-size:clamp(22px,3.2vw,30px);margin-bottom:6px}
+.rulecell{font-family:var(--body);font-size:15px;font-weight:700}
+.section-tag{font-weight:800;color:var(--muted);font-size:12px;letter-spacing:.1em;text-transform:uppercase;margin:4px 0 6px}
+#glessons button.on{background:var(--gold);color:var(--navy);border-color:var(--gold)}
+@media (max-width:640px){#glessons{flex-wrap:nowrap;overflow-x:auto;padding-bottom:6px}#glessons button{flex:none}.why{font-size:15px}}
+/* === IF mobile layer === */
+@media (max-width:640px){
+  body{padding-bottom:calc(84px + env(safe-area-inset-bottom,0px))}
+  header{padding-block:10px;gap:10px;flex-wrap:nowrap;align-items:flex-start}
+  header img{height:42px}
+  header p{font-size:13px}
+  #lessons,#glessons,#modes{flex-wrap:nowrap;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x proximity;scrollbar-width:none;-webkit-overflow-scrolling:touch;margin-inline:-16px;padding:2px 16px 6px;scroll-padding-inline:16px}
+  #lessons::-webkit-scrollbar,#glessons::-webkit-scrollbar,#modes::-webkit-scrollbar{display:none}
+  #lessons>*,#glessons>*,#modes>*{flex:none;scroll-snap-align:start}
+  .bar .lbl,.lbl2{white-space:nowrap}
+  .wrap{padding-block:12px}
+  .stage{padding:14px;min-height:0}
+  .timer{font-size:48px}
+  .team{padding:10px 12px}
+  .team .pts{font-size:38px}
+  .row{gap:10px}
+  .big{font-size:17px;padding:12px 20px}
+  .word{margin:16px 0 8px}
+  .flip{height:260px}
+  .grid{gap:3px}
+  .ifs-sky{height:min(300px,40dvh)}
+  .ifs-space{height:min(380px,52dvh)}
+}
+@media (max-width:640px),(pointer:coarse){
+  button:not(.cell){min-height:44px}
+  .sm{min-width:44px;min-height:44px;padding:8px 12px;font-size:15px}
+  .team input{min-height:44px;font-size:17px;padding:0 4px;border-radius:8px;background:color-mix(in srgb,var(--line) 35%,transparent)}
+  .ifs-link,.ifs-tab{min-height:44px}
+  .ifs-slots button,.ifs-tiles button{min-width:44px!important;min-height:48px!important}
+  .ifs-w .ifs-mem button{font-size:12.5px!important}
+  .ifs-lane .nm,.ifs-mon small{font-size:12px!important}
+  .ifr-f label{font-size:12px!important}
+  .ifs-w button[aria-label*="etter"],.ifs-w .ifs-keysb button{min-width:44px}
+  input,select,textarea{font-size:max(16px,1em)}
+}

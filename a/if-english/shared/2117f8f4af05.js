@@ -1,0 +1,1 @@
+window.IFP_LEVEL="B2"

@@ -1,0 +1,14 @@
+
+/* === IF pronunciation layer === (flashcards only: IPA + natural voice) */
+.side.front .ifpr{flex-direction:row;font-family:"Charis SIL","Doulos SIL","Lucida Sans Unicode","Segoe UI",Arial,sans-serif;font-weight:500}
+.side.front{flex-direction:column}
+.ifpr{margin-top:10px;font:500 clamp(16px,2.6vw,22px)/1.35 "Charis SIL","Doulos SIL","Gentium Plus","Lucida Sans Unicode","Segoe UI",Arial,sans-serif;letter-spacing:.02em;opacity:.92;display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap}
+.ifpr .ip{white-space:normal}
+.ifpr button{all:unset;cursor:pointer;display:inline-grid;place-items:center;width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.16);border:1.5px solid currentColor;font-size:18px;line-height:1}
+.ifpr button:focus-visible{outline:3px solid #C9A227;outline-offset:2px}
+.ifpr button.on{background:#C9A227;color:#14213D;border-color:#C9A227}
+.ifpr-bar{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.ifpr-bar .ifs-link{white-space:nowrap}
+.ifpr-bar .ifpr-acc{font-weight:800}
+.ifpr-note{font-size:12px;opacity:.7;text-align:center;margin-top:4px}
+/* === end IF pronunciation layer === */

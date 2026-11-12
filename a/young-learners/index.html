@@ -1,0 +1,426 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Young Learners Centre · IF Academy</title>
+<meta name="description" content="IF Academy Young Learners Centre: games, tests and materials for Cambridge Pre A1 Starters, A1 Movers, A2 Flyers, A2 Key (KET) and B1 Preliminary (PET).">
+<style>
+:root{
+  --navy:#0b1f3a; --navy-2:#13294b; --gold:#b08a3e; --gold-soft:#e9dcc0;
+  --ice:#e8f0f8; --paper:#f7f4ee; --card:#fffdf9; --ink:#1b2333; --muted:#5d6676; --line:#e4dccd;
+  --serif:Cambria,"Cormorant Garamond",Georgia,"Times New Roman",serif;
+  --sans:Calibri,"Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--sans);-webkit-font-smoothing:antialiased}
+a{color:inherit}
+button{font:inherit;cursor:pointer}
+
+/* header */
+.top{position:sticky;top:0;z-index:5;background:rgba(255,253,249,.96);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.top::after{content:"";display:block;height:3px;background:linear-gradient(90deg,var(--gold),var(--gold-soft) 70%,transparent)}
+.bar{max-width:1120px;margin:0 auto;padding:12px 16px;display:flex;align-items:center;gap:14px}
+.brand{display:flex;align-items:center;gap:12px;text-decoration:none;min-width:0}
+.brand img{width:44px;height:52px;object-fit:contain}
+.brand b{display:block;font-family:var(--serif);font-size:22px;color:var(--navy);line-height:1.1}
+.brand small{display:block;font-size:12.5px;letter-spacing:.06em;color:var(--muted)}
+.spacer{flex:1}
+.home{font-size:14px;font-weight:600;color:var(--navy);text-decoration:none;border:1px solid var(--line);padding:9px 14px;border-radius:999px;background:#fff;white-space:nowrap}
+.home:hover{border-color:var(--gold)}
+.lang{display:flex;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.lang button{border:0;background:#fff;color:var(--muted);padding:8px 11px;font-size:13px;font-weight:600}
+.lang button[aria-pressed=true]{background:var(--navy);color:#fff}
+
+/* hero */
+.wrap{max-width:1120px;margin:0 auto;padding:0 16px}
+.hero{padding:44px 0 26px}
+.eyebrow{font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);font-weight:700}
+h1{font-family:var(--serif);font-weight:700;color:var(--navy);font-size:clamp(34px,6vw,56px);line-height:1.04;margin:10px 0 12px}
+.lead{max-width:680px;color:var(--muted);font-size:17px;line-height:1.55}
+
+/* level ladder */
+.ladder{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin:30px 0 8px}
+.step{position:relative;border:1px solid var(--line);background:var(--card);border-radius:16px;padding:14px 14px 12px;text-align:left;transition:border-color .2s,background .2s}
+.step:hover{border-color:var(--gold)}
+.step .lv{font-size:12px;letter-spacing:.08em;color:var(--muted)}
+.step .nm{font-family:var(--serif);font-size:21px;color:var(--navy);font-weight:700;margin-top:2px}
+.step .ag{font-size:13px;color:var(--muted);margin-top:2px}
+.step .n{position:absolute;top:12px;right:12px;font-size:12px;color:var(--gold);font-weight:700}
+.step[aria-selected=true]{background:var(--navy);border-color:var(--navy)}
+.step[aria-selected=true] .nm{color:#fff}
+.step[aria-selected=true] .lv,.step[aria-selected=true] .ag{color:#c9d5e6}
+.step[aria-selected=true] .n{color:var(--gold-soft)}
+.rail{height:4px;border-radius:4px;background:linear-gradient(90deg,var(--ice),var(--gold));margin:6px 2px 0;opacity:.8}
+
+/* exam section */
+.exam{padding:30px 0 70px}
+.exam-head{display:flex;flex-wrap:wrap;align-items:flex-end;gap:10px 18px;border-bottom:1px solid var(--line);padding-bottom:16px}
+.exam-head h2{font-family:var(--serif);font-size:clamp(28px,4.5vw,38px);color:var(--navy)}
+.exam-head p{color:var(--muted);font-size:15.5px;flex-basis:100%;max-width:700px;line-height:1.5}
+.filters{display:flex;gap:6px;flex-wrap:wrap;margin:18px 0 4px}
+.filters button{border:1px solid var(--line);background:#fff;color:var(--navy-2);border-radius:999px;padding:8px 15px;font-size:14px;font-weight:600}
+.filters button[aria-pressed=true]{background:var(--gold);border-color:var(--gold);color:var(--navy)}
+.group{margin-top:26px}
+.group h3{font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);font-weight:700;margin-bottom:12px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:22px 22px 18px;display:flex;flex-direction:column;gap:8px;text-decoration:none;transition:border-color .2s,transform .2s,box-shadow .2s}
+.card:hover,.card:focus-visible{border-color:var(--gold);transform:translateY(-2px);box-shadow:0 10px 30px rgba(11,31,58,.08);outline:none}
+.card .tag{font-size:12.5px;letter-spacing:.08em;color:var(--muted)}
+.card h4{font-family:var(--serif);font-size:24px;color:var(--navy);font-weight:700;line-height:1.15}
+.card p{color:var(--muted);line-height:1.5;font-size:15px}
+.card .go{margin-top:auto;padding-top:8px;font-weight:700;color:var(--navy)}
+.card .lock{font-size:12px;color:var(--gold);font-weight:700}
+.empty{border:1px dashed var(--line);border-radius:20px;padding:22px;color:var(--muted);font-size:15px}
+
+/* player */
+.player{position:fixed;inset:0;z-index:10;background:var(--paper);display:none;flex-direction:column}
+.player.on{display:flex}
+.pbar{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--navy);color:#fff;padding-top:max(10px,env(safe-area-inset-top))}
+.back{border:1px solid rgba(255,255,255,.3);background:transparent;color:#fff;border-radius:999px;padding:8px 14px;font-weight:600;font-size:14px;white-space:nowrap}
+.back:hover{border-color:var(--gold)}
+.tabs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;flex:1}
+.tabs::-webkit-scrollbar{display:none}
+.tabs button{border:0;background:rgba(255,255,255,.08);color:#dbe4ef;border-radius:999px;padding:8px 14px;font-size:14px;white-space:nowrap}
+.tabs button[aria-selected=true]{background:var(--gold);color:var(--navy);font-weight:700}
+.newtab{color:#dbe4ef;font-size:13px;text-decoration:none;white-space:nowrap;padding:8px 6px}
+.newtab:hover{color:#fff}
+.frame{flex:1;position:relative;background:#fff}
+.frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.loading{position:absolute;inset:0;display:grid;place-items:center;color:var(--muted);font-family:var(--serif);font-size:20px}
+
+@media (max-width:760px){
+  .ladder{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:minmax(150px,1fr);overflow-x:auto;scrollbar-width:none;padding-bottom:4px}
+  .ladder::-webkit-scrollbar{display:none}
+}
+@media (max-width:600px){
+  .bar{gap:8px}
+  .brand{gap:8px}
+  .brand b{font-size:18px}
+  .lang{flex-shrink:0}
+  .brand small{display:none}
+  .home span{display:none}
+  .hero{padding-top:30px}
+  .newtab{display:none}
+}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="bar">
+    <a class="brand" href="/">
+      <!-- Netlify: point this at the site's existing IF shield logo -->
+      <img src="/brand/if-shield-256.webp" alt="IF Academy" onerror="this.style.display='none'">
+      <span><b>IF Academy</b><small>Intellect First · Kostanay</small></span>
+    </a>
+    <span class="spacer"></span>
+    <div class="lang" role="group" aria-label="Language">
+      <button data-l="en" aria-pressed="true">EN</button>
+      <button data-l="ru" aria-pressed="false">RU</button>
+      <button data-l="kk" aria-pressed="false">KK</button>
+    </div>
+    <a class="home" href="/#apps">← <span data-t="allApps">All apps</span></a>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="hero">
+    <div class="eyebrow" data-t="eyebrow">Ages 6–15 · Cambridge English</div>
+    <h1 data-t="title">Young Learners Centre</h1>
+    <p class="lead" data-t="lead">Games, practice tests and class materials for every Cambridge exam from Starters to PET. Choose a level to begin.</p>
+    <div class="ladder" role="tablist" id="ladder"></div>
+    <div class="rail"></div>
+  </section>
+  <section class="exam" id="exam"></section>
+</main>
+
+<section class="player" id="player" aria-hidden="true">
+  <div class="pbar">
+    <button class="back" id="back">← <span id="backLabel">Young Learners</span></button>
+    <div class="tabs" role="tablist" id="tabs"></div>
+    <a class="newtab" id="newtab" target="_blank" rel="noopener" data-t="newTab">Open in new tab ↗</a>
+  </div>
+  <div class="frame">
+    <div class="loading" data-t="loading">Loading…</div>
+    <iframe id="frame" title="Activity" allow="autoplay; fullscreen; clipboard-write"></iframe>
+  </div>
+</section>
+
+<script>
+/* ==================== CONTENT ====================
+   Netlify: this is the only part to edit.
+   Add one entry to ITEMS for every Starters, Movers, Flyers, KET and PET app on the site.
+   - exam: 'starters' | 'movers' | 'flyers' | 'ket' | 'pet'
+   - type: 'games' | 'tests' | 'materials'
+   - path: the app's existing URL on intellectfirst.com (an index.html inside /a/...)
+   - name: the title from its old card; desc: its old subtitle (en required, ru/kk optional)
+   - locked: true if the old card said "Access code required" (the app keeps its own lock)
+   ================================================= */
+var ITEMS = [
+  {
+    "exam": "starters",
+    "type": "games",
+    "id": "kids-english",
+    "path": "/a/kids-english/index.html",
+    "name": "IF Kids English",
+    "desc": {
+      "en": "Starters, Movers and Flyers words and grammar with pictures, Russian translations, stars and stickers. Includes Kids Words, Picture Dictionary, Kids Grammar and Where Is It?"
+    }
+  },
+  {
+    "exam": "starters",
+    "type": "tests",
+    "id": "yl-tests",
+    "path": "/a/yl-tests/index.html",
+    "name": "Young Learners Test Centre",
+    "desc": {
+      "en": "Starters, Movers and Flyers checks"
+    },
+    "locked": true
+  },
+  {
+    "exam": "flyers",
+    "type": "games",
+    "id": "flyers-arcade",
+    "path": "/a/flyers-arcade/index.html",
+    "name": "Flyers Arcade",
+    "desc": {
+      "en": "Fast word rounds for Cambridge Flyers"
+    }
+  },
+  {
+    "exam": "ket",
+    "type": "games",
+    "id": "ket-quest",
+    "path": "/a/ket-quest/index.html",
+    "name": "KET Quest Arena",
+    "desc": {
+      "en": "48 lesson games for A2 Key (KET)"
+    }
+  },
+  {
+    "exam": "ket",
+    "type": "games",
+    "id": "ket-booster",
+    "path": "/a/ket-booster/index.html",
+    "name": "KET Booster Arcade",
+    "desc": {
+      "en": "Games for all 16 Exam Booster units"
+    }
+  },
+  {
+    "exam": "pet",
+    "type": "games",
+    "id": "pet-quest",
+    "path": "/a/pet-quest/index.html",
+    "name": "PET Quest",
+    "desc": {
+      "en": "Team game for B1 Preliminary",
+      "ru": "Командная игра для B1 Preliminary",
+      "kk": "B1 Preliminary үшін командалық ойын"
+    }
+  },
+  {
+    "exam": "pet",
+    "type": "games",
+    "id": "pet-arcade",
+    "path": "/a/pet-arcade/index.html",
+    "name": "PET Arcade",
+    "desc": {
+      "en": "Fast rounds for B1 Preliminary",
+      "ru": "Быстрые раунды для B1 Preliminary",
+      "kk": "B1 Preliminary үшін жылдам раундтар"
+    }
+  },
+  {
+    "exam": "pet",
+    "type": "games",
+    "id": "pet-word-party",
+    "path": "/a/pet-word-party/index.html",
+    "name": "PET Word Party",
+    "desc": {
+      "en": "Alias, charades, flashcards and matching",
+      "ru": "Алиас, шарады, карточки и сопоставление",
+      "kk": "Алиас, шарадалар, карточкалар және сәйкестендіру"
+    }
+  },
+  {
+    "exam": "pet",
+    "type": "tests",
+    "id": "pet-tests",
+    "path": "/a/pet-tests/index.html",
+    "name": "PET Test Centre",
+    "desc": {
+      "en": "B1 Preliminary practice tests"
+    },
+    "locked": true
+  },
+  {
+    "exam": "movers",
+    "type": "materials",
+    "id": "if-english-movers",
+    "path": "/a/if-english/courses/Movers/index.html",
+    "name": "IF English · Movers",
+    "desc": {
+      "en": "Vocabulary course with team games and solo practice"
+    }
+  },
+  {
+    "exam": "flyers",
+    "type": "materials",
+    "id": "if-english-flyers",
+    "path": "/a/if-english/courses/Flyers/index.html",
+    "name": "IF English · Flyers",
+    "desc": {
+      "en": "Vocabulary course with team games and solo practice"
+    }
+  },
+  {
+    "exam": "ket",
+    "type": "materials",
+    "id": "if-english-ket",
+    "path": "/a/if-english/courses/KET/index.html",
+    "name": "IF English · KET",
+    "desc": {
+      "en": "Vocabulary course with team games and solo practice"
+    }
+  },
+  {
+    "exam": "pet",
+    "type": "materials",
+    "id": "if-english-pet",
+    "path": "/a/if-english/courses/PET/index.html",
+    "name": "IF English · PET",
+    "desc": {
+      "en": "Vocabulary course with team games and solo practice"
+    }
+  }
+];
+
+var EXAMS = [
+  { id:'starters', name:'Starters', level:'Pre A1', age:{en:'Ages 6–8',ru:'6–8 лет',kk:'6–8 жас'},
+    about:{en:'Pre A1 Starters is the first step: simple words, colours, numbers and short answers about everyday things.',
+           ru:'Pre A1 Starters — первый шаг: простые слова, цвета, числа и короткие ответы о повседневных вещах.',
+           kk:'Pre A1 Starters — алғашқы қадам: қарапайым сөздер, түстер, сандар және күнделікті заттар туралы қысқа жауаптар.'} },
+  { id:'movers', name:'Movers', level:'A1', age:{en:'Ages 8–10',ru:'8–10 лет',kk:'8–10 жас'},
+    about:{en:'A1 Movers builds on Starters with longer sentences, past tense stories and everyday conversations.',
+           ru:'A1 Movers развивает Starters: более длинные предложения, рассказы в прошедшем времени и бытовые диалоги.',
+           kk:'A1 Movers Starters-ті жалғастырады: ұзынырақ сөйлемдер, өткен шақтағы әңгімелер және күнделікті диалогтар.'} },
+  { id:'flyers', name:'Flyers', level:'A2', age:{en:'Ages 9–12',ru:'9–12 лет',kk:'9–12 жас'},
+    about:{en:'A2 Flyers is the top Young Learners level: reading short texts, writing stories and talking about experiences.',
+           ru:'A2 Flyers — высший уровень Young Learners: чтение коротких текстов, написание историй и рассказ об опыте.',
+           kk:'A2 Flyers — Young Learners-тің ең жоғарғы деңгейі: қысқа мәтіндер оқу, әңгіме жазу және тәжірибе туралы айту.'} },
+  { id:'ket', name:'KET', level:'A2 Key', age:{en:'Ages 11–14',ru:'11–14 лет',kk:'11–14 жас'},
+    about:{en:'A2 Key (KET) is the first full Cambridge exam: reading, writing, listening and speaking at A2.',
+           ru:'A2 Key (KET) — первый полноценный экзамен Cambridge: чтение, письмо, аудирование и говорение на уровне A2.',
+           kk:'A2 Key (KET) — Cambridge-тің алғашқы толық емтиханы: A2 деңгейінде оқу, жазу, тыңдау және сөйлеу.'} },
+  { id:'pet', name:'PET', level:'B1 Preliminary', age:{en:'Ages 12–15',ru:'12–15 лет',kk:'12–15 жас'},
+    about:{en:'B1 Preliminary (PET) shows students can use English for school, travel and everyday life.',
+           ru:'B1 Preliminary (PET) показывает, что ученик может использовать английский в учёбе, путешествиях и жизни.',
+           kk:'B1 Preliminary (PET) оқушының ағылшын тілін оқуда, саяхатта және күнделікті өмірде қолдана алатынын көрсетеді.'} }
+];
+
+var TYPES = ['games','tests','materials'];
+
+var T = {
+  en:{allApps:'All apps',eyebrow:'Ages 6–15 · Cambridge English',title:'Young Learners Centre',
+      lead:'Games, practice tests and class materials for every Cambridge exam from Starters to PET. Choose a level to begin.',
+      newTab:'Open in new tab ↗',loading:'Loading…',open:'Open →',all:'All',games:'Games',tests:'Tests',materials:'Materials',
+      items:'items',soon:'Coming soon.',code:'Access code required',back:'Young Learners'},
+  ru:{allApps:'Все приложения',eyebrow:'6–15 лет · Cambridge English',title:'Центр для детей и подростков',
+      lead:'Игры, пробные тесты и материалы для всех экзаменов Cambridge от Starters до PET. Выберите уровень.',
+      newTab:'Открыть в новой вкладке ↗',loading:'Загрузка…',open:'Открыть →',all:'Все',games:'Игры',tests:'Тесты',materials:'Материалы',
+      items:'шт.',soon:'Скоро.',code:'Нужен код доступа',back:'Детский центр'},
+  kk:{allApps:'Барлық қосымшалар',eyebrow:'6–15 жас · Cambridge English',title:'Жас оқушылар орталығы',
+      lead:'Starters-тен PET-ке дейінгі барлық Cambridge емтихандарына арналған ойындар, сынақ тесттер және сабақ материалдары. Деңгейді таңдаңыз.',
+      newTab:'Жаңа қойындыда ашу ↗',loading:'Жүктелуде…',open:'Ашу →',all:'Барлығы',games:'Ойындар',tests:'Тесттер',materials:'Материалдар',
+      items:'дана',soon:'Жақында.',code:'Кіру коды қажет',back:'Жас оқушылар'}
+};
+
+/* ==================== APP ==================== */
+var lang='en', exam='starters', filter='all';
+try { lang = localStorage.getItem('if_lang') || (navigator.language||'en').slice(0,2); } catch(e){}
+if(!T[lang]) lang='en';
+ITEMS.forEach(function(it){ if(!it.id) it.id = it.path.replace(/^\/a\//,'').replace(/\/(index\.html)?$/,'').replace(/[^a-z0-9]+/gi,'-'); });
+
+var $ = function(id){ return document.getElementById(id); };
+function esc(s){ return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
+function txt(o){ return typeof o==='string' ? o : (o && (o[lang]||o.en)) || ''; }
+function examById(id){ return EXAMS.filter(function(e){return e.id===id;})[0]; }
+function itemById(id){ return ITEMS.filter(function(i){return i.id===id;})[0]; }
+
+function renderStatic(){
+  document.documentElement.lang=lang;
+  document.querySelectorAll('[data-t]').forEach(function(el){ var k=el.getAttribute('data-t'); if(T[lang][k]) el.textContent=T[lang][k]; });
+  document.querySelectorAll('.lang button').forEach(function(b){ b.setAttribute('aria-pressed', b.dataset.l===lang); });
+  $('backLabel').textContent = T[lang].back;
+}
+
+function renderLadder(){
+  $('ladder').innerHTML = EXAMS.map(function(e){
+    var n = ITEMS.filter(function(i){return i.exam===e.id;}).length;
+    return '<button class="step" role="tab" data-e="'+e.id+'" aria-selected="'+(e.id===exam)+'">'+
+      '<span class="n">'+(n||'')+'</span><div class="lv">'+e.level+'</div><div class="nm">'+e.name+'</div><div class="ag">'+txt(e.age)+'</div></button>';
+  }).join('');
+  $('ladder').querySelectorAll('.step').forEach(function(b){ b.onclick=function(){ filter='all'; location.hash=b.dataset.e; }; });
+}
+
+function cardHtml(it){
+  return '<a class="card" href="#'+exam+'/'+it.id+'">'+
+    '<span class="tag">'+examById(it.exam).level+' · '+T[lang][it.type]+'</span>'+
+    '<h4>'+esc(it.name)+'</h4>'+(txt(it.desc)?'<p>'+esc(txt(it.desc))+'</p>':'')+
+    (it.locked?'<span class="lock">🔒 '+T[lang].code+'</span>':'')+
+    '<span class="go">'+T[lang].open+'</span></a>';
+}
+
+function renderExam(){
+  var e=examById(exam), list=ITEMS.filter(function(i){return i.exam===exam;});
+  var h='<div class="exam-head"><h2>'+e.name+' <span style="color:var(--gold);font-size:.6em">'+e.level+'</span></h2><p>'+txt(e.about)+'</p></div>';
+  h+='<div class="filters" role="group">'+['all'].concat(TYPES).map(function(t){
+      var n = t==='all'?list.length:list.filter(function(i){return i.type===t;}).length;
+      return '<button data-f="'+t+'" aria-pressed="'+(filter===t)+'">'+T[lang][t]+' ('+n+')</button>'; }).join('')+'</div>';
+  TYPES.forEach(function(t){
+    if(filter!=='all' && filter!==t) return;
+    var g=list.filter(function(i){return i.type===t;});
+    h+='<div class="group"><h3>'+T[lang][t]+'</h3>'+(g.length?'<div class="grid">'+g.map(cardHtml).join('')+'</div>':'<div class="empty">'+T[lang].soon+'</div>')+'</div>';
+  });
+  $('exam').innerHTML=h;
+  $('exam').querySelectorAll('.filters button').forEach(function(b){ b.onclick=function(){ filter=b.dataset.f; renderExam(); }; });
+}
+
+function openPlayer(it){
+  var player=$('player'), frame=$('frame');
+  player.classList.add('on'); player.setAttribute('aria-hidden','false'); document.body.style.overflow='hidden';
+  if(frame.getAttribute('src')!==it.path) frame.setAttribute('src', it.path);
+  $('newtab').href=it.path; document.title=it.name+' · IF Academy';
+  var sib=ITEMS.filter(function(i){return i.exam===it.exam;});
+  $('tabs').innerHTML=sib.map(function(s){ return '<button role="tab" data-id="'+s.id+'" aria-selected="'+(s.id===it.id)+'">'+esc(s.name)+'</button>'; }).join('');
+  $('tabs').querySelectorAll('button').forEach(function(b){ b.onclick=function(){ location.hash=it.exam+'/'+b.dataset.id; }; });
+}
+function closePlayer(){
+  var player=$('player');
+  player.classList.remove('on'); player.setAttribute('aria-hidden','true'); document.body.style.overflow='';
+  $('frame').removeAttribute('src'); document.title='Young Learners Centre · IF Academy';
+}
+
+function route(){
+  var parts=location.hash.slice(1).split('/'), e=examById(parts[0]);
+  if(e) exam=e.id;
+  else if(!parts[0]){ var first=EXAMS.filter(function(x){return ITEMS.some(function(i){return i.exam===x.id;});})[0]; if(first && !ITEMS.some(function(i){return i.exam===exam;})) exam=first.id; }
+  renderStatic(); renderLadder(); renderExam();
+  var it = parts[1] && itemById(parts[1]);
+  if(it){ exam=it.exam; openPlayer(it); } else closePlayer();
+}
+
+document.querySelectorAll('.lang button').forEach(function(b){
+  b.onclick=function(){ lang=b.dataset.l; try{localStorage.setItem('if_lang',lang);}catch(e){} route(); };
+});
+$('back').onclick=function(){ location.hash=exam; };
+window.addEventListener('hashchange', route);
+document.addEventListener('keydown', function(e){ if(e.key==='Escape' && $('player').classList.contains('on')) $('back').click(); });
+route();
+</script>
+</body>
+</html>

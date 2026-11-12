@@ -1,0 +1,855 @@
+<!doctype html><html><head><script src="../../if-runtime.js"></script><link rel="manifest" href="../../manifest.webmanifest"><link rel="apple-touch-icon" href="../../brand/apple-touch-icon.png"><meta name="theme-color" content="#0B2545"><style>select{max-width:100%}</style><link rel="icon" href="../../brand/favicon-64.png"><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>KET Quest Arena — 48 lesson games</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Nunito:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --night:#13213D; --night2:#1C2E52; --night3:#26396A; --leaf:#2F8F5B; --leaf2:#E3F3EA;
+  --gold:#F2B632; --coral:#E8604C; --sky:#3C8DD9; --plum:#7A5AC8;
+  --paper:#FFFFFF; --ink:#1A2440; --muted:#5B6478; --line:#D7DEEA; --mist:#C9D3E6;
+  --t0:#F2B632; --t1:#5FB8F0;
+  --display:"Baloo 2","Trebuchet MS",system-ui,sans-serif;
+  --body:"Nunito","Segoe UI",system-ui,sans-serif;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --night:#101C35; --night2:#1A2B4D; } }
+:root[data-theme="dark"]{ --night:#101C35; --night2:#1A2B4D; }
+html{scroll-padding-top:env(safe-area-inset-top,0px);height:100%}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;height:100%;background:var(--night);color:var(--paper);font-family:var(--body);font-size:clamp(15px,1.2vw,20px);overflow:hidden}
+button{font:inherit;cursor:pointer;border:0;color:inherit}
+button:disabled{cursor:default}
+button:focus-visible,input:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
+.app{height:100%;display:flex;flex-direction:column}
+/* top bar */
+.bar{display:flex;align-items:center;gap:10px;padding:8px clamp(12px,2.5vw,36px);background:var(--night2);flex-wrap:wrap}
+.brand{font-family:var(--display);font-weight:800;font-size:1.25em;color:var(--gold);background:none;padding:0;margin-right:auto;line-height:1}
+.brand small{color:var(--paper);font-weight:700}
+.tpill{display:flex;align-items:center;gap:8px;border-radius:999px;padding:4px 6px 4px 12px;background:var(--night);border:2px solid transparent;font-weight:800}
+.tpill.t0{border-color:var(--t0)} .tpill.t1{border-color:var(--t1)}
+.tpill .sc{font-family:var(--display);font-size:1.35em;min-width:2ch;text-align:center;background:var(--paper);color:var(--ink);border-radius:999px;padding:0 10px;line-height:1.3}
+.tool{background:transparent;border:2px solid rgba(255,255,255,.3);border-radius:999px;padding:5px 12px;font-weight:800}
+.tool.on{background:var(--coral);border-color:var(--coral)}
+/* screens */
+.wrap{flex:1;position:relative;overflow:hidden}
+.screen{position:absolute;inset:0;overflow-y:auto;padding:clamp(14px,2.2vw,36px) clamp(14px,3.2vw,60px) 28px;display:none;flex-direction:column;gap:clamp(10px,1.3vw,18px)}
+.screen.on{display:flex;animation:pop .3s ease-out}
+@keyframes pop{from{opacity:0;transform:scale(.985)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.screen.on{animation:none}}
+h1{font-family:var(--display);font-weight:800;line-height:1.02;margin:0;font-size:clamp(28px,3.2vw,52px);max-width:30ch}
+h2{font-family:var(--display);margin:0;font-size:1.3em;line-height:1.1}
+p{margin:0}
+.tag{display:inline-block;background:var(--gold);color:var(--ink);font-weight:800;border-radius:999px;padding:3px 13px;font-size:.85em}
+.tag.o{background:transparent;color:var(--gold);border:2px solid var(--gold)}
+.card{background:var(--paper);color:var(--ink);border-radius:18px;padding:clamp(12px,1.3vw,20px)}
+.card.dark{background:var(--night2);color:var(--paper)}
+.btn{background:var(--gold);color:var(--ink);font-weight:800;border-radius:999px;padding:10px 22px}
+.btn.ghost{background:transparent;color:var(--paper);border:2px solid rgba(255,255,255,.35)}
+.btn.small{padding:6px 14px;font-size:.9em}
+.btn:disabled{opacity:.45}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.note{color:var(--mist);font-size:.92em}
+.grid{display:grid;gap:clamp(10px,1.2vw,18px)}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}.g3{grid-template-columns:repeat(3,minmax(0,1fr))}.g4{grid-template-columns:repeat(4,minmax(0,1fr))}
+@media (max-width:900px){.g4{grid-template-columns:repeat(2,minmax(0,1fr))}.g3{grid-template-columns:1fr 1fr}}
+@media (max-width:620px){.g4,.g3,.g2{grid-template-columns:1fr}}
+/* cover */
+.cover{justify-content:center}
+.cover h1{font-size:clamp(60px,10vw,160px);letter-spacing:-.02em;line-height:.85;color:var(--gold);max-width:none}
+.cover h1 span{display:block;color:var(--paper)}
+.parade{font-size:clamp(30px,4vw,62px);display:flex;gap:.3em;flex-wrap:wrap}
+.parade span{display:inline-block;animation:bob 2.4s ease-in-out infinite}
+.parade span:nth-child(2n){animation-delay:.4s}.parade span:nth-child(3n){animation-delay:.8s}
+@keyframes bob{50%{transform:translateY(-10px)}}
+@media (prefers-reduced-motion:reduce){.parade span{animation:none}}
+.pill{border:2px solid rgba(255,255,255,.3);border-radius:999px;padding:5px 14px;font-weight:800}
+.rule h2{font-size:1.1em;margin-bottom:4px}
+/* map */
+.sect{font-family:var(--display);font-weight:800;font-size:1.4em;color:var(--gold);margin-top:6px}
+.unit{background:var(--night2);border-radius:20px;padding:14px;display:flex;flex-direction:column;gap:8px}
+.unit .uh{display:flex;gap:10px;align-items:baseline}
+.unit .un{font-family:var(--display);font-weight:800;font-size:1.5em;color:var(--gold);line-height:1}
+.unit .ut{font-weight:800}
+.lbtn{background:var(--paper);color:var(--ink);border-radius:14px;padding:8px 12px;text-align:left;display:flex;gap:10px;align-items:center;border:3px solid transparent}
+.lbtn:hover{border-color:var(--gold)}
+.lbtn .ic{font-size:1.6em;line-height:1}
+.lbtn .lt{font-weight:800;line-height:1.15}
+.lbtn .le{font-size:.8em;color:var(--muted);font-weight:700}
+.lbtn .dn{margin-left:auto;font-size:.8em;font-weight:800;color:var(--leaf);white-space:nowrap}
+.lbtn.done{background:var(--leaf2)}
+/* game */
+.ghead{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.gicon{font-size:clamp(40px,4.4vw,70px);line-height:1}
+.gtitle{font-family:var(--display);font-weight:800;font-size:clamp(26px,2.8vw,44px);line-height:1}
+.turn{display:flex;align-items:center;gap:12px;flex-wrap:wrap;border-radius:16px;padding:8px 14px;font-family:var(--display);font-weight:800;font-size:1.3em;color:var(--ink)}
+.turn.t0{background:var(--t0)} .turn.t1{background:var(--t1)}
+.turn.steal{background:var(--coral);color:#fff;animation:pulse 1s ease-in-out 2}
+@keyframes pulse{50%{transform:scale(1.02)}}
+.turn .rd{margin-left:auto;font-size:.75em;opacity:.85}
+.tbar{height:14px;background:var(--night2);border-radius:999px;overflow:hidden;position:relative}
+.tbar i{display:block;height:100%;width:100%;background:var(--leaf);transition:width .1s linear}
+.tbar.low i{background:var(--coral)}
+.tbar b{position:absolute;right:8px;top:-3px;font-size:.75em}
+.tbar.off{visibility:hidden}
+.play{display:flex;flex-direction:column;gap:12px}
+.play>.btn{align-self:flex-start}
+.ask{font-weight:800;color:var(--mist)}
+.qbig{font-family:var(--display);font-weight:800;font-size:clamp(22px,2.3vw,38px);line-height:1.15}
+.opts{display:grid;gap:10px;grid-template-columns:repeat(3,minmax(0,1fr))}
+@media (max-width:820px){.opts{grid-template-columns:1fr}}
+.opt{background:var(--paper);color:var(--ink);border-radius:16px;padding:12px 14px;font-weight:800;text-align:left;display:flex;gap:10px;align-items:center;border:3px solid transparent;font-size:1.05em}
+.opt:not(:disabled):hover{border-color:var(--gold)}
+.opt .k{background:var(--night);color:var(--gold);font-family:var(--display);border-radius:50%;width:1.9em;height:1.9em;display:grid;place-items:center;flex:none}
+.opt.ok{background:var(--leaf);color:#fff}
+.opt.no{background:#F6D3CD;color:#9a3426;text-decoration:line-through;opacity:.8}
+.shake{animation:shake .4s}
+@keyframes shake{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+/* notice */
+.notice{align-self:flex-start;background:#FFF7E0;color:var(--ink);border:6px solid var(--ink);border-radius:10px;padding:16px 26px;text-align:center;box-shadow:8px 8px 0 rgba(0,0,0,.35);min-width:min(420px,100%);transform:rotate(-1deg)}
+.notice .nh{font-family:var(--display);font-weight:800;font-size:clamp(22px,2.4vw,40px);line-height:1.05;letter-spacing:.02em}
+.notice .nl{font-weight:800;font-size:1.1em;margin-top:6px}
+/* reply */
+.bubble{align-self:flex-start;background:var(--paper);color:var(--ink);border-radius:22px 22px 22px 4px;padding:14px 20px;font-family:var(--display);font-weight:800;font-size:clamp(22px,2.3vw,36px);line-height:1.15;max-width:36ch}
+/* bomb */
+.bombline{display:flex;flex-wrap:wrap;gap:8px}
+.word{background:var(--paper);color:var(--ink);border-radius:12px;padding:8px 14px;font-weight:800;font-size:clamp(20px,2vw,32px);font-family:var(--display);border:3px solid transparent}
+.word:not(:disabled):hover{border-color:var(--gold)}
+.word.found{background:var(--coral);color:#fff}
+.word.no{background:#F6D3CD;color:#9a3426;opacity:.7}
+.word.fixed{background:var(--leaf);color:#fff}
+/* build */
+.ansline{min-height:64px;border:3px dashed rgba(255,255,255,.4);border-radius:16px;padding:8px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.pool{display:flex;flex-wrap:wrap;gap:8px}
+.tile{background:var(--paper);color:var(--ink);border-radius:12px;padding:8px 14px;font-weight:800;font-family:var(--display);font-size:clamp(18px,1.8vw,28px)}
+.tile.on{background:var(--gold)}
+.punct{font-family:var(--display);font-weight:800;font-size:2em;color:var(--gold)}
+.model{font-family:var(--display);font-weight:800;font-size:clamp(20px,2vw,32px);color:#fff;background:var(--leaf);border-radius:12px;padding:6px 14px}
+.trap{color:var(--mist);font-weight:800}
+/* cloze / spell */
+.clozeline{font-family:var(--display);font-weight:800;font-size:clamp(22px,2.3vw,38px);line-height:1.5}
+.gapin{font:inherit;font-family:var(--display);font-weight:800;width:7.5em;padding:2px 10px;border-radius:10px;border:3px solid var(--gold);background:var(--paper);color:var(--ink);text-align:center}
+.gapin.ok{border-color:var(--leaf);background:var(--leaf2)}
+.gapin.wide{width:min(14em,100%);font-size:clamp(22px,2.2vw,36px)}
+.hintline{color:var(--gold);font-weight:800}
+.defcard{background:var(--paper);color:var(--ink);border-radius:18px;padding:16px 20px;font-weight:800;font-size:clamp(19px,1.9vw,30px);line-height:1.25;max-width:40ch}
+.boxes{display:flex;gap:6px;flex-wrap:wrap}
+.lb{width:clamp(34px,3.2vw,52px);height:clamp(42px,3.8vw,62px);border-radius:10px;background:var(--night2);border:3px solid rgba(255,255,255,.3);display:grid;place-items:center;font-family:var(--display);font-weight:800;font-size:clamp(20px,2.2vw,34px);color:rgba(255,255,255,.4)}
+.lb.f{color:var(--ink);background:var(--paper);border-color:var(--gold)}
+.boxes.ok .lb{background:var(--leaf);color:#fff;border-color:var(--leaf)}
+/* sort */
+.sortcard{align-self:center;background:var(--paper);color:var(--ink);border-radius:20px;padding:20px 30px;font-family:var(--display);font-weight:800;font-size:clamp(26px,3vw,50px);text-align:center;box-shadow:0 10px 0 rgba(0,0,0,.3);animation:drop .35s ease-out}
+@keyframes drop{from{transform:translateY(-30px);opacity:0}}
+@media (prefers-reduced-motion:reduce){.sortcard{animation:none}}
+.bins{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(160px,1fr))}
+.bin{background:var(--night2);border:3px solid var(--gold);border-radius:18px;padding:18px;font-family:var(--display);font-weight:800;font-size:clamp(20px,2vw,32px);color:var(--gold)}
+.bin:not(:disabled):hover{background:var(--night3)}
+.bin.ok{background:var(--leaf);border-color:var(--leaf);color:#fff}
+.bin.no{background:#F6D3CD;border-color:#F6D3CD;color:#9a3426;opacity:.7}
+/* listen */
+.play-btn{font-size:1.25em}
+.script{display:none;background:var(--night2);border-radius:14px;padding:10px 16px;color:var(--mist);font-weight:700}
+.script.on{display:block}
+.script p+p{margin-top:4px}
+/* wager */
+.bets{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.bet{font-size:1.4em;padding:10px 28px}
+/* detective */
+.clues{display:grid;gap:8px}
+.clue{background:var(--night2);border-radius:14px;padding:10px 16px;font-weight:700;font-size:1.1em;color:var(--mist)}
+.clue.on{background:var(--paper);color:var(--ink)}
+.clue b{font-family:var(--display);color:var(--coral);margin-right:8px}
+.cval{font-family:var(--display);font-weight:800;color:var(--gold);font-size:1.2em}
+/* memory */
+.mgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.mcard{min-height:clamp(70px,9vh,110px);border-radius:16px;background:var(--night2);border:3px solid rgba(255,255,255,.25);font-family:var(--display);font-weight:800;font-size:clamp(15px,1.5vw,24px);padding:8px;line-height:1.15}
+.mcard .q{font-size:2em;color:var(--gold)}
+.mcard.open{background:var(--paper);color:var(--ink);border-color:var(--gold)}
+.mcard.open.b{background:#FFF4D6}
+.mcard.done{background:var(--leaf);color:#fff;border-color:var(--leaf);opacity:.85}
+/* talk */
+.talkq{font-family:var(--display);font-weight:800;font-size:clamp(24px,2.6vw,42px);line-height:1.12}
+.must{background:var(--leaf);color:#fff;border-radius:14px;padding:10px 16px;font-weight:800}
+.ban{background:var(--coral);color:#fff;border-radius:14px;padding:10px 16px;font-weight:800}
+.chk{background:var(--night2);border:2px solid rgba(255,255,255,.3);border-radius:999px;padding:8px 14px;font-weight:800}
+.chk.on{background:var(--leaf);border-color:var(--leaf)}
+/* feedback */
+.fb{min-height:1.4em;font-weight:800;font-size:1.1em}
+.fb .good{color:#7EE0A6}.fb .bad{color:#FF9A88}.fb .info{color:var(--gold)}
+.fb .why{color:var(--mist);font-weight:700;font-size:.92em;margin-top:4px}
+/* results */
+.podium{display:grid;grid-template-columns:1fr 1fr;gap:20px;max-width:820px}
+@media (max-width:620px){.podium{grid-template-columns:1fr}}
+.tf{text-align:center;padding:22px}
+.tf .s{font-family:var(--display);font-weight:800;font-size:clamp(50px,7vw,110px);line-height:1}
+.tf.win{outline:6px solid var(--gold)}
+.crown{font-size:2.6em;display:block;height:1.1em}
+/* drawer */
+.drawer{position:fixed;right:clamp(10px,2vw,24px);top:calc(64px + env(safe-area-inset-top,0px));background:var(--paper);color:var(--ink);border-radius:20px;padding:16px;width:min(380px,94vw);box-shadow:0 12px 40px rgba(0,0,0,.45);display:none;z-index:6}
+.drawer.open{display:block}
+.drawer .team{display:flex;align-items:center;gap:6px;padding:8px 0;border-bottom:1px solid var(--line)}
+.drawer input{font:inherit;font-weight:800;border:2px solid var(--line);border-radius:10px;padding:4px 8px;flex:1;min-width:0;color:var(--ink);background:#fff}
+.drawer .sc2{font-family:var(--display);font-weight:800;font-size:1.6em;min-width:2.2ch;text-align:right}
+.drawer .pm{background:var(--leaf2);color:var(--ink);border-radius:10px;padding:4px 10px;font-weight:800}
+.flash{position:fixed;inset:0;display:grid;place-items:center;pointer-events:none;font-family:var(--display);font-weight:800;font-size:clamp(60px,11vw,180px);opacity:0;z-index:9;text-shadow:0 6px 30px rgba(0,0,0,.5)}
+.flash.go{animation:fl .9s ease-out}
+@keyframes fl{0%{opacity:0;transform:scale(.4)}30%{opacity:1;transform:scale(1.1)}100%{opacity:0;transform:scale(1.4)}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="bar">
+    <button class="brand" id="homeBtn" title="Game map">KET Quest <small>Arena</small></button>
+    <button class="tpill t0" data-board><span id="n0">🦅 Golden Eagles</span><span class="sc" id="s0">0</span></button>
+    <button class="tpill t1" data-board><span id="n1">🐆 Snow Leopards</span><span class="sc" id="s1">0</span></button>
+    <button class="tool" id="hardBtn" title="Shorter timers, no hints">⚡ Hard mode</button>
+  </header>
+  <div class="drawer" id="drawer" role="dialog" aria-label="Scoreboard">
+    <h2 style="margin-bottom:6px">⭐ Scoreboard</h2>
+    <div class="team"><input id="in0" aria-label="Team 1 name"><button class="pm" data-pm="0,-1">−</button><button class="pm" data-pm="0,1">+</button><span class="sc2" id="d0">0</span></div>
+    <div class="team"><input id="in1" aria-label="Team 2 name"><button class="pm" data-pm="1,-1">−</button><button class="pm" data-pm="1,1">+</button><span class="sc2" id="d1">0</span></div>
+    <div class="row" style="margin-top:10px"><button class="btn small" id="resetStars">Reset stars</button><button class="btn small" id="resetProg" style="background:var(--line)">Clear ticks on map</button></div>
+    <p style="font-size:.8em;color:var(--muted);margin-top:8px">Stars and ticks are saved in this browser.</p>
+  </div>
+  <main class="wrap">
+    <section class="screen cover on" id="cover">
+      <div class="row"><span class="pill">Cambridge A2 Key (KET)</span><span class="pill">Exam Booster · 16 units</span><span class="pill">IF Academy</span></div>
+      <h1>KET Quest<span>Arena</span></h1>
+      <p style="font-size:1.25em;max-width:40ch">One game for every lesson: 48 team battles across all 16 units. Think fast, steal points, bet your stars.</p>
+      <div class="parade" aria-hidden="true"><span>🪧</span><span>💣</span><span>🧱</span><span>🎧</span><span>🎰</span><span>🕵️</span><span>🧠</span><span>🎤</span></div>
+      <div class="grid g4" style="max-width:1200px">
+        <div class="card rule"><h2>⭐ Win stars</h2><p>Each round belongs to one team. Get it right and the stars are yours.</p></div>
+        <div class="card rule"><h2>🏴‍☠️ Steal!</h2><p>Wrong answer or time runs out? The other team gets one chance to steal.</p></div>
+        <div class="card rule"><h2>🎰 Risk it</h2><p>In High Stakes you bet before you see the options. Wrong = lose the bet.</p></div>
+        <div class="card rule"><h2>⚡ Hard mode</h2><p>Shorter timers and no hints. Turn it on for strong groups or the second round.</p></div>
+      </div>
+      <div class="row"><button class="btn" id="startBtn" style="font-size:1.2em">Open the game map</button><span class="note">Click a team name at the top to rename teams or fix the score.</span></div>
+    </section>
+    <section class="screen" id="map">
+      <div class="row"><h1 style="margin-right:auto">Choose a lesson game</h1><button class="btn ghost small" id="randBtn">🎲 Random game</button></div>
+      <p class="note" id="progress"></p>
+      <div id="mapBody" class="grid"></div>
+    </section>
+    <section class="screen" id="game">
+      <div class="ghead"><span class="gicon" id="gIcon"></span><div><span class="tag" id="gUnit"></span> <span class="tag o" id="gGram"></span><div class="gtitle" id="gTitle" style="margin-top:6px"></div></div></div>
+      <p class="note" id="gHow"></p>
+      <div class="turn t0" id="turn"><span id="turnTxt"></span><span class="rd" id="round"></span></div>
+      <div class="tbar off" id="tbar"><i></i><b id="tsec"></b></div>
+      <div class="play" id="play"></div>
+      <div class="fb" id="fb" aria-live="polite"></div>
+      <div class="row"><button class="btn" id="nextBtn" hidden>Next round</button><button class="btn ghost small" id="skipBtn">Skip round</button><button class="btn ghost small" id="quitBtn">Back to map</button></div>
+    </section>
+    <section class="screen" id="results">
+      <span class="tag" id="rTag"></span>
+      <h1 id="rTitle">Game over!</h1>
+      <div class="podium">
+        <div class="card tf" id="rf0"><span class="crown"></span><h2 id="rn0"></h2><div class="s" id="rs0"></div><p style="color:var(--muted);font-weight:800" id="rt0"></p></div>
+        <div class="card tf" id="rf1"><span class="crown"></span><h2 id="rn1"></h2><div class="s" id="rs1"></div><p style="color:var(--muted);font-weight:800" id="rt1"></p></div>
+      </div>
+      <div class="row"><button class="btn" id="rNext">Next lesson game</button><button class="btn ghost" id="rAgain">Play again</button><button class="btn ghost" id="rMap">Game map</button></div>
+    </section>
+  </main>
+</div>
+<div class="flash" id="flash" aria-hidden="true"></div>
+<script>
+const ENG={
+ notice:{n:"Notice Decoder",i:"🪧",t:25,p:2,h:"Read the notice. Which sentence says the same thing? A wrong answer lets the other team steal."},
+ reply:{n:"Reply Duel",i:"💬",t:20,p:2,h:"Only one reply sounds natural. The others are traps a KET examiner loves."},
+ bomb:{n:"Bug Defuser",i:"💣",t:30,p:2,h:"Find the ONE wrong word, then fix it. Miss the bug and the other team steals."},
+ build:{n:"Sentence Smith",i:"🧱",t:45,p:3,h:"Click the tiles in order to build the sentence. One tile is a trap: leave it out!"},
+ cloze:{n:"Gap Heist",i:"🔓",t:30,p:2,h:"Type the missing word. No options, no help: spelling counts."},
+ spell:{n:"Spell Storm",i:"🌪️",t:35,p:2,h:"Read the definition and spell the word letter by letter."},
+ sort:{n:"Rapid Sort",i:"⚡",t:10,p:1,h:"A card drops in. Put it in the right box before the clock hits zero."},
+ listen:{n:"Listen Up",i:"🎧",t:60,p:2,h:"Listen (two plays only) and choose. Careful: speakers change their minds!"},
+ wager:{n:"High Stakes",i:"🎰",t:25,p:0,h:"Read the question, bet 1–3 stars, then see the options. Wrong = you lose your bet."},
+ detective:{n:"Clue Chase",i:"🕵️",t:30,p:0,h:"Guess on clue 1 for 4★. A wrong guess hands the next clue to the other team."},
+ memory:{n:"Memory Vault",i:"🧠",t:0,p:1,h:"Flip two cards. A match wins 1★ and another go; a miss passes the turn."},
+ talk:{n:"Talk Arena",i:"🎤",t:45,p:0,h:"Speak until the bell. Use the must-use words and never say a banned word!"}
+};
+const U=[
+{n:1,id:"RW1",name:"Reading & Writing Part 1",L:[
+ {t:"Daily Life",g:"Present simple · adverbs of frequency",e:"bomb",d:[
+  ["My brother *watch* TV every evening.",["watches","watching","watched"],0],
+  ["We *goes* to school by bus.",["go","going","gone"],0],
+  ["*Does* your parents work at weekends?",["Do","Are","Is"],0],
+  ["He *don't* like coffee at all.",["doesn't","isn't","not"],0],
+  ["How often *you* go swimming?",["do you","you do","are you"],0],
+  ["Ali *have* breakfast at half past seven.",["has","having","is have"],0],
+  ["I *sometime* walk to school with my sister.",["sometimes","some times","sometimely"],0],
+  ["What time *do* the shop open on Sundays?",["does","is","are"],0]]},
+ {t:"Places & Buildings",g:"There is / are · near, opposite",e:"detective",d:[
+  [["library"],["It's usually very quiet here.","You need a card to use it.","You can borrow things for free.","You borrow books here."]],
+  [["post office"],["You often wait in a queue here.","You can buy stamps here.","You can send parcels here.","You post letters here."]],
+  [["chemist's","chemist","pharmacy","chemists"],["Look for a green cross outside.","Sometimes you need a note from your doctor.","They sell things for colds and headaches.","You buy medicine here."]],
+  [["museum"],["Lots of tourists visit it.","You mustn't touch some things.","It has old and interesting objects.","You see history and art here."]],
+  [["station","train station","railway station"],["You can buy a ticket here.","There's a timetable on the wall.","People wait on the platform.","Trains stop here."]],
+  [["bank"],["It closes early on Saturdays.","There's often a machine outside.","You can change money here.","You keep your money here."]],
+  [["hospital"],["It never closes.","Ambulances arrive here.","Nurses work here.","Doctors look after sick people here."]],
+  [["stadium"],["It's very big and often very noisy.","You need a ticket to get in.","Thousands of fans sit here.","You watch football matches here."]]]},
+ {t:"Services",g:"Notices · instructions",e:"notice",d:[
+  ["CLOSED FOR LUNCH|1.00 – 2.00 pm",["You can't get in at 1.30.","The shop closes at 1.00 every evening.","You can buy lunch here from 1 to 2."],0,"Closed between 1 and 2, so 1.30 is closed."],
+  ["LIBRARY BOOKS|Return within 14 days",["You must wait 14 days before you return a book.","You can keep a book for up to two weeks.","The library is open 14 days a month."],1,"Within 14 days = not later than 14 days."],
+  ["PHOTOCOPIES 10p|Pay at the desk",["Photocopies are free.","You pay for copies at the desk.","The desk sells photos."],1,"Copies cost 10p and you pay at the desk."],
+  ["DOCTOR'S SURGERY|Please phone before you visit",["Make an appointment by phone first.","You can't use your phone in here.","The doctor will phone you."],0,"Phone first = make an appointment."],
+  ["LOST PROPERTY|Ask at Reception",["Reception keeps things people leave behind.","You can buy property at Reception.","Reception has moved."],0,"Lost property = things people lose or forget."],
+  ["HAIRDRESSER|No appointment needed",["You must book first.","You can just walk in.","The hairdresser is closed today."],1,"No appointment needed = you don't have to book."],
+  ["PLEASE DO NOT LEAVE|BAGS UNATTENDED",["Don't leave your bags alone.","Leave your bags here.","Bags are not allowed inside."],0,"Unattended = with nobody looking after it."],
+  ["CASH MACHINE OUT OF ORDER|Please use the machine inside",["The machine outside isn't working.","You can't get any money today.","The bank has no machines."],0,"Out of order = broken, but there's another one inside."]]}
+]},
+{n:2,id:"RW2",name:"Reading & Writing Part 2",L:[
+ {t:"Shopping",g:"much / many · spend on · prices",e:"wager",d:[
+  ["How ______ money have you got?",["much","many","lots"],0,"Money is uncountable: how much."],
+  ["I spent all my pocket money ______ a new game.",["on","for","in"],0,"spend money ON something."],
+  ["These shoes are too small. Have you got them in a bigger ______?",["size","price","colour"],0],
+  ["You want to try on a jacket. Where do you go?",["the changing room","the checkout","the shop window"],0],
+  ["It was 20,000 tenge, now it's 15,000. It's in the ______.",["sale","bill","receipt"],0],
+  ["How much ______ these jeans?",["are","is","does"],0,"Jeans is plural: How much ARE…"],
+  ["Shop assistant: Can I help you? — You: No thanks, I'm just ______.",["looking","seeing","watching"],0],
+  ["The paper that shows what you paid is a ______.",["receipt","recipe","change"],0,"Receipt ≠ recipe (cooking!)."]]},
+ {t:"Food & Drink",g:"would like · Can I have…?",e:"reply",d:[
+  ["Are you ready to order?",["Yes, I'd like the fish, please.","Yes, I'm ready to cook.","No, I wasn't hungry yesterday."],0],
+  ["Would you like something to drink?",["Just water, please.","Yes, I would drinking.","I like drinks."],0],
+  ["How was your meal?",["Delicious, thank you.","It was at seven.","With my family."],0],
+  ["Could we have the bill, please?",["Of course. Here you are.","Yes, it's very good.","I'll have the soup."],0],
+  ["Is everything OK with your food?",["Actually, my soup is a bit cold.","Yes, I'm OK too.","No, I don't cook."],0],
+  ["Do you want a starter?",["No thanks, just a main course.","Yes, it starts at eight.","I started yesterday."],0],
+  ["Shall we get a dessert?",["Good idea. Let's share the cake.","Yes, we got.","I'm sharing."],0],
+  ["Sorry, we haven't got any chicken today.",["Never mind. I'll have the pasta, then.","Yes, I'd like chicken.","That's very kind of you."],0]]},
+ {t:"House & Home",g:"Furniture · prepositions of place",e:"memory",d:[
+  ["wardrobe","You hang clothes in it."],["fridge","It keeps food cold."],["sofa","Three people can sit on it."],["shelf","You put books on it."],
+  ["cooker","You make hot food on it."],["mirror","You see yourself in it."],["pillow","Your head is on it in bed."],["washing machine","It cleans your clothes."]]}
+]},
+{n:3,id:"RW3",name:"Reading & Writing Part 3",L:[
+ {t:"Social Interaction",g:"Invitations · polite replies",e:"reply",d:[
+  ["Would you like to come to my party on Saturday?",["I'd love to! What time?","Yes, I like parties.","I came last week."],0],
+  ["Shall we meet outside the cinema?",["OK. See you there at six.","Yes, we shall the cinema.","I don't meet."],0],
+  ["I'm sorry I'm late.",["Don't worry about it.","You're welcome.","Yes, please."],0],
+  ["Thanks for helping me with my homework.",["No problem!","Never mind.","Yes, it is."],0],
+  ["Can you come to football practice tomorrow?",["I'm afraid I can't. I've got a dentist appointment.","I can't come yesterday.","No, I'm afraid."],0],
+  ["Let's go swimming.",["Good idea. I'll get my towel.","Yes, let's to go.","I go swimming."],0],
+  ["Happy birthday, Aigerim!",["Thank you so much!","The same to you.","Congratulations!"],0],
+  ["Do you mind if I open the window?",["No, go ahead.","Yes, please open it.","No, I don't mind it's cold."],0]]},
+ {t:"Feelings & Experiences",g:"Present perfect · -ed / -ing feelings",e:"build",d:[
+  ["Have you ever been to Almaty?","went"],["I have never eaten sushi.","ate"],["She has just finished her exam.","finish"],
+  ["We haven't seen the new film yet.","saw"],["I felt nervous before my test.","feeled"],["My brother has already left.","yet"],
+  ["Have you ever felt really scared?","feel"],["I was so excited about the trip.","exciting"]]},
+ {t:"Hobbies & Leisure",g:"for vs since",e:"sort",d:{c:["for","since"],items:[
+  ["I've done karate ___ two years.",0],["I've lived here ___ 2020.",1],["She's played the piano ___ last summer.",1],["We've been friends ___ a long time.",0],
+  ["He's been ill ___ Monday.",1],["I've had this bike ___ three weeks.",0],["I've collected stamps ___ I was ten.",1],["They've waited ___ ages!",0],
+  ["The match has been on ___ ten minutes.",0],["I haven't seen her ___ my birthday.",1]]}}
+]},
+{n:4,id:"RW4",name:"Reading & Writing Part 4",L:[
+ {t:"The Natural World",g:"Nature vocabulary · so / neither",e:"spell",d:[
+  ["A very large dry area of sand, with almost no rain.","desert"],["A place with lots of trees growing close together.","forest"],
+  ["A very high hill, often with snow on top.","mountain"],["A long line of water that flows to the sea.","river"],
+  ["Land with water all around it.","island"],["A big area of water with land all around it.","lake"],
+  ["A small grey or red animal with a big tail. It lives in trees and eats nuts.","squirrel"],["The colourful part of a plant that often smells nice.","flower"]]},
+ {t:"Education & Study",g:"Past simple: regular & irregular",e:"bomb",d:[
+  ["Yesterday we *have* a maths test.",["had","has","having"],0],
+  ["I didn't *went* to school on Monday.",["go","gone","going"],0],
+  ["Did you *passed* your English exam?",["pass","passing","passes"],0],
+  ["Our teacher *teached* us a new song.",["taught","teach","teaches"],0],
+  ["She *studyed* English for three years.",["studied","studies","study"],0],
+  ["We *was* very tired after the lesson.",["were","are","is"],0],
+  ["I *forgetted* my homework at home.",["forgot","forget","forgetting"],0],
+  ["What did you *learned* today?",["learn","learning","learns"],0]]},
+ {t:"Travel & Holidays",g:"Directions · imperatives",e:"cloze",d:[
+  ["Go ___ the road and the bank is in front of you.",["across","over"],"from one side to the other"],
+  ["Turn ___ at the traffic lights.",["left","right"],"⬅️ or ➡️"],
+  ["Go straight ___ for 200 metres.",["on","ahead"],"don't turn"],
+  ["The café is ___ your left, next to the bank.",["on"],"a tiny preposition"],
+  ["Take the second turning ___ the right.",["on"],"same as the last one!"],
+  ["The hotel is ___ the station. Just walk out and look across the street.",["opposite"],"on the other side, facing it"],
+  ["Excuse me, how do I get ___ the museum?",["to"],"direction word"],
+  ["Walk ___ the bridge and then turn left.",["over","across"],"the bridge is above the river"]]}
+]},
+{n:5,id:"RW5",name:"Reading & Writing Part 5",L:[
+ {t:"Sports & Games",g:"go / play / do",e:"sort",d:{c:["go","play","do"],items:[
+  ["swimming",0],["football",1],["karate",2],["skiing",0],["chess",1],["gymnastics",2],
+  ["cycling",0],["tennis",1],["yoga",2],["volleyball",1],["running",0],["judo",2]]}},
+ {t:"Entertainment & Media",g:"Past continuous · How about + -ing",e:"bomb",d:[
+  ["I *watched* TV when my friend called.",["was watching","am watching","watch"],0],
+  ["How about *go* to the concert tonight?",["going","to go","goes"],0],
+  ["While she was *read* her book, the phone rang.",["reading","reads","readed"],0],
+  ["The film *finish* at ten o'clock last night.",["finished","finishing","finishes"],0],
+  ["We were *dance* when the music stopped.",["dancing","danced","dances"],0],
+  ["Why don't we *going* to the cinema?",["go","went","to go"],0],
+  ["My favourite TV *programm* starts at eight.",["programme","programs'","programmed"],0],
+  ["What *was* you doing at 8 pm yesterday?",["were","are","did"],0]]},
+ {t:"Transport",g:"Comparatives & superlatives · will",e:"wager",d:[
+  ["A train is ______ than a bus.",["faster","fast","more fast"],0],
+  ["This is the ______ comfortable seat on the plane.",["most","more","much"],0],
+  ["Flying is ______ expensive than going by coach.",["more","most","much more than"],0],
+  ["What's the ______ way to get to Astana?",["quickest","quicker","most quick"],0],
+  ["Both take two hours. The bus is ______ fast as the train.",["as","so","than"],0],
+  ["Cycling is ______ for the planet than driving.",["better","gooder","best"],0],
+  ["In 2050, people ______ travel by flying taxi.",["will","are","going"],0],
+  ["Of the three journeys, Kostanay to Almaty is the ______.",["longest","longer","most long"],0]]}
+]},
+{n:6,id:"RW6",name:"Reading & Writing Part 6",L:[
+ {t:"The Weather",g:"Weather words · -y adjectives",e:"spell",d:[
+  ["It's white, cold and soft, and it falls in winter.","snow"],["Very bad weather with strong wind and heavy rain.","storm"],
+  ["Adjective: you can't see far because of a grey cloud near the ground.","foggy"],["The loud noise in the sky after lightning.","thunder"],
+  ["Adjective: hold on to your hat, the air is moving fast!","windy"],["Adjective: you can't see the sun because of the clouds.","cloudy"],
+  ["Adjective: very, very cold, below 0°C.","freezing"],["You hold it over your head when it rains.","umbrella"]]},
+ {t:"Clothes",g:"Possessive & object pronouns",e:"build",d:[
+  ["This scarf is mine.","my"],["I love these trainers and I wear them every day.","they"],["Those gloves are not ours.","our"],
+  ["She is wearing a long red dress.","wear"],["Whose sunglasses are these?","Who's"],["My dad never wears a tie.","wear"],
+  ["Their uniforms are dark blue.","There"],["Is this blue jacket yours?","your"]]},
+ {t:"People",g:"Personality & appearance · What is she like?",e:"detective",d:[
+  [["friendly"],["This person is easy to talk to.","They smile a lot.","They say hello to new students.","They make friends very quickly."]],
+  [["shy"],["This person is very quiet in groups.","They go red when people look at them.","They don't like speaking in front of the class.","They're the opposite of confident."]],
+  [["lazy"],["This person stays in bed until midday.","They never help at home.","They don't do their homework.","They don't want to do any work at all."]],
+  [["generous"],["This person often buys presents for friends.","They share their food.","They give money to people who need it.","They're the opposite of mean."]],
+  [["funny"],["This person tells lots of jokes.","Everyone laughs in their lessons.","They do silly voices.","They make people laugh."]],
+  [["clever","intelligent","smart"],["This person gets top marks.","They understand new things quickly.","They can solve difficult puzzles.","They seem to know everything!"]],
+  [["kind"],["This person helps old people with their shopping.","They look after sick animals.","They're nice to everyone.","They always think about other people's feelings."]],
+  [["curly"],["This word describes hair.","It isn't straight.","It goes round and round in little circles.","The opposite of straight hair."]]]}
+]},
+{n:7,id:"RW7",name:"Reading & Writing Part 7",L:[
+ {t:"Daily Life",g:"Time prepositions: in / on / at",e:"cloze",d:[
+  ["I get up ___ seven o'clock.",["at"],"clock times"],["We play tennis ___ Monday evenings.",["on"],"days"],
+  ["My birthday is ___ June.",["in"],"months"],["I do my homework ___ the evening.",["in"],"parts of the day"],
+  ["We don't have school ___ the weekend.",["at","on"],"British English likes this one"],["The shops close early ___ New Year's Eve.",["on"],"a special day"],
+  ["I can't sleep well ___ night.",["at"],"the exception!"],["My grandparents were born ___ 1965.",["in"],"years"]]},
+ {t:"Social Interaction",g:"may / might · present continuous for plans",e:"reply",d:[
+  ["May I come in?",["Yes, of course.","Yes, you might.","No, you mayn't come."],0],
+  ["What are you doing this weekend?",["I'm visiting my cousins in Astana.","I visited my cousins.","I do it every weekend."],0],
+  ["Are you coming to the match tomorrow?",["I might. It depends on the weather.","I might came.","Yes, I came."],0],
+  ["Can I borrow your pen?",["Sure, here you are.","Yes, you can borrowing.","Sure, I borrow it."],0],
+  ["Shall I call you tonight?",["Yes, please. After eight is best.","Yes, you shall.","No, I call."],0],
+  ["Would you mind helping me with this box?",["Not at all. Where shall I put it?","Yes, I'd mind.","No, I wouldn't help."],0],
+  ["I've lost my phone!",["Oh no! Where did you last have it?","Congratulations!","That's a good idea."],0],
+  ["See you on Friday, then!",["Yes, see you!","You're welcome.","Yes, I saw you."],0]]},
+ {t:"Travel & Holidays",g:"Irregular past forms",e:"memory",d:[
+  ["go","went"],["buy","bought"],["take","took"],["fly","flew"],["see","saw"],["eat","ate"],["swim","swam"],["bring","brought"]]}
+]},
+{n:8,id:"RW8",name:"Reading & Writing Part 8",L:[
+ {t:"Hobbies & Leisure",g:"prefer … to · would rather",e:"wager",d:[
+  ["I prefer tea ______ coffee.",["to","than","from"],0,"prefer A TO B."],
+  ["I'd rather ______ at home tonight.",["stay","to stay","staying"],0,"would rather + base verb."],
+  ["I'd rather watch a film ______ go out.",["than","to","from"],0,"would rather A THAN B."],
+  ["She prefers ______ to singing.",["painting","paint","to paint"],0],
+  ["Which do you prefer, books ______ films?",["or","than","to"],0],
+  ["Would you rather ______ the piano or the guitar?",["learn","to learn","learning"],0],
+  ["My hobby is ______ photos of birds.",["taking","doing","making"],0,"We TAKE photos."],
+  ["I'm really interested ______ old coins.",["in","on","about"],0]]},
+ {t:"Sport & Activities",g:"Club notices & forms",e:"notice",d:[
+  ["KOSTANAY SWIM CLUB|Fee: 5,000 tenge a month|Under-12s pay half price",["A 10-year-old pays 2,500 tenge a month.","Everyone pays 5,000 tenge a year.","Children can't join."],0,"Half of 5,000 = 2,500, every month."],
+  ["CHESS CLUB|Every Tuesday, 4–6 pm|Bring your own board",["You need to bring a chess board.","The club gives you a board.","The club meets twice a week."],0],
+  ["MEMBERSHIP FORM|First name: Dana|Surname: Seitkali",["Her family name is Seitkali.","Her first name is Seitkali.","Dana is her surname."],0,"Surname = family name."],
+  ["TENNIS COURTS|Book online 24 hours before|Rackets for hire: 500 tenge",["You can rent a racket here.","You can book a court on the day you play.","Rackets are free."],0,"For hire = you pay to use it."],
+  ["FOOTBALL TRAINING CANCELLED|Saturday 10th|(the pitch is too wet)",["There's no training on Saturday because of the weather.","Training is on a wet pitch on Saturday.","Saturday's training moves to the 10th."],0],
+  ["DANCE CLASS|Beginners welcome|No experience needed",["You can join if you've never danced.","Only good dancers can join.","You must bring a partner."],0],
+  ["GYM|Members must show their card at reception",["You need your membership card to go in.","Reception sells membership cards.","Anyone can go in."],0],
+  ["PHOTO COMPETITION|Send up to 3 photos|Closing date: 30 May",["You can't send photos after 30 May.","You must send exactly 3 photos.","The competition starts on 30 May."],0,"Up to 3 = 1, 2 or 3. Closing date = the last day."]]},
+ {t:"Food & Drink",g:"Countable / uncountable · some, many, much",e:"sort",d:{c:["Countable (a / many)","Uncountable (some / much)"],items:[
+  ["egg",0],["bread",1],["apple",0],["rice",1],["cheese",1],["banana",0],["milk",1],["tomato",0],["sugar",1],["sandwich",0],["water",1],["carrot",0]]}}
+]},
+{n:9,id:"RW9",name:"Reading & Writing Part 9",L:[
+ {t:"Health & Exercise",g:"Past simple vs going to",e:"cloze",d:[
+  ["Yesterday I ___ to the gym for an hour.",["went"],"past of go"],
+  ["Next week I'm ___ to join a yoga class.",["going"],"a plan"],
+  ["Last night I ___ ten hours. I feel great!",["slept"],"past of sleep"],
+  ["I ___ eat any sweets yesterday. Not one!",["didn't","did not"],"negative past"],
+  ["Are you going ___ run in the marathon?",["to"],"going ___ + verb"],
+  ["Swimming helps you keep ___.",["fit"],"healthy and strong (3 letters)"],
+  ["She hurt her leg, so she ___ play in the match last Saturday.",["couldn't","could not","didn't","did not"],"past of can't"],
+  ["Tomorrow we're going to ___ for a long walk in the park.",["go"],"___ for a walk"]]},
+ {t:"Personal Identification",g:"Family · have got",e:"detective",d:[
+  [["uncle"],["He's a man in your family.","He's older than you.","He isn't your dad.","He's your mum's or dad's brother."]],
+  [["cousin"],["This person can be a boy or a girl.","Often about your age.","You see them at family parties.","Your aunt's son or daughter."]],
+  [["grandmother","grandma","granny","grandmum"],["She's a woman in your family.","She tells you stories about the past.","She's older than your parents.","Your mum's or dad's mother."]],
+  [["niece"],["This is a girl.","She's probably younger than you.","Your brother or sister is her parent.","Your sister's daughter."]],
+  [["surname","family name","last name"],["It's a word, not a person.","You write it on forms.","Your parents often have it too.","It isn't your first name."]],
+  [["twins","twin"],["They have the same birthday.","They often look the same.","They're brothers or sisters.","Two children born at the same time."]],
+  [["nephew"],["This is a boy.","His parent is your brother or sister.","You are his aunt or uncle.","Your brother's son."]],
+  [["date of birth","birthday","birth date"],["You write it on forms.","It has a day, a month and a year.","It never changes.","The day you were born."]]]},
+ {t:"Entertainment & Media",g:"Capitals · apostrophes · it's / its",e:"bomb",d:[
+  ["We watched a great film on *friday*.",["Friday","FRIDAY","friday's"],0],
+  ["*Its* a really funny comedy.",["It's","Its'","Is"],0],
+  ["The dog wagged *it's* tail.",["its","its'","it"],0],
+  ["My *sisters* name is Dana.",["sister's","sisters'","sister"],0],
+  ["Yesterday *i* watched three episodes!",["I","I'm","me"],0],
+  ["We went to the cinema in *astana*.",["Astana","ASTANA","astana's"],0],
+  ["*Their* going to the concert tonight.",["They're","There","Them"],0],
+  ["The book was *to* long, so I stopped reading.",["too","two","tow"],0]]}
+]},
+{n:10,id:"L1",name:"Listening Part 1",L:[
+ {t:"Services & Places",g:"Telling the time",e:"listen",d:[
+  ["W: Excuse me, what time does the bank close? | M: It closes at half past four today, but tomorrow it's open until six.","When does the bank close TODAY?",["4.30","6.00","4.00"],0],
+  ["M: When's the next train to Astana? | W: There's one at quarter to ten, but it's cancelled. The next one is at ten fifteen.","When can he catch a train?",["10.15","9.45","10.45"],0],
+  ["W: Is the swimming pool open on Sunday morning? | M: Not in the morning. It opens at two and closes at eight.","When does the pool open on Sunday?",["2 pm","8 am","8 pm"],0],
+  ["M: I need to post this parcel. | W: The post office in the square is closed for repairs, so go to the one next to the supermarket.","Where will he post the parcel?",["next to the supermarket","in the square","at the station"],0],
+  ["W: Your dentist appointment was at ten past three, but we need to move it to twenty past four. | M: That's fine.","What time is the new appointment?",["4.20","3.10","4.10"],0],
+  ["M: Where's the library? Is it next to the museum? | W: It was, but it moved last year. Now it's opposite the cinema.","Where is the library now?",["opposite the cinema","next to the museum","behind the cinema"],0]]},
+ {t:"Shopping & Numbers",g:"Prices · -teen vs -ty · spelling",e:"listen",d:[
+  ["W: How much is this T-shirt? | M: It was eighteen pounds, but today it's fifteen.","How much is the T-shirt today?",["£15","£18","£50"],0],
+  ["M: How many students are in your class? | W: Thirteen. Last year there were thirty!","How many students are in her class now?",["13","30","33"],0],
+  ["W: That's twelve pounds fifty, please. | M: Here's twenty. | W: Thanks, and here's your change: seven fifty.","How much change does he get?",["£7.50","£12.50","£20"],0],
+  ["M: My phone number? It's oh seven seven, four six two, nine one eight.","What's his number?",["077 462 918","077 426 918","070 462 981"],0],
+  ["W: The trainers are sixty pounds, but club members get ten pounds off.","How much do members pay?",["£50","£60","£16"],0],
+  ["M: Can you spell your surname? | W: Yes, it's K, A, double S, Y, M.","What's her surname?",["Kassym","Kasym","Kassim"],0]]},
+ {t:"Education & Study",g:"Past simple · going to · school words",e:"wager",d:[
+  ["Yesterday we ______ a test in maths.",["had","have","are having"],0],
+  ["Tonight I'm going to ______ for my exam.",["revise","revised","revising"],0],
+  ["You got every answer right! You got full ______.",["marks","notes","points"],0],
+  ["The opposite of 'pass an exam' is ______ an exam.",["fail","lose","miss"],0],
+  ["A list that shows when all your lessons are is a ______.",["timetable","calendar","diary"],0],
+  ["Sorry, I ______ my homework yet.",["haven't finished","didn't finish","don't finish"],0,"yet → present perfect."],
+  ["We ______ biology in the lab on Fridays.",["study","studying","are study"],0],
+  ["She's very good ______ maths.",["at","in","on"],0]]}
+]},
+{n:11,id:"L2",name:"Listening Part 2",L:[
+ {t:"Food & Drink",g:"some / any · how many",e:"listen",d:[
+  ["W: What would you like for lunch? Pizza? | M: Not pizza again! I'll have soup and some bread.","What will he have?",["soup and bread","pizza","pizza and soup"],0],
+  ["M: How many eggs do we need for the cake? | W: The recipe says three, but let's use four. They're very small.","How many eggs will they use?",["4","3","2"],0],
+  ["W: Can I have a sandwich, please? | M: Cheese or chicken? | W: Chicken, please. And an orange juice.","What drink does she order?",["orange juice","apple juice","water"],0],
+  ["M: The café opens at eight, but they don't serve hot food until eleven.","When can you get hot food?",["11.00","8.00","8.30"],0],
+  ["W: These biscuits are delicious. Did your mum make them? | M: No, my grandmother did. She makes them every Sunday.","Who made the biscuits?",["his grandmother","his mother","the café"],0],
+  ["M: Is there much milk left? | W: No, there isn't any. Can you buy two bottles?","How much milk should he buy?",["2 bottles","1 bottle","none"],0]]},
+ {t:"Hobbies & Shopping",g:"enjoy + -ing · Shall I…?",e:"build",d:[
+  ["I enjoy playing chess with my grandad.","play"],["Shall I help you with those bags?","Do"],["She is good at drawing animals.","draw"],
+  ["Why don't you try the blue one?","trying"],["I am thinking of buying a new guitar.","buy"],["How much are these headphones?","is"],
+  ["He doesn't like collecting stamps.","don't"],["Can I pay by card?","with"]]},
+ {t:"Countries & Sports",g:"Countries & nationalities",e:"memory",d:[
+  ["Spain","Spanish"],["Japan","Japanese"],["France","French"],["Germany","German"],["Kazakhstan","Kazakh"],["China","Chinese"],["Brazil","Brazilian"],["Turkey","Turkish"]]}
+]},
+{n:12,id:"L3",name:"Listening Part 3",L:[
+ {t:"Leisure Time",g:"from … to · free · opening times",e:"listen",d:[
+  ["W: How much is it to get into the zoo? | M: Adults pay two thousand tenge, children pay half, and children under three are free.","How much does a 10-year-old pay?",["1,000 tenge","2,000 tenge","nothing"],0],
+  ["M: The museum is open from nine to five, but on Thursdays it stays open until eight.","When does it close on Thursday?",["8 pm","5 pm","9 pm"],0],
+  ["W: Let's go bowling on Saturday. | M: I can't, I've got football. What about Sunday? | W: OK, Sunday.","When will they go bowling?",["Sunday","Saturday","Friday"],0],
+  ["M: The concert was going to be in the park, but it's going to rain, so now it's in the sports hall.","Where is the concert?",["the sports hall","the park","the theatre"],0],
+  ["W: Meet me at the cinema at quarter past six. The film starts at half past.","When does the film start?",["6.30","6.15","6.45"],0],
+  ["M: What did you do at the weekend? | W: I wanted to go skating, but the ice rink was closed, so I went to the climbing wall.","What did she do?",["climbing","skating","swimming"],0]]},
+ {t:"Social Media & Technology",g:"Passive: is done / was done",e:"bomb",d:[
+  ["English *speaks* in many countries.",["is spoken","spoken","speaking"],0],
+  ["The telephone *invented* in 1876.",["was invented","is invent","inventing"],0],
+  ["This photo was *took* in Almaty.",["taken","take","taking"],0],
+  ["I *forgetted* my password again.",["forgot","forget","forgotten"],0],
+  ["Millions of videos are *watch* every day.",["watched","watching","watches"],0],
+  ["I *posted* the photos tomorrow.",["will post","post","posting"],0],
+  ["The messages *was* sent last night.",["were","are","is"],0],
+  ["Have you ever *use* this app?",["used","using","uses"],0]]},
+ {t:"Travel & Holidays",g:"Travel vocabulary",e:"spell",d:[
+  ["A small book with your photo. You need it to visit other countries.","passport"],["All the bags and suitcases you take on a trip.","luggage"],
+  ["A list of the times when trains or buses leave.","timetable"],["The place where planes land and take off.","airport"],
+  ["A ticket to go somewhere and come back again.","return"],["A person who visits a place on holiday.","tourist"],
+  ["A book with information about a city for visitors.","guidebook"],["A place where people stay in tents.","campsite"]]}
+]},
+{n:13,id:"L4",name:"Listening Part 4",L:[
+ {t:"Making Plans",g:"will vs going to · until / during",e:"reply",d:[
+  ["The phone's ringing!",["I'll answer it.","I'm going to answer it next week.","I answer it."],0,"Quick decision → will."],
+  ["Why have you bought all that paint?",["I'm going to paint my bedroom.","I'll paint it yesterday.","I painted tomorrow."],0,"A plan made before → going to."],
+  ["What are your plans for the summer?",["We're going to visit my aunt in Turkey.","We visit my aunt last summer.","I'll be there yesterday."],0],
+  ["I'm so thirsty!",["I'll get you some water.","I'm thirsty too, yesterday.","You're welcome."],0],
+  ["How long will you stay?",["Until Sunday.","During Sunday.","Since Sunday."],0],
+  ["Can we meet on Friday?",["Sorry, I'm busy then. How about Saturday?","Yes, we met on Friday.","No, Friday is a day."],0],
+  ["Don't forget the tickets!",["Don't worry, I won't.","Don't worry, I don't.","Yes, I'm forgetting."],0],
+  ["It's going to rain this afternoon.",["Then let's stay in and play games.","Yes, it rained.","I'll be rain."],0]]},
+ {t:"Health, Medicine & Exercise",g:"should · What's the matter?",e:"listen",d:[
+  ["M: What's the matter? Is it your throat again? | W: No, my throat is fine now. I've got a terrible headache.","What's wrong with her?",["a headache","a sore throat","a stomach ache"],0],
+  ["W: You should stay in bed and drink lots of water. Don't go back to school until Thursday.","When can he go back to school?",["Thursday","Tuesday","today"],0],
+  ["M: I hurt my knee playing football. Luckily it wasn't my ankle.","Which part did he hurt?",["his knee","his ankle","his foot"],0],
+  ["W: Take this medicine twice a day, after breakfast and after dinner. Not after lunch.","How often should he take it?",["twice a day","three times a day","once a day"],0],
+  ["M: I go running three times a week, and I swim on Saturdays.","How many times a week does he run?",["3","2","1"],0],
+  ["W: The doctor can see you at ten forty. Not ten fourteen, ten forty.","What time is the appointment?",["10.40","10.14","10.04"],0]]},
+ {t:"Dates & Services",g:"Ordinal numbers · dates · appointments",e:"cloze",d:[
+  ["My birthday is ___ the 22nd of March.",["on"],"dates"],["The festival is ___ August.",["in"],"months"],
+  ["22nd = twenty-___",["second"],"ordinal number"],["I've got an ___ with the dentist at 3 pm.",["appointment"],"a time you book"],
+  ["1st = ___",["first"],"ordinal number"],["The shop is open ___ Monday to Saturday.",["from"],"___ … to"],
+  ["I fell asleep ___ the film.",["during"],"in the middle of"],["The bank is closed ___ Monday. Come back then!",["until","till"],"up to that time"]]}
+]},
+{n:14,id:"L5",name:"Listening Part 5",L:[
+ {t:"House & Home",g:"Question forms",e:"build",d:[
+  ["Where do you live?","are"],["Is your flat very big?","Does"],["How many bedrooms are there?","is"],["Which floor do you live on?","in"],
+  ["Have you got a garden?","Do"],["Does your brother share your room?","Do"],["What colour is your kitchen?","does"],["Who do you live with?","Whose"]]},
+ {t:"Entertainment & Media",g:"Phone messages · numbers",e:"listen",d:[
+  ["M: Hi, it's Tom. Call me back on double seven, three four, nine two.","What's Tom's number?",["77 34 92","73 34 92","77 43 92"],0],
+  ["W: The concert on Friday is cancelled. It's now on Saturday the fifteenth.","When is the concert now?",["Saturday 15th","Friday 15th","Saturday 5th"],0],
+  ["M: Tickets are twelve pounds online, but fourteen at the door.","How much is a ticket at the door?",["£14","£12","£40"],0],
+  ["W: Hi, it's Aruzhan. The film club meets in room eighteen this week, not room eight.","Which room?",["18","8","80"],0],
+  ["M: My email is ben dot smith at mail dot com. That's S, M, I, T, H.","What's his email?",["ben.smith@mail.com","bensmith@mail.com","ben.smyth@mail.com"],0],
+  ["W: Bring your swimming things and a towel. You don't need to bring lunch, it's free.","What do you NOT need to bring?",["lunch","a towel","swimming things"],0]]},
+ {t:"Education & Study",g:"must · mustn't · don't have to",e:"sort",d:{c:["must","mustn't","don't have to"],items:[
+  ["You ___ run near the pool. It's dangerous!",1],["It's Saturday. You ___ wear your uniform.",2],["You ___ hand in your homework before Monday.",0],
+  ["Students ___ use phones in the exam.",1],["The museum is free, so you ___ pay.",2],["You ___ be quiet in the library.",0],
+  ["You ___ eat in the computer room.",1],["It's Sunday! We ___ get up early.",2],["You ___ show your ticket at the door.",0]]}}
+]},
+{n:15,id:"S1",name:"Speaking Part 1",L:[
+ {t:"Personal Identification",g:"Talking about yourself",e:"talk",d:[
+  ["Where do you come from? Tell us about it.","because",["good","nice"]],
+  ["Who do you live with?","older / younger",["mother","father"]],
+  ["Tell us about your best friend.","has got",["good","nice"]],
+  ["What do you usually do at the weekend?","usually",["play","go"]],
+  ["What's your favourite school subject? Why?","because",["like","interesting"]],
+  ["Tell us about your family.","cousin",["mum","dad"]],
+  ["What do you want to do in the future?","I'd like to",["want"]],
+  ["Describe your best birthday ever.","last year",["good","fun"]]]},
+ {t:"Daily Life",g:"How often…? · extending answers",e:"reply",d:[
+  ["How often do you play sports?",["About twice a week, usually football with friends.","Yes, I play.","I played yesterday sports."],0],
+  ["What time do you usually get up?",["At seven on school days, but later at weekends.","Yes, usually.","I'm getting up now."],0],
+  ["Do you like cooking?",["Not really, but I can make pancakes!","Yes, I like.","Cooking is a food."],0],
+  ["How do you get to school?",["I usually walk. It only takes ten minutes.","By foot bus.","School is far."],0],
+  ["What do you do in the evenings?",["I do my homework, and then I read or play games.","I make my homework.","In the evenings."],0],
+  ["Tell me about your weekends.",["On Saturdays I usually visit my grandparents.","Weekend is Saturday and Sunday.","Yes, I have weekend."],0],
+  ["How often do you go to the cinema?",["Once a month, maybe.","Twice a cinema.","A month once."],0],
+  ["Do you help at home?",["Yes, I sometimes wash the dishes.","Yes, I do help always.","I am helping."],0]]},
+ {t:"Places & Buildings",g:"Describing your town · because",e:"talk",d:[
+  ["Describe your town. What can you find there?","There are",["big","small"]],
+  ["Where do you like going in your town? Why?","because",["nice","good"]],
+  ["Is your town crowded or quiet?","quieter than",["very"]],
+  ["Tell us about your school building.","next to",["big"]],
+  ["What's the best place to eat in your town?","the best",["delicious","good"]],
+  ["What would you change about your town?","I'd like",["more"]],
+  ["Give directions from your school to your home.","turn left",["there"]],
+  ["Describe a place you visited last year.","went",["nice","beautiful"]]]}
+]},
+{n:16,id:"S2",name:"Speaking Part 2",L:[
+ {t:"Hobbies & Leisure",g:"Making questions from prompts",e:"talk",d:[
+  ["📋 PHOTO CLUB. Ask about: where? · which day? · price?","How much does…?",["what"]],
+  ["📋 SUMMER CAMP. Ask about: where? · how long? · activities?","How long…?",["is it"]],
+  ["📋 DANCE CLASS. Ask about: kind of dance? · teacher's name? · start time?","What time does…?",["when"]],
+  ["📋 BOOKSHOP. Ask about: name? · open on Sundays? · comics?","Does…?",["is"]],
+  ["📋 CHESS COMPETITION. Ask about: date? · prizes? · how to enter?","Can I…?",["when"]],
+  ["📋 ART MUSEUM. Ask about: address? · student tickets? · café?","Is there…?",["where"]],
+  ["📋 SWIMMING LESSONS. Ask about: age? · how often? · what to bring?","How often…?",["when"]],
+  ["📋 CYCLING TRIP. Ask about: where to? · how far? · what to bring?","What should I…?",["need"]]]},
+ {t:"Sport",g:"Sports & sport verbs",e:"detective",d:[
+  [["tennis"],["You need a racket.","You can play it with two or four players.","There's a net in the middle.","Wimbledon is famous for it."]],
+  [["skiing","ski"],["You do it in winter.","You need special boots and poles.","You go down mountains.","You have two long boards on your feet on the snow."]],
+  [["volleyball"],["It's a team sport.","There are six players in each team.","You mustn't catch the ball.","You hit the ball over a high net with your hands."]],
+  [["kick"],["It's a verb.","Footballers do it all the time.","You use your foot.","You do this to the ball to score a goal."]],
+  [["swimming","swim"],["You can do it indoors or outdoors.","You might wear goggles.","There are four main styles.","You do it in a pool."]],
+  [["goalkeeper","goalie"],["This is a person.","They can use their hands; the others can't.","They wear different colours from their team.","They stand in front of the goal."]],
+  [["boxing"],["Two people do it.","They wear big gloves.","It happens in a ring.","They try to hit each other."]],
+  [["throw"],["It's a verb.","It's irregular: the past is 'threw'.","Basketball players do it a lot.","Send a ball through the air with your hand."]]]},
+ {t:"Holidays & Travel",g:"Present simple timetables · past · going to",e:"wager",d:[
+  ["The flight ______ at 9 tomorrow. It's on the timetable.",["leaves","left","leaving"],0,"Timetables → present simple."],
+  ["Last summer we ______ the ferry to the island.",["took","take","taken"],0],
+  ["A ticket there and back is a ______ ticket.",["return","single","double"],0],
+  ["We're going to ______ in a hotel near the beach.",["stay","staying","stayed"],0],
+  ["Have you ever ______ by plane?",["travelled","travel","travelling"],0],
+  ["We ______ to Dubai next month. The tickets are booked!",["are flying","flew","have flown"],0],
+  ["Don't forget your ______. You need it at the border.",["passport","postcard","souvenir"],0],
+  ["In winter it's colder ______ in summer.",["than","that","then"],0]]}
+]}
+];
+(function(){
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+function el(tag,cls,html){const e=document.createElement(tag);if(cls)e.className=cls;if(html!=null)e.innerHTML=html;return e;}
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function norm(s){return String(s).toLowerCase().replace(/[’']/g,"").replace(/[.,!?;:"]/g,"").replace(/^(the|a|an|my) /,"").replace(/\s+/g," ").trim();}
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
+const EMO=["🦅","🐆"];
+const KEY="ket-quest-arena-v1";
+let S={names:["Golden Eagles","Snow Leopards"],scores:[0,0],done:{},hard:false};
+try{const raw=localStorage.getItem(KEY);if(raw)S=Object.assign(S,JSON.parse(raw));}catch(e){}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
+const tl=t=>EMO[t]+" "+esc(S.names[t]);
+
+/* ---------- scores ---------- */
+function paint(){[0,1].forEach(t=>{$("#n"+t).innerHTML=tl(t);$("#s"+t).textContent=S.scores[t];$("#d"+t).textContent=S.scores[t];if(document.activeElement!==$("#in"+t))$("#in"+t).value=S.names[t];});$("#hardBtn").classList.toggle("on",S.hard);save();}
+function flash(t){const f=$("#flash");f.textContent=t;f.classList.remove("go");void f.offsetWidth;f.classList.add("go");}
+function award(t,n){if(!n)return;S.scores[t]=Math.max(0,S.scores[t]+n);if(R)R.earned[t]+=n;paint();flash((n>0?"+":"")+n+"★ "+EMO[t]);}
+$$("[data-board]").forEach(b=>b.onclick=()=>$("#drawer").classList.toggle("open"));
+$("#drawer").addEventListener("click",e=>{const b=e.target.closest("[data-pm]");if(!b)return;const[t,v]=b.dataset.pm.split(",").map(Number);S.scores[t]=Math.max(0,S.scores[t]+v);paint();});
+[0,1].forEach(t=>$("#in"+t).oninput=e=>{S.names[t]=e.target.value.slice(0,24)||("Team "+(t+1));paint();if(R)paintTurn();});
+$("#resetStars").onclick=()=>{if(confirm("Reset both teams to 0 stars?")){S.scores=[0,0];paint();}};
+$("#resetProg").onclick=()=>{if(confirm("Clear all the ticks on the game map?")){S.done={};save();buildMap();}};
+$("#hardBtn").onclick=()=>{S.hard=!S.hard;paint();flash(S.hard?"⚡ HARD":"🙂 Normal");};
+document.addEventListener("click",e=>{const d=$("#drawer");if(d.classList.contains("open")&&!e.target.closest("#drawer")&&!e.target.closest("[data-board]"))d.classList.remove("open");});
+
+/* ---------- screens ---------- */
+function show(id){$$(".screen").forEach(s=>s.classList.toggle("on",s.id===id));const s=$("#"+id);if(s)s.scrollTop=0;if(id!=="game"){timerStop();stopSpeech();}}
+$("#startBtn").onclick=()=>{buildMap();show("map");};
+$("#homeBtn").onclick=()=>{buildMap();show("map");};
+const FLAT=[];U.forEach((u,ui)=>u.L.forEach((l,li)=>FLAT.push([ui,li])));
+function buildMap(){
+  const groups=[["Reading & Writing",0,9],["Listening",9,14],["Speaking",14,16]];
+  let html="";
+  groups.forEach(g=>{html+=`<div class="sect">${g[0]}</div><div class="grid g4">`;
+    U.slice(g[1],g[2]).forEach((u,k)=>{const ui=g[1]+k;
+      html+=`<div class="unit"><div class="uh"><span class="un">${u.n}</span><span class="ut">${u.id} · ${esc(u.name)}</span></div>`+
+      u.L.map((l,li)=>{const d=S.done[ui+"-"+li],E=ENG[l.e];return `<button class="lbtn${d?" done":""}" data-play="${ui},${li}"><span class="ic">${E.i}</span><span><span class="lt">${esc(l.t)}</span><br><span class="le">${E.n}</span></span>${d?`<span class="dn">✓ ${d[0]}★·${d[1]}★</span>`:""}</button>`;}).join("")+`</div>`;});
+    html+="</div>";});
+  $("#mapBody").innerHTML=html;
+  const n=Object.keys(S.done).length;$("#progress").textContent=`${n} of 48 lesson games played. Each lesson has its own game, built on that lesson's vocabulary and grammar.`;
+}
+$("#mapBody").addEventListener("click",e=>{const b=e.target.closest("[data-play]");if(b){const[a,c]=b.dataset.play.split(",").map(Number);startGame(a,c);}});
+$("#randBtn").onclick=()=>{const p=FLAT[Math.floor(Math.random()*FLAT.length)];startGame(p[0],p[1]);};
+
+/* ---------- timer ---------- */
+let TI=null;
+function timerStop(){clearInterval(TI);TI=null;}
+function timerStart(sec){timerStop();if(!R)return;let total=sec||ENG[R.L.e].t;const bar=$("#tbar");if(!total){bar.classList.add("off");return;}
+  if(S.hard)total=Math.max(5,Math.round(total*0.6));R.tLeft=total;R.tTot=total;bar.classList.remove("off");paintBar();
+  TI=setInterval(()=>{R.tLeft-=0.1;paintBar();if(R.tLeft<=0){timerStop();onTime();}},100);}
+function paintBar(){const bar=$("#tbar");bar.firstElementChild.style.width=Math.max(0,R.tLeft/R.tTot*100)+"%";bar.classList.toggle("low",R.tLeft<R.tTot*0.3);$("#tsec").textContent=Math.max(0,Math.ceil(R.tLeft))+"s";}
+function onTime(){if(!R||R.over)return;flash("⏰");if(R.inst.onTimeout)R.inst.onTimeout();else judge(false,{msg:"Time's up!"});}
+
+/* ---------- game runtime ---------- */
+let R=null;
+function startGame(ui,li){const L=U[ui].L[li];let items;
+  if(L.e==="memory")items=[L.d];else if(L.e==="sort")items=shuffle(L.d.items);else items=shuffle(L.d);
+  R={ui,li,L,items,idx:0,first:Math.round(Math.random()),earned:[0,0]};
+  const E=ENG[L.e];$("#gIcon").textContent=E.i;$("#gUnit").textContent=`Unit ${U[ui].n} · ${U[ui].id} · Lesson ${li+1}`;$("#gGram").textContent=L.g;
+  $("#gTitle").textContent=`${E.n}: ${L.t}`;$("#gHow").textContent=E.h+(S.hard?" ⚡ Hard mode is on.":"");
+  show("game");renderItem();}
+function paintTurn(){const t=$("#turn");t.className="turn t"+R.acting+(R.phase==="steal"?" steal":"");
+  $("#turnTxt").innerHTML=R.phase==="steal"?`🏴‍☠️ Steal! ${tl(R.acting)}, win 1★`:`${tl(R.acting)}: your turn`;
+  $("#round").textContent=R.items.length>1?`Round ${R.idx+1} of ${R.items.length}`:"One big round";}
+function feedback(html,kind){$("#fb").innerHTML=`<div class="${kind||"info"}">${html}</div>`;}
+function note(text){$("#fb").insertAdjacentHTML("beforeend",`<div class="why">💡 ${text}</div>`);}
+function renderItem(){stopSpeech();R.phase="main";R.over=false;R.acting=(R.first+R.idx)%2;paintTurn();$("#fb").innerHTML="";$("#nextBtn").hidden=true;$("#skipBtn").hidden=false;
+  const host=$("#play");host.innerHTML="";R.inst=ENGINES[R.L.e](R.items[R.idx],host)||{};
+  if(R.inst.noTimer){timerStop();$("#tbar").classList.add("off");}else timerStart();}
+function finish(){if(R.over)return;R.over=true;timerStop();if(R.inst.onReveal)R.inst.onReveal();
+  const last=R.idx>=R.items.length-1;const nb=$("#nextBtn");nb.textContent=last?"See the results 🏁":"Next round";nb.hidden=false;$("#skipBtn").hidden=true;nb.focus({preventScroll:true});}
+function judge(ok,o={}){if(!R||R.over)return;const E=ENG[R.L.e];
+  if(ok){const pts=R.phase==="main"?(o.pts!=null?o.pts:E.p):1;award(R.acting,pts);feedback(`✅ Correct! +${pts}★ for ${tl(R.acting)}.`,"good");finish();return;}
+  if(R.phase==="main"){let pen="";if(o.penalty){award(R.acting,-o.penalty);pen=` −${o.penalty}★.`;}
+    R.phase="steal";R.acting=1-R.acting;paintTurn();feedback(`❌ ${o.msg||"Wrong!"}${pen} Steal chance for ${tl(R.acting)}!`,"bad");
+    if(R.inst.onSteal)R.inst.onSteal();if(!R.inst.noTimer)timerStart();return;}
+  feedback(`❌ ${o.msg||"Wrong again!"} Here's the answer.`,"bad");finish();}
+function switchActing(){R.acting=1-R.acting;paintTurn();}
+$("#nextBtn").onclick=()=>{stopSpeech();R.idx++;if(R.idx>=R.items.length)results();else renderItem();};
+$("#skipBtn").onclick=()=>{if(R&&!R.over){feedback("Round skipped.","info");finish();}};
+$("#quitBtn").onclick=()=>{buildMap();show("map");};
+function results(){const k=R.ui+"-"+R.li;S.done[k]=[R.earned[0],R.earned[1]];save();
+  $("#rTag").textContent=`Unit ${U[R.ui].n} · ${R.L.t} · ${ENG[R.L.e].n}`;
+  const e=R.earned;[0,1].forEach(t=>{$("#rn"+t).innerHTML=tl(t);$("#rs"+t).textContent=(e[t]>=0?"+":"")+e[t]+"★";$("#rt"+t).textContent=`Total: ${S.scores[t]}★`;$("#rf"+t).classList.remove("win");$("#rf"+t+" .crown").textContent="";});
+  if(e[0]===e[1]){$("#rTitle").textContent="It's a draw!";[0,1].forEach(t=>{$("#rf"+t).classList.add("win");$("#rf"+t+" .crown").textContent="🤝";});}
+  else{const w=e[0]>e[1]?0:1;$("#rTitle").innerHTML=`${tl(w)} win this game!`;$("#rf"+w).classList.add("win");$("#rf"+w+" .crown").textContent="👑";flash("🏆");}
+  const pos=FLAT.findIndex(p=>p[0]===R.ui&&p[1]===R.li),nx=FLAT[pos+1];$("#rNext").hidden=!nx;
+  $("#rNext").onclick=()=>startGame(nx[0],nx[1]);$("#rAgain").onclick=()=>startGame(R.ui,R.li);$("#rMap").onclick=()=>{buildMap();show("map");};
+  show("results");}
+
+/* ---------- helpers for engines ---------- */
+function mc(host,opts,correct,onPick){const wrap=el("div","opts");const list=shuffle(opts).map((o,i)=>{const b=el("button","opt",`<span class="k">${"ABC"[i]}</span><span>${esc(o)}</span>`);
+    b.onclick=()=>{if(b.disabled||R.over)return;if(o===correct)onPick(true,b);else{b.classList.add("no","shake");b.disabled=true;onPick(false,b);}};wrap.append(b);return{b,o};});
+  host.append(wrap);return{reveal(){list.forEach(x=>{x.b.disabled=true;if(x.o===correct)x.b.classList.add("ok");});}};}
+function typeBox(host,cls,onCheck){const inp=el("input","gapin "+(cls||""));inp.setAttribute("autocomplete","off");inp.setAttribute("autocapitalize","off");inp.setAttribute("spellcheck","false");
+  inp.onkeydown=e=>{if(e.key==="Enter")onCheck();};return inp;}
+
+/* ---------- speech ---------- */
+let VOICES=[];const HAS_TTS="speechSynthesis" in window;
+function loadV(){try{VOICES=speechSynthesis.getVoices().filter(v=>/^en/i.test(v.lang));}catch(e){}}
+if(HAS_TTS){loadV();try{speechSynthesis.onvoiceschanged=loadV;}catch(e){}}
+function stopSpeech(){if(HAS_TTS)try{speechSynthesis.cancel();}catch(e){}}
+function pickVoices(){const gb=VOICES.filter(v=>/GB|UK/i.test(v.lang+" "+v.name));const pool=gb.length?gb:VOICES;
+  const fem=/female|libby|sonia|serena|kate|susan|hazel|mia|samantha|victoria|karen|moira|tessa|fiona|zira|aria|jenny|emma|amy|natasha|martha|catherine/i;
+  const mal=/\bmale\b|daniel|ryan|thomas|george|arthur|oliver|alex|fred|rishi|david|mark|guy|brian|james|william|gordon|lee/i;
+  const W=pool.find(v=>fem.test(v.name))||pool[0]||null;const M=pool.find(v=>mal.test(v.name)&&!fem.test(v.name)&&v!==W)||pool.find(v=>v!==W)||W;return{W,M};}
+function speak(script){if(!HAS_TTS)return;stopSpeech();const{W,M}=pickVoices();
+  script.split("|").forEach(seg=>{seg=seg.trim();const m=seg.match(/^([MW]):\s*(.*)$/);const who=m?m[1]:"W",text=m?m[2]:seg;
+    const u=new SpeechSynthesisUtterance(text);const v=who==="M"?M:W;if(v){u.voice=v;u.lang=v.lang;}else u.lang="en-GB";
+    u.rate=S.hard?1:0.88;if(M===W)u.pitch=who==="M"?0.7:1.25;speechSynthesis.speak(u);});}
+
+/* ---------- engines ---------- */
+const ENGINES={
+notice(it,h){const[sign,opts,a,why]=it;
+  h.append(el("div","notice",sign.split("|").map((l,i)=>`<div class="${i?"nl":"nh"}">${esc(l)}</div>`).join("")));
+  h.append(el("p","ask","Which sentence means the same as the notice?"));
+  const m=mc(h,opts,opts[a],ok=>judge(ok));return{onReveal(){m.reveal();if(why)note(why);}};},
+reply(it,h){const[line,opts,a,why]=it;h.append(el("div","bubble","“"+esc(line)+"”"));h.append(el("p","ask","Choose the best reply."));
+  const m=mc(h,opts,opts[a],ok=>judge(ok));return{onReveal(){m.reveal();if(why)note(why);}};},
+wager(it,h){const[q,opts,a,why]=it;let bet=0,m=null;h.append(el("div","qbig",esc(q)));
+  const bets=el("div","bets",`<span class="ask">${tl(R.acting)}: how many stars do you bet?</span>`);
+  [1,2,3].forEach(n=>{const b=el("button","btn bet",n+"★");b.onclick=()=>{bet=n;bets.remove();go();};bets.append(b);});h.append(bets);
+  function go(){h.append(el("p","ask",`Bet: ${bet}★. Right = +${bet}★, wrong = −${bet}★.`));m=mc(h,opts,opts[a],ok=>ok?judge(true,{pts:bet}):judge(false,{penalty:bet}));timerStart();}
+  return{noTimer:true,onSteal(){timerStart();},onTimeout(){judge(false,{msg:"Time's up!",penalty:bet});},onReveal(){if(m)m.reveal();else bets.remove();if(why)note(why);}};},
+bomb(it,h){const[s,opts,a]=it;const words=s.split(" ");const bug=words.findIndex(w=>w.includes("*"));const mm=words[bug].match(/^(.*?)\*(.+)\*(.*)$/);const fixed=mm[1]+opts[a]+mm[3];
+  let step=1,m=null;h.append(el("p","ask","💣 One word is wrong. Click it!"));const line=el("div","bombline");
+  const btns=words.map((w,i)=>{const b=el("button","word",esc(w.replace(/\*/g,"")));b.onclick=()=>{if(step!==1||R.over||b.disabled)return;
+      if(i===bug){b.classList.add("found");step=2;feedback("🎯 Bug found! Now fix it.","info");fix();}else{b.classList.add("no","shake");b.disabled=true;judge(false,{msg:"That word is fine."});}};line.append(b);return b;});
+  h.append(line);const fb=el("div");h.append(fb);
+  function fix(){fb.innerHTML="";fb.append(el("p","ask","Replace it with…"));m=mc(fb,opts,opts[a],ok=>{if(ok){btns[bug].textContent=fixed;btns[bug].classList.add("fixed");judge(true);}else judge(false,{msg:"Wrong fix."});});}
+  return{onReveal(){btns[bug].textContent=fixed;btns[bug].classList.remove("found");btns[bug].classList.add("fixed");btns.forEach(b=>b.disabled=true);if(m)m.reveal();note("Correct: "+esc(s.replace(/\*[^*]+\*/,opts[a])));}};},
+build(it,h){const[s,trap]=it;const mm=s.match(/^(.*?)([.?!])?$/);const body=mm[1],punct=mm[2]||"";
+  const toks=body.split(" ").map((t,i)=>i===0&&t!=="I"?t.toLowerCase():t);const target=toks.join(" ").toLowerCase();
+  let pool=[],ans=[];h.append(el("p","ask",`Build a ${toks.length}-word sentence. One tile is a trap!`));
+  const ansEl=el("div","ansline"),poolEl=el("div","pool");h.append(ansEl,poolEl);
+  const chk=el("button","btn","Check"),clr=el("button","btn ghost small","Clear");const r=el("div","row");r.append(chk,clr);h.append(r);
+  function reset(){ans=[];pool=shuffle([...toks,trap].map((t,i)=>({t,id:i})));draw();}
+  function draw(){ansEl.innerHTML="";ans.forEach(x=>{const b=el("button","tile on",esc(x.t));b.onclick=()=>{if(R.over)return;ans=ans.filter(y=>y!==x);pool.push(x);draw();};ansEl.append(b);});
+    ansEl.append(el("span","punct",punct));poolEl.innerHTML="";pool.forEach(x=>{const b=el("button","tile",esc(x.t));b.onclick=()=>{if(R.over)return;pool=pool.filter(y=>y!==x);ans.push(x);draw();};poolEl.append(b);});
+    chk.disabled=ans.length!==toks.length;}
+  chk.onclick=()=>{if(R.over)return;if(ans.map(x=>x.t).join(" ").toLowerCase()===target)judge(true);else{judge(false,{msg:"Not the right sentence."});if(!R.over)reset();}};
+  clr.onclick=()=>{if(!R.over)reset();};reset();
+  return{onReveal(){ansEl.innerHTML=`<span class="model">${esc(s)}</span>`;poolEl.innerHTML=`<span class="trap">The trap was: <s>${esc(trap)}</s></span>`;chk.disabled=true;clr.disabled=true;}};},
+cloze(it,h){const[s,acc,hint]=it;const[a,b]=s.split("___");h.append(el("p","ask","Type the missing word, then press Enter."));
+  const line=el("div","clozeline");const inp=typeBox(h,"",check);line.append(a,inp,b);h.append(line);
+  if(hint&&!S.hard)h.append(el("p","hintline","💡 Hint: "+esc(hint)));const go=el("button","btn","Check");go.onclick=check;h.append(go);
+  function check(){if(R.over)return;const v=inp.value.trim();if(!v)return;if(acc.some(x=>norm(x)===norm(v))){inp.classList.add("ok");judge(true);}
+    else{judge(false,{msg:`“${esc(v)}” is wrong.`});if(!R.over){inp.value="";inp.focus();}}}
+  setTimeout(()=>inp.focus({preventScroll:true}),60);
+  return{onReveal(){inp.value=acc[0];inp.disabled=true;inp.classList.add("ok");go.disabled=true;if(acc.length>1)note("Also correct: "+acc.slice(1).map(esc).join(", "));}};},
+spell(it,h){const[def,word]=it;const W=word.toUpperCase();h.append(el("div","defcard","📖 "+esc(def)));
+  h.append(el("p","ask",`${W.length} letters. Type the word, then press Enter.`));const boxes=el("div","boxes");h.append(boxes);
+  const inp=typeBox(h,"wide",check);inp.maxLength=W.length+2;const go=el("button","btn","Check");go.onclick=check;const r=el("div","row");r.append(inp,go);h.append(r);
+  function paintB(){const v=inp.value.toUpperCase().replace(/\s/g,"");boxes.innerHTML=[...W].map((c,i)=>`<span class="lb ${v[i]?"f":""}">${v[i]?esc(v[i]):(i===0&&!S.hard?c:"")}</span>`).join("");}
+  inp.oninput=paintB;paintB();
+  function check(){if(R.over)return;const v=inp.value.trim();if(!v)return;if(norm(v)===norm(word))judge(true);else{judge(false,{msg:`“${esc(v)}” isn't right.`});if(!R.over){inp.value="";paintB();inp.focus();}}}
+  setTimeout(()=>inp.focus({preventScroll:true}),60);
+  return{onReveal(){inp.value=word;paintB();boxes.classList.add("ok");inp.disabled=true;go.disabled=true;}};},
+sort(it,h){const[text,c]=it;const cats=R.L.d.c;h.append(el("p","ask","Which box does it go in?"));h.append(el("div","sortcard",esc(text)));
+  const bins=el("div","bins");const bs=cats.map((cn,i)=>{const b=el("button","bin",esc(cn));b.onclick=()=>{if(R.over||b.disabled)return;
+      if(i===c){b.classList.add("ok");judge(true);}else{b.classList.add("no","shake");b.disabled=true;judge(false);}};bins.append(b);return b;});h.append(bins);
+  return{onReveal(){bs.forEach((b,i)=>{b.disabled=true;if(i===c)b.classList.add("ok");});note(esc(text.replace("___",cats[c])));}};},
+listen(it,h){const[script,q,opts,a]=it;let plays=0,max=2;const pb=el("button","btn play-btn","");const sb=el("button","btn ghost small","📝 Show script");
+  const lab=()=>{pb.textContent=R.over?"▶ Play again":plays>=max?"No plays left":`▶ Play (${max-plays} left)`;pb.disabled=!R.over&&plays>=max;};
+  pb.onclick=()=>{if(!R.over){if(plays>=max)return;plays++;}speak(script);lab();};
+  const scr=el("div","script",script.split("|").map(x=>`<p>${esc(x.trim())}</p>`).join(""));sb.onclick=()=>scr.classList.toggle("on");
+  const r=el("div","row");r.append(pb,sb);h.append(r);if(!HAS_TTS)h.append(el("p","hintline","No speech on this device: the teacher reads the script aloud."));
+  h.append(scr,el("div","qbig",esc(q)));const m=mc(h,opts,opts[a],ok=>judge(ok));lab();
+  return{onSteal(){max=plays+1;lab();},onReveal(){m.reveal();scr.classList.add("on");lab();}};},
+detective(it,h){const[ans,clues]=it;let shown=0,final=false;const list=el("div","clues"),val=el("div","cval");h.append(list,val);
+  const inp=typeBox(h,"wide",check);const go=el("button","btn","Guess");go.onclick=check;const r=el("div","row");r.append(inp,go);h.append(r);
+  function next(){shown++;list.innerHTML=clues.map((c,i)=>`<div class="clue ${i<shown?"on":""}"><b>Clue ${i+1}</b>${i<shown?esc(c):"🔒"}</div>`).join("");val.textContent=`Guess now for ${5-shown}★`;}
+  function wrong(msg){feedback(`❌ ${msg}`,"bad");inp.value="";
+    if(shown<4){next();switchActing();feedback(`❌ ${msg} Next clue goes to ${tl(R.acting)}.`,"bad");timerStart();}
+    else if(!final){final=true;switchActing();val.textContent="Last chance for 1★";feedback(`❌ ${msg} Last chance for ${tl(R.acting)}!`,"bad");timerStart();}
+    else{feedback(`❌ ${msg} Nobody got it!`,"bad");finish();}
+    if(!R.over)inp.focus({preventScroll:true});}
+  function check(){if(R.over)return;const v=inp.value.trim();if(!v)return;
+    if(ans.some(x=>norm(x)===norm(v))){const pts=final?1:5-shown;award(R.acting,pts);feedback(`✅ Yes! +${pts}★ for ${tl(R.acting)}.`,"good");finish();}else wrong(`“${esc(v)}” is wrong.`);}
+  next();setTimeout(()=>inp.focus({preventScroll:true}),60);
+  return{onTimeout(){wrong("Time's up!");},onReveal(){shown=4;list.innerHTML=clues.map((c,i)=>`<div class="clue on"><b>Clue ${i+1}</b>${esc(c)}</div>`).join("");val.textContent="Answer: "+ans[0];inp.disabled=true;go.disabled=true;}};},
+memory(pairs,h){const cards=shuffle(pairs.flatMap((p,i)=>[{t:p[0],k:i,s:"a"},{t:p[1],k:i,s:"b"}]));let open=[],lock=false,found=0;
+  h.append(el("p","ask",`Find all ${pairs.length} pairs. Match = 1★ and go again.`));const g=el("div","mgrid");h.append(g);
+  cards.forEach(c=>{const b=el("button","mcard",`<span class="q">?</span>`);c.b=b;b.onclick=()=>{if(lock||R.over||c.done||open.includes(c))return;
+      b.classList.add("open",c.s);b.textContent=c.t;open.push(c);
+      if(open.length===2){const[x,y]=open;if(x.k===y.k){x.done=y.done=true;x.b.classList.add("done");y.b.classList.add("done");x.b.disabled=y.b.disabled=true;open=[];found++;award(R.acting,1);
+          feedback(`✅ Match! ${tl(R.acting)} goes again.`,"good");if(found===pairs.length){feedback("🎉 All pairs found!","good");finish();}}
+        else{lock=true;feedback("No match. Other team's turn!","bad");setTimeout(()=>{[x,y].forEach(z=>{z.b.className="mcard";z.b.innerHTML=`<span class="q">?</span>`;});open=[];lock=false;switchActing();},1400);}}};g.append(b);});
+  return{noTimer:true,onReveal(){cards.forEach(c=>{c.b.disabled=true;if(!c.done){c.b.className="mcard open "+c.s;c.b.textContent=c.t;}});}};},
+talk(it,h){const[q,must,ban]=it;h.append(el("div","talkq",esc(q)));
+  const r=el("div","row");r.append(el("div","must","✅ Must use: "+esc(must)),el("div","ban","🚫 Banned: "+(ban.length?ban.map(esc).join(", "):"none")));h.append(r);
+  const ctl=el("div","row");const st=el("button","btn","⏱️ Start speaking");st.onclick=()=>{timerStart(ENG.talk.t);st.disabled=true;feedback("Speak! Keep going until the bell.","info");};
+  const buzz=el("button","btn small","🚫 Banned word! +1★ to the other team");buzz.style.background="var(--coral)";buzz.style.color="#fff";
+  buzz.onclick=()=>{if(R.over)return;award(1-R.acting,1);feedback(`Buzz! +1★ for ${tl(1-R.acting)}.`,"bad");};ctl.append(st,buzz);h.append(ctl);
+  h.append(el("p","ask","Teacher: tick what the speaker did, then award."));const checks=el("div","row");
+  ["🗣️ Kept talking until the bell","✅ Used the must-use words","💡 Gave a reason or example","🎯 Accurate grammar"].forEach(t=>{const b=el("button","chk",t);b.onclick=()=>{if(!R.over)b.classList.toggle("on");};checks.append(b);});h.append(checks);
+  const aw=el("button","btn","Award stars");aw.onclick=()=>{if(R.over)return;const n=checks.querySelectorAll(".on").length;if(n)award(R.acting,n);feedback(`+${n}★ for ${tl(R.acting)}.`,n?"good":"info");finish();};h.append(aw);
+  return{noTimer:true,onTimeout(){feedback("🔔 Time! Now score the speaker.","info");}};}
+};
+
+paint();buildMap();
+document.addEventListener("keydown",e=>{if(e.key==="Escape")$("#drawer").classList.remove("open");});
+})();
+
+</script>
+<script src="../_shared/bad18c98/ifr-results.js"></script>
+<script src="../_shared/c634a757/if-flashcards.js"></script>
+</body>
+</html>
+
+<script src="../../if-bar.js" data-root="../../index.html" data-slug="ket-quest"></script></body></html>

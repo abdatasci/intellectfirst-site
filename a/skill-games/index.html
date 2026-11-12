@@ -1,0 +1,524 @@
+<!doctype html>
+<html lang="en">
+<head><script src="../../if-runtime.js"></script><link rel="manifest" href="../../manifest.webmanifest"><link rel="apple-touch-icon" href="../../brand/apple-touch-icon.png"><meta name="theme-color" content="#0B2545"><style>select{max-width:100%}</style><link rel="icon" href="../../brand/favicon-64.png">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>IF Skill Games</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap">
+<style>
+/* Layout: one column; a sticky bar with section tabs and level; the play area is a single large card. */
+:root {
+  --navy: #0B2545; --bg: #FBFCFD; --raised: #FFFFFF; --dim: #F2F4F6; --text: #10233F; --soft: #4C5B70; --line: rgba(11,37,69,.14);
+  --gold: #B8892F; --gold-soft: rgba(197,151,58,.15); --accent: #2F6F8E; --ok: #2E7D4F; --ok-soft: rgba(46,125,79,.12); --bad: #B23A3A; --bad-soft: rgba(178,58,58,.1);
+  --display: 'Fraunces', Georgia, serif; --body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; --r: 8px;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg: #0A1830; --raised: #0F2140; --dim: #0C1C37; --text: #EAF0F6; --soft: #A9BAD0; --line: rgba(201,210,219,.18); --gold: #D9AE5A; --gold-soft: rgba(217,174,90,.15); --accent: #A9D6E5; --ok: #6FCF97; --ok-soft: rgba(111,207,151,.12); --bad: #F08A8A; --bad-soft: rgba(240,138,138,.1); color-scheme: dark; } }
+:root[data-theme="dark"] { --bg: #0A1830; --raised: #0F2140; --dim: #0C1C37; --text: #EAF0F6; --soft: #A9BAD0; --line: rgba(201,210,219,.18); --gold: #D9AE5A; --gold-soft: rgba(217,174,90,.15); --accent: #A9D6E5; --ok: #6FCF97; --ok-soft: rgba(111,207,151,.12); --bad: #F08A8A; --bad-soft: rgba(240,138,138,.1); color-scheme: dark; }
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--bg); color: var(--text); font-family: var(--body); font-size: 16px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+h1, h2, h3 { font-family: var(--display); font-weight: 500; margin: 0; letter-spacing: -.01em; text-wrap: balance; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+[hidden] { display: none !important; }
+.wrap { max-width: 860px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: color-mix(in srgb, var(--bg) 92%, transparent); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
+.top-in { display: flex; align-items: center; gap: 12px; padding-block: 10px 0; flex-wrap: wrap; }
+.top h1 { font-size: 21px; }
+.top h1 small { display: block; font-family: var(--body); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--gold); font-weight: 600; }
+.lv { margin-left: auto; display: flex; gap: 4px; }
+.lv button { border: 1px solid var(--line); background: transparent; border-radius: 999px; padding: 4px 10px; font-size: 13px; cursor: pointer; color: var(--soft); font-variant-numeric: tabular-nums; }
+.lv button[aria-pressed="true"] { background: var(--text); color: var(--bg); border-color: var(--text); }
+.tabs { display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; width: 100%; }
+.tabs a { padding: 10px 12px 9px; text-decoration: none; color: var(--soft); border-bottom: 2px solid transparent; font-size: 14.5px; font-weight: 500; white-space: nowrap; }
+.tabs a[aria-current="page"] { color: var(--text); border-bottom-color: var(--gold); }
+main { padding-block: 22px 80px; }
+.lead { color: var(--soft); margin: 6px 0 18px; max-width: 60ch; }
+.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
+.card { display: flex; flex-direction: column; gap: 6px; padding: 16px; border: 1px solid var(--line); border-radius: var(--r); background: var(--raised); text-decoration: none; color: inherit; cursor: pointer; text-align: left; }
+.card:hover { border-color: var(--accent); }
+.card .k { font-size: 11.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--gold); font-weight: 600; display: flex; justify-content: space-between; }
+.card h3 { font-size: 20px; }
+.card p { margin: 0; color: var(--soft); font-size: 14px; }
+.best { font-size: 13px; color: var(--soft); font-variant-numeric: tabular-nums; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 1px solid var(--line); background: var(--raised); padding: 10px 18px; border-radius: var(--r); cursor: pointer; font-weight: 600; font-size: 15px; text-decoration: none; }
+.btn.primary { background: var(--navy); border-color: var(--navy); color: #fff; }
+.btn:disabled { opacity: .5; cursor: default; }
+.row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+
+/* play */
+.stage { border: 1px solid var(--line); border-radius: 12px; background: var(--raised); padding: 18px; display: flex; flex-direction: column; gap: 16px; min-height: 360px; }
+.hud { display: flex; align-items: center; gap: 14px; font-variant-numeric: tabular-nums; font-size: 14px; color: var(--soft); }
+.hud b { color: var(--text); font-size: 18px; }
+.hud .name { font-family: var(--display); font-size: 18px; color: var(--text); margin-right: auto; }
+.bar { height: 6px; border-radius: 3px; background: var(--dim); overflow: hidden; }
+.bar i { display: block; height: 100%; background: var(--gold); width: 100%; transition: width .25s linear; }
+.prompt { font-family: var(--display); font-size: clamp(22px, 3.4vw, 30px); line-height: 1.35; }
+.words { display: flex; flex-wrap: wrap; gap: 8px; font-size: clamp(18px, 2.6vw, 22px); }
+.w { border: 1px solid var(--line); background: var(--bg); border-radius: 6px; padding: 6px 10px; cursor: pointer; line-height: 1.2; }
+.w.cut { text-decoration: line-through; color: var(--soft); background: var(--dim); }
+.w.right { border-color: var(--ok); background: var(--ok-soft); }
+.w.wrong { border-color: var(--bad); background: var(--bad-soft); }
+.w.used { visibility: hidden; }
+.built { min-height: 52px; border-bottom: 2px solid var(--line); display: flex; flex-wrap: wrap; gap: 8px; padding-bottom: 8px; font-size: clamp(18px, 2.6vw, 22px); }
+.opts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+@media (max-width: 480px) { .opts { grid-template-columns: 1fr; } }
+.opt { border: 1px solid var(--line); background: var(--bg); border-radius: var(--r); padding: 14px; cursor: pointer; text-align: left; font-size: 17px; }
+.opt.right { border-color: var(--ok); background: var(--ok-soft); }
+.opt.wrong { border-color: var(--bad); background: var(--bad-soft); }
+.fb { min-height: 48px; font-size: 14.5px; color: var(--soft); }
+.fb b.ok { color: var(--ok); } .fb b.no { color: var(--bad); }
+.end { display: flex; flex-direction: column; gap: 14px; }
+.stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.stat { border-top: 2px solid var(--gold); padding-top: 8px; }
+.stat b { display: block; font-family: var(--display); font-size: 30px; font-weight: 500; font-variant-numeric: tabular-nums; }
+.stat span { font-size: 13px; color: var(--soft); }
+.review { display: flex; flex-direction: column; gap: 10px; }
+.review div { border-left: 3px solid var(--bad); padding: 4px 0 4px 12px; font-size: 14.5px; }
+table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; font-size: 14.5px; }
+td, th { text-align: left; padding: 9px 6px; border-bottom: 1px solid var(--line); }
+th { font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--soft); font-weight: 600; }
+.tbl { overflow-x: auto; }
+@keyframes shake { 0%,100% { transform: none; } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+.shake { animation: shake .25s; }
+@media (prefers-reduced-motion: reduce) { .shake { animation: none; } .bar i { transition: none; } }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap top-in">
+    <h1><small>IF Academy</small>Skill Games</h1>
+    <div class="lv" id="lv" role="group" aria-label="Level"></div>
+    <nav class="tabs" id="tabs" aria-label="Sections">
+      <a href="#workout">Today’s workout</a><a href="#games">Games</a><a href="#practice-grammar">Grammar practice</a><a href="#practice-vocabulary">Vocabulary practice</a><a href="#progress">Progress</a>
+    </nav>
+  </div>
+</header>
+<main class="wrap" id="main"></main>
+
+<script>/* IF Skill Games item banks. All sentences are original, written for IF Academy.
+   edit:    one wrong word; `bad` is the wrong word as it appears, `fix` the correction.
+   build:   the sentence in the correct order; extra accepted orders in `alt`.
+   trim:    words in [brackets] are the ones a good editor removes.
+   precise: choose the word that fits; `a` is the index of the right option.
+   colloc:  choose the natural partner.
+   match:   word and short meaning. */
+window.SG_DATA = {
+  edit: {
+    A2: [
+      { s: "She don't like coffee in the morning.", bad: "don't", fix: "doesn't", why: "He, she and it take doesn't in the present simple." },
+      { s: "I am living in Kostanay since 2019.", bad: "am", fix: "have been", why: "With since and a time up to now, use the present perfect: I have been living / I have lived." },
+      { s: "We went to the cinema yesterday and watch a comedy.", bad: "watch", fix: "watched", why: "Both actions are in the past, so both verbs are past simple." },
+      { s: "There is many people at the bus stop.", bad: "is", fix: "are", why: "People is plural, so use there are." },
+      { s: "My brother is more tall than me.", bad: "more", fix: "taller", why: "Short adjectives add -er: tall → taller." },
+      { s: "Can you tell me where is the library?", bad: "is", fix: "the library is", why: "In an indirect question the word order is like a statement: where the library is." },
+      { s: "I usually go to school by the bus.", bad: "the", fix: "(no word)", why: "We say by bus, by car, by train, with no article." },
+      { s: "He has visited Almaty last summer.", bad: "has", fix: "(visited)", why: "With a finished time like last summer, use the past simple: he visited." },
+      { s: "Do you can swim?", bad: "Do", fix: "(remove Do)", why: "Can makes its own question. Do is not needed." },
+      { s: "I'm agree with you about the homework.", bad: "I'm", fix: "I", why: "Agree is a verb, so we say I agree, not I am agree." }
+    ],
+    B1: [
+      { s: "If I will see her tomorrow, I'll give her the book.", bad: "will", fix: "(see)", why: "After if in the first conditional, use the present simple: If I see her." },
+      { s: "I'm looking forward to meet your family.", bad: "meet", fix: "meeting", why: "Look forward to is followed by -ing." },
+      { s: "She said me that the lesson was cancelled.", bad: "said", fix: "told", why: "Tell someone something; say something (to someone)." },
+      { s: "The film was so bored that I fell asleep.", bad: "bored", fix: "boring", why: "-ing describes the thing; -ed describes how a person feels." },
+      { s: "I've lived here for I was a child.", bad: "for", fix: "since", why: "Since goes with a starting point; for goes with a length of time." },
+      { s: "He suggested to go to the museum on Saturday.", bad: "to", fix: "going", why: "Suggest is followed by -ing or a that-clause, not to + verb." },
+      { s: "My sister is married with a doctor.", bad: "with", fix: "to", why: "We are married to someone." },
+      { s: "Everybody were happy with the results.", bad: "were", fix: "was", why: "Everybody takes a singular verb." },
+      { s: "We didn't went out because it was raining.", bad: "went", fix: "go", why: "After didn't, use the base form: didn't go." },
+      { s: "This is the best pizza I have never eaten.", bad: "never", fix: "ever", why: "After a superlative we use ever: the best pizza I have ever eaten." }
+    ],
+    B2: [
+      { s: "Hardly I had arrived when the phone rang.", bad: "I", fix: "had I", why: "After hardly at the start of a sentence, invert: Hardly had I arrived…" },
+      { s: "I wish I would have studied harder for the exam.", bad: "would", fix: "had studied", why: "For past regrets use wish + past perfect: I wish I had studied." },
+      { s: "Despite of the rain, the match went ahead.", bad: "of", fix: "(Despite the rain)", why: "Despite has no of. Use despite the rain or in spite of the rain." },
+      { s: "The report must be finished until Friday.", bad: "until", fix: "by", why: "By is a deadline; until is a continuing state up to a time." },
+      { s: "She is used to get up at six every day.", bad: "get", fix: "getting", why: "Be used to is followed by -ing: she is used to getting up." },
+      { s: "Had I knew about the traffic, I would have left earlier.", bad: "knew", fix: "known", why: "Inverted third conditional: Had I known…" },
+      { s: "It's high time we go home.", bad: "go", fix: "went", why: "It's high time is followed by the past simple." },
+      { s: "The number of students have increased this year.", bad: "have", fix: "has", why: "The number of takes a singular verb (a number of takes a plural verb)." },
+      { s: "I'd rather you don't tell anyone yet.", bad: "don't", fix: "didn't", why: "I'd rather + another person takes the past simple: I'd rather you didn't." },
+      { s: "He denied to take the money.", bad: "to", fix: "taking", why: "Deny is followed by -ing." }
+    ],
+    C1: [
+      { s: "Not only she speaks Kazakh, but she also writes it beautifully.", bad: "she", fix: "does she speak", why: "Not only at the start triggers inversion: Not only does she speak…" },
+      { s: "The committee insisted that he resigns immediately.", bad: "resigns", fix: "resign", why: "Insist that takes the subjunctive base form: that he resign." },
+      { s: "Little they knew that the decision had already been made.", bad: "they", fix: "did they know", why: "Negative adverbials at the front invert: Little did they know…" },
+      { s: "She's one of those people who always knows what to say.", bad: "knows", fix: "know", why: "Who refers to people (plural), so the verb is know." },
+      { s: "Under no circumstances you should share your password.", bad: "you", fix: "should you", why: "Under no circumstances triggers inversion: should you share." },
+      { s: "Scarcely had we sat down than the alarm went off.", bad: "than", fix: "when", why: "Scarcely … when; no sooner … than." }
+    ]
+  },
+  build: {
+    A2: [
+      { s: "I have never been to Astana" },
+      { s: "What time does the lesson start" },
+      { s: "She is going to visit her aunt tomorrow" },
+      { s: "We usually have dinner at seven" },
+      { s: "Could you open the window please" },
+      { s: "My father works in a big hospital" },
+      { s: "How long have you lived here" },
+      { s: "There are two parks near my house" }
+    ],
+    B1: [
+      { s: "I have been learning English for five years" },
+      { s: "If it rains we will stay at home", alt: ["We will stay at home if it rains"] },
+      { s: "The book that you lent me was brilliant" },
+      { s: "She asked me where I was going" },
+      { s: "I used to walk to school every day", alt: ["Every day I used to walk to school"] },
+      { s: "You should have told me earlier" },
+      { s: "The bridge was built in 1965" },
+      { s: "He is the man whose car was stolen" }
+    ],
+    B2: [
+      { s: "If I had known I would have helped you", alt: ["I would have helped you if I had known"] },
+      { s: "By the time we arrived the film had started", alt: ["The film had started by the time we arrived"] },
+      { s: "She is said to be the best teacher in town" },
+      { s: "I would rather stay in than go out tonight" },
+      { s: "The more you practise the easier it gets" },
+      { s: "We had the roof repaired last month", alt: ["Last month we had the roof repaired"] },
+      { s: "Not knowing what to say he left the room" },
+      { s: "It was Aliya who found the answer" }
+    ],
+    C1: [
+      { s: "Never before had the city seen such heavy snow" },
+      { s: "Had they left earlier they would not have missed the train" },
+      { s: "Only when the results came out did we realise our mistake" },
+      { s: "So difficult was the exam that few students passed" },
+      { s: "What surprised me most was how calm she remained" },
+      { s: "Should you need any help do not hesitate to ask" },
+      { s: "Rarely do we get the chance to travel abroad" },
+      { s: "Were I in your position I would accept the offer" }
+    ]
+  },
+  trim: {
+    A2: [
+      { s: "I [personally] think that this pizza is [very] really good." },
+      { s: "We went back [again] to the same café on Sunday." },
+      { s: "Please repeat [again] the last question." },
+      { s: "She is a [female] actress from Almaty." },
+      { s: "At [the time of] 8 a.m. the shop opens." },
+      { s: "The meeting is at 3 p.m. [in the afternoon]." }
+    ],
+    B1: [
+      { s: "In my [personal] opinion, the [final] outcome was fair." },
+      { s: "We need to plan [ahead] for the future." },
+      { s: "The two cities are [both] similar in size." },
+      { s: "Each [and every] student must bring a dictionary." },
+      { s: "I [actually] went to the shop and bought some bread [as well too]." },
+      { s: "She returned [back] home at [about] around nine." }
+    ],
+    B2: [
+      { s: "Because it was raining, the match was postponed [until later]." },
+      { s: "The [end] result was a [completely] total success." },
+      { s: "We [first] began the project [initially] in March." },
+      { s: "[Basically,] the main point is that we need more time." },
+      { s: "The proposal was approved [by everyone] unanimously." },
+      { s: "It is [absolutely] essential that everyone attends." }
+    ],
+    C1: [
+      { s: "The [advance] warning came [in] just in time." },
+      { s: "[It is important to note that] the data are incomplete." },
+      { s: "Her [own] personal views were never made public." },
+      { s: "We will [collaborate together to] work together on the [new] innovation." },
+      { s: "The report [clearly] shows a [clear] rise in demand." },
+      { s: "The reason [why] prices rose is that demand outstripped supply." }
+    ]
+  },
+  precise: {
+    A2: [
+      { s: "Can you ___ me your pen for a minute?", o: ["lend", "borrow", "give back", "keep"], a: 0, why: "You lend something to someone; you borrow something from someone." },
+      { s: "It's very cold, so ___ a warm coat.", o: ["wear", "dress", "carry", "put"], a: 0, why: "Wear clothes; dress yourself; put on a coat (needs on)." },
+      { s: "I ___ my keys. I can't find them anywhere.", o: ["lost", "missed", "forgot", "left"], a: 0, why: "Lose = can't find. Miss = arrive too late for, or feel sad without." },
+      { s: "The museum is ___ on Mondays.", o: ["closed", "shut down", "finished", "stopped"], a: 0, why: "Shops and museums are open or closed." },
+      { s: "Turn ___ the light, please. It's dark.", o: ["on", "up", "in", "over"], a: 0, why: "Turn on / off a light." },
+      { s: "We ___ a great time at the party.", o: ["had", "made", "did", "spent"], a: 0, why: "Have a good time." },
+      { s: "My sister is ___ in music and plays the guitar.", o: ["interested", "interesting", "keen", "fond"], a: 0, why: "Interested in. (Keen on, fond of take different prepositions.)" },
+      { s: "Please ___ quietly. The baby is sleeping.", o: ["speak", "tell", "say", "talk about"], a: 0, why: "Speak quietly; say and tell need an object." }
+    ],
+    B1: [
+      { s: "The doctor ___ some medicine for my cough.", o: ["prescribed", "described", "subscribed", "proscribed"], a: 0, why: "Doctors prescribe medicine." },
+      { s: "Could you ___ me to buy milk on the way home?", o: ["remind", "remember", "recall", "memorise"], a: 0, why: "Remind someone to do something; remember is something you do yourself." },
+      { s: "The new shopping centre will ___ hundreds of jobs.", o: ["create", "make up", "invent", "build up"], a: 0, why: "Create jobs is the natural collocation." },
+      { s: "He ___ the exam on his second attempt.", o: ["passed", "past", "succeeded", "won"], a: 0, why: "Pass an exam; succeed in an exam; past is not a verb." },
+      { s: "We need to ___ a decision before Friday.", o: ["make", "do", "take part", "give"], a: 0, why: "Make a decision (British English also accepts take)." },
+      { s: "The bus was ___ because of the snow.", o: ["delayed", "late", "postponed", "slowed"], a: 0, why: "Transport is delayed; events are postponed." },
+      { s: "She has a very ___ personality and makes friends easily.", o: ["outgoing", "outdoor", "outlying", "outside"], a: 0, why: "Outgoing = friendly and sociable." },
+      { s: "I can't ___ the noise from the road any more.", o: ["stand", "support", "carry", "hold"], a: 0, why: "Can't stand = can't bear, can't tolerate." }
+    ],
+    B2: [
+      { s: "The government plans to ___ a new law on recycling.", o: ["introduce", "induce", "deduce", "produce"], a: 0, why: "Introduce a law." },
+      { s: "Her argument was ___: nobody could find a weak point.", o: ["compelling", "compulsive", "compulsory", "competitive"], a: 0, why: "Compelling = very convincing. Compulsory = required." },
+      { s: "The company ___ its profits by cutting costs.", o: ["boosted", "raised up", "rose", "arose"], a: 0, why: "Boost profits (transitive). Rise and arise have no object." },
+      { s: "The results were ___ with what we expected.", o: ["consistent", "constant", "persistent", "insistent"], a: 0, why: "Consistent with = in agreement with." },
+      { s: "Please ___ from using your phone during the exam.", o: ["refrain", "restrain", "retain", "remain"], a: 0, why: "Refrain from doing something." },
+      { s: "The film is ___ on a true story.", o: ["based", "founded", "grounded", "built"], a: 0, why: "Based on a true story." },
+      { s: "He made a ___ effort to arrive on time.", o: ["conscious", "conscientious", "consensual", "consequent"], a: 0, why: "A conscious effort = a deliberate effort." },
+      { s: "The storm caused ___ damage to the roof.", o: ["extensive", "expensive", "expansive", "extended"], a: 0, why: "Extensive damage = a lot of damage." }
+    ],
+    C1: [
+      { s: "The minister's comments ___ a storm of criticism.", o: ["sparked", "lit", "fired", "flashed"], a: 0, why: "Spark criticism, spark a debate." },
+      { s: "Her contribution to the project was ___; we couldn't have done it without her.", o: ["invaluable", "valueless", "unvalued", "devalued"], a: 0, why: "Invaluable = extremely useful." },
+      { s: "The evidence is ___ at best and would not convince a court.", o: ["tenuous", "tentative", "tenacious", "tedious"], a: 0, why: "Tenuous = weak, slight." },
+      { s: "We must ___ the risks before signing the contract.", o: ["weigh up", "weigh down", "weigh in", "weigh out"], a: 0, why: "Weigh up = consider carefully." },
+      { s: "The policy had the ___ effect of increasing prices.", o: ["unintended", "unintentional", "inadvertent", "accidental"], a: 0, why: "Unintended effect / consequence is the fixed collocation." },
+      { s: "She gave a ___ account of the events, leaving nothing out.", o: ["meticulous", "meddlesome", "momentous", "monotonous"], a: 0, why: "Meticulous = very careful and detailed." },
+      { s: "The two reports are ___ different in their conclusions.", o: ["markedly", "remarkably", "notedly", "signally"], a: 0, why: "Markedly different is a strong collocation." },
+      { s: "His apology seemed ___ rather than sincere.", o: ["perfunctory", "peremptory", "precocious", "prudent"], a: 0, why: "Perfunctory = done quickly, without real feeling." }
+    ]
+  },
+  colloc: {
+    A2: [
+      { s: "___ your homework", o: ["do", "make", "take", "have"], a: 0 },
+      { s: "___ a photo", o: ["take", "make", "do", "get"], a: 0 },
+      { s: "___ breakfast", o: ["have", "do", "take", "make up"], a: 0 },
+      { s: "___ a noise", o: ["make", "do", "have", "take"], a: 0 },
+      { s: "___ the bus", o: ["catch", "take up", "bring", "hold"], a: 0 },
+      { s: "___ a shower", o: ["have", "do", "make", "get on"], a: 0 },
+      { s: "___ friends", o: ["make", "do", "take", "get"], a: 0 },
+      { s: "___ the washing-up", o: ["do", "make", "have", "take"], a: 0 }
+    ],
+    B1: [
+      { s: "___ a mistake", o: ["make", "do", "take", "have"], a: 0 },
+      { s: "___ attention", o: ["pay", "give up", "make", "take on"], a: 0 },
+      { s: "___ an exam", o: ["take", "make", "do up", "get on"], a: 0 },
+      { s: "___ a promise", o: ["keep", "hold", "save", "stay"], a: 0 },
+      { s: "___ your best", o: ["do", "make", "take", "have"], a: 0 },
+      { s: "___ a cold", o: ["catch", "take up", "get on", "make"], a: 0 },
+      { s: "___ a complaint", o: ["make", "do", "take", "give up"], a: 0 },
+      { s: "___ advantage of", o: ["take", "make", "have", "do"], a: 0 }
+    ],
+    B2: [
+      { s: "___ a conclusion", o: ["draw", "pull", "take out", "make up"], a: 0 },
+      { s: "___ an effort", o: ["make", "do", "take", "give"], a: 0 },
+      { s: "___ a risk", o: ["take", "make", "do", "have"], a: 0 },
+      { s: "___ a speech", o: ["give", "say", "tell", "do up"], a: 0 },
+      { s: "___ a goal", o: ["achieve", "make up", "win", "earn"], a: 0 },
+      { s: "___ the blame", o: ["take", "make", "give up", "have"], a: 0 },
+      { s: "___ a deadline", o: ["meet", "reach up", "catch", "take"], a: 0 },
+      { s: "___ a rule", o: ["break", "crack", "smash", "split"], a: 0 }
+    ],
+    C1: [
+      { s: "___ a compromise", o: ["reach", "come", "get up", "take"], a: 0 },
+      { s: "___ the alarm", o: ["raise", "rise", "lift", "arise"], a: 0 },
+      { s: "___ a sharp contrast", o: ["stand in", "stay in", "lie in", "set in"], a: 0 },
+      { s: "___ havoc", o: ["wreak", "make", "do", "break"], a: 0 },
+      { s: "___ a fine line", o: ["tread", "walk out", "step", "run"], a: 0 },
+      { s: "___ the ground rules", o: ["lay down", "put down", "set off", "take down"], a: 0 },
+      { s: "___ a chord with people", o: ["strike", "hit up", "play", "touch"], a: 0 },
+      { s: "___ suspicion", o: ["arouse", "rise", "raise up", "awake"], a: 0 }
+    ]
+  },
+  match: {
+    A2: [["borrow", "take something and give it back later"], ["cheap", "not costing much money"], ["tired", "needing rest or sleep"], ["noisy", "making a lot of sound"], ["arrive", "get to a place"], ["hungry", "wanting to eat"], ["busy", "having a lot to do"], ["crowded", "full of people"], ["forget", "not remember"], ["neighbour", "a person who lives next to you"], ["invite", "ask someone to come to an event"], ["dangerous", "able to hurt you"]],
+    B1: [["reliable", "you can trust it or depend on it"], ["afford", "have enough money for"], ["confident", "sure of your own abilities"], ["avoid", "stay away from"], ["improve", "make or get better"], ["rude", "not polite"], ["patient", "able to wait calmly"], ["challenge", "something difficult that tests you"], ["achieve", "succeed in doing something"], ["recommend", "say that something is good"], ["annoyed", "a little angry"], ["realise", "understand something suddenly"]],
+    B2: [["reluctant", "not wanting to do something"], ["thorough", "careful and complete"], ["obvious", "easy to see or understand"], ["hesitate", "pause before acting"], ["tackle", "deal with a problem"], ["accurate", "correct in every detail"], ["significant", "large or important enough to notice"], ["sustain", "keep something going"], ["deliberately", "on purpose"], ["outcome", "the final result"], ["vague", "not clear or detailed"], ["persuade", "make someone agree by giving reasons"]],
+    C1: [["ubiquitous", "seeming to be everywhere"], ["mitigate", "make something less severe"], ["ambiguous", "having more than one meaning"], ["candid", "honest and direct"], ["scrutinise", "examine very carefully"], ["pragmatic", "practical rather than idealistic"], ["discrepancy", "a difference that should not exist"], ["resilient", "able to recover quickly"], ["undermine", "weaken gradually"], ["meticulous", "giving great attention to detail"], ["contentious", "likely to cause disagreement"], ["inevitable", "certain to happen"]]
+  }
+};
+</script>
+<script>
+(function () {
+  var D = window.SG_DATA, main = document.getElementById('main');
+  var GAMES = {
+    edit: { name: 'Spot the Error', skill: 'grammar', how: 'Tap the one word that is wrong.' },
+    build: { name: 'Sentence Builder', skill: 'grammar', how: 'Tap the words in the right order.' },
+    trim: { name: 'Trim It', skill: 'grammar', how: 'Tap every word a good editor would delete, then press Done.' },
+    precise: { name: 'Precise Word', skill: 'vocabulary', how: 'Choose the word that fits exactly.' },
+    colloc: { name: 'Word Partners', skill: 'vocabulary', how: 'Choose the word that naturally goes with the phrase.' },
+    match: { name: 'Speed Match', skill: 'vocabulary', how: 'Choose the meaning of the word.' }
+  };
+  var LEVELS = ['A2', 'B1', 'B2', 'C1'];
+  function ls(k, v) { try { if (v === undefined) return JSON.parse(localStorage.getItem('sg.' + k)); localStorage.setItem('sg.' + k, JSON.stringify(v)); } catch (e) { return null; } }
+  var level = ls('level') || 'B1';
+  function el(t, c, x) { var e = document.createElement(t); if (c) e.className = c; if (x != null) e.textContent = x; return e; }
+  function shuffle(a) { a = a.slice(); for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+  function clean(w) { return w.replace(/^[^\w']+|[^\w']+$/g, ''); }
+  var timerId = null;
+  function stopTimer() { clearInterval(timerId); timerId = null; }
+
+  function drawLevels() {
+    var lv = document.getElementById('lv'); lv.textContent = '';
+    LEVELS.forEach(function (l) { var b = el('button', '', l); b.type = 'button'; b.setAttribute('aria-pressed', String(level === l)); b.onclick = function () { level = l; ls('level', l); drawLevels(); route(); }; lv.appendChild(b); });
+  }
+  function bestKey(g) { return 'best.' + g + '.' + level; }
+
+  /* ---------- question makers ---------- */
+  function deck(g) {
+    if (g === 'match') {
+      var pool = D.match[level];
+      return shuffle(pool).map(function (p) { var others = shuffle(pool.filter(function (x) { return x !== p; })).slice(0, 3).map(function (x) { return x[1]; }); var o = shuffle([p[1]].concat(others)); return { g: 'match', s: p[0], o: o, a: o.indexOf(p[1]), why: p[0] + ' = ' + p[1] }; });
+    }
+    return shuffle(D[g][level]).map(function (it) {
+      if (g === 'precise' || g === 'colloc') { var o = shuffle(it.o.map(function (x, i) { return { x: x, ok: i === it.a }; })); return { g: g, s: it.s, o: o.map(function (x) { return x.x; }), a: o.findIndex(function (x) { return x.ok; }), why: it.why || (it.o[it.a] + ' ' + it.s.replace('___ ', '').replace('___', '')) }; }
+      return Object.assign({ g: g }, it);
+    });
+  }
+
+  /* ---------- one question on the stage ---------- */
+  function ask(q, box, done) {
+    // done(correct, explanation)
+    box.textContent = '';
+    var fbHost = null;
+    if (q.g === 'edit') {
+      box.appendChild(el('div', 'fb', GAMES.edit.how));
+      var ws = el('div', 'words'), words = q.s.split(/\s+/), badAt = words.findIndex(function (w) { return clean(w) === q.bad; }), locked = false;
+      words.forEach(function (w, i) { var b = el('button', 'w', w); b.type = 'button'; b.onclick = function () { if (locked) return; locked = true; var ok = i === badAt; b.classList.add(ok ? 'right' : 'wrong'); if (!ok) ws.children[badAt].classList.add('right'); done(ok, '“' + q.bad + '” → ' + q.fix + '. ' + q.why); }; ws.appendChild(b); });
+      box.appendChild(ws);
+    } else if (q.g === 'build') {
+      box.appendChild(el('div', 'fb', GAMES.build.how));
+      var target = q.s.split(/\s+/), alts = [q.s].concat(q.alt || []).map(function (x) { return x.toLowerCase(); });
+      var built = el('div', 'built'), pool = el('div', 'words'), picked = [];
+      shuffle(target.map(function (w, i) { return { w: w, i: i }; })).forEach(function (t) {
+        var b = el('button', 'w', t.w); b.type = 'button';
+        b.onclick = function () {
+          if (b.classList.contains('used')) return; b.classList.add('used'); picked.push(t.w);
+          var c = el('button', 'w', t.w); c.type = 'button'; c.onclick = function () { if (picked.length === target.length) return; picked.splice(Array.prototype.indexOf.call(built.children, c), 1); c.remove(); b.classList.remove('used'); }; built.appendChild(c);
+          if (picked.length === target.length) { var ok = alts.indexOf(picked.join(' ').toLowerCase()) >= 0; Array.prototype.forEach.call(built.children, function (x) { x.classList.add(ok ? 'right' : 'wrong'); }); done(ok, 'Answer: ' + q.s + '.'); }
+        };
+        pool.appendChild(b);
+      });
+      box.appendChild(built); box.appendChild(pool);
+    } else if (q.g === 'trim') {
+      box.appendChild(el('div', 'fb', GAMES.trim.how));
+      var toks = [], re = /\[([^\]]+)\]|(\S+)/g, m;
+      while ((m = re.exec(q.s))) { if (m[1]) m[1].split(/\s+/).forEach(function (w) { toks.push({ w: w, cut: true }); }); else toks.push({ w: m[2], cut: false }); }
+      var tw = el('div', 'words'); var btns = toks.map(function (t) { var b = el('button', 'w', t.w); b.type = 'button'; b.onclick = function () { if (fin) return; b.classList.toggle('cut'); }; tw.appendChild(b); return b; });
+      var fin = false, dn = el('button', 'btn primary', 'Done'); dn.type = 'button';
+      dn.onclick = function () { if (fin) return; fin = true; var ok = toks.every(function (t, i) { return t.cut === btns[i].classList.contains('cut'); }); toks.forEach(function (t, i) { if (t.cut) btns[i].classList.add('right'); else if (btns[i].classList.contains('cut')) btns[i].classList.add('wrong'); }); done(ok, 'Shorter: ' + toks.filter(function (t) { return !t.cut; }).map(function (t) { return t.w; }).join(' ')); };
+      box.appendChild(tw); var r = el('div', 'row'); r.appendChild(dn); box.appendChild(r);
+    } else {
+      box.appendChild(el('div', 'fb', GAMES[q.g].how));
+      box.appendChild(el('div', 'prompt', q.g === 'match' ? q.s : q.s.replace('___', '_____')));
+      var og = el('div', 'opts'), lk = false;
+      q.o.forEach(function (o, i) { var b = el('button', 'opt', o); b.type = 'button'; b.onclick = function () { if (lk) return; lk = true; var ok = i === q.a; b.classList.add(ok ? 'right' : 'wrong'); if (!ok) og.children[q.a].classList.add('right'); done(ok, q.why); }; og.appendChild(b); });
+      box.appendChild(og);
+    }
+  }
+
+  /* ---------- timed game ---------- */
+  function play(g, opts) {
+    stopTimer(); opts = opts || {};
+    var SECS = 60, left = SECS, score = 0, streak = 0, right = 0, total = 0, misses = [];
+    var qs = deck(g), qi = 0;
+    main.textContent = '';
+    var st = el('section', 'stage');
+    var hud = el('div', 'hud'); var nm = el('span', 'name', (opts.label ? opts.label + ' · ' : '') + GAMES[g].name + ' · ' + level);
+    var sc = el('span'); var tm = el('span'); hud.appendChild(nm); hud.appendChild(sc); hud.appendChild(tm);
+    var bar = el('div', 'bar'); var bi = el('i'); bar.appendChild(bi);
+    var qbox = el('div'); qbox.style.display = 'flex'; qbox.style.flexDirection = 'column'; qbox.style.gap = '14px';
+    var fb = el('div', 'fb');
+    st.appendChild(hud); st.appendChild(bar); st.appendChild(qbox); st.appendChild(fb); main.appendChild(st);
+    function hudDraw() { sc.innerHTML = 'Score <b>' + score + '</b>'; tm.innerHTML = '<b>' + left + '</b>s'; bi.style.width = (left / SECS * 100) + '%'; }
+    function nextQ() {
+      if (left <= 0) return finish();
+      if (qi >= qs.length) { qs = deck(g); qi = 0; }
+      var q = qs[qi++]; fb.textContent = '';
+      ask(q, qbox, function (ok, why) {
+        total++;
+        if (ok) { right++; streak++; score += 100 + Math.min(streak - 1, 5) * 20; fb.innerHTML = ''; var b = el('b', 'ok', 'Correct' + (streak > 1 ? ' · streak ' + streak : '')); fb.appendChild(b); }
+        else { streak = 0; misses.push({ q: q, why: why }); fb.innerHTML = ''; fb.appendChild(el('b', 'no', 'Not quite. ')); fb.appendChild(document.createTextNode(why)); st.classList.remove('shake'); void st.offsetWidth; st.classList.add('shake'); }
+        hudDraw(); setTimeout(nextQ, ok ? 650 : 2200);
+      });
+    }
+    function finish() {
+      stopTimer();
+      var key = bestKey(g), best = ls(key) || 0, isBest = score > best; if (isBest) ls(key, score);
+      var hist = ls('history') || []; hist.push({ g: g, level: level, score: score, right: right, total: total, at: Date.now() }); ls('history', hist.slice(-200));
+      var days = ls('days') || []; var today = new Date().toISOString().slice(0, 10); if (days.indexOf(today) < 0) { days.push(today); ls('days', days.slice(-400)); }
+      if (opts.onEnd) return opts.onEnd({ g: g, score: score, right: right, total: total, misses: misses, isBest: isBest });
+      showEnd([{ g: g, score: score, right: right, total: total, misses: misses, isBest: isBest }], function () { play(g); });
+    }
+    timerId = setInterval(function () { left--; hudDraw(); if (left <= 0) { stopTimer(); } }, 1000);
+    hudDraw(); nextQ();
+  }
+  function showEnd(results, again) {
+    main.textContent = '';
+    var box = el('section', 'stage end');
+    var total = results.reduce(function (a, r) { return a + r.score; }, 0), right = results.reduce(function (a, r) { return a + r.right; }, 0), n = results.reduce(function (a, r) { return a + r.total; }, 0);
+    box.appendChild(el('h2', '', results.length > 1 ? 'Workout complete' : GAMES[results[0].g].name));
+    var s = el('div', 'stats');
+    [[total, 'points'], [n ? Math.round(right / n * 100) + '%' : '–', 'accuracy'], [right + '/' + n, 'correct']].forEach(function (x) { var d = el('div', 'stat'); d.appendChild(el('b', '', String(x[0]))); d.appendChild(el('span', '', x[1])); s.appendChild(d); });
+    box.appendChild(s);
+    results.forEach(function (r) { if (r.isBest) box.appendChild(el('p', 'best', 'New best score in ' + GAMES[r.g].name + ' (' + level + ').')); });
+    var misses = [].concat.apply([], results.map(function (r) { return r.misses; }));
+    if (misses.length) {
+      box.appendChild(el('h3', '', 'Review'));
+      var rv = el('div', 'review'); misses.slice(0, 8).forEach(function (m) { var d = el('div'); d.appendChild(el('div', '', m.q.s.replace(/[\[\]]/g, ''))); d.appendChild(el('div', 'best', m.why)); rv.appendChild(d); }); box.appendChild(rv);
+    }
+    var row = el('div', 'row'); var a = el('button', 'btn primary', 'Play again'); a.type = 'button'; a.onclick = again; row.appendChild(a);
+    var b = el('a', 'btn', 'All games'); b.href = '#games'; row.appendChild(b); box.appendChild(row);
+    main.appendChild(box);
+  }
+
+  /* ---------- views ---------- */
+  function games() {
+    main.appendChild(el('h2', '', 'Games'));
+    main.appendChild(el('p', 'lead', 'Sixty seconds per game. Answer fast for streak bonuses. Your level is ' + level + '; change it at the top.'));
+    var cards = el('div', 'cards');
+    Object.keys(GAMES).forEach(function (g) {
+      var c = el('a', 'card'); c.href = '#' + g;
+      var k = el('div', 'k'); k.appendChild(el('span', '', GAMES[g].skill)); k.appendChild(el('span', '', level)); c.appendChild(k);
+      c.appendChild(el('h3', '', GAMES[g].name)); c.appendChild(el('p', '', GAMES[g].how));
+      c.appendChild(el('div', 'best', 'Best: ' + (ls(bestKey(g)) || 0)));
+      cards.appendChild(c);
+    });
+    main.appendChild(cards);
+  }
+  function workout() {
+    var day = new Date().toISOString().slice(0, 10), seed = 0; for (var i = 0; i < day.length; i++) seed = (seed * 31 + day.charCodeAt(i)) % 9973;
+    var g = ['edit', 'precise', 'build', 'colloc', 'trim', 'match'], pick = [g[seed % 6], g[(seed + 3) % 6 === seed % 6 ? (seed + 1) % 6 : (seed + 3) % 6]];
+    var third = g.filter(function (x) { return pick.indexOf(x) < 0; })[seed % 4]; pick.push(third);
+    main.appendChild(el('h2', '', 'Today’s workout'));
+    main.appendChild(el('p', 'lead', 'Three games, one minute each, at level ' + level + '. The mix changes every day.'));
+    var cards = el('div', 'cards'); pick.forEach(function (x, i) { var c = el('div', 'card'); var k = el('div', 'k'); k.appendChild(el('span', '', 'Game ' + (i + 1))); k.appendChild(el('span', '', GAMES[x].skill)); c.appendChild(k); c.appendChild(el('h3', '', GAMES[x].name)); c.appendChild(el('p', '', GAMES[x].how)); cards.appendChild(c); });
+    main.appendChild(cards);
+    var r = el('div', 'row'); r.style.marginTop = '18px'; var b = el('button', 'btn primary', 'Start workout'); b.type = 'button';
+    b.onclick = function () { var res = []; (function run(i) { if (i >= pick.length) return showEnd(res, function () { route(); }); play(pick[i], { label: (i + 1) + '/3', onEnd: function (x) { res.push(x); run(i + 1); } }); })(0); };
+    r.appendChild(b); main.appendChild(r);
+    var days = ls('days') || []; if (days.length) main.appendChild(el('p', 'best', 'You have trained on ' + days.length + ' day' + (days.length > 1 ? 's' : '') + '.'));
+  }
+  function practice(skill) {
+    var gs = Object.keys(GAMES).filter(function (g) { return GAMES[g].skill === skill; });
+    var qs = shuffle([].concat.apply([], gs.map(deck))), qi = 0, right = 0, done = 0;
+    main.appendChild(el('h2', '', (skill === 'grammar' ? 'Grammar' : 'Vocabulary') + ' practice bank'));
+    main.appendChild(el('p', 'lead', 'No timer. Every answer comes with an explanation. ' + qs.length + ' exercises at level ' + level + '.'));
+    var st = el('section', 'stage'); var hud = el('div', 'hud'); var nm = el('span', 'name'); var sc = el('span'); hud.appendChild(nm); hud.appendChild(sc);
+    var qbox = el('div'); qbox.style.display = 'flex'; qbox.style.flexDirection = 'column'; qbox.style.gap = '14px';
+    var fb = el('div', 'fb'); var nx = el('button', 'btn primary', 'Next'); nx.type = 'button'; nx.hidden = true;
+    st.appendChild(hud); st.appendChild(qbox); st.appendChild(fb); var r = el('div', 'row'); r.appendChild(nx); st.appendChild(r); main.appendChild(st);
+    function show() {
+      if (qi >= qs.length) { qbox.textContent = ''; fb.textContent = ''; nx.hidden = true; qbox.appendChild(el('h3', '', 'Bank complete: ' + right + ' of ' + done + ' correct.')); var again = el('button', 'btn', 'Start again'); again.type = 'button'; again.onclick = route; qbox.appendChild(again); return; }
+      var q = qs[qi++]; nm.textContent = GAMES[q.g].name; sc.textContent = qi + ' / ' + qs.length; fb.textContent = ''; nx.hidden = true;
+      ask(q, qbox, function (ok, why) { done++; if (ok) right++; fb.innerHTML = ''; fb.appendChild(el('b', ok ? 'ok' : 'no', ok ? 'Correct. ' : 'Not quite. ')); fb.appendChild(document.createTextNode(why)); nx.hidden = false; nx.focus(); });
+    }
+    nx.onclick = show; show();
+  }
+  function progress() {
+    main.appendChild(el('h2', '', 'Progress'));
+    var days = ls('days') || [], hist = ls('history') || [];
+    main.appendChild(el('p', 'lead', hist.length ? hist.length + ' games played on ' + days.length + ' day' + (days.length === 1 ? '' : 's') + '. Scores are saved on this device.' : 'Play a game and your best scores appear here. Scores are saved on this device.'));
+    var w = el('div', 'tbl'); var t = el('table'); var h = el('tr'); ['Game'].concat(LEVELS).forEach(function (x) { h.appendChild(el('th', '', x)); }); t.appendChild(h);
+    Object.keys(GAMES).forEach(function (g) { var tr = el('tr'); tr.appendChild(el('td', '', GAMES[g].name)); LEVELS.forEach(function (l) { tr.appendChild(el('td', '', String(ls('best.' + g + '.' + l) || '–'))); }); t.appendChild(tr); });
+    w.appendChild(t); main.appendChild(w);
+  }
+  function route() {
+    stopTimer(); main.textContent = '';
+    var h = location.hash.slice(1) || 'workout';
+    document.querySelectorAll('#tabs a').forEach(function (a) { var on = a.getAttribute('href') === '#' + h || (h in GAMES && a.getAttribute('href') === '#games'); if (on) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
+    if (h in GAMES) return play(h);
+    if (h === 'games') return games();
+    if (h === 'practice-grammar') return practice('grammar');
+    if (h === 'practice-vocabulary') return practice('vocabulary');
+    if (h === 'progress') return progress();
+    workout();
+  }
+  window.addEventListener('hashchange', route);
+  drawLevels(); route();
+})();
+</script>
+<script src="../../if-bar.js" data-root="../../index.html" data-slug="skill-games"></script></body>
+</html>

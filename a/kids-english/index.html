@@ -1,0 +1,420 @@
+<!doctype html>
+<html lang="en">
+<head><script src="../../if-runtime.js"></script><link rel="manifest" href="../../manifest.webmanifest"><link rel="apple-touch-icon" href="../../brand/apple-touch-icon.png"><meta name="theme-color" content="#0B2545"><style>select{max-width:100%}</style><link rel="icon" href="../../brand/favicon-64.png">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>IF Kids English</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@500;600;700;800&display=swap">
+<style>
+/* Kids layout: big rounded play cards on a soft paper ground; one task per screen; mascot gives feedback. */
+:root {
+  --bg: #F6F8FB; --card: #FFFFFF; --ink: #1B2B45; --soft: #5A6B84; --line: #DCE3EE;
+  --navy: #0B2545; --gold: #E2A93B; --sun: #FFD35C; --ok: #2E9E6A; --ok-bg: #E4F6EC; --bad: #D9534F; --bad-bg: #FCE9E8;
+  --lv: #2F8F6B; --lv-bg: #E5F4EE;
+  --title: 'Baloo 2', 'Nunito', 'Trebuchet MS', sans-serif; --body: 'Nunito', 'Trebuchet MS', -apple-system, sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg: #0D1A2E; --card: #15263F; --ink: #EEF3FA; --soft: #A8B8CE; --line: #27405F; --ok-bg: #133A2A; --bad-bg: #3E1E22; --lv-bg: #17352B; color-scheme: dark; } }
+:root[data-theme="dark"] { --bg: #0D1A2E; --card: #15263F; --ink: #EEF3FA; --soft: #A8B8CE; --line: #27405F; --ok-bg: #133A2A; --bad-bg: #3E1E22; --lv-bg: #17352B; color-scheme: dark; }
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 17px; line-height: 1.45; -webkit-font-smoothing: antialiased; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+h1, h2, h3 { font-family: var(--title); margin: 0; line-height: 1.1; text-wrap: balance; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+[hidden] { display: none !important; }
+.wrap { max-width: 820px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); border-bottom: 2px solid var(--line); }
+.top-in { display: flex; align-items: center; gap: 10px; padding-block: 8px; }
+.top h1 { font-size: 22px; }
+.top h1 small { display: block; font-family: var(--body); font-size: 12px; color: var(--soft); font-weight: 700; }
+.stars { margin-left: auto; display: flex; align-items: center; gap: 6px; background: var(--card); border: 2px solid var(--line); border-radius: 999px; padding: 4px 12px 4px 8px; font-weight: 800; font-variant-numeric: tabular-nums; cursor: pointer; }
+.stars span { font-size: 20px; }
+main { padding-block: 18px 90px; display: flex; flex-direction: column; gap: 18px; }
+.hello { display: grid; grid-template-columns: 110px minmax(0, 1fr); gap: 14px; align-items: center; }
+.hello h2 { font-size: 30px; }
+.ru { color: var(--soft); font-weight: 600; font-size: .92em; }
+.levels { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.lvb { border: 3px solid var(--line); background: var(--card); border-radius: 18px; padding: 12px 8px; cursor: pointer; text-align: center; }
+.lvb b { display: block; font-family: var(--title); font-size: 21px; }
+.lvb[aria-pressed="true"] { border-color: var(--c); background: color-mix(in srgb, var(--c) 12%, var(--card)); }
+.acts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+@media (max-width: 520px) { .acts { grid-template-columns: 1fr; } .hello { grid-template-columns: 80px minmax(0, 1fr); } }
+.act { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 12px; align-items: center; text-align: left; border: 2px solid var(--line); background: var(--card); border-radius: 18px; padding: 14px; cursor: pointer; }
+.act:hover { border-color: var(--lv); }
+.act .ic { font-size: 40px; width: 64px; height: 64px; display: grid; place-items: center; background: var(--lv-bg); border-radius: 16px; }
+.act h3 { font-size: 21px; }
+.sec-h { display: flex; align-items: baseline; gap: 10px; justify-content: space-between; }
+.sec-h h2 { font-size: 24px; }
+
+/* play */
+.play { background: var(--card); border: 2px solid var(--line); border-radius: 22px; padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+.prog { display: flex; gap: 5px; }
+.prog i { flex: 1; height: 8px; border-radius: 4px; background: var(--line); }
+.prog i.done { background: var(--ok); } .prog i.miss { background: var(--bad); } .prog i.now { background: var(--gold); }
+.ask { font-family: var(--title); font-size: clamp(24px, 4vw, 32px); font-weight: 700; }
+.ask .ru { display: block; font-family: var(--body); font-size: 16px; }
+.pic { font-size: clamp(84px, 18vw, 130px); text-align: center; line-height: 1.1; padding: 6px 0; user-select: none; }
+.pic.small { font-size: clamp(54px, 11vw, 80px); letter-spacing: 4px; }
+.grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.choice { border: 3px solid var(--line); background: var(--bg); border-radius: 18px; padding: 12px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; min-height: 64px; justify-content: center; font-weight: 800; font-size: 21px; }
+.choice .e { font-size: 58px; line-height: 1.1; }
+.choice.right { border-color: var(--ok); background: var(--ok-bg); } .choice.wrong { border-color: var(--bad); background: var(--bad-bg); }
+.tf { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.tf .choice { font-size: 38px; }
+.slots { display: flex; justify-content: center; gap: 6px; flex-wrap: wrap; }
+.slot { width: 44px; height: 52px; border-bottom: 4px solid var(--line); display: grid; place-items: center; font-family: var(--title); font-size: 30px; font-weight: 800; text-transform: lowercase; }
+.slot.right { border-color: var(--ok); color: var(--ok); }
+.letters { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+.letter { width: 50px; height: 50px; border-radius: 14px; border: 3px solid var(--line); background: var(--bg); font-family: var(--title); font-size: 26px; font-weight: 800; cursor: pointer; }
+.letter.used { opacity: .25; }
+.scene { position: relative; height: 210px; max-width: 320px; margin: 0 auto; width: 100%; }
+.scene .b, .scene .a { position: absolute; line-height: 1; }
+.scene .b { font-size: 120px; left: 50%; bottom: 20px; transform: translateX(-50%); }
+.scene .a { font-size: 56px; }
+.scene.in .a { left: 50%; bottom: 52px; transform: translateX(-50%); font-size: 46px; z-index: 0; }
+.scene.in .b { z-index: 1; clip-path: inset(38% 0 0 0); }
+.scene.on .a { left: 50%; bottom: 136px; transform: translateX(-50%); }
+.scene.under .b { bottom: 70px; } .scene.under .a { left: 50%; bottom: 4px; transform: translateX(-50%); }
+.scene.next .a { left: calc(50% + 66px); bottom: 22px; }
+.mascot-line { display: grid; grid-template-columns: 70px minmax(0, 1fr); gap: 10px; align-items: center; min-height: 72px; }
+.bubble { background: var(--bg); border: 2px solid var(--line); border-radius: 16px; padding: 8px 12px; font-weight: 700; }
+.bubble .ru { display: block; font-weight: 600; }
+.bubble.ok { border-color: var(--ok); } .bubble.no { border-color: var(--bad); }
+.say { border: 2px solid var(--line); background: var(--bg); border-radius: 999px; padding: 6px 14px; cursor: pointer; font-weight: 800; }
+.row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; justify-content: center; }
+.big { border: 0; background: var(--navy); color: #fff; border-radius: 999px; padding: 12px 26px; font-weight: 800; font-size: 19px; cursor: pointer; }
+.big.alt { background: var(--card); color: var(--ink); border: 2px solid var(--line); }
+.result { text-align: center; display: flex; flex-direction: column; gap: 10px; align-items: center; }
+.result .got { font-size: 46px; letter-spacing: 6px; }
+.new-sticker { font-size: 96px; animation: pop .6s ease-out; }
+@keyframes pop { 0% { transform: scale(.2) rotate(-20deg); } 70% { transform: scale(1.15) rotate(6deg); } 100% { transform: none; } }
+.book { display: grid; grid-template-columns: repeat(auto-fill, minmax(76px, 1fr)); gap: 10px; }
+.stk { aspect-ratio: 1; border-radius: 18px; border: 2px dashed var(--line); display: grid; place-items: center; font-size: 44px; background: var(--card); }
+.stk.locked { font-size: 22px; color: var(--soft); font-weight: 800; }
+.cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
+.wcard { border: 2px solid var(--line); background: var(--card); border-radius: 18px; padding: 10px; text-align: center; cursor: pointer; }
+.wcard .e { font-size: 54px; line-height: 1.15; }
+.wcard b { display: block; font-size: 19px; }
+.topic-chips { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
+.chip { border: 2px solid var(--line); background: var(--card); border-radius: 999px; padding: 5px 12px; cursor: pointer; font-weight: 700; white-space: nowrap; font-size: 15px; }
+.chip[aria-pressed="true"] { background: var(--lv); border-color: var(--lv); color: #fff; }
+.confetti { position: fixed; inset: 0; pointer-events: none; z-index: 50; }
+@keyframes shake { 0%,100% { transform: none; } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+.shake { animation: shake .3s; }
+@media (prefers-reduced-motion: reduce) { .shake, .new-sticker { animation: none; } }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap top-in">
+    <a href="#home" aria-label="Home" id="homeOwl" style="display:block;width:44px"></a>
+    <h1>Kids English<small>Английский для детей · Starters · Movers · Flyers</small></h1>
+    <a class="stars" href="#stickers" style="text-decoration:none;color:inherit" aria-label="My stars and stickers"><span>⭐</span><b id="starCount">0</b></a>
+  </div>
+</header>
+<main class="wrap" id="main"></main>
+<canvas class="confetti" id="confetti" hidden></canvas>
+
+<script>/* IF Kids English: original word and grammar banks in the style of Cambridge
+   Pre A1 Starters, A1 Movers and A2 Flyers. Pictures are the device's own
+   colour emoji, so they look the same as everything else on the child's phone. */
+window.KIDS = {
+  levels: {
+    starters: { name: 'Starters', ru: 'Стартерс', color: '#2F8F6B' },
+    movers: { name: 'Movers', ru: 'Муверс', color: '#2F6F8E' },
+    flyers: { name: 'Flyers', ru: 'Флаерс', color: '#7A4FA0' }
+  },
+  words: {
+    starters: [
+      ['cat','кошка','🐱','animals'],['dog','собака','🐶','animals'],['fish','рыба','🐟','animals'],['bird','птица','🐦','animals'],['horse','лошадь','🐴','animals'],['cow','корова','🐄','animals'],['duck','утка','🦆','animals'],['frog','лягушка','🐸','animals'],['spider','паук','🕷️','animals'],['monkey','обезьяна','🐒','animals'],['elephant','слон','🐘','animals'],['giraffe','жираф','🦒','animals'],['snake','змея','🐍','animals'],['tiger','тигр','🐯','animals'],
+      ['apple','яблоко','🍎','food'],['banana','банан','🍌','food'],['orange','апельсин','🍊','food'],['bread','хлеб','🍞','food'],['cake','торт','🍰','food'],['egg','яйцо','🥚','food'],['milk','молоко','🥛','food'],['ice cream','мороженое','🍦','food'],
+      ['ball','мяч','⚽','toys'],['kite','воздушный змей','🪁','toys'],['robot','робот','🤖','toys'],['balloon','воздушный шарик','🎈','toys'],
+      ['car','машина','🚗','transport'],['bus','автобус','🚌','transport'],['bike','велосипед','🚲','transport'],['boat','лодка','⛵','transport'],['train','поезд','🚂','transport'],['plane','самолёт','✈️','transport'],
+      ['book','книга','📖','school'],['pencil','карандаш','✏️','school'],['ruler','линейка','📏','school'],['bag','сумка','🎒','school'],['clock','часы','🕐','school'],['computer','компьютер','💻','school'],
+      ['hat','шляпа','👒','clothes'],['shoe','туфля, ботинок','👟','clothes'],['T-shirt','футболка','👕','clothes'],['dress','платье','👗','clothes'],['sock','носок','🧦','clothes'],
+      ['sun','солнце','☀️','world'],['tree','дерево','🌳','world'],['flower','цветок','🌸','world'],['house','дом','🏠','world'],['bed','кровать','🛏️','world'],['chair','стул','🪑','world'],['door','дверь','🚪','world'],
+      ['hand','рука (кисть)','✋','body'],['eye','глаз','👁️','body'],['ear','ухо','👂','body'],['nose','нос','👃','body'],['mouth','рот','👄','body']
+    ],
+    movers: [
+      ['bat','летучая мышь','🦇','animals'],['dolphin','дельфин','🐬','animals'],['kangaroo','кенгуру','🦘','animals'],['lion','лев','🦁','animals'],['panda','панда','🐼','animals'],['parrot','попугай','🦜','animals'],['rabbit','кролик','🐰','animals'],['shark','акула','🦈','animals'],['whale','кит','🐳','animals'],
+      ['cheese','сыр','🧀','food'],['sandwich','бутерброд','🥪','food'],['soup','суп','🍲','food'],['pancake','блин','🥞','food'],['milkshake','молочный коктейль','🥤','food'],['carrot','морковь','🥕','food'],['onion','лук','🧅','food'],['pear','груша','🍐','food'],['watermelon','арбуз','🍉','food'],
+      ['rain','дождь','🌧️','weather'],['snow','снег','❄️','weather'],['wind','ветер','🌬️','weather'],['cloud','облако','☁️','weather'],['rainbow','радуга','🌈','weather'],
+      ['hospital','больница','🏥','places'],['library','библиотека','📚','places'],['park','парк','🏞️','places'],['shop','магазин','🏪','places'],['bus stop','автобусная остановка','🚏','places'],['ticket','билет','🎟️','places'],
+      ['cold','простуда','🤧','health'],['headache','головная боль','🤕','health'],['toothache','зубная боль','🦷','health'],['doctor','врач','🧑‍⚕️','health'],
+      ['coat','пальто','🧥','clothes'],['scarf','шарф','🧣','clothes'],['glasses','очки','👓','clothes'],['tent','палатка','⛺','clothes'],['mountain','гора','⛰️','places']
+    ],
+    flyers: [
+      ['astronaut','космонавт','🧑‍🚀','space'],['rocket','ракета','🚀','space'],['planet','планета','🪐','space'],['moon','луна','🌙','space'],['star','звезда','⭐','space'],
+      ['firefighter','пожарный','🧑‍🚒','jobs'],['police officer','полицейский','👮','jobs'],['pilot','пилот','🧑‍✈️','jobs'],['cook','повар','🧑‍🍳','jobs'],['artist','художник','🧑‍🎨','jobs'],['scientist','учёный','🧑‍🔬','jobs'],
+      ['volcano','вулкан','🌋','world'],['desert','пустыня','🏜️','world'],['island','остров','🏝️','world'],['forest','лес','🌲','world'],['storm','гроза','⛈️','world'],['fog','туман','🌫️','world'],
+      ['camera','фотоаппарат','📷','things'],['envelope','конверт','✉️','things'],['map','карта','🗺️','things'],['suitcase','чемодан','🧳','things'],['umbrella','зонт','☂️','things'],['torch','фонарик','🔦','things'],['key','ключ','🔑','things'],['gate','ворота','🚧','things'],
+      ['butterfly','бабочка','🦋','animals'],['eagle','орёл','🦅','animals'],['octopus','осьминог','🐙','animals'],['bee','пчела','🐝','animals'],['beetle','жук','🪲','animals'],
+      ['honey','мёд','🍯','food'],['pepper','перец','🌶️','food'],['salt','соль','🧂','food'],['biscuit','печенье','🍪','food']
+    ]
+  },
+  topics: { animals: 'животные', food: 'еда', toys: 'игрушки', transport: 'транспорт', school: 'школа', clothes: 'одежда', world: 'мир вокруг', body: 'тело', weather: 'погода', places: 'места', health: 'здоровье', space: 'космос', jobs: 'профессии', things: 'вещи' },
+  /* grammar: s = sentence with ___, o = options, a = right index, pic = picture,
+     ru = translation, rule = short rule in Russian, scene = picture of a position */
+  grammar: {
+    starters: [
+      { s: 'This ___ a dog.', o: ['is', 'are'], a: 0, pic: '🐶', ru: 'Это собака.', rule: 'Один предмет — is.' },
+      { s: 'These ___ apples.', o: ['is', 'are'], a: 1, pic: '🍎🍎🍎', ru: 'Это яблоки.', rule: 'Много предметов — are.' },
+      { s: 'I ___ got a balloon.', o: ['have', 'has'], a: 0, pic: '🎈', ru: 'У меня есть воздушный шарик.', rule: 'I, you, we, they — have got.' },
+      { s: 'She ___ got a kite.', o: ['have', 'has'], a: 1, pic: '👧🪁', ru: 'У неё есть воздушный змей.', rule: 'He, she, it — has got.' },
+      { s: 'The cat is ___ the box.', o: ['in', 'on', 'under'], a: 0, scene: { a: '🐱', b: '📦', pos: 'in' }, ru: 'Кошка в коробке.', rule: 'in — внутри.' },
+      { s: 'The ball is ___ the chair.', o: ['in', 'on', 'under'], a: 2, scene: { a: '⚽', b: '🪑', pos: 'under' }, ru: 'Мяч под стулом.', rule: 'under — под.' },
+      { s: 'The bird is ___ the house.', o: ['on', 'under', 'next to'], a: 0, scene: { a: '🐦', b: '🏠', pos: 'on' }, ru: 'Птица на доме.', rule: 'on — на.' },
+      { s: 'The dog is ___ the tree.', o: ['in', 'next to', 'on'], a: 1, scene: { a: '🐶', b: '🌳', pos: 'next' }, ru: 'Собака рядом с деревом.', rule: 'next to — рядом с.' },
+      { s: 'Can you swim? Yes, I ___.', o: ['can', 'do', 'am'], a: 0, pic: '🏊', ru: 'Ты умеешь плавать? Да, умею.', rule: 'Короткий ответ повторяет can.' },
+      { s: 'He is ___ a book.', o: ['reading', 'read', 'reads'], a: 0, pic: '👦📖', ru: 'Он читает книгу.', rule: 'Сейчас: is + глагол с -ing.' },
+      { s: 'How many birds ___ there?', o: ['is', 'are'], a: 1, pic: '🐦🐦🐦', ru: 'Сколько там птиц?', rule: 'How many … are there?' },
+      { s: "It's ___ bag.", o: ['my', 'me', 'I'], a: 0, pic: '🎒', ru: 'Это моя сумка.', rule: 'my — мой, моя.' },
+      { s: 'There ___ a cake on the table.', o: ['is', 'are'], a: 0, pic: '🍰', ru: 'На столе торт.', rule: 'There is — один предмет.' },
+      { s: 'I like ___.', o: ['bananas', 'banana'], a: 0, pic: '🍌🍌', ru: 'Я люблю бананы.', rule: 'Когда говорим, что любим что-то вообще, — множественное число.' }
+    ],
+    movers: [
+      { s: 'Yesterday we ___ to the zoo.', o: ['went', 'go', 'goes'], a: 0, pic: '🦁🦒', ru: 'Вчера мы ходили в зоопарк.', rule: 'Yesterday — прошедшее время: go → went.' },
+      { s: 'A lion is ___ than a cat.', o: ['bigger', 'big', 'biggest'], a: 0, pic: '🦁🐱', ru: 'Лев больше, чем кошка.', rule: 'Сравниваем два: big → bigger than.' },
+      { s: 'The whale is the ___ animal in the sea.', o: ['biggest', 'bigger', 'big'], a: 0, pic: '🐳🐟🐠', ru: 'Кит — самое большое животное в море.', rule: 'Самый: the + -est.' },
+      { s: 'She sings ___.', o: ['beautifully', 'beautiful'], a: 0, pic: '👧🎤', ru: 'Она красиво поёт.', rule: 'Как? — наречие на -ly.' },
+      { s: "You ___ wear a coat. It's cold!", o: ['must', "mustn't"], a: 0, pic: '🧥❄️', ru: 'Ты должен надеть пальто. Холодно!', rule: 'must — нужно, обязательно.' },
+      { s: 'Did you see the dolphin? Yes, I ___.', o: ['did', 'saw', 'do'], a: 0, pic: '🐬', ru: 'Ты видел дельфина? Да, видел.', rule: 'Короткий ответ на Did…? — Yes, I did.' },
+      { s: 'I ___ swim when I was five.', o: ['could', 'can'], a: 0, pic: '🏊', ru: 'Я умел плавать, когда мне было пять.', rule: 'can в прошлом — could.' },
+      { s: "There isn't ___ milk.", o: ['any', 'some'], a: 0, pic: '🥛', ru: 'Молока нет.', rule: 'В отрицаниях — any.' },
+      { s: 'He wants ___ a doctor.', o: ['to be', 'be', 'being'], a: 0, pic: '🧑‍⚕️', ru: 'Он хочет стать врачом.', rule: 'want + to + глагол.' },
+      { s: 'I like ___ football.', o: ['playing', 'play', 'plays'], a: 0, pic: '⚽', ru: 'Я люблю играть в футбол.', rule: 'like + глагол с -ing.' },
+      { s: 'Where ___ you yesterday?', o: ['were', 'was', 'are'], a: 0, pic: '🏞️', ru: 'Где ты был вчера?', rule: 'you, we, they — were.' },
+      { s: 'The rabbit is ___ the box.', o: ['inside', 'outside'], a: 1, scene: { a: '🐰', b: '📦', pos: 'next' }, ru: 'Кролик снаружи коробки.', rule: 'inside — внутри, outside — снаружи.' }
+    ],
+    flyers: [
+      { s: 'I have never ___ to the moon.', o: ['been', 'went', 'go'], a: 0, pic: '🌙🚀', ru: 'Я никогда не был на луне.', rule: 'have + been — опыт.' },
+      { s: 'It ___ rain tomorrow.', o: ['might', 'must'], a: 0, pic: '⛈️', ru: 'Завтра может пойти дождь.', rule: 'might — возможно.' },
+      { s: "We're going ___ a sandcastle.", o: ['to build', 'build', 'building'], a: 0, pic: '🏝️', ru: 'Мы собираемся построить замок из песка.', rule: 'going to + глагол — планы.' },
+      { s: "If it's sunny, we ___ go to the beach.", o: ['will', 'would'], a: 0, pic: '☀️🏖️', ru: 'Если будет солнечно, мы пойдём на пляж.', rule: 'If + настоящее, will + глагол.' },
+      { s: 'The astronaut ___ flew the rocket waved to us.', o: ['who', 'which'], a: 0, pic: '🧑‍🚀🚀', ru: 'Космонавт, который управлял ракетой, помахал нам.', rule: 'who — о людях, which — о вещах.' },
+      { s: 'She has lived here ___ 2020.', o: ['since', 'for'], a: 0, pic: '🏠', ru: 'Она живёт здесь с 2020 года.', rule: 'since + начало, for + период.' },
+      { s: "You're tired, ___ you?", o: ["aren't", "don't", "isn't"], a: 0, pic: '😴', ru: 'Ты устал, правда?', rule: 'Хвостик: are → aren\'t.' },
+      { s: 'The cake was eaten ___ the dog!', o: ['by', 'from'], a: 0, pic: '🍰🐶', ru: 'Торт съела собака!', rule: 'Страдательный залог: by — кем.' },
+      { s: "I'd like ___ an astronaut.", o: ['to be', 'being', 'be'], a: 0, pic: '🧑‍🚀', ru: 'Я хотел бы стать космонавтом.', rule: "I'd like + to + глагол." },
+      { s: "He's ___ hungry that he could eat a horse!", o: ['so', 'such'], a: 0, pic: '😋', ru: 'Он такой голодный, что мог бы съесть лошадь!', rule: 'so + прилагательное, such + существительное.' },
+      { s: 'Have you ___ finished your homework?', o: ['already', 'yet'], a: 0, pic: '📚', ru: 'Ты уже сделал домашнее задание?', rule: 'already — уже (в середине); yet — в конце.' },
+      { s: 'The rocket is flying ___ the moon.', o: ['towards', 'under'], a: 0, scene: { a: '🚀', b: '🌙', pos: 'next' }, ru: 'Ракета летит к луне.', rule: 'towards — по направлению к.' }
+    ]
+  },
+  stickers: ['🦄','🐲','🦊','🐼','🦁','🐨','🐙','🦖','🚀','🌈','🏆','🎨','🎸','🌟','🍀','🦋','🐬','🌍','🎡','🧁','🛸','🏰','👑','🎯']
+};
+</script>
+<script>
+(function () {
+  var K = window.KIDS, main = document.getElementById('main');
+  function ls(k, v) { try { if (v === undefined) return JSON.parse(localStorage.getItem('kids.' + k)); localStorage.setItem('kids.' + k, JSON.stringify(v)); } catch (e) { return null; } }
+  var lvl = ls('level') || 'starters';
+  function el(t, c, x) { var e = document.createElement(t); if (c) e.className = c; if (x != null) e.textContent = x; return e; }
+  function shuffle(a) { a = a.slice(); for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+  function stars() { return ls('stars') || 0; }
+  function setLevelColor() { var c = K.levels[lvl].color; document.documentElement.style.setProperty('--lv', c); document.documentElement.style.setProperty('--lv-bg', 'color-mix(in srgb, ' + c + ' 14%, var(--card))'); }
+
+  /* Ula the owl: the IF Kids mascot (original drawing) */
+  function owl(mood, size) {
+    size = size || 70;
+    var eyes = mood === 'happy' ? '<path d="M33 46q6-7 12 0M55 46q6-7 12 0" stroke="#1B2B45" stroke-width="4" fill="none" stroke-linecap="round"/>'
+      : mood === 'oops' ? '<circle cx="39" cy="46" r="9" fill="#fff"/><circle cx="61" cy="46" r="9" fill="#fff"/><circle cx="41" cy="48" r="4" fill="#1B2B45"/><circle cx="59" cy="48" r="4" fill="#1B2B45"/><path d="M44 74q6-4 12 0" stroke="#1B2B45" stroke-width="3" fill="none" stroke-linecap="round"/>'
+      : '<circle cx="39" cy="46" r="10" fill="#fff"/><circle cx="61" cy="46" r="10" fill="#fff"/><circle cx="40" cy="47" r="5" fill="#1B2B45"/><circle cx="60" cy="47" r="5" fill="#1B2B45"/><circle cx="42" cy="45" r="1.6" fill="#fff"/><circle cx="62" cy="45" r="1.6" fill="#fff"/>';
+    return '<svg viewBox="0 0 100 110" width="' + size + '" height="' + Math.round(size * 1.1) + '" aria-hidden="true">'
+      + '<ellipse cx="50" cy="104" rx="26" ry="4" fill="rgba(0,0,0,.12)"/>'
+      + '<path d="M22 40Q20 18 34 16L40 26Q50 22 60 26L66 16Q80 18 78 40Q86 70 70 92Q50 104 30 92Q14 70 22 40Z" fill="#0B2545"/>'
+      + '<ellipse cx="50" cy="72" rx="20" ry="22" fill="#A9D6E5"/>'
+      + '<path d="M38 64q4 3 8 0M48 72q4 3 8 0M40 80q4 3 8 0M54 64q4 3 8 0" stroke="#61A5C2" stroke-width="2.4" fill="none" stroke-linecap="round"/>'
+      + '<path d="M18 58Q8 70 20 84" stroke="#0B2545" stroke-width="8" fill="none" stroke-linecap="round"/><path d="M82 58Q92 70 80 84" stroke="#0B2545" stroke-width="8" fill="none" stroke-linecap="round"/>'
+      + eyes + '<path d="M46 54L54 54L50 61Z" fill="#E2A93B"/>'
+      + '<path d="M28 14L50 4L72 14L50 22Z" fill="#1B2B45"/><path d="M50 22L50 13" stroke="#1B2B45" stroke-width="2"/><path d="M68 15L70 27" stroke="#E2A93B" stroke-width="2.4"/><circle cx="70" cy="28" r="2.6" fill="#E2A93B"/>'
+      + '<path d="M40 98l-3 5M44 99l0 5M56 99l0 5M60 98l3 5" stroke="#E2A93B" stroke-width="3" stroke-linecap="round"/>'
+      + '</svg>';
+  }
+  document.getElementById('homeOwl').innerHTML = owl('happy', 44);
+
+  /* sound + voice */
+  var AC = null;
+  function chime(ok) {
+    try { AC = AC || new (window.AudioContext || window.webkitAudioContext)(); var t = AC.currentTime; (ok ? [523, 659, 784] : [330, 262]).forEach(function (f, i) { var o = AC.createOscillator(), g = AC.createGain(); o.type = 'triangle'; o.frequency.value = f; g.gain.setValueAtTime(.0001, t + i * .09); g.gain.exponentialRampToValueAtTime(.18, t + i * .09 + .02); g.gain.exponentialRampToValueAtTime(.0001, t + i * .09 + .25); o.connect(g); g.connect(AC.destination); o.start(t + i * .09); o.stop(t + i * .09 + .3); }); } catch (e) {}
+  }
+  var voice = null;
+  function pickVoice() {
+    if (!window.speechSynthesis) return null;
+    var vs = speechSynthesis.getVoices().filter(function (v) { return /^en/i.test(v.lang); });
+    function sc(v) { var n = v.name, s = 0; if (/natural|neural/i.test(n)) s += 60; if (/premium|enhanced|siri/i.test(n)) s += 45; if (/google/i.test(n)) s += 35; if (/female|sonia|libby|aria|jenny|samantha|kate|serena|karen|martha/i.test(n)) s += 12; if (/en-GB/i.test(v.lang)) s += 6; if (/compact|espeak|novelty|whisper|zarvox|bells|bad news|jester|organ|bubbles/i.test(n)) s -= 80; return s; }
+    vs.sort(function (a, b) { return sc(b) - sc(a); }); return vs[0] || null;
+  }
+  if (window.speechSynthesis) { voice = pickVoice(); speechSynthesis.onvoiceschanged = function () { voice = pickVoice(); }; }
+  function say(t, rate) { if (!window.speechSynthesis) return; speechSynthesis.cancel(); var u = new SpeechSynthesisUtterance(t.replace(/_+/g, ' ')); if (voice) { u.voice = voice; u.lang = voice.lang; } else u.lang = 'en-GB'; u.rate = rate || .85; u.pitch = 1.05; speechSynthesis.speak(u); }
+
+  function confetti() {
+    var c = document.getElementById('confetti'); if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    c.hidden = false; c.width = innerWidth; c.height = innerHeight; var x = c.getContext('2d');
+    var cols = ['#E2A93B', '#2F8F6B', '#2F6F8E', '#7A4FA0', '#D9534F', '#FFD35C'];
+    var ps = Array.from({ length: 120 }, function () { return { x: Math.random() * c.width, y: -20 - Math.random() * c.height * .4, v: 2 + Math.random() * 4, r: Math.random() * 6.28, s: 6 + Math.random() * 6, c: cols[Math.floor(Math.random() * 6)] }; });
+    var n = 0; (function f() { x.clearRect(0, 0, c.width, c.height); ps.forEach(function (p) { p.y += p.v; p.r += .1; x.save(); x.translate(p.x, p.y); x.rotate(p.r); x.fillStyle = p.c; x.fillRect(-p.s / 2, -p.s / 4, p.s, p.s / 2); x.restore(); }); if (++n < 140) requestAnimationFrame(f); else { c.hidden = true; } })();
+  }
+  function drawStars() { document.getElementById('starCount').textContent = stars(); }
+
+  /* ---------- home ---------- */
+  var ACTS = [
+    { id: 'look', ic: '👀', en: 'Look and choose', ru: 'Посмотри и выбери', type: 'words' },
+    { id: 'listen', ic: '👂', en: 'Listen and tap', ru: 'Послушай и нажми', type: 'words' },
+    { id: 'spell', ic: '🔤', en: 'Spell the word', ru: 'Составь слово', type: 'words' },
+    { id: 'yesno', ic: '✅', en: 'Yes or no?', ru: 'Да или нет?', type: 'words' },
+    { id: 'grammar', ic: '🧩', en: 'Grammar: choose', ru: 'Грамматика: выбери', type: 'grammar' },
+    { id: 'where', ic: '📦', en: 'Where is it?', ru: 'Где это?', type: 'grammar' },
+    { id: 'cards', ic: '🃏', en: 'Picture dictionary', ru: 'Словарь с картинками', type: 'words' },
+    { id: 'stickers', ic: '🏆', en: 'My sticker book', ru: 'Мои наклейки', type: 'reward' }
+  ];
+  function home() {
+    var h = el('section', 'hello'); var o = el('div'); o.innerHTML = owl('happy', 110); h.appendChild(o);
+    var t = el('div'); t.appendChild(el('h2', '', 'Hello! I’m Ula.')); t.appendChild(el('div', 'ru', 'Привет! Я сова Ула. Давай учить английский!')); t.appendChild(el('p', '', 'Choose your level, then a game. Every right answer gives you a star ⭐. Ten stars give you a new sticker!'));
+    t.appendChild(el('div', 'ru', 'Выбери уровень и игру. За каждый правильный ответ — звезда. За 10 звёзд — новая наклейка!')); h.appendChild(t); main.appendChild(h);
+    var lv = el('div', 'levels'); lv.setAttribute('role', 'group'); lv.setAttribute('aria-label', 'Level · Уровень');
+    Object.keys(K.levels).forEach(function (k) { var L = K.levels[k]; var b = el('button', 'lvb'); b.type = 'button'; b.style.setProperty('--c', L.color); b.setAttribute('aria-pressed', String(lvl === k)); b.innerHTML = '<b></b><span class="ru"></span>'; b.querySelector('b').textContent = L.name; b.querySelector('.ru').textContent = L.ru + ' · ' + K.words[k].length + ' слов'; b.onclick = function () { lvl = k; ls('level', k); setLevelColor(); route(); }; lv.appendChild(b); });
+    main.appendChild(lv);
+    [['Words', 'Слова', 'words'], ['Grammar', 'Грамматика', 'grammar'], ['Rewards', 'Награды', 'reward']].forEach(function (g) {
+      var hd = el('div', 'sec-h'); hd.appendChild(el('h2', '', g[0])); hd.appendChild(el('span', 'ru', g[1])); main.appendChild(hd);
+      var a = el('div', 'acts'); ACTS.filter(function (x) { return x.type === g[2]; }).forEach(function (x) {
+        var b = el('a', 'act'); b.href = '#' + x.id; b.style.textDecoration = 'none'; b.style.color = 'inherit';
+        var ic = el('div', 'ic', x.ic); var tx = el('div'); tx.appendChild(el('h3', '', x.en)); tx.appendChild(el('div', 'ru', x.ru)); b.appendChild(ic); b.appendChild(tx); a.appendChild(b);
+      }); main.appendChild(a);
+    });
+  }
+
+  /* ---------- rounds ---------- */
+  var ROUND = 8;
+  function wordsPool(n) { return shuffle(K.words[lvl]).slice(0, n); }
+  function makeQuestions(type) {
+    var W = K.words[lvl];
+    function distract(w, n) { var same = W.filter(function (x) { return x !== w && x[3] === w[3]; }); var other = W.filter(function (x) { return x !== w && x[3] !== w[3]; }); return shuffle(same).concat(shuffle(other)).slice(0, n); }
+    if (type === 'look' || type === 'listen') return wordsPool(ROUND).map(function (w) { var o = shuffle([w].concat(distract(w, 3))); return { type: type, w: w, o: o, a: o.indexOf(w) }; });
+    if (type === 'spell') return shuffle(W.filter(function (w) { return /^[a-z]{3,8}$/.test(w[0]); })).slice(0, ROUND).map(function (w) { return { type: 'spell', w: w }; });
+    if (type === 'yesno') return wordsPool(ROUND).map(function (w) { var yes = Math.random() < .5; var shown = yes ? w : distract(w, 1)[0]; return { type: 'yesno', w: w, shown: shown, a: yes ? 0 : 1 }; });
+    if (type === 'grammar') return shuffle(K.grammar[lvl]).slice(0, ROUND).map(function (g) { return { type: 'grammar', g: g }; });
+    if (type === 'where') {
+      var sc = [].concat(K.grammar.starters, K.grammar.movers, K.grammar.flyers).filter(function (g) { return g.scene; });
+      var extra = [['🐱', 'cat', 'кошка', '📦', 'box', 'коробки', 'коробке', 'коробкой'], ['🐶', 'dog', 'собака', '🛏️', 'bed', 'кровати', 'кровати', 'кроватью'], ['⚽', 'ball', 'мяч', '🪑', 'chair', 'стула', 'стуле', 'стулом'], ['🐸', 'frog', 'лягушка', '🪨', 'rock', 'камня', 'камне', 'камнем'], ['🐭', 'mouse', 'мышка', '🧀', 'cheese', 'сыра', 'сыре', 'сыром'], ['🧸', 'teddy', 'мишка', '📦', 'box', 'коробки', 'коробке', 'коробкой'], ['🐵', 'monkey', 'обезьяна', '🏠', 'house', 'дома', 'доме', 'домом'], ['🐦', 'bird', 'птица', '🚗', 'car', 'машины', 'машине', 'машиной']];
+      var pos = [['in', 'in', function (e) { return 'в ' + e[6]; }], ['on', 'on', function (e) { return 'на ' + e[6]; }], ['under', 'under', function (e) { return 'под ' + e[7]; }], ['next', 'next to', function (e) { return 'рядом с ' + e[7]; }]];
+      var gen = extra.map(function (e) { var p = pos[Math.floor(Math.random() * 4)]; if (e[3] === '🏠' && p[0] === 'in') p = pos[1]; return { s: 'The ' + e[1] + ' is ___ the ' + e[4] + '.', o: ['in', 'on', 'under', 'next to'], a: ['in', 'on', 'under', 'next to'].indexOf(p[1]), scene: { a: e[0], b: e[3], pos: p[0] }, ru: (e[2].charAt(0).toUpperCase() + e[2].slice(1)) + ' ' + p[2](e) + '.', rule: 'in — в, on — на, under — под, next to — рядом с.' }; });
+      return shuffle(gen.concat(sc)).slice(0, ROUND).map(function (g) { return { type: 'grammar', g: g, where: true }; });
+    }
+  }
+  function sceneEl(s) { var d = el('div', 'scene ' + s.pos); d.setAttribute('aria-hidden', 'true'); var b = el('span', 'b', s.b); var a = el('span', 'a', s.a); d.appendChild(a); d.appendChild(b); return d; }
+  function round(type) {
+    var qs = makeQuestions(type), i = 0, got = 0, marks = [];
+    var act = ACTS.filter(function (x) { return x.id === type; })[0];
+    var box = el('section', 'play'); main.appendChild(box);
+    function bar() { var p = el('div', 'prog'); for (var k = 0; k < qs.length; k++) { var m = el('i'); if (k < marks.length) m.className = marks[k] ? 'done' : 'miss'; else if (k === i) m.className = 'now'; p.appendChild(m); } return p; }
+    function mascot(mood, en, ru, cls) { var r = el('div', 'mascot-line'); var o = el('div'); o.innerHTML = owl(mood, 64); r.appendChild(o); var b = el('div', 'bubble ' + (cls || '')); b.appendChild(document.createTextNode(en)); b.appendChild(el('span', 'ru', ru)); r.appendChild(b); return r; }
+    function finish() {
+      box.textContent = '';
+      var before = stars(); var after = before + got; ls('stars', after); drawStars();
+      var stickers = ls('stickers') || []; var earned = Math.floor(after / 10) - Math.floor(before / 10); var newOnes = [];
+      for (var k = 0; k < earned; k++) { var left = K.stickers.filter(function (s) { return stickers.indexOf(s) < 0; }); if (!left.length) break; var s = left[Math.floor(Math.random() * left.length)]; stickers.push(s); newOnes.push(s); }
+      ls('stickers', stickers);
+      var r = el('div', 'result');
+      var o = el('div'); o.innerHTML = owl(got >= qs.length - 2 ? 'happy' : 'calm', 110); r.appendChild(o);
+      r.appendChild(el('h2', '', got === qs.length ? 'Perfect! Well done!' : got >= qs.length / 2 ? 'Great job!' : 'Good try! Let’s practise more.'));
+      r.appendChild(el('div', 'ru', got === qs.length ? 'Отлично! Молодец!' : got >= qs.length / 2 ? 'Хорошая работа!' : 'Хорошая попытка! Давай ещё потренируемся.'));
+      r.appendChild(el('div', 'got', '⭐'.repeat(got) || '·'));
+      r.appendChild(el('div', '', got + ' / ' + qs.length + ' · ' + 'You have ' + after + ' stars · У тебя ' + after + ' звёзд'));
+      if (newOnes.length) { r.appendChild(el('h3', '', 'New sticker! · Новая наклейка!')); newOnes.forEach(function (s) { r.appendChild(el('div', 'new-sticker', s)); }); confetti(); chime(true); }
+      else r.appendChild(el('div', 'ru', 'До новой наклейки: ' + (10 - after % 10) + ' ⭐'));
+      var row = el('div', 'row'); var a = el('button', 'big', 'Play again · Ещё раз'); a.type = 'button'; a.onclick = function () { main.textContent = ''; round(type); };
+      var b = el('a', 'big alt', 'Menu · Меню'); b.href = '#home'; b.style.textDecoration = 'none'; row.appendChild(a); row.appendChild(b); r.appendChild(row);
+      box.appendChild(r);
+      var log = ls('log') || []; log.push({ t: type, l: lvl, got: got, n: qs.length, at: Date.now() }); ls('log', log.slice(-300));
+    }
+    function next() {
+      if (i >= qs.length) return finish();
+      var q = qs[i]; box.textContent = ''; box.appendChild(bar());
+      var feedback = el('div'); var locked = false;
+      function answer(ok, en, ru) {
+        if (locked) return; locked = true; marks.push(ok); if (ok) got++;
+        chime(ok);
+        if (!ok) { box.classList.remove('shake'); void box.offsetWidth; box.classList.add('shake'); }
+        feedback.textContent = '';
+        feedback.appendChild(mascot(ok ? 'happy' : 'oops', ok ? (en || 'Yes! Well done!') : (en || 'Oops!'), ok ? (ru || 'Да! Молодец!') : (ru || 'Ой!'), ok ? 'ok' : 'no'));
+        var r = el('div', 'row'); var b = el('button', 'big', i + 1 < qs.length ? 'Next · Дальше' : 'Finish · Готово'); b.type = 'button'; b.onclick = function () { i++; next(); }; r.appendChild(b); feedback.appendChild(r); b.focus();
+      }
+      if (q.type === 'look' || q.type === 'listen') {
+        var a1 = el('div', 'ask'); a1.appendChild(document.createTextNode(q.type === 'look' ? q.w[0] : 'Listen and tap.')); a1.appendChild(el('span', 'ru', q.type === 'look' ? 'Найди картинку: ' + q.w[1] : 'Послушай и нажми на картинку.')); box.appendChild(a1);
+        var sb = el('button', 'say', '🔊 ' + (q.type === 'listen' ? 'Listen · Слушать' : 'Say it · Произнести')); sb.type = 'button'; sb.onclick = function () { say(q.w[0]); }; var r0 = el('div', 'row'); r0.style.justifyContent = 'flex-start'; r0.appendChild(sb); box.appendChild(r0);
+        if (q.type === 'listen') setTimeout(function () { say(q.w[0]); }, 300);
+        var g = el('div', 'grid'); q.o.forEach(function (w, k) { var c = el('button', 'choice'); c.type = 'button'; c.setAttribute('aria-label', w[0]); c.appendChild(el('span', 'e', w[2])); if (q.type === 'look') { } else {} c.onclick = function () { if (locked) return; var ok = k === q.a; c.classList.add(ok ? 'right' : 'wrong'); if (!ok) g.children[q.a].classList.add('right'); say(q.w[0]); answer(ok, ok ? 'Yes! It’s a ' + q.w[0] + '.' : 'Look! This is a ' + q.w[0] + '.', ok ? 'Да! Это ' + q.w[1] + '.' : 'Смотри! Это ' + q.w[1] + '.'); }; g.appendChild(c); });
+        box.appendChild(g);
+      } else if (q.type === 'spell') {
+        var a2 = el('div', 'ask'); a2.appendChild(document.createTextNode('Spell the word.')); a2.appendChild(el('span', 'ru', 'Составь слово: ' + q.w[1])); box.appendChild(a2);
+        box.appendChild(el('div', 'pic', q.w[2]));
+        var word = q.w[0], slots = el('div', 'slots'), filled = [];
+        for (var k = 0; k < word.length; k++) slots.appendChild(el('div', 'slot'));
+        box.appendChild(slots);
+        var lets = el('div', 'letters'); var pool = shuffle(word.split('').concat(shuffle('abcdefghijklmnoprstuvwy'.split('').filter(function (c) { return word.indexOf(c) < 0; })).slice(0, 2)));
+        pool.forEach(function (ch) { var b = el('button', 'letter', ch); b.type = 'button'; b.onclick = function () {
+          if (locked || b.classList.contains('used')) return;
+          var need = word[filled.length];
+          if (ch === need) { b.classList.add('used'); slots.children[filled.length].textContent = ch; filled.push(ch); if (filled.length === word.length) { Array.prototype.forEach.call(slots.children, function (s) { s.classList.add('right'); }); say(word); answer(true, 'Yes! ' + word + '!', 'Да! ' + q.w[1] + '!'); } }
+          else { b.classList.add('shake'); setTimeout(function () { b.classList.remove('shake'); }, 300); tries++; if (tries >= 3) { word.split('').forEach(function (c, j) { slots.children[j].textContent = c; }); say(word); answer(false, 'The word is ' + word + '.', 'Это слово ' + word + ' — ' + q.w[1] + '.'); } }
+        }; lets.appendChild(b); });
+        var tries = 0; box.appendChild(lets);
+      } else if (q.type === 'yesno') {
+        var a3 = el('div', 'ask'); a3.appendChild(document.createTextNode('This is a ' + q.w[0] + '.')); a3.appendChild(el('span', 'ru', 'Это ' + q.w[1] + '? Да или нет?')); box.appendChild(a3);
+        box.appendChild(el('div', 'pic', q.shown[2]));
+        var tf = el('div', 'tf'); [['✅', 'Yes · Да'], ['❌', 'No · Нет']].forEach(function (x, k) { var c = el('button', 'choice'); c.type = 'button'; c.setAttribute('aria-label', x[1]); c.appendChild(el('span', '', x[0])); c.appendChild(el('span', 'ru', x[1])); c.onclick = function () { if (locked) return; var ok = k === q.a; c.classList.add(ok ? 'right' : 'wrong'); say(q.shown[0]); answer(ok, q.a === 0 ? 'Yes, it’s a ' + q.w[0] + '.' : 'No, it’s a ' + q.shown[0] + '.', q.a === 0 ? 'Да, это ' + q.w[1] + '.' : 'Нет, это ' + q.shown[1] + '.'); }; tf.appendChild(c); });
+        box.appendChild(tf);
+      } else if (q.type === 'grammar') {
+        var G = q.g;
+        var a4 = el('div', 'ask'); a4.appendChild(document.createTextNode(G.s.replace('___', '____'))); box.appendChild(a4);
+        if (G.scene) box.appendChild(sceneEl(G.scene)); else box.appendChild(el('div', 'pic small', G.pic));
+        var g2 = el('div', 'grid'); G.o.forEach(function (o, k) { var c = el('button', 'choice', o); c.type = 'button'; c.onclick = function () { if (locked) return; var ok = k === G.a; c.classList.add(ok ? 'right' : 'wrong'); if (!ok) g2.children[G.a].classList.add('right'); var full = G.s.replace('___', G.o[G.a]); a4.textContent = full; say(full); answer(ok, (ok ? 'Yes! ' : 'Not this time. ') + full, G.ru + ' ' + G.rule); }; g2.appendChild(c); });
+        box.appendChild(g2);
+      }
+      box.appendChild(feedback);
+    }
+    next();
+  }
+
+  function cards() {
+    var hd = el('div', 'sec-h'); hd.appendChild(el('h2', '', 'Picture dictionary · ' + K.levels[lvl].name)); main.appendChild(hd);
+    main.appendChild(el('div', 'ru', 'Нажми на карточку, чтобы услышать слово.'));
+    var topics = []; K.words[lvl].forEach(function (w) { if (topics.indexOf(w[3]) < 0) topics.push(w[3]); });
+    var cur = 'all'; var chips = el('div', 'topic-chips'); var grid = el('div', 'cards');
+    function draw() {
+      chips.textContent = ''; ['all'].concat(topics).forEach(function (t) { var c = el('button', 'chip', t === 'all' ? 'All · Все' : t + ' · ' + (K.topics[t] || '')); c.type = 'button'; c.setAttribute('aria-pressed', String(cur === t)); c.onclick = function () { cur = t; draw(); }; chips.appendChild(c); });
+      grid.textContent = ''; K.words[lvl].filter(function (w) { return cur === 'all' || w[3] === cur; }).forEach(function (w) { var c = el('button', 'wcard'); c.type = 'button'; c.appendChild(el('div', 'e', w[2])); c.appendChild(el('b', '', w[0])); c.appendChild(el('span', 'ru', w[1])); c.onclick = function () { say(w[0]); }; grid.appendChild(c); });
+    }
+    draw(); main.appendChild(chips); main.appendChild(grid);
+  }
+  function stickerBook() {
+    var s = ls('stickers') || [], st = stars();
+    var h = el('section', 'hello'); var o = el('div'); o.innerHTML = owl('happy', 100); h.appendChild(o);
+    var t = el('div'); t.appendChild(el('h2', '', 'My sticker book')); t.appendChild(el('div', 'ru', 'Мои наклейки')); t.appendChild(el('p', '', 'You have ' + st + ' ⭐ and ' + s.length + ' of ' + K.stickers.length + ' stickers.')); t.appendChild(el('div', 'ru', 'У тебя ' + st + ' звёзд и ' + s.length + ' наклеек. Следующая — через ' + (10 - st % 10) + ' ⭐.')); h.appendChild(t); main.appendChild(h);
+    var book = el('div', 'book'); K.stickers.forEach(function (x) { var c = el('div', 'stk' + (s.indexOf(x) >= 0 ? '' : ' locked'), s.indexOf(x) >= 0 ? x : '?'); book.appendChild(c); }); main.appendChild(book);
+    var log = ls('log') || []; if (log.length) { main.appendChild(el('p', 'ru', 'Игр сыграно: ' + log.length + ' · Games played: ' + log.length)); }
+  }
+
+  function route() {
+    if (window.speechSynthesis) speechSynthesis.cancel();
+    main.textContent = ''; setLevelColor(); drawStars();
+    var h = location.hash.slice(1) || 'home';
+    if (['look', 'listen', 'spell', 'yesno', 'grammar', 'where'].indexOf(h) >= 0) {
+      var act = ACTS.filter(function (x) { return x.id === h; })[0];
+      var hd = el('div', 'sec-h'); hd.appendChild(el('h2', '', act.en + ' · ' + K.levels[lvl].name)); var back = el('a', 'say', '← Menu · Меню'); back.href = '#home'; back.style.textDecoration = 'none'; hd.appendChild(back); main.appendChild(hd);
+      main.appendChild(el('div', 'ru', act.ru));
+      return round(h);
+    }
+    if (h === 'cards') return cards();
+    if (h === 'stickers') return stickerBook();
+    home();
+  }
+  window.addEventListener('hashchange', function () { route(); scrollTo(0, 0); });
+  route();
+})();
+</script>
+<script src="../../if-bar.js" data-root="../../index.html" data-slug="kids-english"></script></body>
+</html>

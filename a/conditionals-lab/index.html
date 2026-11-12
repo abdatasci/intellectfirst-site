@@ -1,0 +1,323 @@
+<!doctype html><html><head><script src="../../if-runtime.js"></script><link rel="manifest" href="../../manifest.webmanifest"><link rel="apple-touch-icon" href="../../brand/apple-touch-icon.png"><meta name="theme-color" content="#0B2545"><style>select{max-width:100%}</style><link rel="icon" href="../../brand/favicon-64.png"><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Conditionals Practice Lab · IF Academy</title>
+<style>
+:root{--navy:#0B1F3A;--navy2:#16305A;--ice:#E6F0FA;--ice2:#CFE0F3;--gold:#C9A227;--ink:#1A2433;--muted:#5A6B80;
+ --bg:#F3F7FC;--card:#fff;--text:var(--ink);--soft:var(--ice);--line:#D5E2F0;--ok:#1F7A4D;--okbg:#E3F4EA;--bad:#B3261E;--badbg:#FBE7E5;
+ --serif:Cambria,Caladea,Georgia,serif;--sans:Calibri,Carlito,"Segoe UI",system-ui,sans-serif;
+ box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#081629;--card:#0F2645;--text:#EAF1FA;--soft:#16305A;--line:#24406A;--muted:#9FB3C8;--okbg:#123B2A;--ok:#6FD39C;--badbg:#44191A;--bad:#FF8A80}}
+:root[data-theme="dark"]{--bg:#081629;--card:#0F2645;--text:#EAF1FA;--soft:#16305A;--line:#24406A;--muted:#9FB3C8;--okbg:#123B2A;--ok:#6FD39C;--badbg:#44191A;--bad:#FF8A80}
+*,*::before,*::after{box-sizing:border-box}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font:17px/1.5 var(--sans)}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.wrap{max-width:820px;margin:0 auto;padding:16px 16px 48px}
+.brand{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.brand svg{width:38px;height:42px;flex:none}
+.brand b{font-family:var(--serif);font-size:18px}
+.brand span{display:block;font-size:13px;color:var(--muted)}
+h1{font-family:var(--serif);font-size:clamp(34px,7vw,52px);line-height:1.05;margin:6px 0 8px}
+.lede{color:var(--muted);margin:0 0 16px;max-width:62ch}
+.total{display:flex;gap:18px;flex-wrap:wrap;margin:0 0 16px;font-variant-numeric:tabular-nums}
+.total div b{font-family:var(--serif);font-size:22px;margin-right:4px}
+.total div span{color:var(--muted);font-size:14px}
+.nav{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 10px;margin:0 -2px 8px;scrollbar-width:thin}
+.tab{flex:none;border:1.5px solid var(--line);background:var(--card);border-radius:10px;padding:8px 12px;text-align:left;min-width:120px}
+.tab small{display:block;font-size:12px;color:var(--muted)}
+.tab b{font-size:15px}
+.tab[aria-current="true"]{background:var(--navy);border-color:var(--navy);color:#fff}
+.tab[aria-current="true"] small{color:var(--ice2)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .tab[aria-current="true"]{background:var(--gold);border-color:var(--gold);color:var(--navy)}:root:not([data-theme="light"]) .tab[aria-current="true"] small{color:var(--navy2)}}
+:root[data-theme="dark"] .tab[aria-current="true"]{background:var(--gold);border-color:var(--gold);color:var(--navy)}
+.tab .done{color:var(--gold);font-weight:700}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px}
+.sechead{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:4px}
+.sechead h2{font-family:var(--serif);font-size:24px;margin:0}
+.meta{font-size:14px;color:var(--muted);font-variant-numeric:tabular-nums}
+.instr{color:var(--muted);margin:0 0 14px;font-size:15px}
+.ru{font-size:14px;color:var(--muted);font-style:italic}
+.dots{display:flex;gap:5px;margin:0 0 16px;flex-wrap:wrap}
+.dots i{width:22px;height:6px;border-radius:3px;background:var(--soft)}
+.dots i.ok{background:var(--ok)}.dots i.bad{background:var(--bad)}.dots i.now{background:var(--gold)}
+.q{font-family:var(--serif);font-size:clamp(20px,3.8vw,26px);line-height:1.3;margin:0 0 16px}
+.opts{display:grid;gap:9px}
+.opts.row5{grid-template-columns:repeat(auto-fit,minmax(120px,1fr))}
+.opt{display:flex;gap:10px;align-items:center;text-align:left;width:100%;background:var(--card);border:1.5px solid var(--line);border-radius:10px;padding:12px 14px;font-size:17px}
+.opt kbd{flex:none;width:26px;height:26px;border-radius:6px;background:var(--soft);display:grid;place-items:center;font:600 13px var(--sans);color:var(--muted)}
+.opt:hover:not(:disabled){border-color:var(--gold)}
+.opt.ok,.chunk.ok,.pair.ok{background:var(--okbg);border-color:var(--ok)}
+.opt.bad,.chunk.bad,.pair.bad{background:var(--badbg);border-color:var(--bad)}
+.opt:disabled{cursor:default}
+input.type{width:100%;border:1.5px solid var(--line);background:var(--card);border-radius:10px;padding:12px 14px;font-size:18px}
+input.type.ok{border-color:var(--ok);background:var(--okbg)}input.type.bad{border-color:var(--bad);background:var(--badbg)}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;align-items:center}
+.primary{background:var(--gold);color:var(--navy);border:0;border-radius:10px;padding:12px 22px;font-weight:700}
+.secondary{background:transparent;border:1.5px solid var(--line);border-radius:10px;padding:10px 16px;font-weight:700}
+.feedback{margin-top:14px;padding:12px 14px;border-left:4px solid var(--gold);background:var(--soft);border-radius:0 8px 8px 0;font-size:16px}
+.feedback b{color:var(--ok)}
+.feedback.wrong b.r{color:var(--ok)}
+.feedback .verdict{font-weight:700;display:block;margin-bottom:2px}
+.feedback.right .verdict{color:var(--ok)}.feedback.wrong .verdict{color:var(--bad)}
+/* tiles */
+.answerline{min-height:56px;border:1.5px dashed var(--line);border-radius:10px;padding:8px;display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.answerline.ok{border-style:solid;border-color:var(--ok);background:var(--okbg)}.answerline.bad{border-style:solid;border-color:var(--bad);background:var(--badbg)}
+.bank{display:flex;flex-wrap:wrap;gap:6px}
+.tile{border:1.5px solid var(--navy2);background:var(--soft);border-radius:8px;padding:7px 11px;font-size:17px}
+.tile:disabled{opacity:.25;cursor:default}
+/* chunks */
+.chunks{display:flex;flex-wrap:wrap;gap:6px;font-family:var(--serif);font-size:clamp(19px,3.4vw,23px)}
+.chunk{border:1.5px solid var(--line);background:var(--card);border-radius:8px;padding:6px 10px}
+.chunk:hover:not(:disabled){border-color:var(--gold)}
+/* match */
+.match{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.match .col{display:grid;gap:8px;align-content:start}
+.pair{border:1.5px solid var(--line);background:var(--card);border-radius:10px;padding:10px 12px;text-align:left;font-size:16px}
+.pair[aria-pressed="true"]{border-color:var(--gold);box-shadow:0 0 0 2px var(--gold) inset}
+.pair:disabled{cursor:default}
+/* summary & challenge */
+.big{font-family:var(--serif);font-size:clamp(50px,12vw,80px);line-height:1;margin:6px 0}
+.clock{font-family:var(--serif);font-size:44px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1}
+.clock.low{color:var(--bad)}
+.chud{display:flex;justify-content:space-between;align-items:end;gap:10px;margin-bottom:12px}
+.chud .s{text-align:right;font-variant-numeric:tabular-nums}
+.chud .s b{font-family:var(--serif);font-size:26px;display:block;line-height:1}
+.chud .s span{font-size:13px;color:var(--muted)}
+.flames{display:flex;gap:3px;margin:0 0 12px;align-items:center}
+.flames i{width:12px;height:18px;border-radius:6px 6px 3px 3px;background:var(--soft)}
+.flames i.on{background:var(--gold)}
+.flames span{margin-left:8px;color:var(--gold);font-weight:700}
+.bar{height:6px;background:var(--soft);border-radius:3px;overflow:hidden;margin-bottom:12px}.bar i{display:block;height:100%;background:var(--gold);transition:width .2s linear}
+.review{list-style:none;margin:12px 0 0;padding:0}
+.review li{border-top:1px solid var(--line);padding:10px 0;font-size:16px}
+.review .w{color:var(--bad);text-decoration:line-through}.review .r{color:var(--ok);font-weight:700}
+.review p{margin:2px 0 0;color:var(--muted);font-size:14px}
+.cheat{margin-top:22px}
+.cheat summary{cursor:pointer;font-weight:700}
+.cheat table{width:100%;border-collapse:collapse;margin-top:10px;font-size:15px}
+.cheat th,.cheat td{border-bottom:1px solid var(--line);padding:8px 6px;text-align:left;vertical-align:top}
+.cheat th{background:var(--navy);color:#fff;font-weight:700}
+.tablewrap{overflow-x:auto}
+[hidden]{display:none!important}
+@media (max-width:560px){.match{grid-template-columns:1fr}.card{padding:16px}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+ <div class="brand"><svg viewBox="0 0 40 44" aria-hidden="true"><path d="M20 2 37 8v14c0 11-8 18-17 20C11 40 3 33 3 22V8Z" fill="#0B1F3A" stroke="#C9A227" stroke-width="2"/><text x="20" y="28" text-anchor="middle" font-family="Cambria,Georgia,serif" font-weight="700" font-size="15" fill="#fff">IF</text></svg><div><b>IF Academy</b><span>Grammar in Use · Lesson 11 · Units 38–41</span></div></div>
+ <h1>Conditionals Practice Lab</h1>
+ <p class="lede">Eight kinds of exercise on zero, first, second, third and mixed conditionals, <em>wish</em>, <em>unless</em> and inversion — then a timed challenge. Work through them in order or jump to any section.</p>
+ <div class="total"><div><b id="tCorrect">0</b><span>correct</span></div><div><b id="tDone">0</b><span>of <span id="tAll">0</span> answered</span></div><div><b id="tStreak">0</b><span>current streak</span></div></div>
+ <nav class="nav" id="nav" aria-label="Sections"></nav>
+ <main class="card" id="stage"></main>
+ <details class="cheat">
+  <summary>Rules at a glance · Правила кратко</summary>
+  <div class="tablewrap"><table>
+   <tr><th>Type</th><th>Form</th><th>Example</th><th>Meaning</th></tr>
+   <tr><td>Zero</td><td>if + present, present</td><td>If you heat ice, it melts.</td><td>Always true · всегда верно</td></tr>
+   <tr><td>First</td><td>if + present, will</td><td>If it rains, we’ll stay in.</td><td>Real future · реальное будущее</td></tr>
+   <tr><td>Second</td><td>if + past, would</td><td>If I had time, I’d learn Chinese.</td><td>Imaginary now · нереальное сейчас</td></tr>
+   <tr><td>Third</td><td>if + had done, would have done</td><td>If I’d known, I’d have helped.</td><td>Imaginary past · нереальное прошлое</td></tr>
+   <tr><td>Mixed</td><td>if + had done, would do</td><td>If I’d taken the job, I’d be rich now.</td><td>Past cause → present result</td></tr>
+   <tr><td>wish</td><td>wish + past / past perfect / would</td><td>I wish I knew. · I wish I’d gone. · I wish you’d stop!</td><td>Now · past regret · annoyance</td></tr>
+   <tr><td>Formal</td><td>Had I… / Should you… / Were I…</td><td>Had I known, I’d have come.</td><td>Inversion without if</td></tr>
+  </table></div>
+ </details>
+</div>
+<script>
+const TYPES=['Zero','First','Second','Third','Mixed'];
+const S=[
+{id:'id',name:'Which conditional?',ru:'Какой тип условного предложения?',kind:'mcq',instr:'Read the sentence and choose its type.',items:[
+ ['If you heat ice, it melts.',TYPES,0,'A scientific fact that is always true: if + present, present.'],
+ ['If it rains tomorrow, we’ll stay at home.',TYPES,1,'A real possibility in the future: if + present, will.'],
+ ['If I had more time, I’d learn Chinese.',TYPES,2,'Imaginary present: I don’t have more time. if + past, would.'],
+ ['If she had studied, she would have passed.',TYPES,3,'Imaginary past: she didn’t study. if + had done, would have done.'],
+ ['If I had taken that job, I’d be rich now.',TYPES,4,'Past condition (had taken) with a present result (would be now) — mixed.'],
+ ['If you press this button, the machine stops.',TYPES,0,'How something always works: present + present.'],
+ ['If I were you, I’d apologise.',TYPES,2,'Advice with an imaginary situation: I am not you.'],
+ ['If you don’t hurry, you’ll miss the bus.',TYPES,1,'A real warning about the future.'],
+ ['If he spoke French, he would have got the job.',TYPES,4,'Present fact (he doesn’t speak French) with a past result — mixed.'],
+ ['We would have won if Arman hadn’t been injured.',TYPES,3,'Both halves are about the past: hadn’t been / would have won.']]},
+{id:'form',name:'Choose the form',ru:'Выберите правильную форму',kind:'mcq',instr:'Choose the correct form to complete the sentence.',items:[
+ ['If I ___ him, I’ll tell him.',['see','will see','saw'],0,'No will after if in the first conditional.'],
+ ['If I ___ a car, I’d drive to work.',['had','have','would have'],0,'Second conditional: if + past simple.'],
+ ['If you ___ me, I would have come.',['had told','told','would tell'],0,'Third conditional: if + past perfect.'],
+ ['If I ___ you, I’d take the job.',['were','am','will be'],0,'Advice: If I were you…'],
+ ['What ___ you do if you lost your phone?',['would','will','did'],0,'Imaginary situation (lost) → would.'],
+ ['If water ___ 100°C, it boils.',['reaches','will reach','reached'],0,'Zero conditional: present + present.'],
+ ['If she ___ the bus, she wouldn’t have been late.',['hadn’t missed','didn’t miss','wouldn’t miss'],0,'Third conditional: had + past participle.'],
+ ['If I hadn’t stayed up so late, I ___ so tired now.',['wouldn’t be','wouldn’t have been','won’t be'],0,'Mixed: past cause, present result (now).'],
+ ['Unless you ___, you’ll fail.',['study','don’t study','will study'],0,'unless = if … not, so no extra negative.'],
+ ['You can borrow my car as long as you ___ careful.',['are','will be','would be'],0,'as long as works like if: present for the future.'],
+ ['If I’d known you were coming, I ___ a cake.',['would have baked','would bake','baked'],0,'Third conditional result: would have + past participle.'],
+ ['I’ll call you as soon as I ___ home.',['get','will get','got'],0,'Time clauses (as soon as, when) use the present.']]},
+{id:'type',name:'Type the verb',ru:'Напишите глагол в правильной форме',kind:'type',instr:'Type the correct form of the verb in brackets. Contractions are fine.',items:[
+ ['If it ___ (snow) tonight, the roads will be dangerous.',['snows'],'First conditional: if + present simple.'],
+ ['If I ___ (win) the lottery, I’d buy a house by the sea.',['won'],'Second conditional: if + past simple.'],
+ ['If we had left earlier, we ___ (not / miss) the train.',['wouldn’t have missed'],'Third conditional result: would not have + past participle.'],
+ ['I ___ (help) you if I had time, but I’m busy.',['would help'],'Second conditional result: would + verb.'],
+ ['If you ___ (not / hurry), you’ll be late.',['don’t hurry'],'First conditional: if + present simple.'],
+ ['She ___ (be) angry if she finds out.',['will be'],'First conditional result: will + verb.'],
+ ['If they ___ (invite) me, I would have gone.',['had invited'],'Third conditional: if + past perfect.'],
+ ['If you mix blue and yellow, you ___ (get) green.',['get'],'Zero conditional: present + present.'],
+ ['If I ___ (be) taller, I’d play basketball.',['were','was'],'Second conditional; were is more formal, was is common in speech.'],
+ ['If I ___ (not / eat) so much, I wouldn’t feel sick now.',['hadn’t eaten'],'Mixed: past cause (had not eaten) → present result.']]},
+{id:'build',name:'Build the sentence',ru:'Составьте предложение',kind:'build',instr:'Tap the words in the right order. Tap a word in your answer to send it back.',items:[
+ ['if I had more money I would travel',['if i had more money i would travel','i would travel if i had more money'],'Second conditional: if + past, would + verb.'],
+ ['we will stay at home if it rains',['we will stay at home if it rains','if it rains we will stay at home'],'First conditional; the if-clause can go first or second.'],
+ ['if she had called I would have answered',['if she had called i would have answered','i would have answered if she had called'],'Third conditional.'],
+ ['I wish I knew the answer',['i wish i knew the answer'],'wish + past simple for the present.'],
+ ['had I known I would have helped',['had i known i would have helped','i would have helped had i known'],'Inversion: Had I known = If I had known.'],
+ ['if I were you I would apologise',['if i were you i would apologise','i would apologise if i were you'],'Advice: If I were you, I’d…']]},
+{id:'match',name:'Match the halves',ru:'Соедините части предложений',kind:'match',instr:'Tap a beginning, then the ending that matches it.',items:[
+ [['If you heat butter,','it melts.'],['If you see Dana,','tell her to call me.'],['If I won a million,','I’d give up work.'],['If you’d asked me,','I would have helped.'],['If I hadn’t missed the flight,','I’d be in Paris now.']],
+ [['Unless you leave now,','you’ll miss the bus.'],['I’ll lend you the money','as long as you pay me back.'],['Take an umbrella','in case it rains.'],['Should you need help,','call me any time.'],['Were I in your position,','I’d accept the offer.']]]},
+{id:'error',name:'Find the mistake',ru:'Найдите ошибку',kind:'error',instr:'Each sentence has one mistake. Tap the wrong part.',items:[
+ [['If it will rain','tomorrow,','we’ll stay','at home.'],0,'If it rains','No will after if.'],
+ [['If I','would have','more time,','I’d learn Chinese.'],1,'had','Second conditional: if + past simple.'],
+ [['If she had studied,','she','would pass','the exam.'],2,'would have passed','Third conditional: would have + past participle.'],
+ [['I wish','I can','speak','Japanese.'],1,'I could','wish + could (not can).'],
+ [['If you','would have told','me,','I’d have come.'],1,'had told','No would in the if-clause.'],
+ [['Unless','you don’t hurry,','you’ll','miss the bus.'],1,'you hurry','unless already means if … not.'],
+ [['If I','had known,','I would','helped you.'],3,'have helped you','would have + past participle.'],
+ [['I wish','you','will stop','interrupting!'],2,'would stop','Annoyance: wish + would.'],
+ [['What','will you do','if you','lost your job?'],1,'would you do','lost = imaginary → would.']]},
+{id:'rewrite',name:'Rewrite it (C1)',ru:'Перефразируйте (C1)',kind:'type',instr:'Rewrite the sentence using the word(s) in brackets. Keep the meaning the same.',long:true,items:[
+ ['I don’t have a car, so I don’t drive to work. (If)',['If I had a car, I would drive to work.','I would drive to work if I had a car.'],'Imaginary present → second conditional.'],
+ ['I didn’t know, so I didn’t help. (If)',['If I had known, I would have helped.','I would have helped if I had known.'],'Imaginary past → third conditional.'],
+ ['We’ll go if it doesn’t rain. (unless)',['We will go unless it rains.','Unless it rains, we will go.'],'unless = if … not.'],
+ ['If I had known, I would have come. (Had)',['Had I known, I would have come.','I would have come had I known.'],'Formal inversion: drop if, put had first.'],
+ ['If you need anything, call me. (Should)',['Should you need anything, call me.'],'Formal: Should you + base verb.'],
+ ['I didn’t take the job, so I’m not rich now. (If)',['If I had taken the job, I would be rich now.','I would be rich now if I had taken the job.'],'Mixed: past cause → present result.'],
+ ['I regret selling my car. (wish)',['I wish I hadn’t sold my car.','I wish I had not sold my car.'],'Regret about the past: wish + past perfect.'],
+ ['You can borrow it, but you must return it. (as long as)',['You can borrow it as long as you return it.','As long as you return it, you can borrow it.'],'as long as = only if.'],
+ ['My advice is to apologise. (If I were you)',['If I were you, I would apologise.','I would apologise if I were you.'],'Advice with If I were you.'],
+ ['I don’t speak Spanish, so I didn’t get the job. (If)',['If I spoke Spanish, I would have got the job.','If I spoke Spanish, I would have gotten the job.'],'Mixed: present fact → past result.']]},
+{id:'wish',name:'wish & if only',ru:'wish и if only',kind:'mcq',instr:'Choose the correct form.',items:[
+ ['I wish I ___ the answer. (I don’t know it.)',['knew','know','had known'],0,'Present wish: wish + past simple.'],
+ ['I wish I ___ to the party. Everyone says it was great.',['had gone','went','would go'],0,'Past regret: wish + past perfect.'],
+ ['I wish my neighbour ___ playing the drums at night!',['would stop','will stop','has stopped'],0,'Annoyance: wish + would.'],
+ ['If only I ___ more time!',['had','have','would have'],0,'If only + past for the present.'],
+ ['I wish I ___ swim.',['could','can','would'],0,'Ability: wish + could.'],
+ ['She wishes she ___ that. Now everyone is upset.',['hadn’t said','didn’t say','wouldn’t say'],0,'Past regret → past perfect.'],
+ ['I wish it ___ raining. I want to go out.',['would stop','stops','will stop'],0,'Wanting a situation to change: wish + would.'],
+ ['If only we ___ the flight!',['hadn’t missed','didn’t miss','won’t miss'],0,'Past regret: If only + past perfect.']]},
+{id:'challenge',name:'Timed challenge',ru:'Игра на время',kind:'challenge'}
+];
+const $=id=>document.getElementById(id);
+const store=(k,v)=>{try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v)}catch(e){return null}};
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const esc=s=>s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+// answer normalisation with contraction expansion
+function variants(s){s=s.toLowerCase().replace(/[’‘`]/g,"'").replace(/[.,!?;:"“”]/g,' ').replace(/\s+/g,' ').trim();
+ s=s.replace(/\bwon'?t\b/g,'will not').replace(/\b(do|does|did|is|are|was|were|have|has|had|would|could|should)nt\b/g,'$1 not').replace(/\bcan't\b/g,'cannot').replace(/\bcannot\b/g,'can not').replace(/n't\b/g,' not').replace(/'ll\b/g,' will').replace(/'re\b/g,' are').replace(/'ve\b/g,' have').replace(/'m\b/g,' am').replace(/\bgotten\b/g,'got');
+ let out=[s];if(s.includes("'d")){out=[];const parts=s.split("'d");let combos=[''];parts.forEach((p,i)=>{combos=combos.map(c=>c+p);if(i<parts.length-1)combos=combos.flatMap(c=>[c+' would',c+' had'])});out=combos}
+ return out.map(x=>x.replace(/\s+/g,' ').trim())}
+function matches(input,answers){const iv=new Set(variants(input));return answers.some(a=>variants(a).some(v=>iv.has(v)))}
+// state
+const state={};S.forEach(s=>{if(s.kind!=='challenge')state[s.id]={i:0,res:[],order:null}});
+let cur=0,totalStreak=0;
+const countItems=s=>s.kind==='match'?s.items.reduce((n,set)=>n+set.length,0):s.items.length;
+function totals(){let c=0,d=0,a=0;S.forEach(s=>{if(s.kind==='challenge')return;a+=countItems(s);const r=state[s.id].res;d+=r.length;c+=r.filter(Boolean).length});$('tCorrect').textContent=c;$('tDone').textContent=d;$('tAll').textContent=a;$('tStreak').textContent=totalStreak}
+function record(id,ok){state[id].res.push(ok);totalStreak=ok?totalStreak+1:0;totals();renderNav()}
+function renderNav(){const n=$('nav');n.innerHTML='';S.forEach((s,k)=>{const b=document.createElement('button');b.className='tab';b.setAttribute('aria-current',k===cur);
+ let info='';if(s.kind==='challenge'){const best=+(store('cond-challenge-best')||0);info=best?`best ${best}`:'90 seconds'}else{const r=state[s.id].res,tot=countItems(s);info=r.length>=tot?`<span class="done">${r.filter(Boolean).length}/${tot} ✓</span>`:`${r.length}/${tot}`}
+ b.innerHTML=`<small>${k+1}. ${info}</small><b>${esc(s.name)}</b>`;b.onclick=()=>{cur=k;render()};n.appendChild(b)})}
+function head(s,extra){const st=state[s.id];const tot=countItems(s);
+ let dots='';for(let i=0;i<tot;i++){const r=st.res[i];dots+=`<i class="${r===true?'ok':r===false?'bad':i===st.res.length?'now':''}"></i>`}
+ return `<div class="sechead"><h2>${esc(s.name)}</h2><span class="meta">${st.res.filter(Boolean).length} correct · ${Math.min(st.res.length+1,tot)} of ${tot}</span></div><p class="ru">${esc(s.ru)}</p><p class="instr">${esc(s.instr)}</p><div class="dots">${dots}</div>${extra||''}`}
+function nextBtn(s,label){return `<div class="actions"><button class="primary" id="next">${label||'Next'}</button></div>`}
+function fb(ok,correct,expl){return `<div class="feedback ${ok?'right':'wrong'}" role="status"><span class="verdict">${ok?'Correct!':'Not quite.'}</span>${ok?'':`Answer: <b class="r">${esc(correct)}</b><br>`}${esc(expl)}</div>`}
+function render(){renderNav();const s=S[cur];stopChallenge();
+ if(s.kind==='challenge')return challengeIntro();
+ const st=state[s.id];if(!st.order)st.order=shuffle(s.items.map((_,i)=>i));
+ if(s.kind==='match')return renderMatch(s);
+ if(st.res.length>=s.items.length)return summary(s);
+ const it=s.items[st.order[st.res.length]];
+ ({mcq:renderMCQ,type:renderType,build:renderBuild,error:renderError})[s.kind](s,it);window.scrollTo&&$('stage').scrollIntoView({block:'nearest'})}
+function advance(){render()}
+function renderMCQ(s,it){const opts=shuffle(it[1].map((o,i)=>({o,ok:i===it[2]})));const many=opts.length===5;
+ $('stage').innerHTML=head(s)+`<p class="q">${esc(it[0])}</p><div class="opts ${many?'row5':''}" id="opts"></div><div id="fb"></div>`;
+ const box=$('opts');opts.forEach((o,i)=>{const b=document.createElement('button');b.className='opt';b.innerHTML=`<kbd>${i+1}</kbd><span></span>`;b.lastChild.textContent=o.o;b.onclick=()=>pick(i);box.appendChild(b)});
+ function pick(i){const bs=[...box.children];if(bs[0].disabled)return;bs.forEach(b=>b.disabled=true);const ok=opts[i].ok;bs[i].classList.add(ok?'ok':'bad');if(!ok)bs[opts.findIndex(o=>o.ok)].classList.add('ok');
+  record(s.id,ok);$('fb').innerHTML=fb(ok,it[1][it[2]],it[3])+nextBtn(s);$('next').onclick=advance;$('next').focus()}
+ keyHandler=e=>{const n=+e.key;if(n>=1&&n<=opts.length)pick(n-1)}}
+function renderType(s,it){$('stage').innerHTML=head(s)+`<p class="q">${esc(it[0])}</p><input class="type" id="inp" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="${s.long?'Type the full sentence…':'Type your answer…'}" aria-label="Your answer"><div class="actions"><button class="primary" id="chk">Check</button><button class="secondary" id="hint">Hint</button></div><div id="fb"></div>`;
+ const inp=$('inp');inp.focus();let hinted=false;
+ $('hint').onclick=()=>{hinted=true;const a=it[1][0];const words=a.split(' ');$('fb').innerHTML=`<div class="feedback" role="status">Starts with: <b>${esc(s.long?words.slice(0,3).join(' ')+' …':a.slice(0,Math.max(1,Math.ceil(a.length/3)))+'…')}</b></div>`};
+ const check=()=>{if(!inp.value.trim()||inp.disabled)return;const ok=matches(inp.value,it[1]);inp.disabled=true;inp.classList.add(ok?'ok':'bad');$('chk').remove();$('hint').remove();
+  record(s.id,ok);$('fb').innerHTML=fb(ok,it[1][0],it[2]+(ok&&hinted?' (with a hint)':''))+nextBtn(s);$('next').onclick=advance;$('next').focus()};
+ $('chk').onclick=check;inp.onkeydown=e=>{if(e.key==='Enter')check()};keyHandler=null}
+function renderBuild(s,it){const words=it[0].split(' ');const tiles=shuffle(words.map((w,i)=>({w,i})));let line=[];
+ $('stage').innerHTML=head(s)+`<div class="answerline" id="line" aria-label="Your sentence"></div><div class="bank" id="bank"></div><div class="actions"><button class="primary" id="chk">Check</button><button class="secondary" id="clr">Clear</button></div><div id="fb"></div>`;
+ const bank=$('bank'),ln=$('line');
+ tiles.forEach((t,k)=>{const b=document.createElement('button');b.className='tile';b.textContent=t.w;b.onclick=()=>{if(b.disabled)return;b.disabled=true;line.push({t,b});draw()};bank.appendChild(b)});
+ function draw(){ln.innerHTML='';line.forEach((x,k)=>{const b=document.createElement('button');b.className='tile';b.textContent=x.t.w;b.onclick=()=>{if(ln.classList.contains('ok')||ln.classList.contains('bad'))return;x.b.disabled=false;line.splice(k,1);draw()};ln.appendChild(b)})}
+ $('clr').onclick=()=>{line.forEach(x=>x.b.disabled=false);line=[];draw()};
+ $('chk').onclick=()=>{if(line.length<words.length){$('fb').innerHTML='<div class="feedback" role="status">Use all the words first.</div>';return}
+  const got=line.map(x=>x.t.w.toLowerCase()).join(' ');const ok=it[1].includes(got);ln.classList.add(ok?'ok':'bad');$('chk').remove();$('clr').remove();
+  const nice=it[1][0].replace(/^./,c=>c.toUpperCase()).replace(/\bi\b/g,'I')+'.';
+  record(s.id,ok);$('fb').innerHTML=fb(ok,nice,it[2])+nextBtn(s);$('next').onclick=advance;$('next').focus()};keyHandler=null}
+function renderError(s,it){$('stage').innerHTML=head(s)+`<div class="chunks" id="ch"></div><div id="fb"></div>`;const ch=$('ch');
+ it[0].forEach((c,i)=>{const b=document.createElement('button');b.className='chunk';b.textContent=c;b.onclick=()=>pick(i);ch.appendChild(b)});
+ function pick(i){const bs=[...ch.children];if(bs[0].disabled)return;bs.forEach(b=>b.disabled=true);const ok=i===it[1];bs[i].classList.add(ok?'ok':'bad');if(!ok)bs[it[1]].classList.add('ok');
+  const fixed=it[0].map((c,k)=>k===it[1]?it[2]:c).join(' ');
+  record(s.id,ok);$('fb').innerHTML=`<div class="feedback ${ok?'right':'wrong'}" role="status"><span class="verdict">${ok?'Well spotted!':'Not that part.'}</span>“${esc(it[0][it[1]])}” → <b class="r">${esc(it[2])}</b><br>${esc(it[3])}<br><span class="ru">Correct: ${esc(fixed)}</span></div>`+nextBtn(s);$('next').onclick=advance;$('next').focus()}
+ keyHandler=null}
+function renderMatch(s){const st=state[s.id];const setIdx=Math.floor(st.res.length/5);
+ if(setIdx>=s.items.length)return summary(s);
+ const set=s.items[setIdx];const L=shuffle(set.map((p,i)=>({t:p[0],i}))),R=shuffle(set.map((p,i)=>({t:p[1],i})));let sel=null,firstTry={};
+ $('stage').innerHTML=head(s,`<p class="meta">Set ${setIdx+1} of ${s.items.length}</p>`)+`<div class="match"><div class="col" id="L"></div><div class="col" id="R"></div></div><div id="fb"></div>`;
+ const mk=(arr,el,side)=>arr.forEach(x=>{const b=document.createElement('button');b.className='pair';b.textContent=x.t;b.dataset.i=x.i;b.onclick=()=>tap(side,x.i,b);el.appendChild(b)});
+ mk(L,$('L'),'L');mk(R,$('R'),'R');
+ function tap(side,i,b){if(b.disabled)return;
+  if(side==='L'){document.querySelectorAll('#L .pair').forEach(x=>x.setAttribute('aria-pressed','false'));b.setAttribute('aria-pressed','true');sel=i;return}
+  if(sel===null){$('fb').innerHTML='<div class="feedback">Tap a beginning on the left first.</div>';return}
+  const lb=document.querySelector(`#L .pair[data-i="${sel}"]`);
+  if(i===sel){lb.classList.add('ok');b.classList.add('ok');lb.disabled=b.disabled=true;lb.setAttribute('aria-pressed','false');record(s.id,!(sel in firstTry));$('fb').innerHTML='';sel=null;
+   if(document.querySelectorAll('#R .pair:not(:disabled)').length===0){$('fb').innerHTML=`<div class="feedback right"><span class="verdict">Set complete.</span>Read each full sentence aloud and say which conditional it is.</div>`+nextBtn(s,setIdx+1<s.items.length?'Next set':'See results');$('next').onclick=advance;$('next').focus()}}
+  else{firstTry[sel]=true;b.classList.add('bad');setTimeout(()=>b.classList.remove('bad'),600);$('fb').innerHTML=`<div class="feedback wrong">That ending doesn’t fit “${esc(set[sel][0])}”. Check the verb forms in both halves.</div>`}}
+ keyHandler=null}
+function summary(s){const st=state[s.id],tot=countItems(s),c=st.res.filter(Boolean).length;const k=S.indexOf(s);
+ $('stage').innerHTML=`<div class="sechead"><h2>${esc(s.name)}</h2></div><p class="instr">Section complete</p><div class="big">${c} / ${tot}</div><p>${c===tot?'Perfect score.':c>=tot*0.7?'Good work — try again to get them all.':'Have another go — the rules box below can help.'}</p><div class="actions">${k<S.length-1?'<button class="primary" id="nx">Next section</button>':''}<button class="secondary" id="rt">Try this section again</button></div>`;
+ if($('nx'))$('nx').onclick=()=>{cur=k+1;render()};$('rt').onclick=()=>{state[s.id]={i:0,res:[],order:null};totals();render()};keyHandler=null}
+// timed challenge
+let ch=null,keyHandler=null;
+function poolC(){const p=[];['id','form','wish'].forEach(id=>S.find(s=>s.id===id).items.forEach(it=>p.push({q:it[0],o:it[1],a:it[2],e:it[3]})));
+ S.find(s=>s.id==='error').items.forEach(it=>p.push({q:'Which part is wrong?  '+it[0].join(' '),o:it[0],a:it[1],keep:true,e:`${it[0][it[1]]} → ${it[2]}. ${it[3]}`}));return shuffle(p)}
+function challengeIntro(){const best=+(store('cond-challenge-best')||0);
+ $('stage').innerHTML=`<div class="sechead"><h2>Timed challenge</h2><span class="meta">${best?'Your best: '+best:''}</span></div><p class="ru">Игра на время</p><p class="instr">Mixed questions from every section. You have 90 seconds: right answers add 2 seconds, wrong ones take 3 away. Every 3 in a row raises your multiplier (up to ×5). Keys 1–5 work too.</p><div class="actions"><button class="primary" id="go">Start the clock</button></div>`;$('go').onclick=startC;keyHandler=null}
+function startC(){ch={pool:poolC(),i:0,time:90,score:0,streak:0,best:0,right:0,n:0,miss:[],lock:false,last:performance.now()};ch.timer=setInterval(tickC,100);qC()}
+function stopChallenge(){if(ch&&ch.timer){clearInterval(ch.timer);ch.timer=null}}
+function mult(){return Math.min(5,1+Math.floor(ch.streak/3))}
+function tickC(){const now=performance.now(),dt=(now-ch.last)/1000;ch.last=now;if(ch.lock)return;ch.time-=dt;if(ch.time<=0){ch.time=0;endC();return}hudC()}
+function hudC(){if(!$('clk'))return;$('clk').textContent=Math.ceil(ch.time);$('clk').classList.toggle('low',ch.time<=10);$('cbar').style.width=Math.min(100,ch.time/90*100)+'%';$('csc').textContent=ch.score;
+ let f='';for(let i=0;i<12;i++)f+=`<i class="${i<Math.min(12,ch.streak)?'on':''}"></i>`;$('fl').innerHTML=f+`<span>×${mult()} · streak ${ch.streak}</span>`}
+function qC(){if(ch.i>=ch.pool.length){ch.pool=shuffle(ch.pool);ch.i=0}const it=ch.pool[ch.i++];const base=it.o.map((o,i)=>({o,ok:i===it.a}));const opts=it.keep?base:shuffle(base);
+ $('stage').innerHTML=`<div class="chud"><div class="clock" id="clk">90</div><div class="s"><b id="csc">0</b><span>points</span></div></div><div class="bar"><i id="cbar"></i></div><div class="flames" id="fl"></div><p class="q">${esc(it.q)}</p><div class="opts" id="opts"></div><div id="fb"></div>`;
+ const box=$('opts');opts.forEach((o,i)=>{const b=document.createElement('button');b.className='opt';b.innerHTML=`<kbd>${i+1}</kbd><span></span>`;b.lastChild.textContent=o.o;b.onclick=()=>ans(i);box.appendChild(b)});
+ ch.lock=false;ch.last=performance.now();hudC();
+ function ans(i){if(ch.lock)return;ch.lock=true;const bs=[...box.children];bs.forEach(b=>b.disabled=true);const ok=opts[i].ok;ch.n++;
+  if(ok){ch.right++;ch.streak++;ch.best=Math.max(ch.best,ch.streak);ch.score+=100*mult();ch.time+=2;bs[i].classList.add('ok');totalStreak++;hudC();setTimeout(qC,450)}
+  else{ch.streak=0;ch.time=Math.max(0,ch.time-3);totalStreak=0;bs[i].classList.add('bad');bs[opts.findIndex(o=>o.ok)].classList.add('ok');ch.miss.push({q:it.q,w:opts[i].o,r:it.o[it.a],e:it.e});
+   $('fb').innerHTML=`<div class="feedback wrong" role="status">${esc(it.e)}</div>`;hudC();setTimeout(()=>{ch.last=performance.now();if(ch.time<=0)endC();else qC()},2000)}
+  $('tStreak').textContent=totalStreak}
+ keyHandler=e=>{const n=+e.key;if(n>=1&&n<=opts.length)ans(n-1)}}
+function endC(){stopChallenge();keyHandler=null;const prev=+(store('cond-challenge-best')||0);if(ch.score>prev)store('cond-challenge-best',ch.score);
+ $('stage').innerHTML=`<div class="sechead"><h2>Time’s up</h2>${ch.score>prev&&ch.score>0?'<span class="meta" style="color:var(--gold);font-weight:700">New personal best</span>':''}</div><div class="big">${ch.score}</div><p>${ch.right} correct out of ${ch.n} · best streak ${ch.best} · your best ${Math.max(prev,ch.score)}</p><div class="actions"><button class="primary" id="go">Play again</button></div>${ch.miss.length?'<h2 style="font-family:var(--serif);font-size:20px;margin:20px 0 0">Review</h2><ul class="review" id="rv"></ul>':''}`;
+ $('go').onclick=startC;const rv=$('rv');if(rv)ch.miss.forEach(m=>{const li=document.createElement('li');li.innerHTML=`<div>${esc(m.q)}</div><div><span class="w">${esc(m.w)}</span> → <span class="r">${esc(m.r)}</span></div><p>${esc(m.e)}</p>`;rv.appendChild(li)});renderNav()}
+document.addEventListener('keydown',e=>{if(e.target.tagName==='INPUT')return;if(keyHandler)keyHandler(e)});
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&ch&&ch.timer){ch.lock=true;setTimeout(()=>{},0)}else if(ch&&ch.timer&&ch.lock&&!document.querySelector('#opts .opt:disabled')){ch.lock=false;ch.last=performance.now()}});
+totals();render();
+</script>
+</body>
+</html>
+
+<script src="../../if-bar.js" data-root="../../index.html" data-slug="conditionals-lab"></script></body></html>

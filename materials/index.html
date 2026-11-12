@@ -1,0 +1,467 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>IF Lesson Materials</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#0B2545">
+<link rel="manifest" href="../manifest.webmanifest">
+<link rel="icon" href="../brand/favicon-64.png">
+<link rel="apple-touch-icon" href="../brand/apple-touch-icon.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../if-ui.css">
+<style>
+  .viewbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; padding-block: 18px 8px; }
+  .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; overflow: hidden; }
+  .seg button { border: 0; background: transparent; padding: 7px 14px; cursor: pointer; font-size: 13.5px; color: var(--text-soft); }
+  .seg button[aria-pressed="true"] { background: var(--text); color: var(--bg); }
+  .head h1 { font-size: clamp(28px, 4.6vw, 42px); line-height: 1.08; }
+  .head p { margin: 8px 0 0; color: var(--text-soft); max-width: 62ch; }
+  .chips { display: flex; gap: 8px; overflow-x: auto; padding-block: 14px 6px; scrollbar-width: none; }
+  .course { padding-top: 28px; }
+  .course > h2 { font-size: 22px; border-bottom: 1px solid var(--line); padding-bottom: 8px; margin-bottom: 4px; }
+  .rows { display: flex; flex-direction: column; }
+  .row { display: grid; grid-template-columns: 92px minmax(0, 1fr) auto; gap: 14px; align-items: center; padding: 13px 2px; border-bottom: 1px solid var(--line); text-decoration: none; }
+  .row:hover .rt { color: var(--accent); }
+  .kind { font-size: 11.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--gold); font-weight: 600; }
+  .rt { font-family: var(--display); font-size: 17.5px; line-height: 1.25; }
+  .rs { font-size: 13.5px; color: var(--text-soft); }
+  .ra { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+  @media (max-width: 600px) { .row { grid-template-columns: minmax(0, 1fr); gap: 4px; } .ra { justify-content: flex-start; } }
+  .empty { padding: 28px; border: 1px dashed var(--line); border-radius: var(--radius); color: var(--text-soft); margin-top: 24px; }
+
+  /* lesson */
+  .lesson { max-width: 780px; margin: 0 auto; }
+  .lesson-head { padding-block: 22px 8px; display: flex; flex-direction: column; gap: 8px; }
+  .lesson-head h1 { font-size: clamp(28px, 4.6vw, 40px); line-height: 1.1; }
+  .actions { display: flex; flex-wrap: wrap; gap: 8px; }
+  .sec { padding-block: 26px; border-bottom: 1px solid var(--line); display: flex; flex-direction: column; gap: 12px; }
+  .sec h2 { font-size: 24px; }
+  .sec .src { font-size: 13px; color: var(--text-soft); }
+  .reading p { margin: 0 0 12px; font-size: 17px; line-height: 1.7; max-width: 66ch; }
+  .tnote { border: 1px solid var(--line); border-left: 3px solid var(--gold); background: var(--gold-soft); padding: 10px 14px; border-radius: var(--radius); font-size: 14.5px; }
+  .tnote b { color: var(--gold); font-size: 11.5px; letter-spacing: .08em; text-transform: uppercase; display: block; margin-bottom: 2px; }
+  .player { border: 1px solid var(--line); background: var(--bg-raised); border-radius: var(--radius); padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+  .player audio { width: 100%; }
+  .pctl { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .pctl select { padding: 6px 8px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg); max-width: 100%; font-size: 13.5px; }
+  .robot { font-size: 12.5px; color: var(--text-soft); }
+  .script { display: flex; flex-direction: column; gap: 8px; }
+  .line { display: grid; grid-template-columns: 74px minmax(0, 1fr); gap: 10px; padding: 4px 6px; border-radius: 4px; }
+  .line .who { font-weight: 600; font-size: 13.5px; color: var(--text-soft); }
+  .line.on { background: var(--gold-soft); }
+  .q { display: flex; flex-direction: column; gap: 8px; padding: 12px 0; border-top: 1px dashed var(--line); }
+  .q:first-of-type { border-top: 0; }
+  .qn { font-weight: 500; }
+  .opts { display: flex; flex-wrap: wrap; gap: 8px; }
+  .opt { border: 1px solid var(--line); background: var(--bg-raised); padding: 7px 12px; border-radius: var(--radius); cursor: pointer; text-align: left; }
+  .opt[aria-pressed="true"] { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+  .opt.right { border-color: var(--ok); color: var(--ok); } .opt.wrong { border-color: var(--bad); color: var(--bad); }
+  .gap { padding: 7px 10px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-raised); min-width: 0; width: min(260px, 100%); }
+  .gap.right { border-color: var(--ok); } .gap.wrong { border-color: var(--bad); }
+  .key { font-size: 13.5px; color: var(--ok); }
+  .score { font-weight: 600; }
+  table.vocab { width: 100%; border-collapse: collapse; font-size: 15px; }
+  table.vocab td, table.vocab th { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  table.vocab th { font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-soft); font-weight: 600; }
+  .tbl { overflow-x: auto; }
+  .say { border: 0; background: none; cursor: pointer; color: var(--accent); padding: 0 4px; }
+  .hidecol td:nth-child(2), .hidecol td:nth-child(3) { color: transparent; text-shadow: 0 0 8px var(--text-soft); cursor: pointer; }
+  .prompts { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; }
+  figure { margin: 0; } figure img { border-radius: var(--radius); display: block; }
+  figcaption { font-size: 13px; color: var(--text-soft); margin-top: 6px; }
+
+  /* presenter */
+  .stage { position: fixed; inset: 0; z-index: 100; background: #071A33; color: #F4F7FB; display: flex; flex-direction: column; padding: calc(14px + env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) calc(12px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
+  .stage-top { display: flex; align-items: center; gap: 10px; font-size: 13px; color: #A9BAD0; }
+  .stage-top img { width: 26px; }
+  .stage-top .sp { margin-left: auto; display: flex; gap: 8px; }
+  .stage .btn { background: transparent; color: #F4F7FB; border-color: rgba(255,255,255,.25); }
+  .slide { flex: 1; overflow: auto; display: flex; flex-direction: column; justify-content: center; gap: 18px; max-width: 1100px; width: 100%; margin: 0 auto; padding-block: 18px; min-height: 0; }
+  .slide h2 { font-family: var(--display); font-size: clamp(28px, 4.4vw, 52px); font-weight: 500; line-height: 1.1; }
+  .slide .big { font-size: clamp(18px, 2.4vw, 28px); line-height: 1.55; }
+  .slide .big p { margin: 0 0 .6em; }
+  .slide .k { color: #E8C27A; }
+  .slide canvas { max-width: 100%; max-height: 100%; margin: 0 auto; display: block; background: #fff; }
+  .slide .line.on { background: rgba(217,174,90,.18); }
+  .stage-nav { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-variant-numeric: tabular-nums; color: #A9BAD0; font-size: 14px; }
+  .stage .notes { border-top: 1px solid rgba(255,255,255,.18); padding-top: 10px; font-size: 14px; color: #DCC79E; max-height: 22vh; overflow: auto; }
+</style>
+</head>
+<body>
+<header class="mast">
+  <div class="wrap mast-in">
+    <a class="brand" href="../app/index.html"><img src="../brand/logo-160.png" alt="" width="30" height="34"><span><b>Intellect First</b><small>Academy · Kostanay</small></span></a>
+    <nav>
+      <a class="btn ghost small" href="../app/index.html">Apps</a>
+      <a class="btn small" id="signBtn" href="../login/index.html?next=materials/index.html">Sign in</a>
+    </nav>
+  </div>
+</header>
+<main class="wrap" id="main"><p class="muted" style="padding-top:30px">Opening the materials…</p></main>
+<div class="stage" id="stage" hidden></div>
+
+<script src="../if-lock.js"></script>
+<script>
+(function () {
+  var ROOT = '../index.html', D = ROOT + 'materials/data/';
+  var role = IFLock.role(), view = role === 'teacher' ? 'teacher' : 'student';
+  try { if (role === 'teacher' && localStorage.getItem('if.mview') === 'student') view = 'student'; } catch (e) {}
+  var CAT = null, filter = 'all', query = '';
+  var main = document.getElementById('main');
+  function el(tag, cls, txt) { var e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; }
+  function btn(txt, cls, fn) { var b = el('button', 'btn small ' + (cls || ''), txt); b.type = 'button'; if (fn) b.onclick = fn; return b; }
+  function json(lvl, file) { return IFLock.fetchDecrypt(lvl, D + file).then(function (b) { return JSON.parse(new TextDecoder().decode(b)); }); }
+  var blobCache = {};
+  function blobUrl(f) {
+    if (blobCache[f.id]) return Promise.resolve(blobCache[f.id]);
+    return IFLock.fetchDecrypt(f.lvl, D + f.bin).then(function (buf) { var u = URL.createObjectURL(new Blob([buf], { type: f.mime })); blobCache[f.id] = u; return u; });
+  }
+  function isTeacherView() { return role === 'teacher' && view === 'teacher'; }
+
+  /* ---------- natural voice picker for read-aloud ---------- */
+  var TTS = (function () {
+    var synth = window.speechSynthesis, voices = [];
+    function load() { voices = synth ? synth.getVoices().filter(function (v) { return /^en/i.test(v.lang); }) : []; }
+    if (synth) { load(); synth.onvoiceschanged = load; }
+    function score(v) {
+      var n = v.name, s = 0;
+      if (/natural|neural/i.test(n)) s += 60;
+      if (/premium|enhanced|siri/i.test(n)) s += 45;
+      if (/google/i.test(n)) s += 35;
+      if (/(sonia|libby|ryan|aria|jenny|guy|thomas|serena|daniel|kate|samantha|karen|moira|arthur|martha)/i.test(n)) s += 15;
+      if (/en-GB/i.test(v.lang)) s += 6;
+      if (/compact|espeak|robot|novelty|bad news|bells|whisper|zarvox|trinoids|albert|jester|organ|bubbles|cellos|wobble|boing|superstar/i.test(n)) s -= 80;
+      if (!v.localService) s += 4;
+      return s;
+    }
+    function ranked() { load(); return voices.slice().sort(function (a, b) { return score(b) - score(a); }); }
+    function femaleish(v) { return /(female|woman|sonia|libby|aria|jenny|serena|kate|samantha|karen|moira|martha|susan|zira|hazel|fiona|tessa|victoria|allison|ava|emma|olivia|amy|joanna|google uk english female|google us english)/i.test(v.name); }
+    function pick(gender, avoid) {
+      var r = ranked(); if (!r.length) return null;
+      var pool = r.filter(function (v) { return gender === 'male' ? !femaleish(v) : gender === 'female' ? femaleish(v) : true; });
+      var c = (pool.length ? pool : r).filter(function (v) { return !avoid || v.name !== avoid.name; });
+      return c[0] || r[0];
+    }
+    function speak(text, voice, rate, onend) {
+      if (!synth) { onend && onend(); return; }
+      var u = new SpeechSynthesisUtterance(text); if (voice) { u.voice = voice; u.lang = voice.lang; } else u.lang = 'en-GB';
+      u.rate = rate || 0.95; u.onend = u.onerror = function () { onend && onend(); };
+      synth.speak(u);
+    }
+    return { ok: !!synth, ranked: ranked, pick: pick, speak: speak, stop: function () { synth && synth.cancel(); }, pause: function () { synth && synth.pause(); }, resume: function () { synth && synth.resume(); } };
+  })();
+
+  function robotPlayer(lines, opts) {
+    // lines: [{who, text}]; speakers get different voices
+    var box = el('div', 'player');
+    var ctl = el('div', 'pctl'); box.appendChild(ctl);
+    var play = btn('▶ Play', 'primary'), stop = btn('■ Stop');
+    var rate = el('select'); [['0.8', 'Slow'], ['0.95', 'Normal'], ['1.1', 'Fast']].forEach(function (o) { var op = el('option', '', o[1]); op.value = o[0]; if (o[0] === '0.95') op.selected = true; rate.appendChild(op); });
+    rate.setAttribute('aria-label', 'Speed');
+    ctl.appendChild(play); ctl.appendChild(stop); ctl.appendChild(rate);
+    var note = el('div', 'robot', TTS.ok ? 'No recording uploaded yet. This uses the most natural voice your device has; Microsoft Edge and Chrome usually sound best.' : 'This browser cannot read aloud. Use the transcript.');
+    box.appendChild(note);
+    var who = []; lines.forEach(function (l) { if (who.indexOf(l.who || '') < 0) who.push(l.who || ''); });
+    var gender = (opts && opts.voices) || {};
+    var i = 0, playing = false, lineEls = (opts && opts.lineEls) || [];
+    function voiceFor(w) {
+      var idx = who.indexOf(w); var g = gender[w] || (idx % 2 ? 'male' : 'female');
+      var first = TTS.pick(gender[who[0]] || 'female');
+      return idx === 0 ? first : TTS.pick(g, idx % 2 ? first : null);
+    }
+    function mark() { lineEls.forEach(function (e, k) { e.classList.toggle('on', playing && k === i); }); }
+    function step() {
+      if (!playing || i >= lines.length) { playing = false; i = 0; play.textContent = '▶ Play'; mark(); return; }
+      mark(); TTS.speak(lines[i].text, voiceFor(lines[i].who || ''), parseFloat(rate.value), function () { if (!playing) return; i++; setTimeout(step, 220); });
+    }
+    play.onclick = function () {
+      if (playing) { playing = false; TTS.stop(); play.textContent = '▶ Play'; mark(); return; }
+      TTS.stop(); playing = true; play.textContent = '❚❚ Pause'; step();
+    };
+    stop.onclick = function () { playing = false; i = 0; TTS.stop(); play.textContent = '▶ Play'; mark(); };
+    return { el: box, setLines: function (els) { lineEls = els; } };
+  }
+  function realPlayer(file) {
+    var box = el('div', 'player'); var a = el('audio'); a.controls = true; a.preload = 'none'; box.appendChild(a);
+    var hint = el('div', 'robot', 'Loading the recording…'); box.appendChild(hint);
+    blobUrl(file).then(function (u) { a.src = u; hint.textContent = 'Original recording'; }).catch(function () { hint.textContent = 'The recording could not be opened. Sign in again and retry.'; });
+    return box;
+  }
+
+  /* ---------- list ---------- */
+  var KINDS = { lesson: 'Lesson', book: 'Book', slides: 'Slides', worksheet: 'Worksheet', audio: 'Audio', video: 'Video', image: 'Picture', file: 'File' };
+  function list() {
+    stopAll();
+    main.textContent = '';
+    var head = el('section', 'head'); head.style.paddingTop = '26px';
+    head.appendChild(el('div', 'eyebrow', role === 'teacher' ? 'Teachers & students' : 'Students'));
+    head.appendChild(el('h1', '', 'Lesson materials'));
+    head.appendChild(el('p', '', isTeacherView() ? 'Teacher view: answers, teacher notes and teacher-only files are shown. Use Present to teach from the screen in class or over a video call.' : 'Your course books, lesson slides, worksheets, reading texts and listening tracks.'));
+    main.appendChild(head);
+    if (role === 'teacher') main.appendChild(viewSwitch(list));
+    var chips = el('div', 'chips');
+    ['all', 'lesson', 'book', 'slides', 'worksheet', 'audio'].forEach(function (k) {
+      var c = el('button', 'chip', k === 'all' ? 'All' : KINDS[k] + 's'); c.type = 'button'; c.setAttribute('aria-pressed', String(filter === k));
+      c.onclick = function () { filter = k; list(); }; chips.appendChild(c);
+    });
+    main.appendChild(chips);
+    var s = el('input', 'input'); s.type = 'search'; s.id = 'mq'; s.placeholder = 'Search lessons and files…'; s.value = query; s.setAttribute('aria-label', 'Search materials');
+    s.oninput = function () { query = s.value; renderRows(); };
+    main.appendChild(s);
+    var host = el('div'); main.appendChild(host);
+    function renderRows() {
+      host.textContent = '';
+      var items = CAT.lessons.map(function (l) { return Object.assign({ kind: 'lesson' }, l); }).concat(CAT.files.filter(function (f) { return f.lvl === 's' || isTeacherView(); }));
+      items = items.filter(function (it) { return (filter === 'all' || it.kind === filter) && (!query || (it.title + ' ' + it.course + ' ' + (it.unit || '') + ' ' + (it.level || '')).toLowerCase().indexOf(query.toLowerCase()) >= 0); });
+      if (!items.length) { host.appendChild(el('div', 'empty', CAT.lessons.length + CAT.files.length ? 'Nothing matches.' : 'No materials yet. Upload books, slides (as PDF), worksheets and audio to the materials folder and they appear here.')); return; }
+      var byCourse = {}; items.forEach(function (it) { (byCourse[it.course] = byCourse[it.course] || []).push(it); });
+      Object.keys(byCourse).sort().forEach(function (c) {
+        var sec = el('section', 'course'); sec.appendChild(el('h2', '', c)); var rows = el('div', 'rows');
+        byCourse[c].sort(function (a, b) { return String(a.order || a.unit || a.title).localeCompare(String(b.order || b.unit || b.title), undefined, { numeric: true }); }).forEach(function (it) { rows.appendChild(row(it)); });
+        sec.appendChild(rows); host.appendChild(sec);
+      });
+    }
+    renderRows();
+  }
+  function viewSwitch(redraw) {
+    var bar = el('div', 'viewbar'); var seg = el('div', 'seg'); seg.setAttribute('role', 'group'); seg.setAttribute('aria-label', 'View');
+    ['teacher', 'student'].forEach(function (v) {
+      var b = el('button', '', v === 'teacher' ? 'Teacher view' : 'Student view'); b.type = 'button'; b.setAttribute('aria-pressed', String(view === v));
+      b.onclick = function () { view = v; try { localStorage.setItem('if.mview', v); } catch (e) {} redraw(); }; seg.appendChild(b);
+    });
+    bar.appendChild(seg); bar.appendChild(el('span', 'muted', view === 'teacher' ? 'Students never see teacher notes or teacher-only files.' : 'Previewing what students see.'));
+    return bar;
+  }
+  function row(it) {
+    var r = el('div', 'row');
+    var k = el('div'); k.appendChild(el('div', 'kind', KINDS[it.kind] || 'File')); if (it.lvl === 't') k.appendChild(el('span', 'lock', 'Teachers'));
+    var mid = el('div'); mid.style.minWidth = '0';
+    var t = el('a', 'rt', it.title); t.href = it.kind === 'lesson' ? '#lesson-' + it.id : '#file-' + it.id; mid.appendChild(t);
+    mid.appendChild(el('div', 'rs', [it.level, it.unit ? 'Unit ' + it.unit : '', it.kind === 'lesson' ? it.summary : (it.ext || '').toUpperCase() + (it.size ? ' · ' + fmt(it.size) : '')].filter(Boolean).join(' · ')));
+    var ra = el('div', 'ra');
+    if (it.kind === 'lesson') { var o = el('a', 'btn small', 'Open'); o.href = '#lesson-' + it.id; ra.appendChild(o); if (isTeacherView()) ra.appendChild(btn('Present', 'primary', function () { location.hash = 'lesson-' + it.id; setTimeout(function () { presentLesson(); }, 400); })); }
+    else ra.appendChild(fileActions(it));
+    r.appendChild(k); r.appendChild(mid); r.appendChild(ra); return r;
+  }
+  function fmt(b) { return b > 1048576 ? (b / 1048576).toFixed(1) + ' MB' : Math.max(1, Math.round(b / 1024)) + ' KB'; }
+  function fileActions(f) {
+    var wrap = el('div', 'ra');
+    if (f.ext === 'pdf') {
+      wrap.appendChild(btn('Open', '', function () { openFile(f, this); }));
+      if (isTeacherView() || f.kind === 'slides') wrap.appendChild(btn('Present', 'primary', function () { presentPdf(f); }));
+    } else if (f.kind === 'audio') {
+      wrap.appendChild(btn('Play', '', function () { var p = realPlayer(f); this.replaceWith(p); }));
+    } else if (f.kind === 'image' || f.kind === 'video') {
+      wrap.appendChild(btn('Open', '', function () { openFile(f, this); }));
+    } else {
+      wrap.appendChild(btn('Download', '', function () { saveFile(f, this); }));
+    }
+    return wrap;
+  }
+  function openFile(f, b) {
+    var w = window.open('', '_blank'); var label = b.textContent; b.textContent = 'Opening…';
+    blobUrl(f).then(function (u) { b.textContent = label; if (w) w.location.href = u; else location.href = u; }).catch(function () { b.textContent = label; if (w) w.close(); alertBox('That file could not be opened. Sign in again and retry.'); });
+  }
+  function saveFile(f, b) {
+    var label = b.textContent; b.textContent = 'Preparing…';
+    blobUrl(f).then(function (u) { b.textContent = label; var a = document.createElement('a'); a.href = u; a.download = f.title + '.' + f.ext; document.body.appendChild(a); a.click(); a.remove(); }).catch(function () { b.textContent = label; alertBox('That file could not be opened.'); });
+  }
+  function alertBox(t) { var n = el('div', 'note', t); main.insertBefore(n, main.firstChild); setTimeout(function () { n.remove(); }, 6000); }
+
+  /* ---------- lesson ---------- */
+  var current = null;
+  function stopAll() { TTS.stop(); document.querySelectorAll('audio').forEach(function (a) { a.pause(); }); }
+  function lessonView(id) {
+    stopAll();
+    var meta = CAT.lessons.filter(function (l) { return l.id === id; })[0];
+    if (!meta) { list(); return; }
+    main.textContent = ''; main.appendChild(el('p', 'muted', 'Opening the lesson…'));
+    var tp = role === 'teacher' && meta.teacherBin ? json('t', meta.teacherBin).catch(function () { return {}; }) : Promise.resolve({});
+    Promise.all([json('s', meta.bin), tp]).then(function (r) {
+      current = { meta: meta, L: r[0], T: r[1] || {} };
+      drawLesson();
+    }).catch(function () { main.textContent = ''; main.appendChild(el('div', 'empty', 'This lesson could not be opened. Sign in again, then retry.')); });
+  }
+  function drawLesson() {
+    var L = current.L, T = current.T, meta = current.meta;
+    main.textContent = '';
+    var wrap = el('article', 'lesson');
+    var back = el('a', 'muted', '← All materials'); back.href = '#'; back.style.display = 'inline-block'; back.style.paddingTop = '18px';
+    wrap.appendChild(back);
+    if (role === 'teacher') wrap.appendChild(viewSwitch(drawLesson));
+    var h = el('header', 'lesson-head');
+    h.appendChild(el('div', 'eyebrow', [L.course, L.level, L.unit ? 'Unit ' + L.unit : ''].filter(Boolean).join(' · ')));
+    h.appendChild(el('h1', '', L.title));
+    if (L.summary) h.appendChild(el('p', 'muted', L.summary));
+    var acts = el('div', 'actions');
+    if (isTeacherView()) acts.appendChild(btn('Present lesson', 'primary', presentLesson));
+    acts.appendChild(btn('Copy link for students', '', function () { var u = location.href; var b = this; (navigator.clipboard ? navigator.clipboard.writeText(u) : Promise.reject()).then(function () { b.textContent = 'Link copied'; }, function () { b.textContent = u; }); }));
+    h.appendChild(acts);
+    if (isTeacherView() && T.notes) h.appendChild(tnote(T.notes));
+    wrap.appendChild(h);
+    (L.sections || []).forEach(function (s, idx) { wrap.appendChild(section(s, idx, false)); });
+    main.appendChild(wrap);
+    window.scrollTo(0, 0);
+  }
+  function tnote(txt, label) { var n = el('div', 'tnote'); n.appendChild(el('b', '', label || 'Teacher notes')); paras(txt).forEach(function (p) { n.appendChild(p); }); return n; }
+  function paras(txt) { return String(txt || '').split(/\n\s*\n/).map(function (p) { var e = el('p', '', p.trim()); e.style.margin = '0 0 8px'; return e; }); }
+  function audioFor(s) { return s.audioFile ? CAT.files.filter(function (f) { return f.id === s.audioFile; })[0] : null; }
+
+  function section(s, idx, big) {
+    var T = current.T, tv = isTeacherView();
+    var box = el('section', 'sec ' + (s.type || ''));
+    if (s.title) box.appendChild(el(big ? 'h2' : 'h2', '', s.title));
+    if (s.source) box.appendChild(el('div', 'src', s.source));
+    if (s.instructions) box.appendChild(el('p', 'muted', s.instructions));
+    var tnotes = T.sections && T.sections[idx];
+    if (tv && tnotes && !big) box.appendChild(tnote(tnotes));
+    if (s.image) { var fi = CAT.files.filter(function (f) { return f.id === s.image; })[0]; if (fi) { var fig = el('figure'); var img = el('img'); img.alt = s.imageAlt || ''; fig.appendChild(img); blobUrl(fi).then(function (u) { img.src = u; }); if (s.caption) fig.appendChild(el('figcaption', '', s.caption)); box.appendChild(fig); } }
+    if (s.type === 'reading' || s.type === 'text') {
+      var body = el('div', big ? 'big' : 'reading'); paras(s.text).forEach(function (p) { body.appendChild(p); });
+      var af = audioFor(s);
+      if (af) box.appendChild(realPlayer(af));
+      else if (s.readAloud !== false && s.type === 'reading') box.appendChild(robotPlayer(String(s.text).split(/\n\s*\n/).map(function (t) { return { who: '', text: t }; }), {}).el);
+      box.appendChild(body);
+    }
+    if (s.type === 'listening') {
+      var af2 = audioFor(s);
+      var script = el('div', 'script'); var lineEls = [];
+      (s.script || []).forEach(function (l) { var r = el('div', 'line'); r.appendChild(el('span', 'who', l.who || '')); r.appendChild(el('span', '', l.text)); script.appendChild(r); lineEls.push(r); });
+      if (af2) box.appendChild(realPlayer(af2)); else { var rp = robotPlayer(s.script || [], { voices: s.voices, lineEls: lineEls }); box.appendChild(rp.el); }
+      var showNow = tv || s.showScript === 'always';
+      if (!showNow) { script.hidden = true; var sb = btn('Show transcript', '', function () { script.hidden = !script.hidden; sb.textContent = script.hidden ? 'Show transcript' : 'Hide transcript'; }); box.appendChild(sb); }
+      box.appendChild(script);
+    }
+    if (s.type === 'vocab') {
+      var tw = el('div', 'tbl'); var tb = el('table', 'vocab'); var th = el('tr'); ['Word', 'Meaning', 'Русский'].forEach(function (x) { th.appendChild(el('th', '', x)); }); tb.appendChild(th);
+      (s.items || []).forEach(function (v) { var tr = el('tr'); var w = el('td'); w.appendChild(el('b', '', v.word)); var say = el('button', 'say', '🔊'); say.type = 'button'; say.setAttribute('aria-label', 'Say ' + v.word); say.onclick = function () { TTS.stop(); TTS.speak(v.word, TTS.pick('female'), 0.9); }; w.appendChild(say); tr.appendChild(w); tr.appendChild(el('td', '', v.def || '')); tr.appendChild(el('td', '', v.ru || '')); tb.appendChild(tr); });
+      tw.appendChild(tb);
+      if (!big) { var hb = btn('Hide meanings (test yourself)', '', function () { tb.classList.toggle('hidecol'); hb.textContent = tb.classList.contains('hidecol') ? 'Show meanings' : 'Hide meanings (test yourself)'; }); box.appendChild(hb); tb.addEventListener('click', function (e) { var td = e.target.closest('td'); if (td && tb.classList.contains('hidecol')) td.style.color = 'inherit'; }); }
+      box.appendChild(tw);
+    }
+    if (s.type === 'questions') box.appendChild(questions(s, big));
+    if (s.type === 'speaking' || s.type === 'discussion') {
+      var ol = el('ol', 'prompts' + (big ? ' big' : '')); (s.prompts || []).forEach(function (p) { ol.appendChild(el('li', '', p)); }); box.appendChild(ol);
+      if (s.minutes && !big) { var tm = btn('Start ' + s.minutes + '-minute timer', '', function () { var left = s.minutes * 60, b = this; clearInterval(b._t); b._t = setInterval(function () { left--; b.textContent = Math.floor(left / 60) + ':' + String(left % 60).padStart(2, '0'); if (left <= 0) { clearInterval(b._t); b.textContent = 'Time!'; } }, 1000); }); box.appendChild(tm); }
+    }
+    if (s.type === 'intro' || s.type === 'task') { var b2 = el('div', big ? 'big' : 'reading'); paras(s.text).forEach(function (p) { b2.appendChild(p); }); box.appendChild(b2); }
+    return box;
+  }
+  function norm(x) { return String(x).toLowerCase().replace(/[’']/g, "'").replace(/[^a-z0-9' ]+/g, ' ').replace(/\s+/g, ' ').trim(); }
+  function questions(s, big) {
+    var tv = isTeacherView(); var wrap = el('div', big ? 'big' : '');
+    var checks = [], keys = [];
+    function keyEl(d, txt) { var k = el('div', 'key', txt); if (big) k.hidden = true; keys.push(k); d.appendChild(k); }
+    (s.items || []).forEach(function (q, i) {
+      var d = el('div', 'q'); d.appendChild(el('div', 'qn', (i + 1) + '. ' + q.q));
+      var kind = q.kind || s.kind || (q.options ? 'mcq' : 'gap');
+      if (kind === 'mcq' || kind === 'truefalse') {
+        var opts = q.options || ['True', 'False']; var chosen = -1; var bs = [];
+        var row = el('div', 'opts'); opts.forEach(function (o, k) { var b = el('button', 'opt', o); b.type = 'button'; b.setAttribute('aria-pressed', 'false'); b.onclick = function () { chosen = k; bs.forEach(function (x, j) { x.setAttribute('aria-pressed', String(j === k)); x.classList.remove('right', 'wrong'); }); }; bs.push(b); row.appendChild(b); });
+        d.appendChild(row);
+        var ans = typeof q.answer === 'number' ? q.answer : opts.indexOf(q.answer);
+        checks.push(function () { bs.forEach(function (x, j) { x.classList.toggle('right', j === ans && chosen === j); x.classList.toggle('wrong', j === chosen && j !== ans); }); return chosen === ans; });
+        if (tv) keyEl(d, 'Answer: ' + opts[ans]);
+      } else if (kind === 'gap') {
+        var inp = el('input', 'gap'); inp.setAttribute('aria-label', 'Answer ' + (i + 1)); d.appendChild(inp);
+        var acc = [].concat(q.answer);
+        checks.push(function () { var ok = acc.some(function (a) { return norm(a) === norm(inp.value); }); inp.classList.toggle('right', ok); inp.classList.toggle('wrong', !ok); return ok; });
+        if (tv) keyEl(d, 'Answer: ' + acc.join(' / '));
+      } else {
+        var ta = el('textarea', 'input'); ta.rows = 3; ta.setAttribute('aria-label', 'Answer ' + (i + 1)); d.appendChild(ta);
+        if (q.answer && tv) keyEl(d, 'Sample answer: ' + q.answer);
+        else if (q.answer) { var sa = el('div', 'key'); sa.hidden = true; sa.textContent = 'Sample answer: ' + q.answer; d.appendChild(sa); checks.push(function () { sa.hidden = false; return null; }); }
+      }
+      wrap.appendChild(d);
+    });
+    if (big && keys.length) { var rv = btn('Reveal answers', '', function () { var h = !keys[0].hidden; keys.forEach(function (k) { k.hidden = h; }); rv.textContent = h ? 'Reveal answers' : 'Hide answers'; }); var rb = el('div', 'actions'); rb.style.paddingTop = '10px'; rb.appendChild(rv); wrap.appendChild(rb); }
+    if (checks.length && !big) {
+      var res = el('span', 'score'); var c = btn('Check answers', 'primary', function () { var r = checks.map(function (f) { return f(); }).filter(function (x) { return x !== null; }); var right = r.filter(Boolean).length; res.textContent = r.length ? right + ' / ' + r.length + ' correct' : ''; });
+      var bar = el('div', 'actions'); bar.style.paddingTop = '8px'; bar.appendChild(c); bar.appendChild(res); wrap.appendChild(bar);
+    }
+    return wrap;
+  }
+
+  /* ---------- presenter ---------- */
+  var stage = document.getElementById('stage');
+  function openStage(title, count, drawFn, notesFn) {
+    stopAll(); var i = 0;
+    stage.hidden = false; document.body.style.overflow = 'hidden';
+    stage.innerHTML = '';
+    var top = el('div', 'stage-top'); var lg = el('img'); lg.src = ROOT + 'brand/logo-160.png'; lg.alt = ''; top.appendChild(lg); top.appendChild(el('span', '', title));
+    var showNotes = false; var sp = el('div', 'sp'); var nb = btn('Notes', '', function () { showNotes = !showNotes; nb.setAttribute('aria-pressed', String(showNotes)); go(i); }); if (notesFn) sp.appendChild(nb); var fs = btn('Full screen', '', function () { var d = document.documentElement; (d.requestFullscreen ? d.requestFullscreen() : Promise.reject()).catch(function () {}); }); var x = btn('Close', '', close); sp.appendChild(fs); sp.appendChild(x); top.appendChild(sp);
+    var slide = el('div', 'slide'); var notes = el('div', 'notes'); notes.hidden = true;
+    var nav = el('div', 'stage-nav'); var prev = btn('← Back', '', function () { go(i - 1); }); var cnt = el('span'); var next = btn('Next →', '', function () { go(i + 1); });
+    nav.appendChild(prev); nav.appendChild(cnt); nav.appendChild(next);
+    stage.appendChild(top); stage.appendChild(slide); stage.appendChild(notes); stage.appendChild(nav);
+    function go(n) { if (n < 0 || n >= count) return; i = n; stopAll(); slide.textContent = ''; slide.scrollTop = 0; drawFn(i, slide); cnt.textContent = (i + 1) + ' / ' + count; var nt = showNotes && notesFn && notesFn(i); notes.hidden = !nt; notes.textContent = nt ? 'Notes: ' + nt : ''; }
+    function key(e) { if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') { e.preventDefault(); go(i + 1); } if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); go(i - 1); } if (e.key === 'Escape') close(); }
+    var sx = null; stage.ontouchstart = function (e) { sx = e.touches[0].clientX; }; stage.ontouchend = function (e) { if (sx == null) return; var dx = e.changedTouches[0].clientX - sx; if (Math.abs(dx) > 60) go(i + (dx < 0 ? 1 : -1)); sx = null; };
+    function close() { stopAll(); stage.hidden = true; document.body.style.overflow = ''; document.removeEventListener('keydown', key); if (document.fullscreenElement) document.exitFullscreen().catch(function () {}); }
+    document.addEventListener('keydown', key);
+    go(0);
+  }
+  function presentLesson() {
+    if (!current) return;
+    var L = current.L, T = current.T; var secs = L.sections || [];
+    var tv = isTeacherView();
+    openStage(L.title, secs.length + 1, function (i, slide) {
+      if (i === 0) { slide.appendChild(el('div', 'k', [L.course, L.level, L.unit ? 'Unit ' + L.unit : ''].filter(Boolean).join(' · '))); slide.appendChild(el('h2', '', L.title)); if (L.summary) slide.appendChild(el('div', 'big', L.summary)); return; }
+      var s = secs[i - 1]; var node = section(s, i - 1, true); node.style.border = '0'; slide.appendChild(node);
+    }, function (i) { return tv ? (i === 0 ? T.notes : T.sections && T.sections[i - 1]) : null; });
+  }
+  var pdfjsP = null;
+  function pdfjs() {
+    if (!pdfjsP) pdfjsP = new Promise(function (res, rej) { var s = document.createElement('script'); s.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js'; s.onload = function () { window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js'; res(window.pdfjsLib); }; s.onerror = rej; document.head.appendChild(s); });
+    return pdfjsP;
+  }
+  function presentPdf(f) {
+    Promise.all([pdfjs(), IFLock.fetchDecrypt(f.lvl, D + f.bin)]).then(function (r) {
+      return r[0].getDocument({ data: new Uint8Array(r[1]) }).promise;
+    }).then(function (pdf) {
+      openStage(f.title, pdf.numPages, function (i, slide) {
+        var c = el('canvas'); slide.appendChild(c);
+        pdf.getPage(i + 1).then(function (pg) {
+          var vw = pg.getViewport({ scale: 1 }); var W = slide.clientWidth || 900, H = (slide.clientHeight || 600) - 10;
+          var sc = Math.min(W / vw.width, H / vw.height) * (window.devicePixelRatio || 1);
+          var v = pg.getViewport({ scale: sc }); c.width = v.width; c.height = v.height;
+          c.style.width = (v.width / (window.devicePixelRatio || 1)) + 'px';
+          pg.render({ canvasContext: c.getContext('2d'), viewport: v });
+        });
+      });
+    }).catch(function () { alertBox('The slides could not be opened. Check your connection and sign in again.'); });
+  }
+
+  /* ---------- routing ---------- */
+  function route() {
+    if (!CAT) return;
+    var h = location.hash.slice(1);
+    if (h.indexOf('lesson-') === 0) lessonView(h.slice(7));
+    else if (h.indexOf('file-') === 0) { var f = CAT.files.filter(function (x) { return x.id === h.slice(5); })[0]; list(); if (f) setTimeout(function () { var r = document.querySelector('a[href="#file-' + f.id + '"]'); if (r) r.scrollIntoView({ block: 'center' }); }, 50); }
+    else list();
+  }
+  var sb = document.getElementById('signBtn');
+  if (role) { sb.textContent = 'Sign out'; sb.href = '#'; sb.onclick = function (e) { e.preventDefault(); IFLock.signOut(); location.reload(); }; }
+  if (!IFLock.canOpen('s')) {
+    main.textContent = '';
+    var g = el('div', 'empty'); g.style.marginTop = '40px';
+    g.appendChild(el('h1', '', 'Lesson materials'));
+    g.appendChild(el('p', '', 'Course books, lesson slides, worksheets and listening tracks for IF Academy students. Sign in with your class code to open them.'));
+    var a = el('a', 'btn primary', 'Sign in'); a.href = ROOT + 'login/index.html?next=materials/index.html'; g.appendChild(a);
+    main.appendChild(g); return;
+  }
+  var tcat = role === 'teacher' ? json('t', 'catalog.t.wasm').catch(function () { return { files: [] }; }) : Promise.resolve({ files: [] });
+  Promise.all([json('s', 'catalog.s.wasm'), tcat]).then(function (r) {
+    CAT = r[0]; CAT.files = CAT.files.concat(r[1].files || []);
+    window.addEventListener('hashchange', route); route();
+  }).catch(function () {
+    IFLock.signOut();
+    main.textContent = ''; main.appendChild(el('div', 'empty', 'The class code has changed since you signed in. Sign in again with the new code.'));
+  });
+})();
+</script>
+</body>
+</html>

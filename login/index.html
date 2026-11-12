@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>IF Academy Sign In</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#0B2545">
+<link rel="manifest" href="../manifest.webmanifest">
+<link rel="icon" href="../brand/favicon-64.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="../if-ui.css">
+<style>
+  main { min-height: 100%; display: grid; place-items: center; padding-block: 40px; }
+  .card { width: 100%; max-width: 420px; display: flex; flex-direction: column; gap: 18px; }
+  .crest { width: 84px; }
+  h1 { font-size: 30px; }
+  form { display: flex; flex-direction: column; gap: 14px; }
+  #code { font-size: 18px; letter-spacing: .08em; text-transform: uppercase; }
+  .msg { min-height: 1.4em; font-size: 14.5px; }
+  .msg.bad { color: var(--bad); } .msg.ok { color: var(--ok); }
+  .done { display: flex; flex-direction: column; gap: 10px; }
+</style>
+</head>
+<body>
+<main class="wrap">
+  <div class="card">
+    <a href="../app/index.html"><img class="crest" src="../brand/logo-160.png" alt="IF Academy" width="84" height="106"></a>
+    <div>
+      <div class="eyebrow">Intellect First Academy</div>
+      <h1 id="h">Sign in</h1>
+      <p class="muted" id="sub">Students: enter the class code from your teacher. Teachers: enter the staff code. You stay signed in on this device.</p>
+    </div>
+    <form id="f" autocomplete="off">
+      <div class="field"><label for="code">Class or staff code</label><input class="input" id="code" name="code" required autocapitalize="characters" spellcheck="false"></div>
+      <div class="field"><label for="name">Your name (optional, used on tests)</label><input class="input" id="name" name="name" autocomplete="name"></div>
+      <button class="btn primary" id="go" type="submit">Sign in</button>
+      <div class="msg" id="msg" role="status"></div>
+    </form>
+    <div class="done" id="done" hidden>
+      <a class="btn primary" id="cont" href="../app/index.html">Continue</a>
+      <button class="btn" id="out" type="button">Sign out of this device</button>
+    </div>
+    <a class="muted" href="../app/index.html">← Back to the apps</a>
+  </div>
+</main>
+<script src="../if-lock.js"></script>
+<script>
+(function () {
+  var ROOT = '../index.html';
+  var next = new URLSearchParams(location.search).get('next') || 'app/index.html';
+  if (!/^[a-z0-9.\-\/]*$/i.test(next)) next = 'app/index.html';
+  var msg = document.getElementById('msg');
+  try { document.getElementById('name').value = localStorage.getItem('if.name') || ''; } catch (e) {}
+  function signedIn(role) {
+    document.getElementById('f').hidden = true; document.getElementById('done').hidden = false;
+    document.getElementById('h').textContent = role === 'teacher' ? 'Signed in as a teacher' : 'Signed in as a student';
+    document.getElementById('sub').textContent = role === 'teacher' ? 'Tests, lesson materials with teacher view, and staff tools are open on this device.' : 'Tests and lesson materials are open on this device.';
+    document.getElementById('cont').href = ROOT + next;
+  }
+  if (IFLock.role()) signedIn(IFLock.role());
+  document.getElementById('f').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var code = document.getElementById('code').value;
+    try { var n = document.getElementById('name').value.trim(); if (n) localStorage.setItem('if.name', n); } catch (x) {}
+    msg.className = 'msg'; msg.textContent = 'Checking the code…';
+    document.getElementById('go').disabled = true;
+    IFLock.signIn(code, ROOT).then(function (role) {
+      msg.className = 'msg ok'; msg.textContent = '';
+      location.href = ROOT + next;
+      signedIn(role);
+    }).catch(function (err) {
+      msg.className = 'msg bad';
+      msg.textContent = err && /browser/.test(err.message) ? err.message : 'That code did not work. Check it with your teacher and try again.';
+      document.getElementById('go').disabled = false;
+    });
+  });
+  document.getElementById('out').onclick = function () { IFLock.signOut(); location.reload(); };
+  var pending = null; try { pending = sessionStorage.getItem('if.pw'); sessionStorage.removeItem('if.pw'); } catch (e) {}
+  if (pending && !IFLock.role()) { document.getElementById('code').value = pending; document.getElementById('f').requestSubmit(); }
+})();
+</script>
+</body>
+</html>

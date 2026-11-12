@@ -1,0 +1,391 @@
+<!doctype html>
+<html lang="en"><head><link rel="stylesheet" href="fonts.css"><link rel="manifest" href="/manifest.webmanifest"><link rel="apple-touch-icon" href="/brand/apple-touch-icon.png"><meta name="theme-color" content="#0B2545"><style>select{max-width:100%}</style><link rel="icon" href="/brand/favicon-64.png"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Word Arena Solo</title>
+<style>
+:root{--navy:#14213D;--navy2:#1D2E54;--gold:#C9A227;--ink:#1F2937;--muted:#5B6B82;--panel:#F4F7FB;--line:#D8E1EE;--green:#1B8A5A;--red:#B8433A;--blue:#2F5D9F;color-scheme:light}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%}
+body{background:var(--navy);color:#fff;font-family:Calibri,"Segoe UI",system-ui,Arial,sans-serif;padding:0 16px 24px;overflow-x:hidden;user-select:none;-webkit-user-select:none;touch-action:manipulation}
+.wrap{max-width:560px;margin:0 auto}
+header{display:flex;align-items:center;gap:10px;padding:14px 0}
+.logo{width:40px;height:40px;border-radius:10px;background:var(--gold);color:var(--navy);font:700 1.2rem Cambria,Georgia,serif;display:grid;place-items:center;flex:none}
+header h1{font:700 1.25rem/1.1 Cambria,Georgia,serif;margin:0}
+header small{display:block;letter-spacing:.12em;text-transform:uppercase;font-size:.68rem;color:var(--gold);font-weight:700}
+header .sp{flex:1}
+.pill{all:unset;cursor:pointer;border:1px solid rgba(255,255,255,.4);border-radius:999px;padding:6px 12px;font-size:.85rem}
+.card{background:#fff;color:var(--ink);border-radius:16px;padding:16px}
+h2{font:700 1.4rem Cambria,Georgia,serif;margin:0 0 4px}
+.sub{color:var(--muted);margin:0 0 12px}
+.menu{display:grid;gap:10px}
+.g{all:unset;cursor:pointer;box-sizing:border-box;display:grid;grid-template-columns:auto 1fr auto;gap:2px 12px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px}
+.g:active{background:#FBF5DE}
+.g .e{font-size:1.9rem;grid-row:span 2}
+.g b{font:700 1.1rem Cambria,Georgia,serif;color:var(--navy)}
+.g span{color:var(--muted);font-size:.88rem;grid-column:2}
+.g i{font-style:normal;grid-row:span 2;font-size:.78rem;color:var(--gold);font-weight:700;background:var(--navy);padding:3px 8px;border-radius:999px}
+.hud{display:flex;justify-content:space-between;align-items:center;gap:8px;font-weight:700;margin-bottom:8px;flex-wrap:wrap}
+.hud .tag{background:var(--navy);color:#fff;border-radius:999px;padding:3px 10px;font-size:.85rem}
+.clue{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:1.02rem;margin-bottom:10px;min-height:3.2em;display:flex;align-items:center}
+.btn{all:unset;cursor:pointer;background:var(--gold);color:var(--navy);font-weight:700;border-radius:12px;padding:11px 18px;text-align:center}
+.btn.alt{background:var(--panel);color:var(--navy);border:1px solid var(--line)}
+.row{display:flex;gap:10px;flex-wrap:wrap}.row>*{flex:1;min-width:120px}
+.field{position:relative;overflow:hidden;border-radius:12px;background:linear-gradient(#1D2E54,#14213D);border:2px solid var(--navy);touch-action:manipulation}
+.field:after{content:"";position:absolute;left:0;right:0;top:46px;border-top:2px dashed rgba(224,90,80,.7);pointer-events:none}
+.blk{position:absolute;width:25%;height:46px;padding:2px;transition:top .15s}
+.blk>div{height:100%;border-radius:8px;display:grid;place-items:center;text-align:center;font-weight:700;font-size:12.5px;line-height:1.05;padding:2px 3px;color:#fff;border-bottom:3px solid rgba(0,0,0,.25);overflow:hidden;overflow-wrap:anywhere}
+.c0>div{background:#2F5D9F}.c1>div{background:#1B8A5A}.c2>div{background:#8A4FB0}.c3>div{background:#C26A1E}.c4>div{background:#B8433A}
+.shake{animation:sh .3s}@keyframes sh{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.slots{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;margin:10px 0;row-gap:9px}
+.s{width:34px;height:42px;border-radius:8px;border:2px solid var(--line);background:#fff;display:grid;place-items:center;font:700 1.35rem Cambria,Georgia,serif;color:var(--navy);text-transform:uppercase}
+.s.f{border-color:var(--gold)}.s.fix{border:0;background:none;width:14px}.s.ok{background:#DDF3E8;border-color:var(--green)}.s.bad{background:#F7DEDB;border-color:var(--red)}.s.cur{border-color:var(--blue);box-shadow:0 0 0 2px #2F5D9F55}
+.gap{width:14px}
+.tiles{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;margin:8px 0}
+.t{all:unset;cursor:pointer;width:40px;height:44px;border-radius:9px;background:var(--navy);color:#fff;display:grid;place-items:center;font:700 1.25rem Cambria,Georgia,serif;text-transform:uppercase}
+.t.used{opacity:.25}
+.kb{display:grid;gap:6px;margin-top:10px}
+.kb div{display:flex;gap:4px;justify-content:center}
+.k{all:unset;cursor:pointer;flex:1;max-width:38px;height:44px;border-radius:8px;background:var(--panel);border:1px solid var(--line);color:var(--navy);display:grid;place-items:center;font-weight:700;text-transform:uppercase}
+.k.x{background:var(--navy);color:#fff;opacity:.5;pointer-events:none}.k.w{max-width:56px}
+.hearts{letter-spacing:2px}
+.big{font:700 clamp(1.5rem,7vw,2.1rem)/1.1 Cambria,Georgia,serif;color:var(--navy);text-align:center;margin:8px 0;overflow-wrap:anywhere}
+.tf{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.tf .btn{padding:16px;font-size:1.1rem}.tf .no{background:#F7DEDB;color:var(--red)}.tf .yes{background:#DDF3E8;color:var(--green)}
+.bar{height:8px;background:var(--line);border-radius:6px;overflow:hidden;margin-bottom:10px}.bar>i{display:block;height:100%;background:var(--gold);width:100%}
+.res{text-align:center}.res .n{font:700 3rem Cambria,Georgia,serif;color:var(--navy)}
+.msg{text-align:center;font-weight:700;min-height:1.5em;margin:4px 0}
+.ok{color:var(--green)}.no{color:var(--red)}
+
+.bg{display:grid;grid-template-columns:repeat(8,var(--cs));gap:2px;background:var(--navy);padding:4px;border-radius:10px;width:max-content;max-width:100%;margin:0 auto;--cs:calc((min(100vw - 72px,380px) - 22px)/8)}
+.bc{width:var(--cs);height:var(--cs);border-radius:4px;background:#2A3D6B}.bc.on{background:var(--gold)}.bc.pv{background:#6F86B8}.bc.bad{background:#B8433A}
+.tray{display:flex;justify-content:space-around;align-items:center;gap:8px;margin:12px 0;min-height:76px}
+.pc{all:unset;cursor:pointer;display:grid;gap:2px;padding:8px;border-radius:10px;border:2px solid transparent}.pc.sel{border-color:var(--gold);background:#FBF5DE}.pc.gone{visibility:hidden}
+.pc i{width:18px;height:18px;border-radius:4px;background:var(--navy);display:block}.pc i.e{background:none}
+.ov{position:fixed;inset:0;background:rgba(10,16,29,.82);display:grid;place-items:center;padding:16px;z-index:9}
+.ov .card{width:100%;max-width:420px}
+.opt{all:unset;cursor:pointer;display:block;width:100%;box-sizing:border-box;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px;margin:8px 0;font-weight:700;color:var(--navy);text-align:center}
+.opt.ok{background:#DDF3E8;border-color:var(--green)}.opt.no{background:#F7DEDB;border-color:var(--red)}
+.mem{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.mc{all:unset;cursor:pointer;height:80px;border-radius:12px;background:var(--navy);color:var(--gold);display:grid;place-items:center;font:700 1.6rem Cambria,Georgia,serif;text-align:center;padding:4px;overflow:hidden;min-width:0}
+.mc.up{background:var(--panel);color:var(--navy);border:2px solid var(--line);font:600 11.5px/1.15 Calibri,sans-serif}.mc.up.w{font:700 15px Cambria,Georgia,serif}.mc.done{background:#DDF3E8;border-color:var(--green);cursor:default}
+.ws{display:grid;grid-template-columns:repeat(9,1fr);gap:2px;max-width:340px;margin:8px auto}
+.wc{all:unset;cursor:pointer;aspect-ratio:1;display:grid;place-items:center;background:var(--panel);border-radius:6px;font-weight:700;color:var(--navy);font-size:1rem;min-width:0}
+.wc.st{background:var(--gold)}.wc.fd{background:#DDF3E8;color:var(--green)}
+.wl{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:6px}.wl li{background:var(--panel);border-radius:10px;padding:8px 10px;font-size:.92rem}.wl li.d{text-decoration:line-through;color:var(--green);opacity:.8}
+@media all{.emb header{display:none}.emb body{padding-top:12px}}
+</style></head><body>
+<div class="wrap">
+<header><div class="logo">IF</div><div><small id="hu">Solo games</small><h1 id="ht">Classic solo games</h1></div><div class="sp"></div><button class="pill" id="snd">🔊 On</button></header>
+<div id="stage"></div>
+</div>
+<script>
+try{if(parent!==window)document.documentElement.classList.add('emb')}catch(e){}
+var code=((function(){try{return parent.document.title}catch(e){return'arena'}})()||'arena').replace(/[^A-Za-z0-9]+/g,'_').slice(0,40),UNIT='',WORDS=[],stage=document.getElementById('stage'),sound=true,actx=null,cleanup=null;
+function $(s,e){return(e||document).querySelector(s)}
+function rnd(n){return Math.floor(Math.random()*n)}
+function shuffle(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=rnd(i+1),t=a[i];a[i]=a[j];a[j]=t}return a}
+function nz(c){return c.normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase()}
+function isL(c){return /[a-z]/.test(nz(c))}
+function el(t,c,h){var e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;return e}
+function best(k){try{return +localStorage.getItem('ifsolo_'+code+'_'+k)||0}catch(e){return 0}}
+function setBest(k,v){try{localStorage.setItem('ifsolo_'+code+'_'+k,v)}catch(e){}}
+function beep(ok){if(!sound)return;try{actx=actx||new(window.AudioContext||window.webkitAudioContext)();var o=actx.createOscillator(),g=actx.createGain();o.connect(g);g.connect(actx.destination);o.type='sine';o.frequency.value=ok?740:200;g.gain.value=.08;o.start();o.stop(actx.currentTime+(ok?.12:.22))}catch(e){}}
+$('#snd').onclick=function(){sound=!sound;this.textContent=sound?'🔊 On':'🔇 Off'};
+function stop(){if(cleanup){cleanup();cleanup=null}}
+function clr(){stop();stage.innerHTML=''}
+function esc(s){return s.replace(/[&<>]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;'}[c]})}
+
+var GAMES=[
+ {k:'blocks',e:'🧱',n:'Block Drop',d:'Words fall like blocks. Tap the one that matches the clue before the stack hits the top.',f:gBlocks},
+ {k:'hang',e:'🪢',n:'Word Rescue',d:'Guess the hidden word letter by letter. Six lives.',f:gHang},
+ {k:'scr',e:'🔀',n:'Letter Shuffle',d:'Put the jumbled letters in the right order.',f:gScr},
+ {k:'bb',e:'🟨',n:'Block Blast Words',d:'Place blocks on the 8×8 grid to clear lines. Answer vocab questions for bonus points.',f:gBB},
+ {k:'mem',e:'🃏',n:'Memory Pairs',d:'Turn cards and match each word with its meaning.',f:gMem},
+ {k:'ws',e:'🔎',n:'Word Search',d:'Read the clue and find the hidden word in the grid.',f:gWS},
+ {k:'spell',e:'🎧',n:'Listen & Spell',d:'Hear the word, then spell it with the keyboard.',f:gSpell}
+];
+function menu(){
+ clr();$('#hu').textContent='Solo games';
+ var c=el('div','card');c.innerHTML='<h2>'+esc(UNIT)+'</h2><p class="sub">Choose a game. Beat your best score!</p>';
+ var m=el('div','menu');
+ GAMES.forEach(function(g){var b=el('button','g','<span class="e">'+g.e+'</span><b>'+g.n+'</b><i>Best '+best(g.k)+'</i><span>'+g.d+'</span>');b.onclick=function(){clr();g.f()};m.appendChild(b)});
+ c.appendChild(m);stage.appendChild(c);
+}
+function endScreen(g,score,line,again){
+ stop();var b=best(g.k),nb=score>b;if(nb)setBest(g.k,score);try{parent.postMessage({type:'if-solo',game:g.k,name:g.n,score:score},location.origin)}catch(e){}
+ stage.innerHTML='';var c=el('div','card res');
+ c.innerHTML='<h2>'+g.e+' '+g.n+'</h2><div class="n">'+score+'</div><p class="sub">'+(nb?'🏆 New best score!':'Best: '+b)+'</p><p>'+line+'</p>';
+ var r=el('div','row');var a=el('button','btn','Play again'),m=el('button','btn alt','All games');a.onclick=again;m.onclick=menu;r.appendChild(a);r.appendChild(m);c.appendChild(r);stage.appendChild(c);
+ beep(true);
+}
+function gameBy(k){return GAMES.filter(function(g){return g.k==k})[0]}
+function shell(g,hud){stage.innerHTML='';var c=el('div','card');c.innerHTML='<div class="hud"><span>'+g.e+' '+g.n+'</span>'+hud+'</div><div id="gm"></div>';var q=el('button','pill','← All games');q.style.cssText='color:#14213D;border-color:#D8E1EE;margin-top:12px;display:inline-block';q.onclick=menu;stage.appendChild(c);c.appendChild(q);return $('#gm',c)}
+
+/* ---------- Block Drop ---------- */
+function gBlocks(){
+ var g=gameBy('blocks'),H=46,ROWS=8,MAXR=7,fh=ROWS*H;
+ var gm=shell(g,'<span class="tag" id="sc">0</span><span class="hearts" id="lv"></span>');
+ gm.innerHTML='<div class="clue" id="clue"></div><div class="field" id="fld" style="height:'+fh+'px"></div><p class="sub" style="margin:8px 0 0;font-size:.85rem">Tap the block that fits the clue. A wrong tap costs a life.</p>';
+ var fld=$('#fld'),stack=[[],[],[],[]],fall=[],score=0,lives=3,target=null,bag=[],last=0,spT=0,over=false,combo=0,raf=0;
+ function hud(){$('#sc').textContent=score;var h='';for(var i=0;i<3;i++)h+=i<lives?'❤️':'🖤';$('#lv').innerHTML=h}
+ function nextT(){if(!bag.length)bag=shuffle(WORDS);target=bag.pop();$('#clue').textContent=target.d}
+ function has(){return fall.some(function(b){return b.w===target})||stack.some(function(s){return s.some(function(b){return b.w===target})})}
+ function spawn(){
+  var lane=rnd(4),w;if(!has())w=target;else{do{w=WORDS[rnd(WORDS.length)]}while(w===target&&WORDS.length>1)}
+  var e=el('div','blk c'+rnd(5),'<div>'+esc(w.w)+'</div>');if(w.w.length>10)e.firstChild.style.fontSize='10.5px';
+  e.style.left=lane*25+'%';e.style.top=-H+'px';e.style.transition='none';fld.appendChild(e);
+  var b={w:w,e:e,lane:lane,y:-H};fall.push(b);e.onpointerdown=function(ev){ev.preventDefault();tap(b)};
+ }
+ function layout(l){stack[l].forEach(function(b,i){b.e.style.transition='top .15s';b.e.style.top=(fh-(i+1)*H)+'px'})}
+ function drop(b,inStack){var i=fall.indexOf(b);if(i>=0)fall.splice(i,1);var s=stack[b.lane];i=s.indexOf(b);if(i>=0){s.splice(i,1);layout(b.lane)}b.e.remove()}
+ function tap(b){
+  if(over)return;var inS=stack[b.lane].indexOf(b)>=0;
+  if(b.w===target){combo++;score+=10+(combo>1?combo*2:0);beep(true);drop(b);nextT()}
+  else{combo=0;beep(false);if(!inS){lives--;b.e.classList.add('shake');drop(b)}else{score=Math.max(0,score-5);drop(b)}}
+  hud();if(lives<=0)fin('Out of lives!');
+ }
+ function fin(why){if(over)return;over=true;cancelAnimationFrame(raf);setTimeout(function(){endScreen(g,score,why+' You cleared '+Math.floor(score/10)+' blocks.',gBlocks)},500)}
+ function loop(t){
+  if(over)return;if(!last)last=t;var dt=Math.min(.05,(t-last)/1000);last=t;
+  var sp=60+Math.min(90,score*1.1);spT-=dt;if(spT<=0){spawn();spT=Math.max(.95,1.9-score/140)}
+  fall.slice().forEach(function(b){
+   b.y+=sp*dt;var rest=fh-(stack[b.lane].length+1)*H;
+   if(b.y>=rest){fall.splice(fall.indexOf(b),1);stack[b.lane].push(b);b.e.style.transition='top .1s';b.e.style.top=rest+'px';if(stack[b.lane].length>=MAXR){fin('The stack reached the top!')}}
+   else b.e.style.top=b.y+'px';
+  });
+  raf=requestAnimationFrame(loop);
+ }
+ cleanup=function(){over=true;cancelAnimationFrame(raf)};
+ hud();nextT();raf=requestAnimationFrame(loop);
+}
+
+/* ---------- Word Rescue (hangman) ---------- */
+function kbd(on,opts){
+ var rows=['qwertyuiop','asdfghjkl','zxcvbnm'],kb=el('div','kb'),keys={};
+ rows.forEach(function(r,ri){var d=el('div');r.split('').forEach(function(l){var b=el('button','k',l);b.onclick=function(){on(l)};keys[l]=b;d.appendChild(b)});
+  if(ri==2&&opts&&opts.back){var bk=el('button','k w','⌫');bk.onclick=function(){opts.back()};d.appendChild(bk)}kb.appendChild(d)});
+ function key(e){var k=e.key;if(/^[a-zA-Z]$/.test(k))on(k.toLowerCase());else if(k=='Backspace'&&opts&&opts.back)opts.back()}
+ document.addEventListener('keydown',key);
+ return{el:kb,keys:keys,off:function(){document.removeEventListener('keydown',key)}};
+}
+function gHang(){
+ var g=gameBy('hang'),R=8,round=0,score=0,order=shuffle(WORDS).slice(0,R),gm=shell(g,'<span class="tag" id="rd"></span><span class="tag" id="sc">0</span>'),K=null;
+ function go(){
+  if(!document.body.contains(gm))return;
+  if(K)K.off();
+  if(round>=R)return endScreen(g,score,'Round finished: '+R+' words played.',gHang);
+  var w=order[round],word=w.w,lives=6,got={},done=false;$('#rd').textContent='Word '+(round+1)+'/'+R;$('#sc').textContent=score;
+  gm.innerHTML='<div class="clue">'+esc(w.d)+'</div><div class="msg hearts" id="hl"></div><div class="slots" id="sl"></div><div class="msg" id="ms"></div><div id="kk"></div>';
+  function draw(){var h='';for(var i=0;i<6;i++)h+=i<lives?'❤️':'🖤';$('#hl').innerHTML=h;
+   var sl=$('#sl');sl.innerHTML='';var wd=el('div','slots');wd.style.margin=0;var cur=null;
+   word.split('').forEach(function(c){
+    if(c==' '){sl.appendChild(el('div','gap'));return}
+    if(!isL(c)){sl.appendChild(el('div','s fix',esc(c)));return}
+    sl.appendChild(el('div','s'+(got[nz(c)]||done?' f':''),got[nz(c)]||done?esc(c):''))});}
+  function won(){return word.split('').every(function(c){return !isL(c)||got[nz(c)]})}
+  function press(l){
+   if(done||got[l]===undefined&&false)return;var b=K.keys[l];if(b.classList.contains('x'))return;b.classList.add('x');
+   var inw=word.split('').some(function(c){return nz(c)==l});
+   if(inw){got[l]=l;beep(true)}else{lives--;beep(false)}
+   draw();
+   if(won()){done=true;var pts=10+lives*2;score+=pts;$('#sc').textContent=score;$('#ms').innerHTML='<span class="ok">✔ '+esc(word)+'  +'+pts+'</span>';round++;setTimeout(go,1400)}
+   else if(lives<=0){done=true;draw();$('#ms').innerHTML='<span class="no">✘ The word was: '+esc(word)+'</span>';round++;setTimeout(go,1900)}
+  }
+  K=kbd(press);$('#kk').appendChild(K.el);draw();
+ }
+ cleanup=function(){if(K)K.off()};go();
+}
+
+/* ---------- Letter Shuffle ---------- */
+function gScr(){
+ var g=gameBy('scr'),R=8,round=0,score=0,order=shuffle(WORDS).slice(0,R),gm=shell(g,'<span class="tag" id="rd"></span><span class="tag" id="sc">0</span>');
+ function go(){
+  if(!document.body.contains(gm))return;
+  if(round>=R)return endScreen(g,score,'Round finished: '+R+' words played.',gScr);
+  var w=order[round],word=w.w,hints=0,locked=false;$('#rd').textContent='Word '+(round+1)+'/'+R;$('#sc').textContent=score;
+  var letters=word.split('').filter(isL).map(function(c,i){return{c:nz(c),i:i,used:false}});
+  var tl=shuffle(letters);if(letters.length>2){var tries=0;while(tl.map(function(x){return x.c}).join('')==letters.map(function(x){return x.c}).join('')&&tries++<20)tl=shuffle(letters)}
+  var chars=word.split(''),slotsV=[];chars.forEach(function(c,i){slotsV[i]=isL(c)?null:'fix'});
+  gm.innerHTML='<div class="clue">'+esc(w.d)+'</div><div class="slots" id="sl"></div><div class="msg" id="ms"></div><div class="tiles" id="tl"></div><div class="row"><button class="btn alt" id="hi">💡 Hint (−3)</button><button class="btn alt" id="sk">Skip</button></div>';
+  function firstEmpty(){for(var i=0;i<chars.length;i++)if(slotsV[i]===null)return i;return -1}
+  function draw(st){
+   var sl=$('#sl');sl.innerHTML='';
+   chars.forEach(function(c,i){
+    if(c==' '){sl.appendChild(el('div','gap'));return}
+    if(slotsV[i]==='fix'){sl.appendChild(el('div','s fix',esc(c)));return}
+    var v=slotsV[i],s=el('div','s'+(v?' f':'')+(st?' '+st:''),v?esc(v.c):'');s.onclick=function(){if(locked||!slotsV[i])return;slotsV[i].used=false;slotsV[i]=null;draw();tiles()};sl.appendChild(s)});
+  }
+  function tiles(){var t=$('#tl');t.innerHTML='';tl.forEach(function(x){var b=el('button','t'+(x.used?' used':''),x.c);b.onclick=function(){if(locked||x.used)return;var i=firstEmpty();if(i<0)return;x.used=true;slotsV[i]=x;draw();tiles();check()};t.appendChild(b)})}
+  function check(){if(firstEmpty()>=0)return;
+   var ok=chars.every(function(c,i){return !isL(c)||slotsV[i].c==nz(c)});
+   if(ok){locked=true;draw('ok');var p=Math.max(3,10-hints*3);score+=p;$('#sc').textContent=score;beep(true);$('#ms').innerHTML='<span class="ok">✔ '+esc(word)+' +'+p+'</span>';round++;setTimeout(go,1300)}
+   else{beep(false);$('#ms').innerHTML='<span class="no">Not quite — tap a letter to move it.</span>';draw('bad');setTimeout(function(){if(!locked)draw()},700)}}
+  $('#hi').onclick=function(){if(locked)return;
+   var i;for(i=0;i<chars.length;i++){if(isL(chars[i])&&(!slotsV[i]||slotsV[i].c!=nz(chars[i])))break}
+   if(i>=chars.length)return;hints++;
+   if(slotsV[i]){slotsV[i].used=false;slotsV[i]=null}
+   var t=tl.filter(function(x){return !x.used&&x.c==nz(chars[i])})[0];
+   if(!t){/* free a wrongly placed copy */var o=-1;for(var j=0;j<chars.length;j++)if(slotsV[j]&&slotsV[j]!=='fix'&&slotsV[j].c==nz(chars[i])&&nz(chars[j])!=slotsV[j].c){o=j;break}if(o>=0){slotsV[o].used=false;slotsV[o]=null;t=tl.filter(function(x){return !x.used&&x.c==nz(chars[i])})[0]}}
+   if(t){t.used=true;slotsV[i]=t}draw();tiles();check()};
+  $('#sk').onclick=function(){if(locked)return;locked=true;$('#ms').innerHTML='<span class="no">It was: '+esc(word)+'</span>';round++;setTimeout(go,1500)};
+  draw();tiles();
+ }
+ go();
+}
+
+/* ---------- True or False Blitz ---------- */
+function gTF(){
+ var g=gameBy('tf'),T=60,score=0,streak=0,right=0,over=false,tm=null,left=T,cur=null,bag=[];
+ var gm=shell(g,'<span class="tag" id="sc">0</span><span class="tag" id="tt">60s</span>');
+ gm.innerHTML='<div class="bar"><i id="br"></i></div><div class="big" id="wd"></div><div class="clue" id="df" style="justify-content:center;text-align:center"></div><div class="msg" id="ms"></div><div class="tf"><button class="btn no" id="bn">✘ False</button><button class="btn yes" id="by">✔ True</button></div>';
+ function item(){if(!bag.length)bag=shuffle(WORDS);var w=bag.pop(),t=Math.random()<.5,d=w.d;if(!t){var o;do{o=WORDS[rnd(WORDS.length)]}while(o===w&&WORDS.length>1);d=o.d}cur={t:t&&d==w.d||d==w.d};$('#wd').textContent=w.w;$('#df').textContent=d}
+ function ans(v){if(over)return;var ok=v===cur.t;
+  if(ok){streak++;right++;score+=10+Math.min(10,streak);beep(true);$('#ms').innerHTML='<span class="ok">✔ '+(streak>1?'x'+streak+' streak':'Correct')+'</span>'}
+  else{streak=0;score=Math.max(0,score-5);left=Math.max(0,left-3);beep(false);$('#ms').innerHTML='<span class="no">✘ Wrong  −3s</span>'}
+  $('#sc').textContent=score;item()}
+ $('#by').onclick=function(){ans(true)};$('#bn').onclick=function(){ans(false)};
+ function key(e){if(e.key=='ArrowRight'||e.key=='t')ans(true);if(e.key=='ArrowLeft'||e.key=='f')ans(false)}
+ document.addEventListener('keydown',key);
+ tm=setInterval(function(){left-=.25;$('#tt').textContent=Math.ceil(left)+'s';$('#br').style.width=Math.max(0,left/T*100)+'%';if(left<=0){stopT();over=true;endScreen(g,score,'You got '+right+' answers right in a minute.',gTF)}},250);
+ function stopT(){clearInterval(tm);document.removeEventListener('keydown',key)}
+ cleanup=function(){over=true;stopT()};item();
+}
+
+/* ---------- Block Blast Words ---------- */
+function gBB(){
+ var g=gameBy('bb'),N=8,SH=[[[0,0]],[[0,0],[0,1]],[[0,0],[1,0]],[[0,0],[0,1],[0,2]],[[0,0],[1,0],[2,0]],[[0,0],[0,1],[1,0],[1,1]],[[0,0],[1,0],[1,1]],[[0,0],[0,1],[1,0]],[[0,1],[1,0],[1,1]],[[0,0],[0,1],[1,1]],[[0,0],[0,1],[0,2],[1,0]],[[0,0],[0,1],[0,2],[1,2]],[[0,0],[1,0],[2,0],[2,1]],[[0,1],[1,1],[2,1],[2,0]],[[0,0],[0,1],[0,2],[0,3]],[[0,0],[1,0],[2,0],[3,0]],[[0,0],[0,1],[0,2],[1,0],[1,1],[1,2],[2,0],[2,1],[2,2]],[[0,0],[0,1],[1,0],[1,1],[2,0],[2,1]],[[0,0],[0,1],[0,2],[1,1]]];
+ var gm=shell(g,'<span class="tag" id="sc">0</span><span class="tag" id="cm"></span>'),grid=[],score=0,tray=[],sel=-1,over=false,placed=0,combo=0,bag=[];
+ for(var r=0;r<N;r++)grid.push(new Array(N).fill(0));
+ gm.innerHTML='<div class="bg" id="bg"></div><div class="tray" id="tr"></div><div class="msg" id="ms">Tap a piece, then tap the grid cell where its top-left corner goes.</div>';
+ var cells=[];var bgE=$('#bg');for(var i=0;i<N*N;i++){var c=el('div','bc');(function(i){c.onclick=function(){place(Math.floor(i/N),i%N)};c.onmouseenter=function(){preview(Math.floor(i/N),i%N)}})(i);bgE.appendChild(c);cells.push(c)}
+ function fits(p,r,c){return p.every(function(q){var y=r+q[0],x=c+q[1];return y>=0&&y<N&&x>=0&&x<N&&!grid[y][x]})}
+ function any(p){for(var r=0;r<N;r++)for(var c=0;c<N;c++)if(fits(p,r,c))return true;return false}
+ function newTray(){tray=[0,1,2].map(function(){return{p:SH[rnd(SH.length)],used:false}});
+  // make sure at least one piece fits
+  if(!tray.some(function(t){return any(t.p)}))tray[0].p=SH[0];sel=-1;placed=0;drawT()}
+ function drawT(){var t=$('#tr');t.innerHTML='';tray.forEach(function(o,i){
+  var h=Math.max.apply(0,o.p.map(function(q){return q[0]}))+1,w=Math.max.apply(0,o.p.map(function(q){return q[1]}))+1;
+  var b=el('button','pc'+(i==sel?' sel':'')+(o.used?' gone':''));b.style.gridTemplateColumns='repeat('+w+',18px)';
+  for(var r=0;r<h;r++)for(var c=0;c<w;c++){var on=o.p.some(function(q){return q[0]==r&&q[1]==c});b.appendChild(el('i',on?'':'e'))}
+  b.onclick=function(){if(o.used||over)return;sel=i;drawT()};t.appendChild(b)})}
+ function draw(){cells.forEach(function(c,i){c.className='bc'+(grid[Math.floor(i/N)][i%N]?' on':'')})}
+ function preview(r,c){if(sel<0||tray[sel].used)return;draw();var p=tray[sel].p,ok=fits(p,r,c);p.forEach(function(q){var y=r+q[0],x=c+q[1];if(y<N&&x<N)cells[y*N+x].className='bc '+(ok?'pv':'bad')})}
+ function place(r,c){
+  if(over||sel<0)return;var o=tray[sel];if(o.used)return;
+  if(!fits(o.p,r,c)){beep(false);bgE.classList.remove('shake');void bgE.offsetWidth;bgE.classList.add('shake');return}
+  o.p.forEach(function(q){grid[r+q[0]][c+q[1]]=1});score+=o.p.length;o.used=true;sel=-1;placed++;
+  var rows=[],cols=[];for(var i=0;i<N;i++){if(grid[i].every(Boolean))rows.push(i);if(grid.every(function(x){return x[i]}))cols.push(i)}
+  var n=rows.length+cols.length;
+  if(n){combo++;score+=n*10+(n>1?n*5:0)+(combo>1?combo*3:0);beep(true);rows.forEach(function(i){for(var j=0;j<N;j++)grid[i][j]=0});cols.forEach(function(j){for(var i=0;i<N;i++)grid[i][j]=0});$('#ms').innerHTML='<span class="ok">✔ '+n+' line'+(n>1?'s':'')+' cleared!</span>'}
+  else{combo=0;$('#ms').textContent=''}
+  $('#sc').textContent=score;$('#cm').textContent=combo>1?'x'+combo+' combo':'';draw();drawT();
+  if(placed==3){quiz(function(){newTray();check()})}else check();
+ }
+ function check(){var live=tray.filter(function(t){return !t.used});if(live.length&&!live.some(function(t){return any(t.p)}))fin()}
+ function fin(){over=true;setTimeout(function(){endScreen(g,score,'No more space for your blocks.',gBB)},600)}
+ function quiz(done){
+  if(!bag.length)bag=shuffle(WORDS);var w=bag.pop(),opts=shuffle([w].concat(shuffle(WORDS.filter(function(x){return x!==w})).slice(0,2)));
+  var ov=el('div','ov');var c=el('div','card');c.innerHTML='<h2>⭐ Bonus question</h2><p class="sub">Which word matches? Right = +25 points.</p><div class="clue">'+esc(w.d)+'</div>';
+  opts.forEach(function(o){var b=el('button','opt',esc(o.w));b.onclick=function(){
+   if(ov.locked)return;ov.locked=true;var ok=o===w;if(ok){score+=25;b.classList.add('ok')}else{b.classList.add('no');[].forEach.call(c.querySelectorAll('.opt'),function(x){if(x.textContent===w.w)x.classList.add('ok')})}
+   beep(ok);$('#sc').textContent=score;setTimeout(function(){ov.remove();done()},ok?700:1400)};c.appendChild(b)});
+  ov.appendChild(c);document.body.appendChild(ov);cleanupOv=ov;
+ }
+ var cleanupOv=null;cleanup=function(){over=true;if(cleanupOv)cleanupOv.remove()};
+ newTray();draw();
+}
+
+/* ---------- Memory Pairs ---------- */
+function gMem(){
+ var g=gameBy('mem'),words=shuffle(WORDS).sort(function(a,b){return a.d.length-b.d.length}).slice(0,12);words=shuffle(words).slice(0,6);
+ var gm=shell(g,'<span class="tag" id="mv">Moves 0</span><span class="tag" id="pr">0/6</span>');
+ var cards=[];words.forEach(function(w,i){cards.push({id:i,t:w.w,w:1});cards.push({id:i,t:w.d,w:0})});cards=shuffle(cards);
+ gm.innerHTML='<p class="sub" style="margin:0 0 8px">Match each word with its meaning.</p><div class="mem" id="mm"></div>';
+ var up=[],moves=0,pairs=0,lock=false,mm=$('#mm');
+ cards.forEach(function(c){var b=el('button','mc','?');c.b=b;b.onclick=function(){
+  if(lock||c.open||c.done)return;c.open=true;b.className='mc up'+(c.w?' w':'');b.textContent=c.t;up.push(c);beep(true);
+  if(up.length==2){moves++;$('#mv').textContent='Moves '+moves;lock=true;var a=up[0],d=up[1];
+   if(a.id==d.id){a.done=d.done=true;a.b.classList.add('done');d.b.classList.add('done');pairs++;$('#pr').textContent=pairs+'/6';up=[];lock=false;
+    if(pairs==6)setTimeout(function(){endScreen(g,Math.max(10,120-moves*6),'You matched all pairs in '+moves+' moves.',gMem)},700)}
+   else setTimeout(function(){[a,d].forEach(function(x){x.open=false;x.b.className='mc';x.b.textContent='?'});up=[];lock=false},1000)}};mm.appendChild(b)});
+ cleanup=function(){lock=true};
+}
+
+/* ---------- Word Search ---------- */
+function gWS(){
+ var g=gameBy('ws'),N=9,pool=WORDS.filter(function(w){return /^[A-Za-z]{4,9}$/.test(w.w)}),gm=shell(g,'<span class="tag" id="tm">0s</span><span class="tag" id="fd">0/6</span>');
+ if(pool.length<3){gm.innerHTML='<p class="sub">This lesson has too few single words for a word search. Choose All lessons in the Arcade.</p>';return}
+ var words=shuffle(pool).slice(0,6),grid,place=[],tries=0;
+ function build(){grid=[];for(var r=0;r<N;r++)grid.push(new Array(N).fill(''));place=[];
+  var dirs=[[0,1],[1,0],[1,1]];
+  for(var k=0;k<words.length;k++){var w=words[k].w.toUpperCase(),ok=false;
+   for(var t=0;t<200&&!ok;t++){var d=dirs[rnd(3)],r=rnd(N),c=rnd(N),er=r+d[0]*(w.length-1),ec=c+d[1]*(w.length-1);if(er>=N||ec>=N)continue;
+    var good=true;for(var i=0;i<w.length;i++){var v=grid[r+d[0]*i][c+d[1]*i];if(v&&v!=w[i]){good=false;break}}
+    if(!good)continue;for(var i=0;i<w.length;i++)grid[r+d[0]*i][c+d[1]*i]=w[i];place.push({w:w,r:r,c:c,d:d,found:false});ok=true}
+   if(!ok)return false}
+  return true}
+ while(!build()&&tries++<50);
+ var L='ABCDEFGHIJKLMNOPRSTUW';for(var r=0;r<N;r++)for(var c=0;c<N;c++)if(!grid[r][c])grid[r][c]=L[rnd(L.length)];
+ gm.innerHTML='<div class="ws" id="wsg"></div><div class="msg" id="ms">Tap the first letter, then the last letter.</div><ul class="wl" id="wl"></ul>';
+ var cs=[],wsg=$('#wsg'),start=null,found=0,t0=Date.now(),over=false;
+ for(var r=0;r<N;r++)for(var c=0;c<N;c++){var b=el('button','wc',grid[r][c]);(function(r,c,b){b.onclick=function(){tapc(r,c)}})(r,c,b);wsg.appendChild(b);cs.push(b)}
+ function cell(r,c){return cs[r*N+c]}
+ function drawL(){var u=$('#wl');u.innerHTML='';place.forEach(function(p,i){u.appendChild(el('li',p.found?'d':'',(p.found?'✔ '+esc(p.w)+' ':'')+esc(words[i].d)+' <small>('+p.w.length+' letters)</small>'))})}
+ function tapc(r,c){
+  if(over)return;if(!start){start=[r,c];cell(r,c).classList.add('st');return}
+  var r0=start[0],c0=start[1];cell(r0,c0).classList.remove('st');start=null;
+  var dr=r-r0,dc=c-c0,len=Math.max(Math.abs(dr),Math.abs(dc))+1;
+  if(!(dr==0||dc==0||Math.abs(dr)==Math.abs(dc))||len<2){return}
+  var sr=Math.sign(dr),sc=Math.sign(dc),s='',pts=[];for(var i=0;i<len;i++){var y=r0+sr*i,x=c0+sc*i;s+=grid[y][x];pts.push([y,x])}
+  var rev=s.split('').reverse().join('');
+  var hit=place.filter(function(p){return !p.found&&(p.w==s||p.w==rev)})[0];
+  if(hit){hit.found=true;found++;pts.forEach(function(q){cell(q[0],q[1]).classList.add('fd')});beep(true);$('#fd').textContent=found+'/'+place.length;$('#ms').innerHTML='<span class="ok">✔ '+esc(hit.w)+'</span>';drawL();
+   if(found==place.length){over=true;clearInterval(tm);var sec=Math.round((Date.now()-t0)/1000);setTimeout(function(){endScreen(g,Math.max(10,place.length*20+Math.max(0,150-sec)),'All words found in '+sec+' seconds.',gWS)},700)}}
+  else{beep(false);$('#ms').innerHTML='<span class="no">Not a word — try again.</span>'}
+ }
+ var tm=setInterval(function(){$('#tm').textContent=Math.round((Date.now()-t0)/1000)+'s'},500);
+ cleanup=function(){over=true;clearInterval(tm)};window.__ws={place:place,tapc:tapc};drawL();
+}
+
+/* ---------- Listen & Spell ---------- */
+function speak(t){try{if(!window.speechSynthesis)return;speechSynthesis.cancel();var u=new SpeechSynthesisUtterance(t);u.lang='en-GB';u.rate=.8;speechSynthesis.speak(u)}catch(e){}}
+function gSpell(){
+ var g=gameBy('spell'),R=8,round=0,score=0,order=shuffle(WORDS).slice(0,R),gm=shell(g,'<span class="tag" id="rd"></span><span class="tag" id="sc">0</span>'),K=null;
+ function go(){
+  if(!document.body.contains(gm))return;
+  if(K){K.off();K=null}
+  if(round>=R)return endScreen(g,score,'Round finished: '+R+' words played.',gSpell);
+  var w=order[round],word=w.w,chars=word.split(''),val=chars.map(function(c){return isL(c)?'':null}),tries=0,locked=false;
+  $('#rd').textContent='Word '+(round+1)+'/'+R;$('#sc').textContent=score;
+  // reveal first letter
+  for(var i=0;i<chars.length;i++)if(isL(chars[i])){val[i]=nz(chars[i]);break}
+  gm.innerHTML='<button class="btn" id="pl" style="margin-bottom:8px">🔊 Listen</button><div class="clue">'+esc(w.d)+'</div><div class="slots" id="sl"></div><div class="msg" id="ms"></div><div id="kk"></div>';
+  function nextI(){for(var i=0;i<chars.length;i++)if(val[i]==='')return i;return -1}
+  function draw(st){var sl=$('#sl');sl.innerHTML='';var n=nextI();
+   chars.forEach(function(c,i){if(c==' '){sl.appendChild(el('div','gap'));return}
+    if(val[i]===null){sl.appendChild(el('div','s fix',esc(c)));return}
+    sl.appendChild(el('div','s'+(val[i]?' f':'')+(i==n?' cur':'')+(st?' '+st:''),val[i]?esc(val[i]):''))})}
+  function put(l){if(locked)return;var i=nextI();if(i<0)return;val[i]=l;draw();if(nextI()<0)check()}
+  function back(){if(locked)return;for(var i=chars.length-1;i>0;i--){if(val[i]&&isL(chars[i])&&i>firstL()){val[i]='';break}}draw()}
+  function firstL(){for(var i=0;i<chars.length;i++)if(isL(chars[i]))return i;return 0}
+  function check(){var ok=chars.every(function(c,i){return val[i]===null||val[i]==nz(c)});
+   if(ok){locked=true;draw('ok');var p=tries==0?10:5;score+=p;$('#sc').textContent=score;beep(true);$('#ms').innerHTML='<span class="ok">✔ '+esc(word)+' +'+p+'</span>';round++;setTimeout(go,1300)}
+   else{tries++;beep(false);draw('bad');
+    if(tries>=2){locked=true;$('#ms').innerHTML='<span class="no">It was: '+esc(word)+'</span>';round++;setTimeout(go,1700)}
+    else{locked=true;$('#ms').innerHTML='<span class="no">Try again!</span>';setTimeout(function(){locked=false;for(var i=0;i<chars.length;i++)if(val[i]!==null&&i!=firstL())val[i]='';draw();$('#ms').innerHTML=''},700)}}}
+  $('#pl').onclick=function(){speak(word)};
+  K=kbd(put,{back:back});$('#kk').appendChild(K.el);draw();speak(word);
+ }
+ cleanup=function(){if(K)K.off();try{speechSynthesis.cancel()}catch(e){}};go();
+}
+
+(function(){
+ var P;try{P=parent.IFPlus}catch(e){}
+ var pl=P&&P.pool?P.pool():[];
+ if(pl.length<6){stage.innerHTML='<div class="card"><h2>Not enough words</h2><p class="sub">Open this game from the Arcade and choose a lesson with more words.</p></div>';return}
+ WORDS=pl;
+ try{var lab=parent.document.querySelector('#ifp-title');UNIT='Classic solo games'}catch(e){}
+ $('#ht').textContent=UNIT;
+ var h=(location.hash||'').slice(1),g=h&&gameBy(h);
+ if(g){clr();g.f()}else menu();
+})();
+</script></body></html>

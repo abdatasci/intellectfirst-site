@@ -1,0 +1,16 @@
+
+/* === IF Mix units === (choose several units and play/review them together) */
+#lessons .ifmix-btn{font-weight:800;border-style:dashed}
+#lessons .ifmix-btn.on{border-style:solid}
+.ifmix{margin:4px 0 12px;padding:14px;border:1px solid var(--line,#d9dde6);border-radius:12px;background:var(--card,var(--panel,rgba(127,127,127,.06)));display:flex;flex-direction:column;gap:10px}
+.ifmix[hidden]{display:none!important}
+.ifmix h3{margin:0;font-size:1.05rem}
+.ifmix p{margin:0;font-size:.92rem;opacity:.8}
+.ifmix .ifmix-list{display:flex;flex-wrap:wrap;gap:6px;max-height:260px;overflow:auto;padding:2px}
+.ifmix .ifmix-list button{border-radius:999px;padding:6px 12px;font-size:.9rem;cursor:pointer}
+.ifmix .ifmix-list button[aria-pressed="true"]{background:var(--gold,#C9A227);border-color:var(--gold,#C9A227);color:#14213D;font-weight:700}
+.ifmix .ifmix-list button[aria-pressed="true"]::before{content:"✓ "}
+.ifmix .ifmix-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.ifmix .ifmix-row .ifmix-n{font-weight:700;margin-right:auto}
+.ifmix .ifmix-go{font-weight:800}
+.ifmix .ifmix-go:disabled{opacity:.45;cursor:not-allowed}
