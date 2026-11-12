@@ -79,7 +79,8 @@ export function payStatus(student, now = new Date()) {
   const l = local(now), y = l.getUTCFullYear(), mo = l.getUTCMonth();
   const dueDay = Math.min(28, Math.max(1, Math.round(+p.dueDay)));
   const month = `${y}-${String(mo + 1).padStart(2, '0')}`;
-  const due = fromLocal(y, mo, dueDay, 0, 0), today = fromLocal(y, mo, l.getUTCDate(), 0, 0);
+  const ovr = (p.dueDates || {})[`${y}-${String(mo + 1).padStart(2, '0')}`];
+  const due = /^\d{4}-\d{2}-\d{2}$/.test(ovr || '') ? fromLocal(+ovr.slice(0, 4), +ovr.slice(5, 7) - 1, +ovr.slice(8, 10), 0, 0) : fromLocal(y, mo, dueDay, 0, 0), today = fromLocal(y, mo, l.getUTCDate(), 0, 0);
   const daysToDue = Math.round((due - today) / 86400000);
   const paidOn = (p.paid || {})[month] || null;
   return { fee: +p.fee || 0, dueDay, month, dueDate: ymd(due), daysToDue, paid: !!paidOn, paidOn,

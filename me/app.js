@@ -424,7 +424,7 @@
     var p = s && s.pay; if (!p || s.noFee || (!(+p.dueDay >= 1) && !(+p.fee > 0))) return null;
     var n = kzNow(), k = monthKeyOf(n), day = n.getUTCDate(), paid = (p.paid || {})[k];
     if (!(+p.dueDay >= 1)) return { month: k, paid: paid, due: 0, fee: +p.fee || 0, state: paid ? 'paid' : 'open' };
-    var due = Math.min(28, Math.max(1, +p.dueDay));
+    var due = Math.min(28, Math.max(1, +p.dueDay)), ov = (p.dueDates || {})[k]; if (ov && ov.slice(0, 7) === k) due = +ov.slice(8);
     return { month: k, paid: paid, due: due, fee: +p.fee || 0, state: paid ? 'paid' : day < due ? 'upcoming' : day === due ? 'due' : 'overdue' };
   }
   function money(n) { return n ? '₸' + Math.round(n).toLocaleString('en-US') : ''; }
@@ -447,21 +447,42 @@
   }
 
   function markPaid(s, done) {
-    var st = payState(s), today = kzNow().toISOString().slice(0, 10);
-    modal('<h2>Mark paid</h2><p class="sub">' + esc(s.first + ' ' + s.last) + ' · ' + monthLabel(st.month) + '</p><form id="mp" novalidate><div class="grid2">' +
-      '<div><label class="f">Amount (₸)</label><input class="inp" name="amt" inputmode="numeric" value="' + (st.fee || '') + '"></div>' +
-      '<div><label class="f">Paid by</label><select class="inp" name="method">' + ['Cash', 'Kaspi Transfer', 'Kaspi Invoice', 'Card', 'Bank transfer', 'Barter', 'Other'].map(function (m) { return '<option>' + m + '</option>'; }).join('') + '</select></div>' +
-      '<div><label class="f">Date</label><input class="inp" name="date" type="date" value="' + today + '"></div></div>' +
-      '<div class="row" style="margin-top:18px"><button class="btn" type="submit">Save payment</button></div></form>');
-    $('#mp').onsubmit = async function (ev) {
-      ev.preventDefault(); var f = ev.target, amt = Math.round(+String(f.elements.amt.value).replace(/[^\d]/g, '')) || 0, d = f.elements.date.value || today;
-      var pay = Object.assign({}, s.pay); pay.paid = Object.assign({}, pay.paid); pay.methods = Object.assign({}, pay.methods); pay.amounts = Object.assign({}, pay.amounts);
-      pay.paid[st.month] = d; pay.methods[st.month] = f.elements.method.value; pay.amounts[st.month] = amt;
+    var st = payState(s) || { month: monthKeyOf(kzNow()), fee: +((s.pay || {}).fee) || 0, due: +((s.pay || {}).dueDay) || 0 };
+    var today = kzNow().toISOString().slice(0, 10), n = kzNow(), months = [];
+    for (var i = -3; i <= 1; i++) months.push(monthKeyOf(new Date(Date.UTC(n.getUTCFullYear(), n.getUTCMonth() + i, 1))));
+    var p = s.pay || {}, paid = p.paid || {};
+    function dueFor(m) { var dd = (p.dueDates || {})[m]; if (dd) return dd; var d = +p.dueDay || 0; return d ? m + '-' + ('0' + d).slice(-2) : ''; }
+    modal('<h2>Record a payment</h2><p class="sub">' + esc(s.first + ' ' + s.last) + '</p><form id="mp" novalidate><div class="grid2">' +
+      '<div><label class="f">Month the payment is for</label><select class="inp" name="month">' + months.map(function (m) { return '<option value="' + m + '"' + (m === st.month ? ' selected' : '') + '>' + monthLabel(m) + (paid[m] ? ' · paid ' + esc(paid[m]) : '') + '</option>'; }).join('') + '</select></div>' +
+      '<div><label class="f">Amount (₸)</label><input class="inp" name="amt" inputmode="numeric" value="' + (((p.amounts || {})[st.month]) || st.fee || '') + '"></div>' +
+      '<div><label class="f">Due date</label><input class="inp" name="due" type="date" value="' + esc(dueFor(st.month)) + '"></div>' +
+      '<div><label class="f">Paid on</label><input class="inp" name="date" type="date" value="' + esc(paid[st.month] || today) + '"></div>' +
+      '<div><label class="f">Paid by</label><select class="inp" name="method">' + ['Cash', 'Kaspi Transfer', 'Kaspi Invoice', 'Card', 'Bank transfer', 'Barter', 'Other'].map(function (m) { return '<option' + (((p.methods || {})[st.month]) === m ? ' selected' : '') + '>' + m + '</option>'; }).join('') + '</select></div></div>' +
+      '<div class="row" style="margin-top:18px"><button class="btn" type="submit">Save payment</button>' + (paid[st.month] ? '<button class="btn ghost" type="button" id="unpay">Mark unpaid</button>' : '') + '</div></form>');
+    var f0 = $('#mp');
+    f0.elements.month.onchange = function () { var m = this.value; f0.elements.due.value = dueFor(m); f0.elements.date.value = paid[m] || today; f0.elements.amt.value = ((p.amounts || {})[m]) || p.fee || ''; if ((p.methods || {})[m]) f0.elements.method.value = p.methods[m]; };
+    async function store(pay, msg) {
+      try { await api('admin/students', { method: 'PUT', body: { item: { id: s.id, pay: pay } } }); s.pay = pay; closeModal(); toast(msg); await done(); }
+      catch (e) { toast('Could not save. Try again.'); }
+    }
+    f0.onsubmit = async function (ev) {
+      ev.preventDefault(); var f = ev.target, m = f.elements.month.value, amt = Math.round(+String(f.elements.amt.value).replace(/[^\d]/g, '')) || 0, d = f.elements.date.value || today, due = f.elements.due.value;
+      var pay = Object.assign({ fee: 0, dueDay: 0 }, s.pay); ['paid', 'methods', 'amounts', 'dueDates'].forEach(function (k) { pay[k] = Object.assign({}, pay[k]); });
+      if (due) { pay.dueDates[m] = due; if (!(+pay.dueDay >= 1)) pay.dueDay = Math.min(28, +due.slice(8)); }
+      // re-saving an already paid month: clear it first so the income entry is rewritten with the new amount/date
+      if (pay.paid[m]) { var tmp = Object.assign({}, pay, { paid: Object.assign({}, pay.paid) }); delete tmp.paid[m]; await api('admin/students', { method: 'PUT', body: { item: { id: s.id, pay: tmp } } }); }
+      pay.paid[m] = d; pay.methods[m] = f.elements.method.value; pay.amounts[m] = amt;
       $('button', f).disabled = true;
-      try { await api('admin/students', { method: 'PUT', body: { item: { id: s.id, pay: pay } } }); s.pay = pay; closeModal(); toast('Payment saved: ' + money(amt) + ' · ' + f.elements.method.value); await done(); }
-      catch (e) { $('button', f).disabled = false; toast('Could not save. Try again.'); }
+      await store(pay, 'Payment saved: ' + monthLabel(m) + ' · ' + money(amt) + ' · ' + f.elements.method.value);
+    };
+    var up = $('#unpay'); if (up) up.onclick = async function () {
+      var m = f0.elements.month.value; if (!paid[m]) return toast('That month is not marked paid.');
+      if (!confirm('Mark ' + monthLabel(m) + ' as not paid? The tuition income entry for it is removed.')) return;
+      var pay = Object.assign({}, s.pay); pay.paid = Object.assign({}, pay.paid); delete pay.paid[m];
+      await store(pay, monthLabel(m) + ' marked unpaid');
     };
   }
+
   function opts(list, val, label, empty) { return (empty ? '<option value="">' + empty + '</option>' : '') + list.map(function (x) { return '<option value="' + esc(x.id) + '"' + (x.id === val ? ' selected' : '') + '>' + esc(label(x)) + '</option>'; }).join(''); }
   function aStudents(head) {
     var q = '', pf = '';
@@ -469,7 +490,7 @@
       var list = ADMIN.students.filter(function (s) { if (pf) { var st = payState(s); if (pf === 'none' ? st : !st || st.state !== pf) return false; } return !q || (s.first + ' ' + s.last + ' ' + (s.phone || '') + ' ' + (s.classes || []).join(' ')).toLowerCase().indexOf(q) >= 0; })
         .sort(function (a, b) { return (a.last + a.first).localeCompare(b.last + b.first); });
       $('#tbl').innerHTML = list.length ? '<table class="t"><thead><tr><th>Name</th><th>Phone</th><th>Classes</th><th>Status</th><th>Attendance</th><th>Tuition</th><th>Account</th><th></th></tr></thead><tbody>' + list.map(function (s) {
-        return '<tr><td><b>' + esc(s.first + ' ' + s.last) + '</b></td><td>' + esc(s.phone || '–') + '</td><td>' + esc((s.classes || []).join(', ')) + '</td><td>' + statusChip(s.status) + '</td><td>' + attChip(ADMIN.att && ADMIN.att[s.id]) + '</td><td style="white-space:nowrap">' + payChip(s) + (payState(s) && !payState(s).paid ? ' <button class="linkbtn" data-paid="' + s.id + '">Mark paid</button>' : '') + '</td><td>' + (s.uid ? '<span class="chip2 ok">Linked</span>' : '<span class="chip2 mute">—</span>') + '</td><td style="white-space:nowrap"><button class="linkbtn" style="color:var(--navy)" data-ed="' + s.id + '">Edit</button>' + (s.uid ? ' · <a href="#/student/' + s.id + '">Profile</a>' : '') + '</td></tr>';
+        return '<tr><td><b>' + esc(s.first + ' ' + s.last) + '</b></td><td>' + esc(s.phone || '–') + '</td><td>' + esc((s.classes || []).join(', ')) + '</td><td>' + statusChip(s.status) + '</td><td>' + attChip(ADMIN.att && ADMIN.att[s.id]) + '</td><td style="white-space:nowrap">' + payChip(s) + ' <button class="linkbtn" data-paid="' + s.id + '">' + (payState(s) && !payState(s).paid ? 'Mark paid' : 'Payment') + '</button>' + '</td><td>' + (s.uid ? '<span class="chip2 ok">Linked</span>' : '<span class="chip2 mute">—</span>') + '</td><td style="white-space:nowrap"><button class="linkbtn" style="color:var(--navy)" data-ed="' + s.id + '">Edit</button>' + (s.uid ? ' · <a href="#/student/' + s.id + '">Profile</a>' : '') + '</td></tr>';
       }).join('') + '</tbody></table>' : '<div class="empty">No students yet. Use <a href="#/admin/import">Import</a> to add your student list, or add one by hand.</div>';
       view.querySelectorAll('[data-ed]').forEach(function (b) { b.onclick = function () { editStudent(ADMIN.students.filter(function (s) { return s.id === b.dataset.ed; })[0]); }; });
       view.querySelectorAll('[data-paid]').forEach(function (b) { b.onclick = async function () {
