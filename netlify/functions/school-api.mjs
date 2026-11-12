@@ -42,6 +42,11 @@ async function migrate() {
       }
       await S().setJSON(coll, saved);
     }
+    for (const [coll, items] of Object.entries(p.add || {})) {
+      const saved = await S().get(coll, { type: 'json' }); if (!saved) continue;
+      for (const it of items) if (!saved.some(x => x.id === it.id)) saved.push(it);
+      await S().setJSON(coll, saved);
+    }
     for (const [id, ch] of Object.entries(p.classes || {})) {
       if (!ch.renameFrom) continue;
       const st = await S().get('students', { type: 'json' }); if (!st) continue;

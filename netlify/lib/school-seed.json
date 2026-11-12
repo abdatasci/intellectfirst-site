@@ -114,6 +114,13 @@
    "role": "Manager · English teacher",
    "phone": "",
    "email": ""
+  },
+  {
+   "id": "t-alina",
+   "name": "Alina Afanasyeva",
+   "role": "English teacher",
+   "phone": "",
+   "email": ""
   }
  ],
  "classes": [
@@ -272,7 +279,7 @@
   }
  ],
  "students": [],
- "version": 5,
+ "version": 6,
  "patches": [
   {
    "v": 2,
@@ -371,6 +378,20 @@
     "c-st2": {
      "room": "Hub or Studio"
     }
+   }
+  },
+  {
+   "v": 6,
+   "add": {
+    "teachers": [
+     {
+      "id": "t-alina",
+      "name": "Alina Afanasyeva",
+      "role": "English teacher",
+      "phone": "",
+      "email": ""
+     }
+    ]
    }
   }
  ]
