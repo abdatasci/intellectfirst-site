@@ -358,46 +358,99 @@
       '<div class="pgrid" id="pgd" hidden>' + Array.from({ length: d.slides }, function (_, i) { return '<button data-go="' + (i + 1) + '">' + (i + 1) + '</button>'; }).join('') + '</div></div>';
     var cv = $('#pc'), cx = cv.getContext('2d'), wm = VIEWER ? (VIEWER.name + ' · ' + VIEWER.email) : 'IF Academy';
     cv.oncontextmenu = function (e) { e.preventDefault(); };
-    async function slide(i) {
-      if (cache[i]) return cache[i];
-      cache[i] = (async function () {
-        var r = await fetch('/lessons/' + id + '/' + i + '.bin?v=' + d.v); if (!r.ok) throw new Error('slide ' + i);
+    // click animations: base image per slide + one patch per click (steps.json: {slide: [[x, y], ...]})
+    var steps = {}, s = 0, busy = Promise.resolve(), still = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    try { var sr = await fetch('/lessons/' + id + '/steps.json?v=' + d.v); if (sr.ok) steps = await sr.json(); } catch (e) {}
+    var fr = document.createElement('canvas'), fx; fr.width = d.w; fr.height = d.h; fx = fr.getContext('2d');   // the current frame, no watermark
+    var old = document.createElement('canvas'), ox; old.width = d.w; old.height = d.h; ox = old.getContext('2d');
+    function img(name) {
+      if (cache[name]) return cache[name];
+      cache[name] = (async function () {
+        var r = await fetch('/lessons/' + id + '/' + name + '.bin?v=' + d.v); if (!r.ok) throw new Error('slide ' + name);
         var buf = new Uint8Array(await r.arrayBuffer());
         var plain = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: buf.slice(0, 12) }, key, buf.slice(12));
         return createImageBitmap(new Blob([plain], { type: 'image/webp' }));
       })();
-      cache[i].catch(function () { delete cache[i]; });
-      Object.keys(cache).forEach(function (k) { if (Math.abs(k - i) > 6) delete cache[k]; });
-      return cache[i];
+      cache[name].catch(function () { delete cache[name]; });
+      return cache[name];
     }
+    function slide(i) {
+      Object.keys(cache).forEach(function (k) { if (Math.abs(parseInt(k, 10) - i) > 6) delete cache[k]; });
+      return img(String(i));
+    }
+    function stepsOf(i) { return steps[i] || []; }
     function mark() {
       cx.save(); cx.globalAlpha = 0.08; cx.font = '600 ' + Math.round(d.w / 60) + 'px Lato, sans-serif'; cx.translate(d.w / 2, d.h / 2); cx.rotate(-Math.PI / 9);
       for (var y = -d.h; y < d.h; y += d.h / 4) for (var x = -d.w; x < d.w; x += d.w / 2.2) { var xx = x + ((y / (d.h / 4)) % 2 ? d.w / 4.4 : 0); cx.fillStyle = '#0b1f3a'; cx.fillText(wm, xx, y); cx.fillStyle = '#ffffff'; cx.fillText(wm, xx + 2, y + 2); }
       cx.restore();
     }
-    async function show(i) {
-      n = Math.min(Math.max(1, i), d.slides); want = n; lsSet('ifc:pos:' + id, n);
-      $('#pk').textContent = n + ' / ' + d.slides;
-      try { var bm = await slide(n); if (want !== n) return; cx.clearRect(0, 0, d.w, d.h); cx.drawImage(bm, 0, 0, d.w, d.h); mark(); }
-      catch (e) { toast('Could not load slide ' + n); }
-      [n + 1, n + 2, n - 1].forEach(function (k) { if (k >= 1 && k <= d.slides) slide(k).catch(function () {}); });
+    // fade the new frame in over the old one
+    function present(ms) {
+      return new Promise(function (done) {
+        if (still || !ms) { cx.clearRect(0, 0, d.w, d.h); cx.drawImage(fr, 0, 0); mark(); return done(); }
+        var t0 = performance.now();
+        (function tick(t) {
+          var a = Math.min(1, (t - t0) / ms); a = a * a * (3 - 2 * a);
+          cx.globalAlpha = 1; cx.drawImage(old, 0, 0); cx.globalAlpha = a; cx.drawImage(fr, 0, 0); cx.globalAlpha = 1; mark();
+          if (a < 1) requestAnimationFrame(tick); else done();
+        })(t0);
+      });
     }
-    $('#pp').onclick = function () { show(n - 1); }; $('#pn').onclick = function () { show(n + 1); };
-    cv.onclick = function (e) { var r = cv.getBoundingClientRect(); show(e.clientX - r.left < r.width / 3 ? n - 1 : n + 1); };
+    async function compose(i, upto) {
+      var list = [slide(i)], st = stepsOf(i);
+      for (var k = 1; k <= upto; k++) list.push(img(i + '-' + k));
+      var bms = await Promise.all(list);
+      fx.clearRect(0, 0, d.w, d.h); fx.drawImage(bms[0], 0, 0, d.w, d.h);
+      for (k = 1; k <= upto; k++) fx.drawImage(bms[k], st[k - 1][0], st[k - 1][1]);
+    }
+    function queue(fn) { busy = busy.then(fn, fn); return busy; }
+    function show(i, end, fade) {
+      i = Math.min(Math.max(1, i), d.slides);
+      return queue(async function () {
+        var wantS = end ? stepsOf(i).length : 0;
+        n = i; s = wantS; want = n; lsSet('ifc:pos:' + id, n);
+        $('#pk').textContent = n + ' / ' + d.slides;
+        ox.clearRect(0, 0, d.w, d.h); ox.drawImage(fr, 0, 0);
+        try { await compose(i, wantS); if (want !== i) return; await present(fade === false ? 0 : 260); }
+        catch (e) { toast('Could not load slide ' + i); }
+        [n + 1, n + 2, n - 1].forEach(function (k) { if (k >= 1 && k <= d.slides) slide(k).catch(function () {}); });
+        stepsOf(n).forEach(function (_, k) { img(n + '-' + (k + 1)).catch(function () {}); });
+        if (n < d.slides) stepsOf(n + 1).slice(0, 3).forEach(function (_, k) { img((n + 1) + '-' + (k + 1)).catch(function () {}); });
+      });
+    }
+    function fwd() {
+      if (s >= stepsOf(n).length) { if (n < d.slides) show(n + 1); return; }
+      queue(async function () {
+        if (s >= stepsOf(n).length) return;
+        var k = s + 1, p = stepsOf(n)[k - 1];
+        try {
+          var bm = await img(n + '-' + k);
+          ox.clearRect(0, 0, d.w, d.h); ox.drawImage(fr, 0, 0);
+          fx.drawImage(bm, p[0], p[1]); s = k;
+          await present(220);
+        } catch (e) { toast('Could not load the next step'); }
+      });
+    }
+    function back() {
+      if (s > 0) { var i = n, k = s - 1; queue(async function () { await compose(i, k); s = k; await present(0); }); }
+      else if (n > 1) show(n - 1, true, false);
+    }
+    $('#pp').onclick = back; $('#pn').onclick = fwd;
+    cv.onclick = function (e) { var r = cv.getBoundingClientRect(); if (e.clientX - r.left < r.width / 3) back(); else fwd(); };
     $('#pg').onclick = function () { $('#pgd').hidden = !$('#pgd').hidden; };
     $('#pgd').onclick = function (e) { var b = e.target.closest('[data-go]'); if (b) { $('#pgd').hidden = true; show(+b.dataset.go); } };
     var stage = $('#pres');
     $('#pf').onclick = function () { if (document.fullscreenElement) document.exitFullscreen(); else (stage.requestFullscreen || stage.webkitRequestFullscreen).call(stage); };
     document.onkeydown = function (e) {
       if (!document.getElementById('pc') || /input|textarea/i.test(e.target.tagName)) return;
-      if (['ArrowRight', 'PageDown', ' ', 'Enter'].indexOf(e.key) >= 0) { e.preventDefault(); show(n + 1); }
-      else if (['ArrowLeft', 'PageUp', 'Backspace'].indexOf(e.key) >= 0) { e.preventDefault(); show(n - 1); }
+      if (['ArrowRight', 'ArrowDown', 'PageDown', ' ', 'Enter'].indexOf(e.key) >= 0) { e.preventDefault(); fwd(); }
+      else if (['ArrowLeft', 'ArrowUp', 'PageUp', 'Backspace'].indexOf(e.key) >= 0) { e.preventDefault(); back(); }
       else if (e.key === 'Home') show(1); else if (e.key === 'End') show(d.slides);
       else if (e.key === 'f' || e.key === 'F') $('#pf').click(); else if (e.key === 'g' || e.key === 'G') $('#pg').click();
     };
     var tx = null; cv.addEventListener('touchstart', function (e) { tx = e.touches[0].clientX; }, { passive: true });
-    cv.addEventListener('touchend', function (e) { if (tx == null) return; var dx = e.changedTouches[0].clientX - tx; if (Math.abs(dx) > 40) show(dx < 0 ? n + 1 : n - 1); tx = null; });
-    show(n);
+    cv.addEventListener('touchend', function (e) { if (tx == null) return; var dx = e.changedTouches[0].clientX - tx; if (Math.abs(dx) > 40) { if (dx < 0) fwd(); else back(); } tx = null; });
+    show(n, false, false);
   }
 
   /* ---------- admin ---------- */
