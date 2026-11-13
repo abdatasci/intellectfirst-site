@@ -129,3 +129,12 @@ select.inp{appearance:auto}
 .tgqrbox{display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin-top:12px}
 .tgqrbox svg{width:170px;height:170px;background:#fff;border-radius:10px;padding:4px}
 .tgqrbox p{flex:1;min-width:200px}
+
+/* teachers' professional profile */
+.pro .prog{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px 22px;margin-top:6px}
+.pro .prog b{display:block;color:var(--navy);font-size:14px;letter-spacing:.02em}
+.pro .prog p{margin:3px 0 0;font-size:15px;line-height:1.5}
+.pro ul.certs{list-style:none;padding:0;margin:8px 0 0}
+.pro ul.certs li{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:10px 0;border-top:1px solid var(--line)}
+.pro ul.certs li:first-child{border-top:0}
+.pro ul.certs li span{display:block}

@@ -13,6 +13,7 @@ import { loadStudents, saveStudents, loadAttendance } from '../lib/students.mjs'
 const S = () => getStore({ name: 'school', consistency: 'strong' });
 const U = () => getStore({ name: 'ielts', consistency: 'strong' });
 const P = () => getStore({ name: 'photos', consistency: 'strong' });
+const C = () => getStore({ name: 'certs', consistency: 'strong' });
 const json = (data, status = 200) => Response.json(data, { status, headers: { 'Cache-Control': 'no-store' } });
 const fail = (status, error, more = {}) => json({ error, ...more }, status);
 const newId = p => p + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
@@ -330,9 +331,48 @@ export default async (req) => {
   if (path === 'profile' && method === 'PUT') {
     const b = await req.json().catch(() => ({}));
     for (const k of ['name', 'phone', 'about', 'goals', 'birth', 'parent', 'parentPhone', 'city']) if (k in b) profile[k] = str(b[k], k === 'about' || k === 'goals' ? 600 : 120);
+    // teachers' professional profile
+    if (isStaff(profile.role)) for (const k of ['education', 'experience', 'skillsHard', 'skillsSoft', 'hobbies']) if (k in b) profile[k] = String(b[k] == null ? '' : b[k]).slice(0, 3000);
     profile = await linkByPhone(uid, profile);
     await putProfile(uid, profile);
     return json({ profile });
+  }
+
+  /* ---------- teacher certificates (file optional: PDF or image, up to 4 MB) ---------- */
+  if (path === 'cert' && method === 'POST') {
+    if (!isStaff(profile.role)) return fail(403, 'staff');
+    const b = await req.json().catch(() => ({}));
+    const title = str(b.title, 160); if (!title) return fail(400, 'title');
+    const c = { id: newId('c'), title, issuer: str(b.issuer, 160), year: str(b.year, 20), at: new Date().toISOString() };
+    if (b.file) {
+      const m = String(b.file).match(/^data:(application\/pdf|image\/jpeg|image\/png|image\/webp);base64,([A-Za-z0-9+/=]+)$/);
+      if (!m) return fail(400, 'file');
+      const bytes = Buffer.from(m[2], 'base64');
+      if (bytes.length > 4 * 1024 * 1024) return fail(413, 'big');
+      await C().set(`${uid}/${c.id}`, bytes, { metadata: { type: m[1], name: str(b.name, 120) } });
+      c.file = { type: m[1], name: str(b.name, 120) || 'certificate', size: bytes.length };
+    }
+    profile.certs = [...(profile.certs || []), c].slice(-40); await putProfile(uid, profile);
+    return json({ cert: c, certs: profile.certs });
+  }
+  const cd = path.match(/^cert\/([A-Za-z0-9_-]+)$/);
+  if (cd && method === 'DELETE') {
+    profile.certs = (profile.certs || []).filter(c => c.id !== cd[1]); await C().delete(`${uid}/${cd[1]}`).catch(() => {});
+    await putProfile(uid, profile); return json({ certs: profile.certs });
+  }
+  const cf = path.match(/^cert\/([A-Za-z0-9-]+)\/([A-Za-z0-9_-]+)$/);
+  if (cf && method === 'GET') {
+    if (cf[1] !== uid && !isStaff(profile.role)) return fail(403, 'forbidden');
+    const r = await C().getWithMetadata(`${cf[1]}/${cf[2]}`, { type: 'arrayBuffer' });
+    if (!r) return fail(404, 'missing');
+    return new Response(r.data, { headers: { 'Content-Type': r.metadata?.type || 'application/octet-stream', 'Content-Disposition': `inline; filename="${String(r.metadata?.name || 'certificate').replace(/[^\w. -]/g, '_')}"`, 'Cache-Control': 'private, max-age=3600' } });
+  }
+  // a teacher's professional profile, for colleagues and the director
+  const tp = path.match(/^teacher-profile\/([A-Za-z0-9-]+)$/);
+  if (tp && method === 'GET') {
+    if (!isStaff(profile.role)) return fail(403, 'staff');
+    const p2 = await getProfile(tp[1]); if (!p2 || !isStaff(p2.role)) return fail(404, 'missing');
+    return json({ profile: { name: p2.name, role: p2.role, photo: p2.photo, about: p2.about || '', education: p2.education || '', experience: p2.experience || '', skillsHard: p2.skillsHard || '', skillsSoft: p2.skillsSoft || '', hobbies: p2.hobbies || '', certs: p2.certs || [] }, uid: tp[1] });
   }
 
   if (path === 'photo' && method === 'POST') {

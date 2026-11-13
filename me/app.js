@@ -243,6 +243,49 @@
       '<div class="full"><label class="f">About me</label><textarea class="inp" name="about" rows="3">' + esc(p.about) + '</textarea></div></div>' +
       '<button class="btn sm" type="submit" style="margin-top:14px">Save details</button></form></div>';
   }
+  /* ---------- teachers: qualifications, experience, skills, interests and certificates ---------- */
+  var PRO = [['education', 'Qualifications & education', 'e.g. BA in Linguistics, Kostanay University (2019)\nCELTA (2022)'], ['experience', 'Teaching experience', 'e.g. 5 years teaching teens and adults; IELTS preparation since 2021'],
+    ['skillsHard', 'Hard skills', 'e.g. IELTS examining, lesson planning, Russian–English translation'], ['skillsSoft', 'Soft skills', 'e.g. patience, communication, classroom management'], ['hobbies', 'Interests & hobbies', 'e.g. chess, hiking, photography']];
+  function lines(t) { return esc(t || '').replace(/\n/g, '<br>'); }
+  function proView(p, mine, uid) {
+    var certs = p.certs || [], any = PRO.some(function (f) { return p[f[0]]; }) || certs.length;
+    var h = '<div class="box pro"><h3>Professional profile</h3>' + (any ? '<div class="prog">' + PRO.map(function (f) { return p[f[0]] ? '<div><b>' + f[1] + '</b><p>' + lines(p[f[0]]) + '</p></div>' : ''; }).join('') + '</div>' : (mine ? '<p class="small">Add your qualifications, experience, skills, interests and certificates. The director and your colleagues see them.</p>' : '<p class="small">Not filled in yet.</p>')) +
+      '<h3 style="margin-top:16px">Certificates' + (certs.length ? ' <small>(' + certs.length + ')</small>' : '') + '</h3>' +
+      (certs.length ? '<ul class="certs">' + certs.map(function (c) { return '<li><div><b>' + esc(c.title) + '</b><span class="small">' + esc([c.issuer, c.year].filter(Boolean).join(' · ')) + '</span></div>' + (c.file ? '<a class="linkbtn" target="_blank" rel="noopener" href="/api/school/cert/' + esc(uid || ME.user.id) + '/' + esc(c.id) + '">View ' + (/pdf/.test(c.file.type) ? 'PDF' : 'image') + '</a>' : '') + (mine ? ' <button class="linkbtn" data-cdel="' + esc(c.id) + '" style="color:var(--bad)">Remove</button>' : '') + '</li>'; }).join('') + '</ul>' : '<p class="small">' + (mine ? 'No certificates added yet.' : 'None added.') + '</p>') +
+      (mine ? '<div class="row" style="gap:10px;margin-top:12px"><button class="btn sm" id="proEdit">Edit professional profile</button><button class="btn ghost sm" id="certAdd">Add a certificate</button></div>' : '') + '</div>';
+    return h;
+  }
+  function wirePro() {
+    var e = $('#proEdit'); if (!e) return;
+    e.onclick = function () {
+      var p = ME.profile;
+      modal('<h2>Professional profile</h2><form id="pf" novalidate>' + PRO.map(function (f) { return '<label class="f">' + f[1] + '</label><textarea class="inp" name="' + f[0] + '" rows="3" placeholder="' + esc(f[2]) + '">' + esc(p[f[0]] || '') + '</textarea>'; }).join('') + '<button class="btn" type="submit" style="margin-top:14px">Save</button></form>');
+      $('#pf').onsubmit = async function (ev) { ev.preventDefault(); var body = {}; new FormData(ev.target).forEach(function (v, k) { body[k] = v; }); try { await api('profile', { method: 'PUT', body: body }); await loadMe(); closeModal(); toast('Professional profile saved'); route(); } catch (x) { toast('Could not save. Try again.'); } };
+    };
+    $('#certAdd').onclick = function () {
+      modal('<h2>Add a certificate</h2><form id="cf2" novalidate><label class="f">Certificate or training</label><input class="inp" name="title" placeholder="e.g. CELTA, TKT Module 1, IELTS Examiner training"><div class="grid2"><div><label class="f">Issued by</label><input class="inp" name="issuer" placeholder="e.g. Cambridge English"></div><div><label class="f">Year</label><input class="inp" name="year" inputmode="numeric" placeholder="2024"></div></div>' +
+        '<label class="f">File (optional): PDF or photo, up to 4 MB</label><input class="inp" type="file" id="cfile" accept="application/pdf,image/jpeg,image/png,image/webp"><button class="btn" type="submit" style="margin-top:14px">Add certificate</button><p class="small" id="cmsg"></p></form>');
+      $('#cf2').onsubmit = async function (ev) {
+        ev.preventDefault(); var f = ev.target, body = { title: f.title.value.trim(), issuer: f.issuer.value.trim(), year: f.year.value.trim() }, file = $('#cfile').files[0];
+        if (!body.title) { $('#cmsg').textContent = 'Please type the name of the certificate.'; return; }
+        if (file && file.size > 4 * 1024 * 1024) { $('#cmsg').textContent = 'That file is bigger than 4 MB. Try a smaller photo or PDF.'; return; }
+        $('button', f).disabled = true; $('#cmsg').innerHTML = '<span class="spin"></span> Saving…';
+        try {
+          if (file) { body.name = file.name; body.file = await new Promise(function (res, rej) { var r = new FileReader(); r.onload = function () { res(r.result); }; r.onerror = rej; r.readAsDataURL(file); }); }
+          await api('cert', { method: 'POST', body: body }); await loadMe(); closeModal(); toast('Certificate added'); route();
+        } catch (x) { $('button', f).disabled = false; $('#cmsg').textContent = x.status === 413 ? 'The file is too big (4 MB at most).' : 'Could not save. Try again.'; }
+      };
+    };
+    view.querySelectorAll('[data-cdel]').forEach(function (b) { b.onclick = async function () { if (!confirm('Remove this certificate?')) return; await api('cert/' + b.dataset.cdel, { method: 'DELETE' }); await loadMe(); route(); }; });
+  }
+  async function vTeacher(uid) {
+    setNav('admin'); if (!staff()) return go('#/');
+    view.innerHTML = '<p style="margin-top:30px"><span class="spin"></span></p>';
+    try {
+      var d = await api('teacher-profile/' + uid), p = d.profile;
+      view.innerHTML = '<div class="row" style="margin-top:18px"><a class="btn ghost sm" href="javascript:history.back()">← Back</a></div><section class="prof">' + avatar(uid, p.name, p.photo) + '<div><div class="eyebrow">' + (p.role === 'admin' ? 'Director' : 'Teacher') + '</div><h1>' + esc(p.name) + '</h1>' + (p.about ? '<p class="lead" style="font-size:15.5px">' + esc(p.about) + '</p>' : '') + '</div></section><section class="section">' + proView(p, false, uid) + '</section>';
+    } catch (e) { view.innerHTML = '<div class="empty" style="margin-top:30px">This profile is not available.</div>'; }
+  }
   function wireDetails() {
     var f = $('#det'); if (!f) return;
     f.onsubmit = async function (ev) {
@@ -271,7 +314,7 @@
     if (!role()) return go('#/activate');
     if (ME.profile && ME.profile.mustChange) return vNewPassword();
     var p = ME.profile, st = ME.student, r = role();
-    var roleLbl = r === 'admin' ? 'Administrator' : r === 'teacher' ? 'Teacher' : p.alumni ? '🎓 IF Alumni' : 'Student';
+    var roleLbl = r === 'admin' ? (p.teacherId === 't-abdoulie' ? 'Founder &amp; Director' : 'Administrator') : r === 'teacher' ? 'Teacher' : p.alumni ? '🎓 IF Alumni' : 'Student';
     var h = '<section class="prof"><div style="position:relative">' + avatar(ME.user.id, p.name, p.photo) + '<button class="avbtn" id="ph" style="border-radius:0 0 60px 60px">Change</button></div>' +
       '<div><div class="eyebrow">' + roleLbl + (st ? ' · ' + esc((st.classes || []).join(', ')) : '') + '</div><h1>' + esc(p.name) + '</h1><p class="lead" style="font-size:15.5px">' + (/@students\.intellectfirst\.com$/.test(ME.user.email) ? 'Login: ' + esc(ME.user.email.split('@')[0]) : esc(ME.user.email)) + (p.phone ? ' · ' + esc(p.phone) : '') + '</p>' +
       '<div class="chips">' + (st ? statusChip(st.status) : '') + (p.goals ? '<span class="chip2">Goal: ' + esc(p.goals) + '</span>' : '') + (p.since ? '<span class="chip2 mute">Member since ' + when(p.since) + '</span>' : '') + '</div></div></section>';
@@ -290,11 +333,11 @@
       h += '<div class="box"><h3>' + (r === 'admin' ? 'All classes' : 'My classes') + '</h3>' + (tc.length ? tc.slice(0, 8).map(function (c) { return '<div class="cls"><div style="flex:1"><b><a href="#/class/' + c.id + '" style="text-decoration:none">' + esc(c.label) + '</a></b><p>' + esc(c.schedule || '') + (c.room ? ' · ' + esc(c.room) : '') + '</p></div></div>'; }).join('') + (tc.length > 8 ? '<a class="btn ghost sm" href="#/classes">All ' + tc.length + ' classes</a>' : '') :
         '<p class="small">No classes are linked to your account yet. The administrator can assign them.</p>') + '</div>';
       h += ieltsBox(ME.ielts, true);
-      h += '<div class="box"><h3>Teaching materials</h3><p class="small">Lesson presentations for every book will appear here: present them full-screen in class.</p><span class="badge soon">Coming next</span></div>';
+      h += '<div class="box"><h3>Teaching materials</h3><p class="small" style="margin-bottom:12px">Lesson presentations for every book, with animations: present them full-screen in class.</p><a class="btn sm" href="#/classroom">Open IF Classroom</a></div>';
     }
-    h += '</section><section class="section">' + detailsForm(p) + '<p class="small" style="margin-top:12px">Have a staff or administrator code? <a href="#/activate">Enter it here</a>.</p></section>';
+    h += '</section>' + (r !== 'student' ? '<section class="section">' + proView(p, true) + '</section>' : '') + '<section class="section">' + detailsForm(p) + '<p class="small" style="margin-top:12px">Have a staff or administrator code? <a href="#/activate">Enter it here</a>.</p></section>';
     view.innerHTML = h;
-    $('#ph').onclick = photoDialog; wireDetails(); tgBand();
+    $('#ph').onclick = photoDialog; wireDetails(); tgBand(); wirePro();
   }
 
   /* ---------- teacher ---------- */
@@ -718,7 +761,7 @@
       [['label', 'Class name (as used in records)'], ['teacherId', 'Teacher', function (v) { return opts(ADMIN.teachers, v, function (t) { return t.name; }, '—'); }], ['bookId', 'Book', function (v) { return opts(ADMIN.books, v, function (b) { return b.title; }, '—'); }], ['schedule', 'Schedule (e.g. Mon 15:15–16:45 · Wed 15:15–16:45)'], ['room', 'Room']], 'class');
   }
   function aTeachers(head) {
-    simpleList(head, 'teachers', [['name', 'Name'], ['role', 'Title'], ['phone', 'Phone'], ['email', 'Email'], ['uid', 'Account', function (t) { return t.uid ? '<span class="chip2 ok">Linked</span>' : '<span class="chip2 mute">—</span>'; }]],
+    simpleList(head, 'teachers', [['name', 'Name'], ['role', 'Title'], ['phone', 'Phone'], ['email', 'Email'], ['uid', 'Account', function (t) { return t.uid ? '<span class="chip2 ok">Linked</span> <a href="#/teacher/' + esc(t.uid) + '" onclick="event.stopPropagation()">Profile</a>' : '<span class="chip2 mute">—</span>'; }]],
       [['name', 'Full name'], ['role', 'Title (e.g. English teacher)'], ['phone', 'Phone (used to link their account)'], ['email', 'Email']], 'teacher');
   }
   function aBooks(head) {
@@ -1218,6 +1261,7 @@
         case 'present': return vPresent(parts[1]);
         case 'assistant': return vAssistant();
         case 'results': return vResults();
+        case 'teacher': return vTeacher(parts[1]);
         default: return go('#/');
       }
     } catch (e) { console.error(e); view.innerHTML = '<div class="empty" style="margin-top:30px">Something went wrong loading this page. <a href="#/">Back</a></div>'; }

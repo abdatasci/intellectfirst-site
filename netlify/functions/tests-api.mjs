@@ -12,6 +12,7 @@ import { randomInt } from 'node:crypto';
 import { isStaff } from '../lib/codes.mjs';
 import { aiJSON, cleanQ, str, MODEL_MARK } from '../lib/aiq.mjs';
 import { loadStudents, saveStudents } from '../lib/students.mjs';
+import dash from '../lib/dash-import.json';
 
 const T = () => getStore({ name: 'tests', consistency: 'strong' });
 const U = () => getStore({ name: 'ielts', consistency: 'strong' });
@@ -25,6 +26,45 @@ const SYS = `You write English tests for IF Academy, a language school in Kazakh
 Use natural, correct British English at exactly the requested CEFR level. Every multiple-choice question has exactly one clearly correct answer and plausible wrong options. Classroom-friendly content only. Reply with JSON only.`;
 
 const method_ = req => req.method;
+/* One-time move of the results from the old claude.ai Teacher Dashboard (encrypted with the lesson key in
+   netlify/lib/dash-import.json): names and classes matched to IF Admin; results IF Admin did not have yet are
+   added to IF Admin (so they show on student profiles); all of them go to the Results page. */
+async function importDashboard() {
+  const done = await T().get('dashImported', { type: 'json' });
+  if (done?.v >= dash.v) return;
+  const k = await getStore({ name: 'school', consistency: 'strong' }).get('contentKey', { type: 'json' });
+  if (!k?.key) return;
+  const subtle = globalThis.crypto.subtle, blob = Buffer.from(dash.blob, 'base64');
+  const key = await subtle.importKey('raw', Buffer.from(k.key, 'base64'), 'AES-GCM', false, ['decrypt']);
+  const data = JSON.parse(Buffer.from(await subtle.decrypt({ name: 'AES-GCM', iv: blob.subarray(0, 12) }, key, blob.subarray(12))).toString('utf8'));
+  const A = getStore({ name: 'ifadmin', consistency: 'strong' });
+  const res = (await A.get('c/results', { type: 'json' })) || {}, studs = (await A.get('c/students', { type: 'json' })) || {};
+  const K = { grammar: 'g', vocabulary: 'v', pronunciation: 'p', reading: 'r', listening: 'l', speaking: 's', writing: 'w' };
+  let added = 0, renamed = 0;
+  for (const r of data.results) {
+    if (r.sid && !r.inAdmin && studs[r.sid] && !res['dash.' + r.id]) {
+      const S = r.s.map(x => ({ k: K[String(x[0]).toLowerCase()] || String(x[0]).toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 12), n: x[0], max: x[2] }));
+      const secs = {}; r.s.forEach((x, i) => { if (x[1] != null) secs[S[i].k] = x[1]; });
+      res['dash.' + r.id] = { S, att: 1, centre: r.lv, cls: r.cls, course: r.c, date: r.d, kind: /entry/i.test(r.t) ? 'entry' : /placement/i.test(r.t) ? 'placement' : 'file', max: r.max,
+        mode: 'code', name: r.name, prev: [], secs, sid: r.sid, src: r.id, test: r.id, title: r.t, tot: r.tot, synced: new Date().toISOString().slice(0, 10) };
+      added++;
+    }
+  }
+  for (const [sid, n] of Object.entries(data.renames || {})) if (studs[sid] && String(studs[sid].n).trim().split(/\s+/).length === 1) { studs[sid].n = n; renamed++; }
+  const stamp = (await A.get('stamp', { type: 'json' })) || {};
+  if (added) { await A.setJSON('c/results', res); stamp.results = Date.now(); }
+  if (renamed) { await A.setJSON('c/students', studs); stamp.students = Date.now(); }
+  if (added || renamed) await A.setJSON('stamp', stamp);
+  const list = (await T().get('recent', { type: 'json' })) || [], keys = new Set(list.map(x => x.key));
+  for (const r of data.results) {
+    if (keys.has(r.id)) continue;
+    list.push({ key: r.id, kind: 'centre', at: r.d, uid: null, studentId: r.sid, name: r.name, cls: r.cls, level: r.lv, test: r.t + (r.c ? ' · ' + r.c.replace(/ Test Centre$/, '') : ''),
+      score: r.tot, max: r.max, pct: r.max ? Math.round(r.tot / r.max * 100) : 0, note: r.s.map(x => `${x[0]} ${x[1] == null ? '–' : x[1]}/${x[2]}`).join(', '), comment: '' });
+  }
+  list.sort((a, b) => String(b.at).localeCompare(String(a.at)));
+  await T().setJSON('recent', list.slice(0, 600));
+  await T().setJSON('dashImported', { v: dash.v, at: new Date().toISOString(), added, renamed, total: data.results.length });
+}
 async function addRecent(row, key) {
   const list = (await T().get('recent', { type: 'json' })) || [];
   const i = list.findIndex(r => r.key === key);
@@ -200,6 +240,7 @@ export default async (req) => {
   }
   if (path === 'recent' && method_(req) === 'GET') {
     if (!staff) return fail(403, 'staff');
+    try { await importDashboard(); } catch (e) { console.error('dashboard import', e); }
     const rows = (await T().get('recent', { type: 'json' })) || [];
     let byId = {}; try { for (const st of await loadStudents()) byId[st.id] = st.classes || []; } catch {}
     return json({ rows: rows.map(r => ({ ...r, classes: (r.studentId && byId[r.studentId]) || (r.cls ? [r.cls] : []) })) });
