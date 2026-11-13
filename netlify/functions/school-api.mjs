@@ -236,6 +236,24 @@ export default async (req) => {
 
   if (path === 'books' && method === 'GET') return json({ books: await doc('books') });
 
+  // keys typed on any device are checked against keys.json before they are kept
+  if (path === 'lockkeys' && method === 'POST') {
+    const b = await req.json().catch(() => ({}));
+    const got = await keepLockKeys(await verifyLockKeys(b));
+    return json({ ok: !!(got.ks || got.kt) });
+  }
+  // any IF Academy code (student code, staff code, website class/staff code) opens the locked pages on this device
+  if (path === 'lockcode' && method === 'POST') {
+    const b = await req.json().catch(() => ({}));
+    const own = await lockKeysFromCode(b.code);
+    if (own) { await keepLockKeys(own); return json({ ...own, role: own.kt ? 'teacher' : 'student' }); }
+    const role = await roleForCode(b.code);
+    if (!role) return fail(403, 'code');
+    const k = (await S().get('lockKeys', { type: 'json' })) || {};
+    if (!k.ks) return fail(503, 'not-ready');
+    return json(isStaff(role) && k.kt ? { ks: k.ks, kt: k.kt, role: 'teacher' } : { ks: k.ks, role: 'student' });
+  }
+
   let user; try { user = await getUser(); } catch { user = null; }
   if (!user) return fail(401, 'signin');
   const uid = user.id;
@@ -270,11 +288,6 @@ export default async (req) => {
   }
 
   // locked pages: hand the class key (students) or class + staff keys (teachers/admin) to signed-in accounts
-  if (path === 'lockkeys' && method === 'POST') {
-    const b = await req.json().catch(() => ({}));
-    const got = await keepLockKeys(await verifyLockKeys(b));
-    return json({ ok: !!(got.ks || got.kt) });
-  }
   if (path === 'lockkeys' && method === 'GET') {
     if (!profile?.role) return fail(403, 'activate');
     const k = (await S().get('lockKeys', { type: 'json' })) || {};

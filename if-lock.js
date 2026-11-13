@@ -44,6 +44,11 @@
             ls('if.ks', b64e(ks)); ls('if.kt', null); ls('if.role', 'student'); share(); return 'student';
           });
         });
+      }).catch(function () {
+        /* the account codes (student code, staff code) work here too: the server hands over the keys */
+        return fetch('/api/school/lockcode', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code: code }) })
+          .then(function (r) { if (!r.ok) throw new Error('That code is not right. Check it and try again.'); return r.json(); })
+          .then(function (k) { ls('if.ks', k.ks); ls('if.kt', k.kt || null); ls('if.role', k.kt ? 'teacher' : 'student'); return k.kt ? 'teacher' : 'student'; });
       });
     });
   }
