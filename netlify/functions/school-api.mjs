@@ -5,7 +5,8 @@
 //   store "photos" – profile photos by account id
 import { getStore } from '@netlify/blobs';
 import { getUser, refreshSession, admin as idAdmin } from '@netlify/identity';
-import { roleForCode, isStaff, lockKeysFromCode, verifyLockKeys } from '../lib/codes.mjs';
+import { roleForCode, isStaff, lockKeysFromCode, verifyLockKeys, isPrivateCode } from '../lib/codes.mjs';
+import { tier, isMember, TRACKS, paidActive } from '../lib/access.mjs';
 import seed from '../lib/school-seed.json';
 import ckey from '../lib/content-key.json';
 import { loadStudents, saveStudents, loadAttendance } from '../lib/students.mjs';
@@ -20,7 +21,7 @@ const newId = p => p + Date.now().toString(36) + Math.random().toString(36).slic
 const str = (v, n = 200) => (v == null ? '' : String(v)).trim().slice(0, n);
 /** Last 10 digits: +7 701 234 56 78, 8 701..., 701... all become 7012345678. */
 export const phoneKey = p => { const d = String(p || '').replace(/\D/g, ''); return d.length >= 10 ? d.slice(-10) : d; };
-const RANK = { student: 1, teacher: 2, admin: 3 };
+const RANK = { guest: 0.5, student: 1, teacher: 2, admin: 3 };
 
 async function doc(name) {
   await migrate();
@@ -65,9 +66,15 @@ async function getProfile(uid) { return (await U().get(`u/${uid}/profile`, { typ
 async function putProfile(uid, p) {
   await U().setJSON(`u/${uid}/profile`, p);
   const dir = (await U().get('directory', { type: 'json' })) || {};
-  dir[uid] = { alumni: !!p.alumni, name: p.name, email: p.email, role: p.role, studentId: p.studentId || null, teacherId: p.teacherId || null, photo: !!p.photo, phone: p.phone || '', level: p.level || '', classChoice: p.classChoice || '' };
+  dir[uid] = { goals: p.goals || '', track: p.track || '', request: p.request || null, paidUntil: p.paidUntil || null, alumni: !!p.alumni, name: p.name, email: p.email, role: p.role, studentId: p.studentId || null, teacherId: p.teacherId || null, photo: !!p.photo, phone: p.phone || '', level: p.level || '', classChoice: p.classChoice || '' };
   await U().setJSON('directory', dir);
 }
+const MEMBERSHIP = {
+  price: '',
+  how: 'Pay by Kaspi transfer or in cash at IF Academy (Al-Farabi 19, Kostanay), then press "I have paid". Your full access is switched on as soon as the school confirms the payment.',
+  free: ''
+};
+async function membership() { return { ...MEMBERSHIP, ...((await S().get('membership', { type: 'json' })) || {}) }; }
 async function ieltsSummary(uid) {
   const idx = (await U().get(`u/${uid}/index`, { type: 'json' })) || [];
   const scored = idx.filter(a => typeof a.band === 'number');
@@ -79,11 +86,12 @@ function publicStudent(s) { return s && { id: s.id, first: s.first, last: s.last
 /** Link an account to its school record by phone (students) or name/phone (teachers). */
 async function linkByPhone(uid, profile) {
   const key = phoneKey(profile.phone), hasPhone = key && key.length >= 10;
-  if (profile.role === 'student' && !profile.studentId && hasPhone) {
+  if ((profile.role === 'student' || (profile.role === 'guest' && profile.track && profile.track !== 'outside')) && !profile.studentId && hasPhone) {
     const list = await doc('students');
     const hit = list.find(s => phoneKey(s.phone) === key || phoneKey(s.parentPhone) === key);
     if (hit && (!hit.uid || hit.uid === uid)) {
       hit.uid = uid; profile.studentId = hit.id;
+      if (profile.role === 'guest') { profile.role = 'student'; delete profile.request; }   // found in the school records: full access straight away
       if (!profile.name || profile.name === profile.email?.split('@')[0]) profile.name = `${hit.first} ${hit.last}`.trim();
       await save('students', list);
     }
@@ -242,7 +250,7 @@ export default async (req) => {
   // classes for the registration form (names and times only)
   if (path === 'classes' && method === 'GET') {
     const cl = await doc('classes');
-    return json({ classes: [...cl.map(c => ({ id: c.id, label: c.label, schedule: c.schedule || '', kind: c.kind || '' })), { id: 'alumni', label: 'IF Alumni', schedule: 'Former students who finished their course', kind: 'alumni' }] });
+    return json({ classes: [...cl.map(c => ({ id: c.id, label: c.label, schedule: c.schedule || '', kind: c.kind || '' })), { id: 'alumni', label: 'IF Alumni', schedule: 'Former students who finished their course', kind: 'alumni' }], membership: await membership() });
   }
   // new self-registered accounts: skip the email-confirmation step (students rarely open that email)
   if (path === 'confirm' && method === 'POST') {
@@ -280,7 +288,7 @@ export default async (req) => {
   let profile = await getProfile(uid);
 
   if (path === 'me' && method === 'GET') {
-    const out = { user: { id: uid, email: user.email, name: profile?.name || user.name || '' }, profile };
+    const out = { user: { id: uid, email: user.email, name: profile?.name || user.name || '' }, profile, access: tier(profile), membership: await membership() };
     if (profile?.studentId) {
       const s = (await doc('students')).find(x => x.id === profile.studentId);
       const classes = (await doc('classes')).filter(c => (s?.classes || []).includes(c.label));
@@ -294,24 +302,48 @@ export default async (req) => {
   }
 
   if (path === 'activate' && method === 'POST') {
+    // a code is optional: with a code (or a phone number found in the school records) the account gets full access at once;
+    // without one, school/individual students wait for approval on a free account, and outside learners start free
     const b = await req.json().catch(() => ({}));
-    const role = await roleForCode(b.code);
-    if (!role) return fail(403, 'code');
-    const finalRole = profile?.role && RANK[profile.role] > RANK[role] ? profile.role : role;
+    const code = str(b.code, 60);
+    const role = code ? await roleForCode(code) : null;
+    if (code && !role) return fail(403, 'code');
+    const priv = role && await isPrivateCode(code);
+    let track = TRACKS.includes(b.track) ? b.track : (b.classChoice === 'IF Alumni' ? 'alumni' : role ? 'if' : 'outside');
+    if (priv) track = 'private';
+    const want = role || 'guest';
+    const finalRole = profile?.role && RANK[profile.role] > RANK[want] ? profile.role : want;
     profile = { ...(profile || {}), name: str(b.name, 80) || profile?.name || user.name || user.email.split('@')[0], email: user.email,
       phone: str(b.phone, 40) || profile?.phone || '', role: finalRole,
+      track: finalRole === 'guest' || finalRole === 'student' ? (role || !profile?.track || profile.role === 'guest' ? track : profile.track) : (profile?.track || ''),
       level: str(b.level, 30) || profile?.level || '', classChoice: str(b.classChoice, 80) || profile?.classChoice || '',
-      alumni: b.classChoice === 'IF Alumni' ? true : !!profile?.alumni, since: profile?.since || new Date().toISOString(), attempts: profile?.attempts || 0 };
+      goals: str(b.goals, 600) || profile?.goals || '',
+      alumni: track === 'alumni' || b.classChoice === 'IF Alumni' ? true : !!profile?.alumni, since: profile?.since || new Date().toISOString(), attempts: profile?.attempts || 0 };
+    if (finalRole === 'guest' && track !== 'outside') profile.request = { track, at: new Date().toISOString() };
+    else if (finalRole !== 'guest') delete profile.request;
     profile = await linkByPhone(uid, profile);
     await putProfile(uid, profile);
-    if (isStaff(role) && !(await S().get('contentKey', { type: 'json' }))) await storeKeyFrom(b.code);
-    await keepLockKeys(await lockKeysFromCode(b.code));
-    return json({ profile });
+    if (role && isStaff(role) && !(await S().get('contentKey', { type: 'json' }))) await storeKeyFrom(code);
+    if (role) await keepLockKeys(await lockKeysFromCode(code));
+    return json({ profile, access: tier(profile) });
+  }
+
+  // a free account asks for full access (after paying, or to be confirmed as a school/individual student)
+  if (path === 'upgrade' && method === 'POST') {
+    if (!profile?.role) return fail(403, 'activate');
+    if (isMember(profile)) return json({ profile, access: tier(profile) });
+    const b = await req.json().catch(() => ({}));
+    const track = TRACKS.includes(b.track) ? b.track : (profile.track || 'outside');
+    profile.request = { track, paid: track === 'outside', months: Math.max(1, Math.min(12, +b.months || 1)), note: str(b.note, 300), at: new Date().toISOString() };
+    profile.track = track;
+    await putProfile(uid, profile);
+    return json({ profile, access: tier(profile) });
   }
 
   // locked pages: hand the class key (students) or class + staff keys (teachers/admin) to signed-in accounts
   if (path === 'lockkeys' && method === 'GET') {
     if (!profile?.role) return fail(403, 'activate');
+    if (!isMember(profile)) return fail(403, 'members');
     const k = (await S().get('lockKeys', { type: 'json' })) || {};
     if (!k.ks) return fail(404, 'none');
     return json(isStaff(profile.role) && k.kt ? { ks: k.ks, kt: k.kt, role: 'teacher' } : { ks: k.ks, role: 'student' });
@@ -522,6 +554,36 @@ export default async (req) => {
         if (d.role === 'student' && !d.studentId) { const p = await getProfile(id); if (p?.phone) { const np = await linkByPhone(id, p); if (np.studentId) await putProfile(id, np); } }
       }
       return json({ ...res, total: list.length });
+    }
+    // free accounts: approve as a school / individual student, mark paid, or decline the request
+    if (path === 'admin/access' && method === 'POST') {
+      const p = await getProfile(str(b.uid, 60)); if (!p) return fail(404, 'missing');
+      if (isStaff(p.role)) return fail(400, 'staff');
+      if (b.action === 'approve') {
+        p.role = 'student'; p.track = TRACKS.includes(b.track) ? b.track : (p.request?.track && p.request.track !== 'outside' ? p.request.track : 'private');
+        if (p.track === 'alumni') p.alumni = true;
+        delete p.request; Object.assign(p, await linkByPhone(b.uid, p));
+      } else if (b.action === 'paid') {
+        const months = Math.max(1, Math.min(24, Math.round(+b.months || 1)));
+        const from = paidActive(p) ? new Date(p.paidUntil) : new Date();
+        from.setMonth(from.getMonth() + months);
+        p.paidUntil = from.toISOString(); p.track = p.track || 'outside'; delete p.request;
+        const amount = Math.round(+String(b.amount || '').replace(/[^\d.]/g, '') || 0);
+        if (amount > 0) {
+          const fin = await finDoc(), today = new Date().toISOString().slice(0, 10);
+          fin.push({ id: newId('f'), month: today.slice(0, 7), date: today, type: 'income', category: 'Online membership', amount, note: `${p.name} · ${months} month${months > 1 ? 's' : ''}`, source: `member:${b.uid}:${Date.now()}` });
+          await S().setJSON('finance', fin);
+        }
+      } else if (b.action === 'stop') { p.paidUntil = null; if (p.role === 'student') { p.role = 'guest'; p.track = p.track === 'private' || p.track === 'if' ? p.track : 'outside'; } }
+      else if (b.action === 'decline') delete p.request;
+      else return fail(400, 'action');
+      await putProfile(b.uid, p);
+      return json({ profile: p });
+    }
+    if (path === 'admin/membership' && method === 'PUT') {
+      const m = { price: str(b.price, 120), how: str(b.how, 800), free: str(b.free, 600), at: new Date().toISOString() };
+      await S().setJSON('membership', m);
+      return json({ membership: await membership() });
     }
     if (path === 'admin/link' && method === 'POST') {
       // manually link / unlink an account to a student or teacher record, or change role

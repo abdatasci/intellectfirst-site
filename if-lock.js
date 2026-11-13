@@ -59,11 +59,22 @@
   function fromAccount(lvl) {
     if (canOpen(lvl)) return Promise.resolve(true);
     if (ssoP) return ssoP.then(function () { return canOpen(lvl); });
-    return ssoP = fetch('/api/school/lockkeys', { credentials: 'same-origin' }).then(function (r) { return r.ok ? r.json() : null; }).then(function (k) {
+    return ssoP = fetch('/api/school/lockkeys', { credentials: 'same-origin' }).then(function (r) {
+      if (r.status === 403) r.json().then(function (d) { if (d && d.error === 'members') membersNote(); }).catch(function () {});
+      return r.ok ? r.json() : null;
+    }).then(function (k) {
       if (!k || !k.ks) return false;
       ls('if.ks', k.ks); ls('if.kt', k.kt || null); ls('if.role', k.kt ? 'teacher' : 'student');
       return canOpen(lvl);
     }).catch(function () { return false; });
+  }
+  /* free online accounts: this page is part of full access */
+  function membersNote() {
+    if (document.getElementById('if-members')) return;
+    var d = document.createElement('div'); d.id = 'if-members';
+    d.setAttribute('style', 'position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:99999;max-width:min(560px,calc(100% - 24px));background:#0b1f3a;color:#fff;border-radius:16px;padding:14px 18px;font:15px/1.45 system-ui,-apple-system,Segoe UI,sans-serif;box-shadow:0 18px 40px -12px rgba(0,0,0,.45)');
+    d.innerHTML = '<b style="display:block;margin-bottom:2px">This app is part of full access</b>You are signed in with a free account. IF Academy students and Abdoulie\u2019s individual students get it free; others can join online. <a href="/me/#/upgrade" style="color:#e9c98f;font-weight:700">Get full access \u2192</a>';
+    (document.body || document.documentElement).appendChild(d);
   }
   function signOut() { ['if.ks', 'if.kt', 'if.role'].forEach(function (k) { ls(k, null); }); }
   function decryptBytes(lvl, bytes) {

@@ -15,6 +15,42 @@
   function go(h) { if (location.hash === h) route(); else location.hash = h; }
   function role() { return ME && ME.profile && ME.profile.role; }
   function staff() { return role() === 'teacher' || role() === 'admin'; }
+  function paidActive(p) { return !!(p && p.paidUntil && Date.parse(p.paidUntil) > Date.now()); }
+  function freeAcct() { return role() === 'guest' && !paidActive(ME.profile); }
+  var TRACKS = {
+    'if': ['An IF Academy student', 'I study in a class or group at IF Academy'],
+    'private': ['An individual student of Abdoulie Manneh', 'I have private lessons with Abdoulie'],
+    'alumni': ['IF Alumni', 'I finished my course at IF Academy'],
+    'outside': ['Learning on my own', 'Free account. Full access is paid']
+  };
+  function whoPicker(sel) {
+    return '<label class="f">I am…</label><div class="who4" role="radiogroup">' + Object.keys(TRACKS).map(function (k) {
+      return '<label class="who4c"><input type="radio" name="trk" value="' + k + '"' + (k === (sel || 'if') ? ' checked' : '') + '><span><b>' + esc(TRACKS[k][0]) + '</b><small>' + esc(TRACKS[k][1]) + '</small></span></label>';
+    }).join('') + '</div>';
+  }
+  // main goal → the apps that fit it (lock = part of full access)
+  var GOALS = [
+    ['General English', [['IF English vocabulary', '/a/if-english/', 1], ['IF Skill Games', '/a/skill-games/'], ['Grammar Game Centre', '/a/grammar-game-centre/'], ['Grammar in Use Quest', '/a/grammar-in-use-quest/'], ['Test Centres A1–C1', '/a/ef-b1-tests/', 1], ['AI practice', '/live/'], ['AI tests', '/tests/']]],
+    ['IELTS', [['IELTS Centre (AI marking)', '/a/ielts/', 1], ['IELTS Speaking Lab', '/a/ielts-speaking/'], ['IF IELTS Studio', '/a/ielts-studio/'], ['Band 9 Lexis', '/a/band9-lexis/'], ['AI tests', '/tests/']]],
+    ['Cambridge exams (KET, PET, Flyers)', [['KET Quest', '/a/ket-quest/'], ['KET Booster Arcade', '/a/ket-booster/'], ['PET Quest', '/a/pet-quest/'], ['PET Arcade', '/a/pet-arcade/'], ['PET Word Party', '/a/pet-word-party/'], ['Flyers Arcade', '/a/flyers-arcade/'], ['PET Test Centre', '/a/pet-tests/', 1], ['Young Learners tests', '/a/yl-tests/', 1]]],
+    ['English for children', [['IF Kids English', '/a/kids-english/'], ['Young Learners Centre', '/a/young-learners/'], ['Flyers Arcade', '/a/flyers-arcade/'], ['Young Learners tests', '/a/yl-tests/', 1]]],
+    ['Business English', [['IF English vocabulary', '/a/if-english/', 1], ['Conditionals Practice Lab', '/a/conditionals-lab/'], ['IF Skill Games', '/a/skill-games/'], ['AI tests', '/tests/'], ['AI practice', '/live/']]],
+    ['Kazakh or Russian', [['Kazakh A1–B1', '/a/kazakh-a1-b1/'], ['Russian A1–B1', '/a/russian-a1-b1/']]]
+  ];
+  function goalOf(p) { var g = String((p && p.goals) || ''); for (var i = 0; i < GOALS.length; i++) if (g.indexOf(GOALS[i][0]) === 0) return GOALS[i]; return null; }
+  function goalSelect(id, val) { return '<select class="inp" id="' + id + '"><option value="">Choose…</option>' + GOALS.map(function (g) { return '<option' + (String(val || '').indexOf(g[0]) === 0 ? ' selected' : '') + '>' + esc(g[0]) + '</option>'; }).join('') + '</select>'; }
+  function goalBox(p) {
+    var g = goalOf(p), lock = freeAcct();
+    return '<div class="box"><h3>My goal and apps</h3><label class="f" style="margin-top:0">Main goal</label>' + goalSelect('gsel', p.goals) +
+      (g ? '<div class="gapps">' + g[1].map(function (a) { return '<a class="gapp" href="' + (a[2] && lock ? '#/upgrade' : a[1]) + '">' + esc(a[0]) + (a[2] && lock ? ' <small>🔒 full access</small>' : '') + '</a>'; }).join('') + '</div>' : '<p class="small" style="margin-top:10px">Choose your goal to see the apps for it.</p>') + '</div>';
+  }
+  function wireGoal() { var g = $('#gsel'); if (g) g.onchange = async function () { try { var r = await api('profile', { method: 'PUT', body: { goals: g.value } }); ME.profile = r.profile; toast('Goal saved'); vProfile(); } catch (e) { toast('Could not save'); } }; }
+  function track() { var r = $('input[name=trk]:checked'); return r ? r.value : 'if'; }
+  function welcomeMsg(res) {
+    if (res && res.access && res.access !== 'free') return 'Welcome to IF Academy';
+    var t = res && res.profile && res.profile.track;
+    return t && t !== 'outside' ? 'Account created. Abdoulie will confirm you soon; until then you have a free account.' : 'Welcome! Your free account is ready.';
+  }
   function avatar(uid, name, ver, size) {
     return '<span class="avatar ' + (size || '') + '">' + (uid && ver ? '<img src="/api/school/photo/' + uid + '?v=' + ver + '" alt="" onerror="this.remove()">' : '') + esc(initials(name)) + '</span>';
   }
@@ -104,24 +140,37 @@
   }
   function vRegister(isStaff) {
     setNav('');
-    view.innerHTML = panel(isStaff ? 'Staff registration' : 'Create your account', isStaff ? 'For IF Academy teachers and staff. Your classes are linked to your account automatically by your name; if not, the administrator links them for you.' : 'For IF Academy students and teachers. Use the phone number you gave the school, so we can find your record.',
+    view.innerHTML = panel(isStaff ? 'Staff registration' : 'Create your account', isStaff ? 'For IF Academy teachers and staff. Your classes are linked to your account automatically by your name; if not, the administrator links them for you.' : 'For IF Academy students, Abdoulie\'s individual students, IF Alumni and anyone learning English. Use the phone number you gave the school, so we can find your record.',
       '<form id="f" novalidate><div class="grid2"><div><label class="f">First name</label><input class="inp" id="fn" autocomplete="given-name"></div><div><label class="f">Surname</label><input class="inp" id="ln" autocomplete="family-name"></div></div>' +
       '<label class="f">Phone number</label><input class="inp" id="ph" type="tel" autocomplete="tel" placeholder="+7 7__ ___ __ __">' + (isStaff ? '' : '<p class="hint">Students: your own number or your parent\'s, as given to the school.</p>') +
-      (isStaff ? '' : '<div class="grid2"><div><label class="f">Your level</label><select class="inp" id="lv"><option value="">Choose…</option>' + ['Starters','Movers','Flyers','A1 Beginner','A2 Elementary / KET','B1 Intermediate / PET','B2 Upper-intermediate','C1 Advanced','IELTS','Not sure (I will take the placement test)'].map(function (l) { return '<option>' + esc(l) + '</option>'; }).join('') + '</select></div>' +
-        '<div><label class="f">Your class</label><select class="inp" id="cl"><option value="">Loading…</option></select></div></div><p class="hint">Not in a class yet? Choose “New student”. Finished your course? Choose “IF Alumni”.</p>') +
+      (isStaff ? '' : whoPicker('if') + '<div class="grid2"><div><label class="f">Your level</label><select class="inp" id="lv"><option value="">Choose…</option>' + ['Starters','Movers','Flyers','A1 Beginner','A2 Elementary / KET','B1 Intermediate / PET','B2 Upper-intermediate','C1 Advanced','IELTS','Not sure (I will take the placement test)'].map(function (l) { return '<option>' + esc(l) + '</option>'; }).join('') + '</select></div>' +
+        '<div><label class="f">Main goal</label>' + goalSelect('gl') + '</div>' +
+        '<div id="clw"><label class="f">Your class</label><select class="inp" id="cl"><option value="">Loading…</option></select></div></div><p class="hint" id="clh">Not in a class yet? Choose “New student”.</p>') +
       '<label class="f">Email <span style="font-weight:400;color:var(--muted)">(optional)</span></label><input class="inp" id="em" type="email" autocomplete="email"><p class="hint">No email? Leave it empty: you will sign in with your phone number.</p>' +
       '<label class="f">Password</label><input class="inp" id="pw" type="password" autocomplete="new-password"><p class="hint">At least 8 characters.</p>' +
-      '<label class="f">' + (isStaff ? 'Staff code' : 'Class code') + '</label><input class="inp" id="cc" autocomplete="off"><p class="hint">' + (isStaff ? 'Given to you by the school director.' : 'From your teacher. Teachers use the staff code.') + '</p>' +
+      '<div id="ccw"><label class="f">' + (isStaff ? 'Staff code' : 'Code <span style="font-weight:400;color:var(--muted)">(optional)</span>') + '</label><input class="inp" id="cc" autocomplete="off"><p class="hint">' + (isStaff ? 'Given to you by the school director.' : 'From your teacher: it gives full access straight away. No code? Abdoulie confirms you after you register.') + '</p></div>' +
       '<button class="btn" type="submit">Create account</button></form><p class="alt">Already registered? <a href="#/login">Sign in</a>' + (isStaff ? '' : ' · Teacher? <a href="#/staff">Staff registration</a>') + '</p>');
+    function syncWho() {
+      if (isStaff) return; var t = track();
+      $('#clw').style.display = t === 'if' ? '' : 'none'; $('#clh').style.display = t === 'if' ? '' : 'none';
+      $('#ccw').style.display = t === 'outside' ? 'none' : '';
+      $('#lv').closest('div').style.display = t === 'alumni' ? 'none' : '';
+    }
+    view.querySelectorAll('input[name=trk]').forEach(function (r) { r.onchange = syncWho; }); syncWho();
     if ($('#cl')) fetch('/api/school/classes').then(function (r) { return r.json(); }).then(function (d) {
-      $('#cl').innerHTML = '<option value="">Choose…</option>' + (d.classes || []).map(function (c) { return '<option value="' + esc(c.label) + '">' + (c.kind === 'alumni' ? '🎓 IF Alumni · I have finished my course' : esc(c.label) + (c.schedule ? ' · ' + esc(c.schedule) : '')) + '</option>'; }).join('') + '<option value="New student">New student (no class yet)</option>';
+      $('#cl').innerHTML = '<option value="">Choose…</option>' + (d.classes || []).filter(function (c) { return c.kind !== 'alumni'; }).map(function (c) { return '<option value="' + esc(c.label) + '">' + esc(c.label) + (c.schedule ? ' · ' + esc(c.schedule) : '') + '</option>'; }).join('') + '<option value="New student">New student (no class yet)</option>';
     }).catch(function () { $('#cl').innerHTML = '<option value="New student">New student (no class yet)</option>'; });
     $('#f').onsubmit = async function (ev) {
       ev.preventDefault(); var f = ev.target, b = $('button', f);
       var name = ($('#fn').value.trim() + ' ' + $('#ln').value.trim()).trim(), ph = $('#ph').value.trim(), em = $('#em').value.trim(), pw = $('#pw').value, cc = $('#cc').value.trim();
-      if (!name || !cc || !ph) return err(f, 'Please fill in your name, phone number and code.');
+      var trk = isStaff ? '' : track();
+      if (!name || !ph || (isStaff && !cc)) return err(f, isStaff ? 'Please fill in your name, phone number and staff code.' : 'Please fill in your name and phone number.');
+      if (trk === 'outside') cc = '';
       var lv = $('#lv') ? $('#lv').value : '', cl = $('#cl') ? $('#cl').value : '';
-      if (!isStaff && (!cl || (!lv && cl !== 'IF Alumni'))) return err(f, 'Please choose your level and your class.');
+      if (trk === 'alumni') cl = 'IF Alumni'; else if (trk === 'private') cl = 'Individual (Abdoulie Manneh)'; else if (trk === 'outside') cl = '';
+      if (!isStaff && trk !== 'alumni' && !lv) return err(f, 'Please choose your level.');
+      if (trk === 'if' && !cl) return err(f, 'Please choose your class, or “New student”.');
+      if (!isStaff && !$('#gl').value) return err(f, 'Please choose your main goal.');
       if (ph.replace(/\D/g, '').length < 10) return err(f, 'Please type the full phone number, for example +7 701 234 56 78.');
       if (em && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)) return err(f, 'That email does not look right. Check it, or leave it empty.');
       var byPhone = !em;
@@ -137,15 +186,17 @@
           }
           if (!u) throw new Error('This phone number already has accounts. Sign in instead, or add an email.');
         } else u = await ID.signup(em, pw, { full_name: name });
-        lsSet('if.pending', { code: cc, name: name, phone: ph, level: lv, classChoice: cl });
+        var actBody = { code: cc, name: name, phone: ph, level: lv, classChoice: cl, track: trk || undefined, goals: $('#gl') ? $('#gl').value : '' };
+        lsSet('if.pending', actBody);
         if (u && !u.confirmedAt && u.id) {   // confirm straight away so the student can sign in now
           try { var cr = await fetch('/api/school/confirm', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: u.id, email: em }) }); if (cr.ok) u.confirmedAt = new Date().toISOString(); } catch (e3) {}
         }
         if (u && u.confirmedAt) {
           await ID.login(em, pw); await loadMe(); header();
-          try { await api('activate', { method: 'POST', body: { code: cc, name: name, phone: ph, level: lv, classChoice: cl } }); lsSet('if.pending', null); }
-          catch (e2) { toast(e2.code === 'code' ? 'Account created, but that code is not right.' : 'Account created. Now enter your code.'); return go('#/activate'); }
-          await loadMe(); header(); toast(byPhone ? 'Welcome! Your login is your phone number: ' + em.split('@')[0] : 'Welcome to IF Academy'); go('#/');
+          var act = null;
+          try { act = await api('activate', { method: 'POST', body: actBody }); lsSet('if.pending', null); }
+          catch (e2) { toast(e2.code === 'code' ? 'Account created, but that code is not right.' : 'Account created. Please check your details.'); return go('#/activate'); }
+          await loadMe(); header(); toast((byPhone ? 'Your login is your phone number: ' + em.split('@')[0] + '. ' : '') + welcomeMsg(act)); go('#/');
         } else f.innerHTML = '<div class="ok-msg">Almost done: open the confirmation link we emailed to <b>' + esc(em) + '</b>.</div>';
       } catch (e) { b.disabled = false; b.textContent = 'Create account'; err(f, authMsg(e)); }
     };
@@ -154,13 +205,14 @@
     setNav('');
     if (!USER) return go('#/login');
     var p = lsGet('if.pending') || {};
-    view.innerHTML = panel('Link your account', 'Enter your code and phone number so we can connect you to your class.',
-      '<form id="f" novalidate><label class="f">Full name</label><input class="inp" id="nm" value="' + esc(p.name || (ME && ME.profile && ME.profile.name) || USER.name || '') + '">' +
+    view.innerHTML = panel('Finish your account', 'Tell us who you are. A code from your teacher gives full access straight away; without one you start with a free account.',
+      '<form id="f" novalidate>' + whoPicker(p.track || (ME && ME.profile && ME.profile.track) || 'if') + '<label class="f">Full name</label><input class="inp" id="nm" value="' + esc(p.name || (ME && ME.profile && ME.profile.name) || USER.name || '') + '">' +
       '<label class="f">Phone number</label><input class="inp" id="ph" type="tel" value="' + esc(p.phone || (ME && ME.profile && ME.profile.phone) || '') + '">' +
-      '<label class="f">Class or staff code</label><input class="inp" id="cc" value="' + esc(p.code || '') + '"><button class="btn" type="submit">Continue</button></form>');
+      '<label class="f">Code <span style="font-weight:400;color:var(--muted)">(optional: class, individual-student or staff code)</span></label><input class="inp" id="cc" value="' + esc(p.code || '') + '"><button class="btn" type="submit">Continue</button></form>');
     $('#f').onsubmit = async function (ev) {
       ev.preventDefault(); var f = ev.target, b = $('button', f); b.disabled = true;
-      try { await api('activate', { method: 'POST', body: { code: $('#cc').value.trim(), name: $('#nm').value.trim(), phone: $('#ph').value.trim() } }); lsSet('if.pending', null); await loadMe(); header(); go('#/'); }
+      var t = track();
+      try { var act = await api('activate', { method: 'POST', body: Object.assign({}, p, { code: t === 'outside' ? '' : $('#cc').value.trim(), name: $('#nm').value.trim(), phone: $('#ph').value.trim(), track: t, classChoice: t === 'alumni' ? 'IF Alumni' : t === 'private' ? 'Individual (Abdoulie Manneh)' : (p.classChoice || '') }) }); lsSet('if.pending', null); await loadMe(); header(); toast(welcomeMsg(act)); go('#/'); }
       catch (e) { b.disabled = false; err(f, e.code === 'code' ? 'That code is not right. Check it with your teacher.' : 'Could not check the code. Try again.'); }
     };
   }
@@ -238,8 +290,8 @@
       '<div><label class="f">Phone</label><input class="inp" name="phone" type="tel" value="' + esc(p.phone) + '"></div>' +
       '<div><label class="f">Date of birth</label><input class="inp" name="birth" type="date" value="' + esc(p.birth) + '"></div>' +
       '<div><label class="f">City</label><input class="inp" name="city" value="' + esc(p.city) + '"></div>' +
-      (p.role === 'student' ? '<div><label class="f">Parent / guardian</label><input class="inp" name="parent" value="' + esc(p.parent) + '"></div><div><label class="f">Parent\'s phone</label><input class="inp" name="parentPhone" type="tel" value="' + esc(p.parentPhone) + '"></div>' : '') +
-      '<div class="full"><label class="f">' + (p.role === 'student' ? 'My goals' : 'Teaching focus') + '</label><input class="inp" name="goals" value="' + esc(p.goals) + '" placeholder="' + (p.role === 'student' ? 'e.g. IELTS 7.0 by June' : 'e.g. Cambridge exams, teens') + '"></div>' +
+      ((p.role === 'student' || p.role === 'guest') ? '<div><label class="f">Parent / guardian</label><input class="inp" name="parent" value="' + esc(p.parent) + '"></div><div><label class="f">Parent\'s phone</label><input class="inp" name="parentPhone" type="tel" value="' + esc(p.parentPhone) + '"></div>' : '') +
+      '<div class="full"><label class="f">' + ((p.role === 'student' || p.role === 'guest') ? 'My goals' : 'Teaching focus') + '</label><input class="inp" name="goals" value="' + esc(p.goals) + '" placeholder="' + ((p.role === 'student' || p.role === 'guest') ? 'e.g. IELTS 7.0 by June' : 'e.g. Cambridge exams, teens') + '"></div>' +
       '<div class="full"><label class="f">About me</label><textarea class="inp" name="about" rows="3">' + esc(p.about) + '</textarea></div></div>' +
       '<button class="btn sm" type="submit" style="margin-top:14px">Save details</button></form></div>';
   }
@@ -308,26 +360,64 @@
       catch (e) { b.disabled = false; err(f, authMsg(e)); }
     };
   }
+  function accessBand(p) {
+    if (role() !== 'guest') return '';
+    var rq = p.request, L = TRACKS[p.track] ? TRACKS[p.track][0] : '';
+    if (paidActive(p)) return '<div class="acc ok"><b>Full access until ' + when(p.paidUntil) + '</b><span>All test centres, IF English, IELTS marking, unlimited AI tests and the assistant.</span><a class="btn ghost sm" href="#/upgrade">Extend</a></div>';
+    if (rq && rq.paid) return '<div class="acc wait"><b>Payment sent for checking</b><span>Your full access starts as soon as the school confirms the payment (' + rq.months + ' month' + (rq.months > 1 ? 's' : '') + ').</span></div>';
+    if (rq) return '<div class="acc wait"><b>Waiting for confirmation</b><span>Abdoulie will confirm you as: ' + esc(L.replace(/^An? /, '')) + '. Until then you have a free account. Have a code from your teacher? <a href="#/activate">Enter it</a> for full access now.</span></div>';
+    return '<div class="acc"><b>Free account</b><span>Games, quests, the placement test and a little AI practice every day. Full access opens every test centre, IF English, IELTS marking and unlimited AI practice.</span><a class="btn sm" href="#/upgrade">Get full access</a></div>';
+  }
+  function vUpgrade() {
+    setNav('home');
+    if (!USER) return go('#/login');
+    if (!role()) return go('#/activate');
+    var p = ME.profile, m = ME.membership || {}, member = !freeAcct();
+    var tick = function (a) { return '<ul class="plist">' + a.map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ul>'; };
+    var free = ['Games and quests for every level (Flyers Arcade, KET and PET Quest, Skill Games, Grammar Game Centre…)', 'Free placement test', 'Join IF Live games with a PIN', '2 AI practice tests a day', '6 rounds of AI practice a day', 'Notifications on Telegram'];
+    var full = ['Everything in the free account', 'All Test Centres: A1–C1, KET, PET, Young Learners, Teens', 'IF English: 12 vocabulary courses with audio and games', 'IELTS Centre: AI marking of Writing and Speaking', 'Unlimited AI tests and AI practice', 'AI study assistant', 'Results saved on your profile'];
+    view.innerHTML = '<section class="hero" style="padding-bottom:4px"><div class="eyebrow">IF Academy online</div><h1>' + (member ? 'You have full access' : 'Get full access') + '</h1><p class="lead">' + (member ? (p.paidUntil ? 'Your access runs until ' + when(p.paidUntil) + '. You can extend it below.' : 'As an IF Academy student you already have everything below.') : 'IF Academy students and Abdoulie\'s individual students get full access free. Everyone else can join online.') + '</p></section>' +
+      '<section class="section plans"><div class="box"><h3>Free account</h3>' + tick(free) + '</div><div class="box hl"><h3>Full access</h3><p class="price">' + (m.price ? esc(m.price) : 'Ask the school for the current price') + '</p>' + tick(full) + '</div></section>' +
+      (member && !p.paidUntil ? '' :
+      '<section class="section"><div class="panel wide"><h2>How to pay</h2><p class="sub" style="white-space:pre-line">' + esc(m.how || '') + '</p>' +
+        '<form id="pf" class="payrow"><label class="f">Months</label><select class="inp" id="mo">' + [1, 3, 6, 12].map(function (n) { return '<option value="' + n + '">' + n + ' month' + (n > 1 ? 's' : '') + '</option>'; }).join('') + '</select>' +
+        '<label class="f">Note for the school <span style="font-weight:400;color:var(--muted)">(optional: e.g. the name on the Kaspi payment)</span></label><input class="inp" id="nt" maxlength="300">' +
+        '<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px"><button class="btn" type="submit">I have paid: switch on my access</button><a class="btn ghost" id="tgq" target="_blank" rel="noopener" href="#">Ask a question on Telegram</a></div></form></div></section>') +
+      (member ? '' : '<section class="section"><div class="panel wide"><h2>Already an IF Academy or individual student?</h2><p class="sub">You do not need to pay. Enter the code from your teacher, or ask Abdoulie to confirm you.</p><div style="display:flex;gap:10px;flex-wrap:wrap"><a class="btn" href="#/activate">Enter a code</a><button class="btn ghost" id="askp">I am Abdoulie\'s individual student</button><button class="btn ghost" id="aski">I study at IF Academy</button></div></div></section>');
+    var tg = $('#tgq'); if (tg) tg.href = 'https://t.me/abliem?text=' + encodeURIComponent('Hello! I would like full access to the IF Academy website. My name: ' + (p.name || '') + ', phone: ' + (p.phone || ''));
+    var pf = $('#pf'); if (pf) pf.onsubmit = async function (ev) {
+      ev.preventDefault(); var b = $('button', pf); b.disabled = true;
+      try { await api('upgrade', { method: 'POST', body: { track: 'outside', months: +$('#mo').value, note: $('#nt').value.trim() } }); await loadMe(); toast('Thank you! Your access starts when the school confirms the payment.'); go('#/'); }
+      catch (e) { b.disabled = false; err(pf, 'Could not send. Please try again.'); }
+    };
+    ['askp', 'aski'].forEach(function (id) { var el = $('#' + id); if (el) el.onclick = async function () {
+      el.disabled = true; try { await api('upgrade', { method: 'POST', body: { track: id === 'askp' ? 'private' : 'if' } }); await loadMe(); toast('Sent. Abdoulie will confirm you soon.'); go('#/'); } catch (e) { el.disabled = false; toast('Could not send. Please try again.'); }
+    }; });
+  }
   async function vProfile() {
     setNav('home');
     if (!USER) return go('#/login');
     if (!role()) return go('#/activate');
     if (ME.profile && ME.profile.mustChange) return vNewPassword();
     var p = ME.profile, st = ME.student, r = role();
-    var roleLbl = r === 'admin' ? (p.teacherId === 't-abdoulie' ? 'Founder &amp; Director' : 'Administrator') : r === 'teacher' ? 'Teacher' : p.alumni ? '🎓 IF Alumni' : 'Student';
+    var roleLbl = r === 'admin' ? (p.teacherId === 't-abdoulie' ? 'Founder &amp; Director' : 'Administrator') : r === 'teacher' ? 'Teacher' : p.alumni ? '🎓 IF Alumni' : r === 'guest' ? (paidActive(p) ? 'Full access' : 'Free account') : p.track === 'private' ? 'Individual student' : 'Student';
     var h = '<section class="prof"><div style="position:relative">' + avatar(ME.user.id, p.name, p.photo) + '<button class="avbtn" id="ph" style="border-radius:0 0 60px 60px">Change</button></div>' +
       '<div><div class="eyebrow">' + roleLbl + (st ? ' · ' + esc((st.classes || []).join(', ')) : '') + '</div><h1>' + esc(p.name) + '</h1><p class="lead" style="font-size:15.5px">' + (/@students\.intellectfirst\.com$/.test(ME.user.email) ? 'Login: ' + esc(ME.user.email.split('@')[0]) : esc(ME.user.email)) + (p.phone ? ' · ' + esc(p.phone) : '') + '</p>' +
       '<div class="chips">' + (st ? statusChip(st.status) : '') + (p.goals ? '<span class="chip2">Goal: ' + esc(p.goals) + '</span>' : '') + (p.since ? '<span class="chip2 mute">Member since ' + when(p.since) + '</span>' : '') + '</div></div></section>';
-    if (r === 'student' && !st) h += '<div class="banner"><b>We have not found your school record yet.</b> Check that your phone number below is the one you gave IF Academy (yours or your parent\'s). If it still does not match, your teacher can link your account.</div>';
+    h += accessBand(p);
+    if (r === 'student' && !st && p.track !== 'private' && !p.alumni) h += '<div class="banner"><b>We have not found your school record yet.</b> Check that your phone number below is the one you gave IF Academy (yours or your parent\'s). If it still does not match, your teacher can link your account.</div>';
     h += '<div id="tgband"></div>';
     h += '<section class="section cols">';
-    if (r === 'student') {
-      h += classBox(ME.classes);
+    if (r === 'student' || r === 'guest') {
+      h += goalBox(p);
+      if (r === 'student' || st) h += classBox(ME.classes);
       h += '<div class="box"><h3>Test results</h3>' + testsTable(st && st.tests) + '</div>';
       h += attBox(ME.attendance);
       h += ieltsBox(ME.ielts, true);
-      h += '<div class="box"><h3>Vocabulary</h3><p class="small" style="margin-bottom:12px">Practise the words for your course with flashcards, audio and games.</p><a class="btn sm" href="/a/if-english/">Open IF English</a></div>';
-      h += '<div class="box"><h3>Homework</h3><p class="small">Homework from your teacher will appear here, organised by your book and unit.</p><span class="badge soon">Coming next</span></div>';
+      h += freeAcct() ? '<div class="box"><h3>Vocabulary</h3><p class="small" style="margin-bottom:12px">IF English: 12 vocabulary courses with flashcards, audio and games. Included in full access.</p><a class="btn sm" href="#/upgrade">See full access</a></div>'
+        : '<div class="box"><h3>Vocabulary</h3><p class="small" style="margin-bottom:12px">Practise the words for your course with flashcards, audio and games.</p><a class="btn sm" href="/a/if-english/">Open IF English</a></div>';
+      h += '<div class="box"><h3>Games and practice</h3><p class="small" style="margin-bottom:12px">Games, quests and AI practice for every level' + (freeAcct() ? ' (free accounts: a few AI rounds a day)' : '') + '.</p><a class="btn sm" href="/#apps">Open the apps</a> <a class="btn ghost sm" href="/live/">AI practice</a> <a class="btn ghost sm" href="/tests/">AI tests</a></div>';
+      if (r === 'student') h += '<div class="box"><h3>Homework</h3><p class="small">Homework from your teacher will appear here, organised by your book and unit.</p><span class="badge soon">Coming next</span></div>';
     } else {
       var tc = ME.teaching || [];
       h += '<div class="box"><h3>' + (r === 'admin' ? 'All classes' : 'My classes') + '</h3>' + (tc.length ? tc.slice(0, 8).map(function (c) { return '<div class="cls"><div style="flex:1"><b><a href="#/class/' + c.id + '" style="text-decoration:none">' + esc(c.label) + '</a></b><p>' + esc(c.schedule || '') + (c.room ? ' · ' + esc(c.room) : '') + '</p></div></div>'; }).join('') + (tc.length > 8 ? '<a class="btn ghost sm" href="#/classes">All ' + tc.length + ' classes</a>' : '') :
@@ -335,9 +425,9 @@
       h += ieltsBox(ME.ielts, true);
       h += '<div class="box"><h3>Teaching materials</h3><p class="small" style="margin-bottom:12px">Lesson presentations for every book, with animations: present them full-screen in class.</p><a class="btn sm" href="#/classroom">Open IF Classroom</a></div>';
     }
-    h += '</section>' + (r !== 'student' ? '<section class="section">' + proView(p, true) + '</section>' : '') + '<section class="section">' + detailsForm(p) + '<p class="small" style="margin-top:12px">Have a staff or administrator code? <a href="#/activate">Enter it here</a>.</p></section>';
+    h += '</section>' + (staff() ? '<section class="section">' + proView(p, true) + '</section>' : '') + '<section class="section">' + detailsForm(p) + '<p class="small" style="margin-top:12px">Have a staff or administrator code? <a href="#/activate">Enter it here</a>.</p></section>';
     view.innerHTML = h;
-    $('#ph').onclick = photoDialog; wireDetails(); tgBand(); wirePro();
+    $('#ph').onclick = photoDialog; wireDetails(); tgBand(); wirePro(); wireGoal();
   }
 
   /* ---------- teacher ---------- */
@@ -544,7 +634,7 @@
   /* ---------- admin ---------- */
   async function loadAdmin() { ADMIN = await api('admin/all'); try { ADMIN.att = (await api('admin/attendance')).attendance; } catch (e) { ADMIN.att = {}; } ME.books = ADMIN.books; ME.teachers = ADMIN.teachers; return ADMIN; }
   function adminTabs(on) {
-    return '<div class="tabs2">' + [['logins', 'Student logins'], ['accounts', 'Accounts'], ['classes', 'Classes'], ['teachers', 'Teachers'], ['books', 'Books'], ['export', 'Export results'], ['placement', 'Placement tests'], ['bot', 'Bot & reminders']].map(function (t) {
+    return '<div class="tabs2">' + [['logins', 'Student logins'], ['accounts', 'Accounts' + ((ADMIN.accounts || []).filter(function (x) { return x.request; }).length ? ' (' + ADMIN.accounts.filter(function (x) { return x.request; }).length + ' waiting)' : '')], ['classes', 'Classes'], ['teachers', 'Teachers'], ['books', 'Books'], ['export', 'Export results'], ['placement', 'Placement tests'], ['bot', 'Bot & reminders']].map(function (t) {
       return '<a href="#/admin/' + t[0] + '" class="' + (on === t[0] ? 'on' : '') + '">' + t[1] + '</a>';
     }).join('') + '<a href="/me/ifadmin/" style="background:var(--navy);color:#fff;border-color:var(--navy)">IF Admin ↗</a></div>';
   }
@@ -768,15 +858,46 @@
     simpleList(head, 'books', [['title', 'Book'], ['publisher', 'Publisher'], ['ebook', 'E-book link', function (b) { return b.ebook ? '<a href="' + esc(b.ebook) + '" target="_blank" rel="noopener">Open ↗</a>' : '–'; }]],
       [['title', 'Title'], ['publisher', 'Publisher'], ['ebook', 'Official e-book link (https://…)']], 'book');
   }
+  function onlineBlock(A) {
+    var G = A.filter(function (a) { return a.role === 'guest' || a.request || a.paidUntil; });
+    var asked = G.filter(function (a) { return a.request; }), rest = G.filter(function (a) { return !a.request && a.role === 'guest'; });
+    var trk = function (t) { return TRACKS[t] ? TRACKS[t][0] : 'Outside learner'; };
+    var acts = function (a) {
+      return '<div class="accts"><button class="btn sm" data-acc="approve" data-trk="if" data-u="' + a.id + '">IF student</button><button class="btn sm" data-acc="approve" data-trk="private" data-u="' + a.id + '">Individual student</button>' +
+        '<span class="paybox"><select class="inp" data-mo="' + a.id + '">' + [1, 3, 6, 12].map(function (n) { return '<option value="' + n + '"' + (a.request && +a.request.months === n ? ' selected' : '') + '>' + n + ' mo</option>'; }).join('') + '</select><input class="inp" data-amt="' + a.id + '" placeholder="Amount ₸" inputmode="numeric"><button class="btn ghost sm" data-acc="paid" data-u="' + a.id + '">Paid</button></span>' +
+        (a.request ? '<button class="btn ghost sm" data-acc="decline" data-u="' + a.id + '">Decline</button>' : '') + (a.paidUntil ? '<button class="btn ghost sm" data-acc="stop" data-u="' + a.id + '">Stop access</button>' : '') + '</div>';
+    };
+    var row = function (a) {
+      var rq = a.request, what = rq ? (rq.paid ? '💳 Says they paid · ' + rq.months + ' mo' + (rq.note ? ' · “' + esc(rq.note) + '”' : '') : 'Asks to be confirmed as: ' + esc(trk(rq.track))) : a.paidUntil && Date.parse(a.paidUntil) > Date.now() ? 'Full access until ' + when(a.paidUntil) : 'Free account';
+      return '<tr><td><b>' + esc(a.name) + '</b><div class="small">' + esc([a.phone, a.level, a.goals].filter(Boolean).join(' · ')) + '</div></td><td>' + what + (rq ? '<div class="small">' + when(rq.at) + '</div>' : '') + '</td><td>' + acts(a) + '</td></tr>';
+    };
+    var M = ADMIN.membership || ME.membership || {};
+    return '<div class="panel wide" style="margin-bottom:16px"><h2>Online access' + (asked.length ? ' <span class="chip2 warn">' + asked.length + ' waiting</span>' : '') + '</h2>' +
+      '<p class="sub">IF Academy students and your individual students get full access free: approve them with one tap. Outside learners start free; mark them paid for 1–12 months (the amount goes to Finance as “Online membership”).</p>' +
+      (asked.length ? '<h3 style="margin:10px 0 6px">Waiting for you</h3><div class="tscroll"><table class="t"><tbody>' + asked.map(row).join('') + '</tbody></table></div>' : '<p class="small">Nobody is waiting right now.</p>') +
+      (rest.length ? '<details style="margin-top:12px"><summary><b>Free and paid online accounts (' + rest.length + ')</b></summary><div class="tscroll"><table class="t"><tbody>' + rest.map(row).join('') + '</tbody></table></div></details>' : '') +
+      '<details style="margin-top:12px"><summary><b>Price and how to pay</b> (shown on the “Get full access” page)</summary><form id="msf" style="margin-top:10px"><label class="f">Price</label><input class="inp" id="msp" value="' + esc(M.price || '') + '" placeholder="e.g. 9 900 ₸ per month · 24 900 ₸ for 3 months"><label class="f">How to pay</label><textarea class="inp" id="msh" rows="3">' + esc(M.how || '') + '</textarea><button class="btn sm" style="margin-top:10px" type="submit">Save</button></form></details></div>';
+  }
+  function wireOnline() {
+    view.querySelectorAll('[data-acc]').forEach(function (b) { b.onclick = async function () {
+      var u = b.dataset.u, body = { uid: u, action: b.dataset.acc, track: b.dataset.trk };
+      if (body.action === 'paid') { body.months = +$('[data-mo="' + u + '"]').value; body.amount = $('[data-amt="' + u + '"]').value; }
+      b.disabled = true;
+      try { await api('admin/access', { method: 'POST', body: body }); toast({ approve: 'Approved: full access', paid: 'Marked paid', decline: 'Request declined', stop: 'Access stopped' }[body.action]); vAdmin('accounts'); }
+      catch (e) { b.disabled = false; toast('Could not save'); }
+    }; });
+    var f = $('#msf'); if (f) f.onsubmit = async function (ev) { ev.preventDefault(); await api('admin/membership', { method: 'PUT', body: { price: $('#msp').value, how: $('#msh').value } }); toast('Saved'); };
+  }
   function aAccounts(head) {
     var A = ADMIN.accounts.slice().sort(function (a, b) { return String(a.name).localeCompare(String(b.name)); });
-    view.innerHTML = head + '<p class="small" style="margin-bottom:10px">Everyone who has registered. Change a role, or link an account to a student or teacher record by hand when the phone number did not match.</p>' +
+    view.innerHTML = head + onlineBlock(A) + '<p class="small" style="margin-bottom:10px">Everyone who has registered. Change a role, or link an account to a student or teacher record by hand when the phone number did not match.</p>' +
       '<div class="tscroll"><table class="t"><thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Linked record</th><th></th></tr></thead><tbody>' + A.map(function (a) {
-        return '<tr><td><b>' + esc(a.name) + '</b>' + (a.level || a.classChoice ? '<div class="small">' + esc([a.level, a.classChoice].filter(Boolean).join(' · ')) + '</div>' : '') + (a.phone ? '<div class="small">' + esc(a.phone) + '</div>' : '') + (a.role === 'student' ? '<label class="small" style="display:flex;gap:6px;align-items:center;margin-top:4px;cursor:pointer"><input type="checkbox" data-alum="' + a.id + '"' + (a.alumni ? ' checked' : '') + '> 🎓 IF Alumni</label>' : '') + '</td><td>' + esc(/@students\.intellectfirst\.com$/.test(a.email || '') ? 'login ' + a.email.split('@')[0] : a.email) + '</td><td><select class="inp" data-role="' + a.id + '" style="padding:6px 8px">' + ['student', 'teacher', 'admin'].map(function (r) { return '<option' + (a.role === r ? ' selected' : '') + '>' + r + '</option>'; }).join('') + '</select></td>' +
-          '<td><select class="inp" data-link="' + a.id + '" data-kind="' + (a.role === 'student' ? 'studentId' : 'teacherId') + '" style="padding:6px 8px">' +
-          (a.role === 'student' ? opts(ADMIN.students.slice().sort(function (x, y) { return (x.first + x.last).localeCompare(y.first + y.last); }), a.studentId, function (s) { return s.first + ' ' + s.last + (s.phone ? ' · ' + s.phone : ''); }, '— not linked —')
+        return '<tr><td><b>' + esc(a.name) + '</b>' + (a.level || a.classChoice ? '<div class="small">' + esc([a.level, a.classChoice].filter(Boolean).join(' · ')) + '</div>' : '') + (a.phone ? '<div class="small">' + esc(a.phone) + '</div>' : '') + (a.track === 'private' ? '<div class="small">Individual student</div>' : '') + (a.role === 'student' ? '<label class="small" style="display:flex;gap:6px;align-items:center;margin-top:4px;cursor:pointer"><input type="checkbox" data-alum="' + a.id + '"' + (a.alumni ? ' checked' : '') + '> 🎓 IF Alumni</label>' : '') + '</td><td>' + esc(/@students\.intellectfirst\.com$/.test(a.email || '') ? 'login ' + a.email.split('@')[0] : a.email) + '</td><td><select class="inp" data-role="' + a.id + '" style="padding:6px 8px">' + [['guest', 'free / online'], ['student', 'student'], ['teacher', 'teacher'], ['admin', 'admin']].map(function (r) { return '<option value="' + r[0] + '"' + (a.role === r[0] ? ' selected' : '') + '>' + r[1] + '</option>'; }).join('') + '</select></td>' +
+          '<td><select class="inp" data-link="' + a.id + '" data-kind="' + ((a.role === 'student' || a.role === 'guest') ? 'studentId' : 'teacherId') + '" style="padding:6px 8px">' +
+          ((a.role === 'student' || a.role === 'guest') ? opts(ADMIN.students.slice().sort(function (x, y) { return (x.first + x.last).localeCompare(y.first + y.last); }), a.studentId, function (s) { return s.first + ' ' + s.last + (s.phone ? ' · ' + s.phone : ''); }, '— not linked —')
             : opts(ADMIN.teachers, a.teacherId, function (t) { return t.name; }, '— not linked —')) + '</select></td><td></td></tr>';
       }).join('') + '</tbody></table></div>';
+    wireOnline();
     view.querySelectorAll('[data-alum]').forEach(function (c) { c.onchange = async function () { await api('admin/link', { method: 'POST', body: { uid: c.dataset.alum, alumni: c.checked } }); toast(c.checked ? 'Moved to IF Alumni' : 'Removed from IF Alumni'); }; });
     view.querySelectorAll('[data-role]').forEach(function (s) { s.onchange = async function () { await api('admin/link', { method: 'POST', body: { uid: s.dataset.role, role: s.value } }); toast('Role updated'); vAdmin('accounts'); }; });
     view.querySelectorAll('[data-link]').forEach(function (s) { s.onchange = async function () { var b = { uid: s.dataset.link }; b[s.dataset.kind] = s.value || null; await api('admin/link', { method: 'POST', body: b }); toast('Link updated'); vAdmin('accounts'); }; });
@@ -1142,7 +1263,7 @@
       box.insertAdjacentHTML('beforeend', '<div class="msg bot typing"><i></i><i></i><i></i></div>'); box.scrollTop = box.scrollHeight;
       $('#ci').value = ''; $('#cf button').disabled = true;
       try { var r = await aapi('chat', { method: 'POST', body: { messages: CHAT.slice(-12) } }); CHAT.push({ role: 'assistant', content: r.reply }); }
-      catch (e) { CHAT.push({ role: 'assistant', content: e.code === 'quota' ? 'You have reached today\'s message limit. Please try again tomorrow.' : 'Sorry, I couldn\'t answer just now. Please try again.' }); }
+      catch (e) { CHAT.push({ role: 'assistant', content: e.code === 'members' ? 'The AI assistant is part of full access. See “Get full access” on your profile page.' : e.code === 'quota' ? 'You have reached today\'s message limit. Please try again tomorrow.' : 'Sorry, I couldn\'t answer just now. Please try again.' }); }
       CHAT = CHAT.slice(-40); lsSet('if.chat', CHAT); $('#cf button').disabled = false; draw(); $('#ci').focus();
     }
     draw();
@@ -1260,6 +1381,7 @@
         case 'classroom': return vClassroom(parts[1]);
         case 'present': return vPresent(parts[1]);
         case 'assistant': return vAssistant();
+        case 'upgrade': return vUpgrade();
         case 'results': return vResults();
         case 'teacher': return vTeacher(parts[1]);
         default: return go('#/');

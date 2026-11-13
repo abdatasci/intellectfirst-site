@@ -94,7 +94,7 @@
       var attempt = function (n) { return api('section', j.body).catch(function (e) { if (n < 1 && e.code !== 'quota') return attempt(n + 1); throw e; }); };
       return attempt(0).then(function (r) { $('#j' + i + ' .st').textContent = '✓'; return r.section; }, function (e) { $('#j' + i + ' .st').textContent = '✕'; return { error: e.code || 'ai' }; });
     }));
-    if (out.some(function (s) { return s.error === 'quota'; })) { $('#mk').disabled = false; err.textContent = 'You have made a lot of tests today. Try again tomorrow.'; return; }
+    if (out.some(function (s) { return s.error === 'quota'; })) { $('#mk').disabled = false; if (ME && ME.role === 'guest' && !(ME.paidUntil && Date.parse(ME.paidUntil) > Date.now())) err.innerHTML = 'Free accounts can make 2 AI tests a day. <a href="/me/#/upgrade">Get full access</a> for unlimited tests.'; else err.textContent = 'You have made a lot of tests today. Try again tomorrow.'; return; }
     var secs = [], byKind = {};
     out.forEach(function (s) { if (!s || s.error) return; if (s.qs && (s.kind === 'grammar' || s.kind === 'vocab')) { if (byKind[s.kind]) byKind[s.kind].qs = byKind[s.kind].qs.concat(s.qs); else { byKind[s.kind] = s; secs.push(s); } } else secs.push(s); });
     var order = { grammar: 0, vocab: 1, reading: 2, writing: 3 }; secs.sort(function (a, b) { return order[a.kind] - order[b.kind]; });

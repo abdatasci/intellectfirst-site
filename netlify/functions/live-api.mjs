@@ -10,6 +10,7 @@ import { getUser, refreshSession } from '@netlify/identity';
 import { isStaff } from '../lib/codes.mjs';
 import { createHmac, randomBytes, randomInt } from 'node:crypto';
 
+import { isMember, FREE } from '../lib/access.mjs';
 const L = () => getStore({ name: 'live', consistency: 'strong' });
 const U = () => getStore({ name: 'ielts', consistency: 'strong' });
 const json = (d, s = 200) => Response.json(d, { status: s, headers: { 'Cache-Control': 'no-store' } });
@@ -62,7 +63,8 @@ export default async (req) => {
     if (!isStaff(profile?.role)) {
       const day = new Date().toISOString().slice(0, 10), k = `quota/${user.id}/${day}`;
       const used = (await L().get(k, { type: 'json' })) || 0;
-      if (used >= 25) return fail(429, 'quota');
+      const free = !!profile && !isMember(profile);
+      if (used >= (free ? FREE.liveQuestions : 25)) return json({ error: 'quota', free }, 429);
       await L().setJSON(k, used + 1);
     }
     try { return json({ qs: await generate(body) }); }

@@ -33,6 +33,7 @@ export async function roleForCode(code) {
   if (await hashMatch(code, extra.admin)) return 'admin';
   if (await hashMatch(code, extra.teacher)) return 'teacher';
   if (await hashMatch(code, extra.student)) return 'student';
+  if (await hashMatch(code, extra.private)) return 'student';
   if (await opens(await bits(code, SALT.t), keys.check_t)) return 'teacher';
   if (await opens(await bits(code, SALT.s), keys.check_s)) return 'student';
   return null;
@@ -65,3 +66,5 @@ export async function verifyLockKeys(k) {
   try { if (k?.kt && await opens(b64d(k.kt), keys.check_t)) out.kt = k.kt; } catch {}
   return out;
 }
+/** The code Abdoulie gives his individual students (full access, marked as individual students). */
+export async function isPrivateCode(code) { return !!norm(code) && hashMatch(code, extra.private); }

@@ -163,7 +163,7 @@
     var err = $('#perr'), go = $('#pgo'); go.disabled = true; err.style.color = 'var(--navy)'; err.textContent = '✨ Writing your questions…';
     var qs = null, note = '';
     try { qs = (await L.api('generate', { level: P.level, focus: P.focus, topic: P.topic, count: P.count })).qs; }
-    catch (e) { note = e.status === 401 ? 'Sign in to your IF Academy account to get new AI questions every time. For now, here are questions from our course materials.' : e.code === 'quota' ? 'You have practised a lot today! These questions come from our course materials.' : 'AI is busy, so these questions come from our course materials.'; }
+    catch (e) { note = e.status === 401 ? 'Sign in to your IF Academy account to get new AI questions every time. For now, here are questions from our course materials.' : e.code === 'quota' ? (e.free ? 'Free accounts get 6 AI rounds a day; full access gives unlimited practice (see My account). These questions come from our course materials.' : 'You have practised a lot today! These questions come from our course materials.') : 'AI is busy, so these questions come from our course materials.'; }
     if (!qs || !qs.length) {
       try { if (!BANKS) BANKS = (await (await fetch('/live/banks.json')).json()).banks; qs = L.general(Object.assign({}, P, { count: P.count }), BANKS); } catch (e) { qs = []; }
     }

@@ -15,6 +15,7 @@ import {
   dueReminders, reminderText, local, ymd, upcomingLessons, payStatus, SCHOOL
 } from '../lib/bot-core.mjs';
 
+import { isMember } from '../lib/access.mjs';
 const json = (data, status = 200) => Response.json(data, { status, headers: { 'Cache-Control': 'no-store' } });
 const fail = (status, error) => json({ error }, status);
 const isStaff = r => r === 'teacher' || r === 'admin';
@@ -76,6 +77,7 @@ export default async (req, context) => {
   if (!user) return fail(401, 'signin');
   const profile = await getProfile(user.id);
   if (!profile?.role) return fail(403, 'activate');
+  if (!isMember(profile) && path === 'chat') return fail(403, 'members');   // the AI assistant is part of full access
   const uid = user.id;
 
   if (path === 'chat' && method === 'POST') {

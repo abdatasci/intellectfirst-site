@@ -14,6 +14,7 @@ import { aiJSON, cleanQ, str, MODEL_MARK } from '../lib/aiq.mjs';
 import { loadStudents, saveStudents } from '../lib/students.mjs';
 import dash from '../lib/dash-import.json';
 
+import { isMember, FREE } from '../lib/access.mjs';
 const T = () => getStore({ name: 'tests', consistency: 'strong' });
 const U = () => getStore({ name: 'ielts', consistency: 'strong' });
 const json = (d, s = 200) => Response.json(d, { status: s, headers: { 'Cache-Control': 'no-store' } });
@@ -75,7 +76,7 @@ async function addRecent(row, key) {
 async function who() {
   let user = null; try { user = (await refreshSession().catch(() => null), await getUser()); } catch {}
   const profile = user ? (await U().get(`u/${user.id}/profile`, { type: 'json' })) || null : null;
-  return { user, profile, staff: isStaff(profile?.role) };
+  return { user, profile, staff: isStaff(profile?.role), free: !!profile && !isMember(profile) };
 }
 function ctx(b) {
   const level = LEVELS.includes(b.level) ? b.level : 'B1';
@@ -152,7 +153,7 @@ JSON shape: {${sec ? '"writing":{"score":6.5,"content":3,"organisation":1.5,"lan
 export default async (req) => {
   const path = new URL(req.url).pathname.replace(/^\/api\/tests\/?/, '');
   const body = req.method === 'POST' ? await req.json().catch(() => ({})) : {};
-  const { user, profile, staff } = await who();
+  const { user, profile, staff, free } = await who();
 
   if (path.startsWith('t/')) {
     const t = await T().get('t/' + path.slice(2).toUpperCase(), { type: 'json' });
@@ -249,7 +250,7 @@ export default async (req) => {
   if (path === 'section') {
     if (!staff) {
       const k = `quota/${user.id}/${new Date().toISOString().slice(0, 10)}`, used = (await T().get(k, { type: 'json' })) || 0;
-      if (used >= 60) return fail(429, 'quota');
+      if (used >= (free ? FREE.testSections : 60)) return fail(429, 'quota', { free });
       await T().setJSON(k, used + 1);
     }
     try { return json({ section: await writeSection(body) }); }

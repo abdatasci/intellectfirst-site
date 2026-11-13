@@ -17,7 +17,7 @@
     var res = await fetch('/api/live/' + path, body ? { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), credentials: 'same-origin' } : { credentials: 'same-origin' });
     if (res.status === 401 && !LIVE.api.retried && window.NFIdentity) { LIVE.api.retried = true; try { await NFIdentity.refreshSession(); } catch (e) {} return LIVE.api(path, body); }
     var d = await res.json().catch(function () { return {}; });
-    if (!res.ok) { var e = new Error(d.error || res.status); e.code = d.error; e.status = res.status; throw e; }
+    if (!res.ok) { var e = new Error(d.error || res.status); e.code = d.error; e.free = !!d.free; e.status = res.status; throw e; }
     return d;
   };
   LIVE.shuffle = function (a) { a = a.slice(); for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; } return a; };
