@@ -46,11 +46,13 @@ function derive(sid, a, ctx) {
     const r = payments[m]?.rows?.[sid]; if (!r) continue;
     lastRow = r;
     const net = Math.max(0, (+r.due || 0) - (+r.disc || 0));
+    if (net === 0) { pay.paid[m] = m + '-01'; pay.methods[m] = 'No fee this month'; continue; } // barter, scholarship, package still running
     if (r.s === 'Paid' || (net > 0 && +r.paid >= net)) { pay.paid[m] = /^\d{4}-\d{2}-\d{2}$/.test(r.d || '') ? r.d : m + '-01'; pay.methods[m] = r.m || ''; }
     if (+r.paid) pay.amounts[m] = +r.paid;
     if (/^\d{4}-\d{2}-\d{2}$/.test(r.dd || '')) pay.dueDates[m] = r.dd;
   }
   if (lastRow) pay.fee = Math.max(0, (+lastRow.due || 0) - (+lastRow.disc || 0));
+  if (lastRow && Math.max(0, (+lastRow.due || 0) - (+lastRow.disc || 0)) === 0 && /scholar|barter|free/i.test(lastRow.note || '')) s.noFee = true;
   s.pay = lastRow ? pay : null;
   // IF Admin test results
   s.tests = results.filter(r => r.sid === sid).sort((x, y) => String(x.date).localeCompare(String(y.date))).map(r => ({
