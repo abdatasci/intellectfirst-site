@@ -1,0 +1,58 @@
+/* IF Academy homepage — compact layout (Nov 2026): tighter sections, slim chapter bands,
+   moving photo gallery near the top, staff in one scrolling row, app directory folded. */
+
+/* tighter sections */
+section, main section { padding-block: 60px !important; }
+.section-head { margin-bottom: 30px !important; }
+@media (max-width: 640px) { section, main section { padding-block: 42px !important; } .section-head { margin-bottom: 20px !important; } }
+
+/* chapter bands: a slim strip instead of a full screen */
+.x-open { height: clamp(120px, 15vw, 210px) !important; margin-top: 18px !important; }
+.x-open .wrap { padding-bottom: 16px !important; }
+.x-open-t { font-size: clamp(40px, 7.5vw, 112px) !important; }
+.x-open-n { padding-bottom: 8px !important; }
+.x-open.x-team { height: auto !important; }
+
+/* ---------- moving gallery ---------- */
+#gallery .g-event { margin: 0 0 16px !important; }
+#gallery .g-grid { columns: auto !important; overflow: hidden; position: relative; margin: 0 calc(50% - 50vw); padding: 4px 0;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent); mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent); }
+#gallery .g-track { display: flex; gap: 14px; width: max-content; animation: gmove var(--dur, 40s) linear infinite; will-change: transform; }
+#gallery .g-track.still { animation: none; margin: 0 auto; flex-wrap: wrap; justify-content: center; width: auto; max-width: 1180px; padding: 0 20px; }
+#gallery .g-grid:hover .g-track, #gallery .g-grid:focus-within .g-track { animation-play-state: paused; }
+#gallery .g-item { margin: 0 !important; flex: none; height: clamp(220px, 28vw, 340px); border-radius: 16px; box-shadow: 0 14px 30px -18px rgba(10, 24, 47, .45); transform: translateZ(0); }
+#gallery .g-item[hidden] { display: none !important; }
+#gallery .g-item a, #gallery .g-item img { height: 100%; }
+#gallery .g-item img { width: auto !important; max-width: none; object-fit: cover; }
+#gallery .g-item:hover { transform: translateY(-4px); transition: transform .35s ease; }
+@keyframes gmove { from { transform: translateX(0); } to { transform: translateX(calc(-50% - 7px)); } }
+#gallery .ig-head { margin: 26px 0 12px !important; font-size: 20px !important; }
+#gallery .ig-row { grid-template-columns: repeat(4, 1fr) !important; gap: 10px !important; }
+#gallery .ig-row .frame { aspect-ratio: auto !important; min-height: 88px; padding: 14px !important; }
+@media (max-width: 760px) { #gallery .ig-row { grid-template-columns: 1fr 1fr !important; } }
+@media (prefers-reduced-motion: reduce) { #gallery .g-track { animation: none !important; flex-wrap: wrap; width: auto; justify-content: center; } }
+
+/* ---------- staff: one row you can swipe ---------- */
+#teachers .eco-grid { display: flex !important; overflow-x: auto; gap: 16px !important; scroll-snap-type: x mandatory; padding-bottom: 10px; background: none !important; border: 0 !important; scrollbar-width: thin; }
+#teachers .eco-card { flex: 0 0 clamp(250px, 24vw, 290px); scroll-snap-align: start; border: 1px solid var(--border-c, #e4dccd); border-radius: 18px; padding: 18px !important; grid-column: auto !important; }
+#teachers .teacher-portrait { aspect-ratio: 4/5 !important; margin-bottom: 12px !important; }
+#teachers .eco-card p { font-size: 13.5px !important; }
+#teachers .eco-card:first-child { padding: 18px !important; }
+
+/* ---------- apps: first rows of the directory, the rest on demand ---------- */
+#academy-directory.folded { max-height: 520px; overflow: hidden; position: relative;
+  -webkit-mask-image: linear-gradient(180deg, #000 78%, transparent); mask-image: linear-gradient(180deg, #000 78%, transparent); }
+.dir-more { display: block; margin: 14px auto 0; color: #fff !important; border-color: rgba(255,255,255,.55) !important; background: transparent !important; }
+
+/* ---------- pricing: slimmer rows ---------- */
+#pricing .program-row { padding-block: 16px !important; }
+#pricing .cat-label { margin-top: 26px !important; }
+
+/* staff cards: short bio, full text on "Read more" */
+#teachers .eco-card { display: flex; flex-direction: column; }
+#teachers .eco-card > p:not(.meta) { display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; margin-bottom: 0; }
+#teachers .eco-card > .profile-subheading, #teachers .eco-card > .profile-subheading ~ p { display: none; }
+#teachers .eco-card.open > p:not(.meta) { display: block; -webkit-line-clamp: none; }
+#teachers .eco-card.open > .profile-subheading { display: block; }
+#teachers .eco-card.open > .profile-subheading ~ p { display: block; }
+#teachers .t-more { margin-top: 10px; align-self: flex-start; background: none; border: 0; padding: 0; font: 600 13px/1.4 inherit; color: var(--accent, #b08a3e); cursor: pointer; text-decoration: underline; }
