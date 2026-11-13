@@ -19,7 +19,9 @@
     show('<form class="join" id="f" novalidate><h1>Join the game</h1><p>Enter the PIN on your teacher\'s screen.</p>' +
       '<input class="field pin" id="pin" inputmode="numeric" autocomplete="off" maxlength="6" placeholder="PIN" value="' + esc(S.pin) + '" aria-label="Game PIN">' +
       '<input class="field" id="nm" maxlength="24" autocomplete="given-name" placeholder="Your name" value="' + esc(name) + '" aria-label="Your name">' +
-      '<button class="btn big" type="submit">Join</button><div class="err" id="err">' + esc(err || '') + '</div></form>');
+      '<button class="btn big" type="submit">Join</button><div class="err" id="err">' + esc(err || '') + '</div>' +
+      '<p style="margin-top:26px;color:rgba(255,255,255,.75)">No game PIN?</p><button type="button" class="btn ghost" id="solo" style="margin-top:8px">✨ Practise General English on my own</button></form>');
+    $('#solo').onclick = vPractice;
     $(S.pin ? '#nm' : '#pin').focus();
     $('#f').onsubmit = function (e) { e.preventDefault(); join($('#pin').value.replace(/\D/g, ''), $('#nm').value.trim()); };
   }
@@ -145,6 +147,58 @@
       (team ? '<div class="rank">' + esc(d.teams[S.team]) + ' finished ' + ordinal(tb.indexOf(team) + 1) + (tb.indexOf(team) === 0 ? ' 🏆' : '') + '</div>' : '') +
       '<p style="margin-top:26px"><a class="btn ghost" href="/live/">Join another game</a></p></div>');
   }
+
+  /* ---------- solo practice: General English, AI-written ---------- */
+  var P = Object.assign({ level: 'B1', focus: 'mix', topic: '', count: 10 }, L.ls.get('live.practice') || {}), BANKS = null;
+  function vPractice() {
+    document.body.classList.add('light');
+    show('<div class="join" style="max-width:560px;text-align:left"><h1 style="text-align:center;color:var(--navy)">Practise English</h1><p style="text-align:center;color:var(--muted)">Choose your level and a topic. AI writes new questions for you every time.</p><div id="pf"></div>' +
+      '<button class="btn navy big" id="pgo" style="margin-top:20px">Start</button><div class="err" id="perr" style="color:var(--bad)"></div><p style="text-align:center;margin-top:16px"><button class="linkbtn" id="pback">← Join a class game instead</button></p></div>');
+    var box = $('#pf'); box.innerHTML = L.genForm(P); L.genWire(box, P);
+    $('#pback').onclick = function () { document.body.classList.remove('light'); vJoin(); };
+    $('#pgo').onclick = startPractice;
+  }
+  async function startPractice() {
+    L.ls.set('live.practice', P);
+    var err = $('#perr'), go = $('#pgo'); go.disabled = true; err.style.color = 'var(--navy)'; err.textContent = '✨ Writing your questions…';
+    var qs = null, note = '';
+    try { qs = (await L.api('generate', { level: P.level, focus: P.focus, topic: P.topic, count: P.count })).qs; }
+    catch (e) { note = e.status === 401 ? 'Sign in to your IF Academy account to get new AI questions every time. For now, here are questions from our course materials.' : e.code === 'quota' ? 'You have practised a lot today! These questions come from our course materials.' : 'AI is busy, so these questions come from our course materials.'; }
+    if (!qs || !qs.length) {
+      try { if (!BANKS) BANKS = (await (await fetch('/live/banks.json')).json()).banks; qs = L.general(Object.assign({}, P, { count: P.count }), BANKS); } catch (e) { qs = []; }
+    }
+    if (!qs.length) { go.disabled = false; err.style.color = ''; err.textContent = 'Could not load questions. Check your internet.'; return; }
+    S.solo = { qs: qs, i: 0, score: 0, ok: 0, streak: 0, best: 0, note: note };
+    soloQ();
+  }
+  function soloQ() {
+    var R = S.solo, q = R.qs[R.i], long = L.isLong(q.o);
+    document.body.classList.remove('light');
+    show('<div class="pq"><div class="meta"><span>' + esc(L.genTitle(P)) + ' · ' + (R.i + 1) + ' / ' + R.qs.length + '</span><span class="score-chip">' + R.score + '</span></div>' +
+      (R.note && R.i === 0 ? '<p style="font-size:14px;color:var(--gold)">' + esc(R.note) + '</p>' : '') +
+      '<div class="prompt">' + esc(q.p) + '</div>' +
+      '<div class="opts' + (long ? ' long' : '') + '">' + q.o.map(function (o, k) { return '<button class="opt o' + k + '" data-k="' + k + '"><span class="sh">' + L.SHAPES[k] + '</span>' + esc(o) + '</button>'; }).join('') + '</div><div id="fb"></div></div>');
+    view.querySelectorAll('.opt').forEach(function (b) {
+      b.onclick = function () {
+        if (R.done === R.i) return; R.done = R.i;
+        var k = +b.dataset.k, ok = k === q.a;
+        if (ok) { R.ok++; R.streak++; R.best = Math.max(R.best, R.streak); R.score += 100 + Math.min(R.streak - 1, 5) * 20; } else R.streak = 0;
+        flash(ok);
+        view.querySelectorAll('.opt').forEach(function (x) { var kk = +x.dataset.k; x.classList.add(kk === q.a ? 'pick' : 'dim'); });
+        $('#fb').innerHTML = '<div style="text-align:center;padding:6px 4px"><b style="font-size:20px;color:' + (ok ? '#7fe0ae' : '#ff9d8a') + '">' + (ok ? 'Correct!' + (R.streak > 1 ? ' 🔥 ' + R.streak : '') : 'Answer: ' + esc(q.o[q.a])) + '</b>' + (q.x ? '<p style="margin-top:6px;color:rgba(255,255,255,.8)">' + esc(q.x) + '</p>' : '') + '<button class="btn" id="nx" style="margin-top:12px;width:100%">' + (R.i + 1 < R.qs.length ? 'Next →' : 'See my score') + '</button></div>';
+        $('#nx').onclick = function () { R.i++; if (R.i < R.qs.length) soloQ(); else soloEnd(); };
+      };
+    });
+  }
+  function soloEnd() {
+    var R = S.solo, pct = R.ok / R.qs.length;
+    show('<div class="res good"><p>' + esc(L.genTitle(P)) + '</p><div class="big">' + R.ok + ' / ' + R.qs.length + '</div><div class="gain">' + R.score + ' points' + (R.best > 2 ? ' · best streak ' + R.best : '') + '</div>' +
+      '<div class="rank">' + (pct >= .9 ? 'Excellent! Try the next level up.' : pct >= .7 ? 'Great work!' : pct >= .5 ? 'Good. Play again to beat your score.' : 'Keep practising. Try an easier level or a new topic.') + '</div>' +
+      '<p style="margin-top:24px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap"><button class="btn" id="again">New questions</button><button class="btn ghost" id="change">Change level or topic</button></p></div>');
+    $('#again').onclick = function () { show('<div class="wait"><div class="pulse"></div><h2>Writing new questions…</h2></div>'); vPractice(); startPractice(); };
+    $('#change').onclick = vPractice;
+  }
+  if (/[?&]practice\b/.test(location.search)) { vPractice(); return; }
 
   if (S.pin && L.ls.get('live.p.' + S.pin) && L.ls.get('live.name')) { show('<div class="wait"><div class="pulse"></div><h2>Rejoining…</h2></div>'); vJoin().then(function () { join(S.pin, L.ls.get('live.name')); }); }
   else vJoin();

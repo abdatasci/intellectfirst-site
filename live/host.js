@@ -4,7 +4,7 @@
   var L = window.LIVE, $ = L.$, esc = L.esc, view = $('#view');
   var qsp = new URLSearchParams(location.search);
   var BANKS = null, ROOMS = null, H = null, BUS = null, ST = null, WATCH = null, timers = {};
-  var CFG = Object.assign({ source: 'v', bank: 'v-A2', units: [], qtype: 'def', count: '15', mode: 'classic', time: 20, race: 5, teams: 0, custom: '', title: '' }, L.ls.get('live.cfg') || {});
+  var CFG = Object.assign({ source: 'gen', level: 'B1', focus: 'mix', topic: '', ai: true, bank: 'v-A2', units: [], qtype: 'def', count: '15', mode: 'classic', time: 20, race: 5, teams: 0, custom: '', title: '' }, L.ls.get('live.cfg') || {});
 
   function stage(on) { document.body.classList.toggle('light', !on); $('#fs').hidden = !on; $('#back').hidden = !!on; }
   $('#fs').onclick = function () { if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen().catch(function () {}); };
@@ -27,7 +27,7 @@
     if (!ROOMS.ready) h += '<div class="note"><b>Live games need one setting before the first game.</b> Create a free account at ably.com, copy the API key from your app\'s <i>API Keys</i> tab (it looks like <code>xVLyHw.A-pwh7w:…</code>) and add it in Netlify → Project configuration → Environment variables as <code>ABLY_API_KEY</code>. Then redeploy the site.</div>';
     if (resume) h += '<div class="note">Your game <b>' + esc(resume.title) + '</b> (PIN ' + resume.pin + ') is still open. <button class="linkbtn" id="resume">Resume it</button> · <button class="linkbtn" id="drop">Close it</button></div>';
     h += '<div class="grid2"><div class="panel"><h2>Start a live game</h2><p class="sub">Students join on their phones with the QR code or the PIN. You run the game from this screen; project it in class.</p>' +
-      '<label class="f">Questions from</label><div class="seg" id="src">' + [['v', 'Book vocabulary'], ['g', 'Grammar'], ['custom', 'My own questions']].map(function (s) { return '<button data-v="' + s[0] + '" class="' + (CFG.source === s[0] ? 'on' : '') + '">' + s[1] + '</button>'; }).join('') + '</div>' +
+      '<label class="f">Questions from</label><div class="seg" id="src">' + [['gen', 'General English ✨'], ['v', 'Book vocabulary'], ['g', 'Grammar'], ['custom', 'My own questions']].map(function (s) { return '<button data-v="' + s[0] + '" class="' + (CFG.source === s[0] ? 'on' : '') + '">' + s[1] + '</button>'; }).join('') + '</div>' +
       '<div id="srcbox"></div>' +
       '<label class="f">Game type</label><div class="seg" id="mode">' + [['classic', 'Classic · teacher-paced'], ['race', 'Race · self-paced']].map(function (s) { return '<button data-v="' + s[0] + '" class="' + (CFG.mode === s[0] ? 'on' : '') + '">' + s[1] + '</button>'; }).join('') + '</div>' +
       '<p class="mini" id="modehelp" style="margin-top:6px"></p>' +
@@ -50,7 +50,7 @@
         b.onclick = function () {
           $('#' + id).querySelectorAll('button').forEach(function (x) { x.classList.toggle('on', x === b); });
           var v = b.dataset.v;
-          if (id === 'src') { CFG.source = v; if (v !== 'custom' && (bankOf(CFG.bank) || {}).kind !== v) { CFG.bank = BANKS.filter(function (x) { return x.kind === v; })[0].id; CFG.units = []; } srcBox(); }
+          if (id === 'src') { CFG.source = v; if (v !== 'custom' && v !== 'gen' && (bankOf(CFG.bank) || {}).kind !== v) { CFG.bank = BANKS.filter(function (x) { return x.kind === v; })[0].id; CFG.units = []; } srcBox(); }
           if (id === 'mode') { CFG.mode = v; timeBox(); }
           if (id === 'teams') CFG.teams = +v;
           count();
@@ -61,6 +61,12 @@
   function bankOf(id) { return BANKS.filter(function (b) { return b.id === id; })[0]; }
   function srcBox() {
     var box = $('#srcbox');
+    if (CFG.source === 'gen') {
+      box.innerHTML = L.genForm(CFG) + '<label class="f">Number of questions</label><div class="seg" id="cnt">' + ['10', '15', '20', '30'].map(function (s) { return '<button data-v="' + s + '" class="' + (CFG.count === s ? 'on' : '') + '">' + s + '</button>'; }).join('') + '</div>';
+      L.genWire(box, CFG, count);
+      var c0 = $('#cnt'); c0.querySelectorAll('button').forEach(function (bt) { bt.onclick = function () { c0.querySelectorAll('button').forEach(function (x) { x.classList.toggle('on', x === bt); }); CFG.count = bt.dataset.v; count(); }; });
+      return count();
+    }
     if (CFG.source === 'custom') {
       box.innerHTML = '<label class="f">Your questions · one per line</label><textarea class="inp" id="custom" placeholder="Question | correct answer | wrong answer | wrong answer | wrong answer\nShe ___ to school every day. | goes | go | going\nThe opposite of &quot;cheap&quot; | expensive | easy | early">' + esc(CFG.custom) + '</textarea><p class="mini" style="margin-top:6px">Write the correct answer first; the order is mixed for the students. 2–4 answers per question.</p>';
       $('#custom').oninput = function () { CFG.custom = this.value; count(); };
@@ -73,7 +79,9 @@
     box.innerHTML = '<label class="f">' + (CFG.source === 'g' ? 'Grammar set' : 'Book') + '</label><select class="inp" id="bank">' + list.map(function (x) { return '<option value="' + x.id + '"' + (x.id === CFG.bank ? ' selected' : '') + '>' + esc(x.name) + '</option>'; }).join('') + '</select>' +
       '<label class="f">Units <button class="linkbtn" id="allu" style="text-transform:none;letter-spacing:0;margin-left:8px">select all</button></label><div class="units">' + b.units.map(function (u) { return '<label><input type="checkbox" value="' + esc(u.id) + '"' + (CFG.units.indexOf(u.id) >= 0 ? ' checked' : '') + '> <b>' + esc(u.id === 'all' ? '' : u.id) + '</b> ' + esc(u.t) + '<small>' + (u.w || u.q).length + '</small></label>'; }).join('') + '</div>' +
       (CFG.source === 'v' ? '<label class="f">Question type</label><div class="seg" id="qtype">' + [['def', 'Definition → word'], ['word', 'Word → meaning'], ['ru', 'Russian → English'], ['mix', 'Mixed']].map(function (s) { return '<button data-v="' + s[0] + '" class="' + (CFG.qtype === s[0] ? 'on' : '') + '">' + s[1] + '</button>'; }).join('') + '</div>' : '') +
+      '<label class="units" style="display:flex;gap:10px;align-items:flex-start;margin-top:14px;max-height:none;cursor:pointer"><input type="checkbox" id="aitog"' + (CFG.ai ? ' checked' : '') + ' style="margin-top:4px"> <span><b>✨ AI writes fresh questions from these units</b><br><span class="mini">New sentences and question types every game (gap-fills, synonyms, collocations, dialogues) with a short explanation after each answer. Untick to use the plain word list.</span></span></label>' +
       '<label class="f">Number of questions</label><div class="seg" id="cnt">' + ['10', '15', '20', '30', 'all'].map(function (s) { return '<button data-v="' + s + '" class="' + (CFG.count === s ? 'on' : '') + '">' + (s === 'all' ? 'All' : s) + '</button>'; }).join('') + '</div>';
+    $('#aitog').onchange = function () { CFG.ai = this.checked; count(); };
     $('#bank').onchange = function () { CFG.bank = this.value; CFG.units = []; srcBox(); };
     $('#allu').onclick = function (e) { e.preventDefault(); var all = CFG.units.length === b.units.length; CFG.units = all ? [b.units[0].id] : b.units.map(function (u) { return u.id; }); srcBox(); };
     box.querySelectorAll('.units input').forEach(function (c) { c.onchange = function () { CFG.units = Array.prototype.filter.call(box.querySelectorAll('.units input'), function (x) { return x.checked; }).map(function (x) { return x.value; }); count(); }; });
@@ -88,13 +96,15 @@
     $('#tm').querySelectorAll('button').forEach(function (b) { b.onclick = function () { $('#tm').querySelectorAll('button').forEach(function (x) { x.classList.toggle('on', x === b); }); CFG[race ? 'race' : 'time'] = +b.dataset.v; }; });
   }
   function count() {
-    var n = L.build(CFG, BANKS).length, el = $('#qcount');
-    if (el) el.textContent = n ? n + ' questions ready' + (CFG.mode === 'race' ? ' (race mode repeats them)' : '') : 'No questions yet';
+    var el = $('#qcount');
+    if (useAI()) { if (el) el.textContent = '✨ AI will write ' + (CFG.count === 'all' ? 30 : CFG.count) + ' new questions (takes a few seconds)'; }
+    else { var n = L.build(CFG, BANKS).length; if (el) el.textContent = n ? n + ' questions ready' + (CFG.mode === 'race' ? ' (race mode repeats them)' : '') : 'No questions yet'; }
     var t = $('#title'); if (t && !t.dataset.touched) t.placeholder = defaultTitle();
     if (t) t.oninput = function () { t.dataset.touched = 1; };
   }
   function defaultTitle() {
     if (CFG.source === 'custom') return 'Class quiz';
+    if (CFG.source === 'gen') return L.genTitle(CFG);
     var b = bankOf(CFG.bank); if (!b) return 'Live game';
     var u = b.units.filter(function (x) { return CFG.units.indexOf(x.id) >= 0; });
     return b.name.replace(/^Grammar · /, 'Grammar ') + (u.length === 1 && u[0].id !== 'all' ? ' · ' + u[0].id + ' ' + u[0].t : u.length > 1 ? ' · ' + u.length + ' units' : '');
@@ -108,14 +118,34 @@
     } catch (e) { box.innerHTML = '<p class="mini">Could not load these scores.</p>'; }
   }
 
+  function useAI() { return CFG.source === 'gen' || (CFG.ai && (CFG.source === 'v' || CFG.source === 'g')); }
+  function aiRequest() {
+    var n = CFG.count === 'all' ? 30 : +CFG.count;
+    if (CFG.source === 'gen') return { level: CFG.level, focus: CFG.focus, topic: CFG.topic, count: n };
+    var b = bankOf(CFG.bank), units = b.units.filter(function (u) { return CFG.units.indexOf(u.id) >= 0; });
+    var lv = (b.id.match(/A1|A2|B1|B2|C1/) || [])[0] || { 'v-Movers': 'A1', 'v-Flyers': 'A2', 'v-KET': 'A2', 'v-PET': 'B1', 'v-TeensB1': 'B1', 'v-TeensB2': 'B2', 'v-IELTS': 'C1', 'g-IELTS': 'C1' }[b.id] || 'B1';
+    if (b.kind === 'g') return { level: lv, focus: 'grammar', topic: units.map(function (u) { return u.id === 'all' ? lv + ' grammar' : u.t; }).join('; ') + (b.id === 'g-IELTS' ? ' (IELTS academic writing context)' : ''), count: n };
+    var words = []; units.forEach(function (u) { u.w.forEach(function (w) { words.push(w[0]); }); });
+    return { level: lv, focus: 'vocab', topic: units.map(function (u) { return u.t; }).slice(0, 4).join('; '), words: L.shuffle(words).slice(0, 60), count: n };
+  }
+
   /* ================= running a game ================= */
   async function start() {
     var err = $('#err'); err.textContent = '';
-    var qs = L.build(CFG, BANKS);
-    if (!qs.length) { err.textContent = CFG.source === 'custom' ? 'Write at least one question: question | right answer | wrong answer.' : 'Choose at least one unit.'; return; }
+    if (CFG.source !== 'custom' && CFG.source !== 'gen' && !CFG.units.length) { err.textContent = 'Choose at least one unit.'; return; }
     var title = ($('#title').value.trim() || defaultTitle());
     L.ls.set('live.cfg', Object.assign({}, CFG, { title: '' }));
-    $('#go').disabled = true; err.textContent = '';
+    $('#go').disabled = true;
+    var qs = null;
+    if (useAI()) {
+      err.style.color = 'var(--navy)'; err.textContent = '✨ AI is writing your questions…';
+      try { qs = (await L.api('generate', aiRequest())).qs; } catch (e) { qs = null; }
+      err.style.color = '';
+      if (!qs || !qs.length) err.textContent = 'AI is busy right now, so this game uses the ready-made questions instead.';
+      else err.textContent = '';
+    }
+    if (!qs || !qs.length) qs = CFG.source === 'gen' ? L.general(CFG, BANKS) : L.build(CFG, BANKS);
+    if (!qs.length) { $('#go').disabled = false; err.textContent = CFG.source === 'custom' ? 'Write at least one question: question | right answer | wrong answer.' : 'No questions found for this choice.'; return; }
     try {
       var r = L.local ? { room: { pin: String(100000 + Math.floor(Math.random() * 899999)), created: Date.now() }, token: null } : await L.api('host', { title: title, mode: CFG.mode });
       H = { pin: r.room.pin, created: r.room.created, title: title, mode: CFG.mode, time: +CFG.time, race: +CFG.race, teamsN: +CFG.teams, source: CFG.source === 'custom' ? 'My questions' : defaultTitle(),

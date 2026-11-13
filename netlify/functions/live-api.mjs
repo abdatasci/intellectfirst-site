@@ -56,6 +56,18 @@ export default async (req) => {
 
   const { user, profile } = await who();
   if (!user) return fail(401, 'login');
+
+  // AI writes fresh questions (teachers for live games, signed-in students for solo practice).
+  if (path === 'generate') {
+    if (!isStaff(profile?.role)) {
+      const day = new Date().toISOString().slice(0, 10), k = `quota/${user.id}/${day}`;
+      const used = (await L().get(k, { type: 'json' })) || 0;
+      if (used >= 25) return fail(429, 'quota');
+      await L().setJSON(k, used + 1);
+    }
+    try { return json({ qs: await generate(body) }); }
+    catch (e) { console.error('generate', e); return fail(502, 'ai'); }
+  }
   if (!isStaff(profile?.role)) return fail(403, 'staff');
   const me = { uid: user.id, name: profile.name || user.email };
 
@@ -124,4 +136,59 @@ export default async (req) => {
   return fail(404, 'unknown');
 };
 
-export const config = { path: ['/api/live', '/api/live/*'] };
+/* ---------- AI question writer ---------- */
+const LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
+const FOCUS = {
+  vocab: 'vocabulary: word meaning, synonyms and opposites, collocations, word forms, phrasal verbs, words in context',
+  grammar: 'grammar: gap-fill sentences, choosing the correct form, spotting the error, word order',
+  mix: 'a mix of vocabulary and grammar, plus everyday functional English (best reply in a short dialogue, polite phrases)',
+  speaking: 'everyday functional English: the best reply in a two-line dialogue, polite requests, opinions, agreeing and disagreeing, idioms used in conversation',
+  exam: 'Cambridge / IELTS exam style: Use of English gap-fills, key word transformations as multiple choice, collocations, linking words'
+};
+const SYS = `You write multiple-choice questions for English learners at IF Academy, a language school in Kazakhstan (students speak Russian and Kazakh).
+Write natural, correct British English at exactly the requested CEFR level. Every question has exactly one clearly correct answer; the wrong options are plausible for a learner at that level but definitely wrong. Never repeat a question. Keep everything classroom-friendly.
+Reply with JSON only.`;
+function cleanQ(q) {
+  if (!q || typeof q !== 'object') return null;
+  const p = str(q.p, 220), x = str(q.x, 200);
+  let o = (Array.isArray(q.o) ? q.o : []).map(v => str(v, 90)).filter(Boolean);
+  const a = +q.a;
+  if (!p || o.length < 3 || o.length > 4 || !(a >= 0 && a < o.length)) return null;
+  if (new Set(o.map(v => v.toLowerCase())).size !== o.length) return null;
+  const right = o[a];
+  for (let i = o.length - 1; i > 0; i--) { const j = randomInt(0, i + 1); [o[i], o[j]] = [o[j], o[i]]; }
+  return { p, o, a: o.indexOf(right), x, k: 'ai' };
+}
+async function generate(b) {
+  const { default: Anthropic } = await import('@anthropic-ai/sdk');
+  const ai = new Anthropic();
+  const level = LEVELS.includes(b.level) ? b.level : 'B1';
+  const focus = FOCUS[b.focus] ? b.focus : 'mix';
+  const topic = str(b.topic, 120) || 'general everyday topics';
+  const words = (Array.isArray(b.words) ? b.words : []).slice(0, 60).map(w => str(w, 40)).filter(Boolean);
+  const count = Math.min(30, Math.max(5, +b.count || 10));
+  const nb = Math.ceil(count / 8), batches = Array.from({ length: nb }, (_, i) => Math.floor(count / nb) + (i < count % nb ? 1 : 0)); // small parallel batches: fast enough for the function time limit
+  const ask = (n, part) => ai.messages.create({
+    model: process.env.LIVE_MODEL || 'claude-haiku-5-5', max_tokens: 220 * n + 300, temperature: 0.9, system: SYS,
+    messages: [{ role: 'user', content:
+`Write ${n} questions.
+Level: ${level} (CEFR).
+Focus: ${FOCUS[focus]}.
+Topic: ${topic}.
+${words.length ? `Build the questions around these words from the class's coursebook unit (use each at most once, natural sentences): ${words.filter((_, i) => i % batches.length === part - 1).join(', ')}.\n` : ''}${batches.length > 1 ? `This is set ${part} of ${batches.length}; other sets are written at the same time, so ${['start with everyday, easier', 'choose less obvious', 'use different sub-topics and', 'make these the most varied and challenging'][Math.min(part - 1, 3)]} questions.\n` : ''}Vary the question types. Use ___ for a gap. Keep prompts under 150 characters and options short (1–6 words). 4 options for vocabulary, 3 or 4 for grammar.
+"x" is a one-sentence explanation a student sees after answering (under 110 characters); for a key word you may add the Russian translation in brackets.
+JSON shape: {"questions":[{"p":"prompt","o":["option","option","option","option"],"a":0,"x":"why"}]}  where "a" is the index of the correct option.` }]
+  }).then(m => {
+    const t = m.content.map(c => c.text || '').join('');
+    const s = t.indexOf('{'), e = t.lastIndexOf('}');
+    const j = JSON.parse(t.slice(s, e + 1));
+    return (j.questions || []).map(cleanQ).filter(Boolean);
+  });
+  const parts = await Promise.allSettled(batches.map((n, i) => ask(n, i + 1)));
+  const seen = new Set(), out = [];
+  for (const p of parts) if (p.status === 'fulfilled') for (const q of p.value) { const k = q.p.toLowerCase(); if (!seen.has(k)) { seen.add(k); out.push(q); } }
+  if (!out.length) throw new Error(parts.map(p => p.reason?.message).join('; ') || 'empty');
+  return out.slice(0, count);
+}
+
+export const config ={ path: ['/api/live', '/api/live/*'] };

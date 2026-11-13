@@ -93,5 +93,38 @@
   LIVE.hide = function (a, salt) { return (a + 7 * (salt % 13) + 3) % 97; };
   LIVE.unhide = function (h, salt) { return ((h - 3 - 7 * (salt % 13)) % 97 + 97) % 97; };
 
+  /* ---- General English (any level / topic, not tied to a book) ---- */
+  LIVE.LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1'];
+  LIVE.FOCUS = [['mix', 'Mixed'], ['vocab', 'Vocabulary'], ['grammar', 'Grammar'], ['speaking', 'Everyday English'], ['exam', 'Exam practice']];
+  LIVE.TOPICS = ['Daily life', 'Food & drink', 'Travel', 'Family & friends', 'School & study', 'Work & jobs', 'Technology', 'Health & sport', 'Shopping & money', 'Nature & environment', 'Cities & places', 'Films, music & art', 'Feelings', 'Holidays & celebrations'];
+  var LEVEL_BANKS = { A1: ['v-A1', 'v-Movers'], A2: ['v-A2', 'v-Flyers', 'v-KET', 'g-A2'], B1: ['v-B1', 'v-PET', 'v-TeensB1', 'g-B1'], B2: ['v-B2', 'v-TeensB2', 'g-B2'], C1: ['v-C1', 'v-IELTS', 'g-C1', 'g-IELTS'] };
+  function seg(id, items, on) { return '<div class="seg" id="' + id + '">' + items.map(function (s) { return '<button type="button" data-v="' + LIVE.esc(s[0]) + '" class="' + (on === s[0] ? 'on' : '') + '">' + LIVE.esc(s[1]) + '</button>'; }).join('') + '</div>'; }
+  LIVE.genForm = function (c) {
+    var t = LIVE.TOPICS.indexOf(c.topic) >= 0 || !c.topic ? c.topic : '';
+    return '<label class="f">Level</label>' + seg('glv', LIVE.LEVELS.map(function (l) { return [l, l]; }), c.level) +
+      '<label class="f">Focus</label>' + seg('gfo', LIVE.FOCUS, c.focus) +
+      '<label class="f">Topic</label>' + seg('gtp', [['', 'Any topic']].concat(LIVE.TOPICS.map(function (x) { return [x, x]; })), t) +
+      '<input class="inp" id="gtx" maxlength="100" style="margin-top:8px" placeholder="…or type any topic: Christmas, phrasal verbs with get, job interviews" value="' + LIVE.esc(t ? '' : c.topic || '') + '">';
+  };
+  LIVE.genWire = function (box, c, changed) {
+    [['glv', 'level'], ['gfo', 'focus'], ['gtp', 'topic']].forEach(function (p) {
+      var el = box.querySelector('#' + p[0]);
+      el.querySelectorAll('button').forEach(function (b) { b.onclick = function () { el.querySelectorAll('button').forEach(function (x) { x.classList.toggle('on', x === b); }); c[p[1]] = b.dataset.v; if (p[0] === 'gtp') box.querySelector('#gtx').value = ''; if (changed) changed(); }; });
+    });
+    box.querySelector('#gtx').oninput = function () { c.topic = this.value.trim(); box.querySelectorAll('#gtp button').forEach(function (x) { x.classList.toggle('on', !c.topic && x.dataset.v === ''); }); if (changed) changed(); };
+  };
+  LIVE.genTitle = function (c) { var f = LIVE.FOCUS.filter(function (x) { return x[0] === c.focus; })[0]; return 'General English ' + (c.level || '') + (c.topic ? ' · ' + c.topic : '') + (f && c.focus !== 'mix' ? ' · ' + f[1] : ''); };
+  /* without AI: mix the school's own word lists and grammar sets for that level */
+  LIVE.general = function (c, banks) {
+    var ids = LEVEL_BANKS[c.level] || LEVEL_BANKS.B1, qs = [];
+    ids.forEach(function (id) {
+      var b = banks.filter(function (x) { return x.id === id; })[0]; if (!b) return;
+      if (c.focus === 'grammar' && b.kind !== 'g') return;
+      if (c.focus === 'vocab' && b.kind !== 'v') return;
+      qs = qs.concat(LIVE.build({ bank: id, units: b.units.map(function (u) { return u.id; }), qtype: 'mix', count: 'all' }, banks));
+    });
+    return LIVE.shuffle(qs).slice(0, +c.count || 15);
+  };
+
   LIVE.qr = function (text) { var q = qrcode(0, 'M'); q.addData(text); q.make(); return q.createSvgTag({ cellSize: 6, margin: 2, scalable: true }); };
 })();
