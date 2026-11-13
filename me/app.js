@@ -380,11 +380,7 @@
       return img(String(i));
     }
     function stepsOf(i) { return steps[i] || []; }
-    function mark() {
-      cx.save(); cx.globalAlpha = 0.08; cx.font = '600 ' + Math.round(d.w / 60) + 'px Lato, sans-serif'; cx.translate(d.w / 2, d.h / 2); cx.rotate(-Math.PI / 9);
-      for (var y = -d.h; y < d.h; y += d.h / 4) for (var x = -d.w; x < d.w; x += d.w / 2.2) { var xx = x + ((y / (d.h / 4)) % 2 ? d.w / 4.4 : 0); cx.fillStyle = '#0b1f3a'; cx.fillText(wm, xx, y); cx.fillStyle = '#ffffff'; cx.fillText(wm, xx + 2, y + 2); }
-      cx.restore();
-    }
+    function mark() { /* no name watermark: the slides already carry the IF logo */ }
     // fade the new frame in over the old one
     function present(ms) {
       return new Promise(function (done) {
