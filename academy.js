@@ -19,8 +19,8 @@
     document.getElementById('directory-status').textContent=list.length+' / '+window.IF_ACADEMY_DIRECTORY.length+' '+t.count;
   }
   function translate(){var t=copy();document.querySelectorAll('[data-design]').forEach(function(e){e.textContent=t[e.dataset.design]||e.textContent;});search.placeholder=t.placeholder;render();document.querySelectorAll('.photo-open').forEach(function(e){e.setAttribute('aria-label',t.photo);});}
-  search.addEventListener('input',render);category.addEventListener('change',render);level.addEventListener('change',render);
-  new MutationObserver(translate).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});translate();
+  if(grid&&search){search.addEventListener('input',render);category.addEventListener('change',render);level.addEventListener('change',render);
+  new MutationObserver(translate).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});translate();}
   // Complete menu keyboard cycle, including Escape and focus return.
   var menu=document.getElementById('menuBtn'), links=document.getElementById('navLinks');
   document.addEventListener('keydown',function(e){if(e.key==='Escape'&&links.classList.contains('open')){menu.click();menu.focus();}});
