@@ -241,18 +241,19 @@ export const langOf = code => /^ru/i.test(code || '') ? 'ru' : /^kk/i.test(code 
 export function dueReminders({ students, classes, now = new Date() }) {
   const out = [], l = local(now), hour = l.getUTCHours();
   for (const s of students) {
-    if (!s.uid || /withdrawn|finished|frozen/i.test(s.status || '')) continue;
+    if (/withdrawn|finished|frozen/i.test(s.status || '')) continue;
+    if (!s.uid && !s.phone && !s.parentPhone) continue;   // no account and no phone: nobody to tell
     const mine = classes.filter(c => (s.classes || []).includes(c.label));
     for (const x of upcomingLessons(mine, now, 2)) {
       const mins = (x.at - now) / 60000;
-      if (mins > 60 && mins <= 125) out.push({ uid: s.uid, studentId: s.id, kind: 'lesson2h', key: `l2:${x.classId}:${x.date}:${x.start}`, lesson: x });
+      if (mins > 60 && mins <= 125) out.push({ uid: s.uid || null, studentId: s.id, phones: [s.phone, s.parentPhone].filter(Boolean), kind: 'lesson2h', key: `l2:${x.classId}:${x.date}:${x.start}`, lesson: x });
       if (hour >= 19 && hour < 21 && x.date === ymd(new Date(now.getTime() + 86400000)))
-        out.push({ uid: s.uid, studentId: s.id, kind: 'lessonEve', key: `le:${x.classId}:${x.date}:${x.start}`, lesson: x });
+        out.push({ uid: s.uid || null, studentId: s.id, phones: [s.phone, s.parentPhone].filter(Boolean), kind: 'lessonEve', key: `le:${x.classId}:${x.date}:${x.start}`, lesson: x });
     }
     const p = payStatus(s, now);
     if (p && !p.paid && p.dueDay && hour >= 10 && hour < 13) {
       const kind = p.daysToDue === 3 ? 'payBefore' : p.daysToDue === 0 ? 'payDue' : p.daysToDue === -3 ? 'payLate' : null;
-      if (kind) out.push({ uid: s.uid, studentId: s.id, kind, key: `p:${kind}:${p.month}`, pay: p });
+      if (kind) out.push({ uid: s.uid || null, studentId: s.id, phones: [s.phone, s.parentPhone].filter(Boolean), kind, key: `p:${kind}:${p.month}`, pay: p });
     }
   }
   return out;

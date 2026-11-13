@@ -8,10 +8,11 @@
 //   admin: GET bot/status, POST bot/setup, GET bot/preview, POST bot/test
 import { getUser, refreshSession } from '@netlify/identity';
 import Anthropic from '@anthropic-ai/sdk';
+import { waReady, waSend, waState, waNumber } from '../lib/whatsapp.mjs';
 import KB from '../lib/public-kb.json';
 import {
   S, doc, getProfile, contextFor, reply, allow, tg, tgToken, tgSecret, tgSend, getLinks, saveLinks,
-  dueReminders, reminderText, local, ymd, upcomingLessons, payStatus
+  dueReminders, reminderText, local, ymd, upcomingLessons, payStatus, SCHOOL
 } from '../lib/bot-core.mjs';
 
 const json = (data, status = 200) => Response.json(data, { status, headers: { 'Cache-Control': 'no-store' } });
@@ -148,16 +149,27 @@ export default async (req, context) => {
       const [students, classes] = await Promise.all([doc('students'), doc('classes')]);
       const seen = new Set(), out = [], start = Math.ceil(Date.now() / 900000) * 900000;
       const sentDocs = {};
-      const wasSent = async (t, r) => { const mk = ymd(new Date(t)).slice(0, 7); sentDocs[mk] = sentDocs[mk] || (await S().get(`bot/sent/${mk}`, { type: 'json' })) || {}; return (sentDocs[mk][r.uid] || []).includes(r.key); };
+      const wasSent = async (t, r) => { const mk = ymd(new Date(t)).slice(0, 7); sentDocs[mk] = sentDocs[mk] || (await S().get(`bot/sent/${mk}`, { type: 'json' })) || {}; return (sentDocs[mk][r.uid || 'sid:' + r.studentId] || []).includes(r.key); };
       for (let t = start; t < start + 48 * 3600000; t += 15 * 60000) {
         for (const r of dueReminders({ students, classes, now: new Date(t) })) {
-          const k = r.uid + r.key; if (seen.has(k)) continue; seen.add(k);
+          const k = (r.uid || r.studentId) + r.key; if (seen.has(k)) continue; seen.add(k);
           if (await wasSent(t, r)) continue;
           const s = students.find(x => x.id === r.studentId);
-          out.push({ at: new Date(t).toISOString(), student: `${s.first} ${s.last}`.trim(), kind: r.kind, text: reminderText(r, 'en') });
+          out.push({ at: new Date(t).toISOString(), student: `${s.first} ${s.last}`.trim(), kind: r.kind, text: reminderText(r, 'en'), via: [r.uid ? 'website' : null, (r.phones || []).length ? 'WhatsApp' : null].filter(Boolean).join(' + ') });
         }
       }
       return json({ reminders: out.slice(0, 300) });
+    }
+    if (path === 'whatsapp' && method === 'GET') {
+      const st = await waState(), students = await doc('students'), prefs = (await S().get('waPrefs', { type: 'json' })) || {};
+      const active = students.filter(s => !/withdrawn|finished|frozen/i.test(s.status || ''));
+      return json({ ...st, withPhone: active.filter(s => waNumber(s.phone) || waNumber(s.parentPhone)).length, active: active.length, off: Object.values(prefs).filter(p => p.off).length });
+    }
+    if (path === 'whatsapp/test' && method === 'POST') {
+      const b = await req.json().catch(() => ({}));
+      if (!waReady()) return fail(400, 'not_configured');
+      try { await waSend(b.phone || SCHOOL.whatsapp, '✅ IF Academy: WhatsApp reminders are connected. Students will get lesson and payment reminders here.'); return json({ ok: true }); }
+      catch (e) { return fail(502, e.message); }
     }
     if (path === 'bot/test' && method === 'POST') {
       const links = await getLinks(); const l = links[uid];

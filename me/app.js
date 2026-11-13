@@ -881,6 +881,21 @@
     });
     return '<div class="finchart"><svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Income and expenses by month">' + g + '</svg><div class="ch-legend"><span><i style="background:#0F2342"></i>Income</span><span><i style="background:#B8895A"></i>Expenses</span></div></div>';
   }
+  async function waPanel() {
+    var box = $('#wap'); if (!box) return;
+    var w; try { w = await aapi('whatsapp'); } catch (e) { box.innerHTML = '<h2>WhatsApp reminders</h2><p class="sub">Could not load.</p>'; return; }
+    var head = '<h2>WhatsApp reminders</h2><p class="sub">The same lesson and payment reminders, sent on WhatsApp to each student\'s phone number in IF Admin (and the parent\'s number when there is one). ' + w.withPhone + ' of ' + w.active + ' current students have a phone number.</p>';
+    if (!w.ready) {
+      box.innerHTML = head + '<ol class="small" style="line-height:1.9"><li>Sign up at <a href="https://green-api.com" target="_blank" rel="noopener">green-api.com</a> and create an instance (the <b>Business</b> plan for sending to students).</li>' +
+        '<li>In the instance, press <b>Scan QR code</b> and scan it with the school\'s WhatsApp (WhatsApp → Linked devices). Use the school number, e.g. ' + esc('+7 707 381 0988') + '.</li>' +
+        '<li>Copy <b>idInstance</b>, <b>apiTokenInstance</b> and <b>apiUrl</b> from the instance page, and send them to Claude (or add them in Netlify → Environment variables as <code>WA_INSTANCE</code>, <code>WA_TOKEN</code>, <code>WA_API_URL</code>), then redeploy.</li></ol>';
+      return;
+    }
+    var ok = w.state === 'authorized';
+    box.innerHTML = head + '<p>' + (ok ? '<span class="chip2 ok">Connected</span>' : '<span class="chip2 bad">' + esc(w.state === 'notAuthorized' ? 'WhatsApp not linked: scan the QR code in Green API' : 'Status: ' + w.state) + '</span>') + '</p>' +
+      '<div class="row" style="gap:10px;flex-wrap:wrap;margin-top:10px"><input class="inp" id="wtp" placeholder="Phone for a test, e.g. +7 701 234 56 78" style="max-width:280px"><button class="btn ghost" id="wtb">Send a test message</button></div>';
+    $('#wtb').onclick = async function () { this.disabled = true; try { await aapi('whatsapp/test', { method: 'POST', body: { phone: $('#wtp').value.trim() } }); toast('Test message sent'); } catch (e) { toast('Could not send: ' + (e.code || e.message)); } this.disabled = false; };
+  }
   async function aBot(head) {
     view.innerHTML = head + '<p><span class="spin"></span> Checking the bot…</p>';
     var st; try { st = await aapi('bot/status'); } catch (e) { view.innerHTML = head + '<div class="empty">Could not load the bot status.</div>'; return; }
@@ -892,10 +907,12 @@
       '<div class="panel wide"><h2>Telegram bot</h2><p class="sub">' + (st.bot ? 'Bot <b>@' + esc(st.bot.username) + '</b> · ' : '') + (st.token ? 'Token set' : 'No token yet') + ' · Webhook ' + (hookOk ? '<span class="chip2 ok">connected</span>' : '<span class="chip2 warn">not connected</span>') + (st.webhook && st.webhook.lastError ? ' · last error: ' + esc(st.webhook.lastError) : '') + '</p>' +
       '<div class="row"><button class="btn" id="setup"' + (st.token ? '' : ' disabled') + '>' + (hookOk ? 'Reconnect bot' : 'Connect bot') + '</button><button class="btn ghost" id="tst">Send me a test message</button><a class="btn ghost" href="#/assistant">Link my Telegram</a></div></div>' +
       '<div class="stats4"><div><b>' + st.linked + '</b><span>chats connected</span></div><div><b>' + st.accounts + '</b><span>student accounts</span></div><div><b>' + st.withPay + '</b><span>students with a tuition plan</span></div><div><b>' + st.sentThisMonth + '</b><span>reminders sent this month</span></div></div>' +
+      '<div class="panel wide" id="wap"><h2>WhatsApp reminders</h2><p class="sub"><span class="spin"></span></p></div>' +
       '<div class="panel wide"><h2>Coming up (next 48 hours)</h2><p class="sub">What the reminder job will send. Lessons: the evening before (19:00) and 2 hours before. Tuition: 3 days before, on the due day, and 3 days late if not marked paid. Set fees and due days in <a href="#/admin/students">Students → Edit</a>.</p><div id="pv"><span class="spin"></span></div></div>';
     $('#setup').onclick = async function () { this.disabled = true; try { var r = await aapi('bot/setup', { method: 'POST' }); toast('Bot @' + r.bot.username + ' connected'); aBot(head); } catch (e) { toast('Could not connect: ' + (e.message || e)); this.disabled = false; } };
     $('#tst').onclick = async function () { try { await aapi('bot/test', { method: 'POST' }); toast('Sent — check Telegram'); } catch (e) { toast(e.code === 'not_linked' ? 'Link your own Telegram first (Assistant page).' : 'Could not send: ' + e.message); } };
     try {
+      waPanel();
       var pv = await aapi('bot/preview');
       $('#pv').innerHTML = pv.reminders.length ? '<div class="tscroll"><table class="t"><thead><tr><th>When</th><th>Student</th><th>Message</th></tr></thead><tbody>' + pv.reminders.map(function (r) {
         var d = new Date(new Date(r.at).getTime() + 5 * 3600000);
