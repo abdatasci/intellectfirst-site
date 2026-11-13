@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>IF Live · Host a game</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#071528">
+<link rel="icon" href="/brand/favicon-64.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@600;700;800&family=Inter:wght@400;600;700&family=Instrument+Serif&display=swap">
+<link rel="stylesheet" href="/live/live.css">
+</head>
+<body class="light" data-no-nav>
+<div class="watchbar" id="wbar" hidden></div>
+<header class="top">
+  <a class="brand" href="/me/"><img src="/brand/if-shield-3d-180.webp" alt=""><span><small>IF Academy</small><b>IF Live</b></span></a>
+  <span class="spacer"></span>
+  <span class="pill" id="pinpill" hidden></span>
+  <button class="btn ghost sm" id="fs" hidden>Full screen</button>
+  <a class="btn ghost sm" href="/me/" id="back">My IF Academy</a>
+</header>
+<main id="view"></main>
+<script src="/a/ielts/identity.js"></script>
+<script src="/live/vendor/ably.min.js"></script>
+<script src="/live/vendor/qrcode.js"></script>
+<script src="/live/live.js"></script>
+<script src="/live/host.js"></script>
+</body>
+</html>

@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<title>IF Live · Join a game</title>
+<meta name="description" content="Join an IF Academy live class game with the game PIN.">
+<meta name="theme-color" content="#071528">
+<link rel="icon" href="/brand/favicon-64.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@600;700;800&family=Inter:wght@400;600;700&family=Instrument+Serif&display=swap">
+<link rel="stylesheet" href="/live/live.css">
+</head>
+<body data-no-nav>
+<header class="top">
+  <a class="brand" href="/"><img src="/brand/if-shield-3d-180.webp" alt=""><span><small>IF Academy</small><b>IF Live</b></span></a>
+  <span class="spacer"></span>
+  <span class="pill" id="me" hidden></span>
+</header>
+<main class="pwrap" id="view" aria-live="polite"></main>
+<div class="flash" id="flash"></div>
+<script src="/live/vendor/ably.min.js"></script>
+<script src="/live/live.js"></script>
+<script src="/live/player.js"></script>
+</body>
+</html>

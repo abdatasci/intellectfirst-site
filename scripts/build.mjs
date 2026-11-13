@@ -30,7 +30,7 @@ let navCount = 0;
     if (statSync(p).isDirectory()) { walk(p); continue; }
     if (!n.endsWith('.html')) continue;
     let s = readFileSync(p, 'utf8');
-    if (s.includes('if-nav.js') || !/<\/body>/i.test(s)) continue;
+    if (s.includes('if-nav.js') || s.includes('data-no-nav') || !/<\/body>/i.test(s)) continue;
     s = s.replace(/<\/body>(?![\s\S]*<\/body>)/i, `<script src="/if-nav.js?v=${V}" defer></script>\n</body>`);
     writeFileSync(p, s); navCount++;
   }

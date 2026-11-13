@@ -58,6 +58,7 @@
     var ifa = $('[data-nav=ifadmin]'); if (ifa) ifa.hidden = role() !== 'admin';
     $('[data-nav=classroom]').hidden = !role();
     $('[data-nav=assistant]').hidden = !role();
+    var lv = $('[data-nav=live]'); if (lv) { lv.hidden = !role(); lv.href = staff() ? '/live/host/' : '/live/'; }
   }
   function setNav(k) { document.querySelectorAll('.nav a').forEach(function (a) { a.classList.toggle('on', a.dataset.nav === k); }); }
   function bookOf(id) { return ((ME && ME.books) || []).filter(function (b) { return b.id === id; })[0]; }
