@@ -366,6 +366,12 @@
   function kzt(n) { return Math.round(n).toLocaleString('ru-RU').replace(/ /g, ' ') + ' ₸'; }
   function plansOf(m) { var P = (m && m.plans) || {}; return [1, 3, 6].filter(function (k) { return +P[k] > 0; }).map(function (k) { return { months: k, total: +P[k], per: +P[k] / k }; }); }
   function fromPrice(m) { var L = plansOf(m); return L.length ? Math.min.apply(null, L.map(function (x) { return x.per; })) : 0; }
+  function hwBox(list) {
+    var t = new Date(Date.now() + 5 * 3600e3).toISOString().slice(0, 10);
+    var up = list.filter(function (x) { return x.due >= t; }), past = list.filter(function (x) { return x.due < t; }).reverse();
+    var row = function (x) { return '<div class="hwrow' + (x.due < t ? ' past' : '') + '"><span class="hwk">' + (x.kind === 'test' ? '🧪 Test' : '📝 Homework') + '</span><b>' + esc(x.text) + '</b><small>' + esc(x.classLabel) + ' · ' + (x.kind === 'test' ? 'on ' : 'due ') + when(x.due) + (x.time ? ' ' + esc(x.time) : '') + '</small></div>'; };
+    return '<div class="box"><h3>Homework and tests</h3>' + (up.length ? up.map(row).join('') : '<p class="small">Nothing set for the coming days.</p>') + (past.length ? '<details style="margin-top:8px"><summary class="small">Last week</summary>' + past.map(row).join('') + '</details>' : '') + '<p class="small" style="margin-top:8px">Reminders come on Telegram the evening before.</p></div>';
+  }
   function accessBand(p) {
     if (role() !== 'guest') return '';
     var rq = p.request, L = TRACKS[p.track] ? TRACKS[p.track][0] : '', fp = fromPrice(ME.membership);
@@ -439,7 +445,7 @@
       h += freeAcct() ? '<div class="box"><h3>Vocabulary</h3><p class="small" style="margin-bottom:12px">IF English: 12 vocabulary courses with flashcards, audio and games. Included in full access.</p><a class="btn sm" href="#/upgrade">See full access</a></div>'
         : '<div class="box"><h3>Vocabulary</h3><p class="small" style="margin-bottom:12px">Practise the words for your course with flashcards, audio and games.</p><a class="btn sm" href="/a/if-english/">Open IF English</a></div>';
       h += '<div class="box"><h3>Games and practice</h3><p class="small" style="margin-bottom:12px">Games, quests and AI practice for every level' + (freeAcct() ? ' (free accounts: a few AI rounds a day)' : '') + '.</p><a class="btn sm" href="/#apps">Open the apps</a> <a class="btn ghost sm" href="/live/">AI practice</a> <a class="btn ghost sm" href="/tests/">AI tests</a></div>';
-      if (r === 'student') h += '<div class="box"><h3>Homework</h3><p class="small">Homework from your teacher will appear here, organised by your book and unit.</p><span class="badge soon">Coming next</span></div>';
+      if (r === 'student' || (ME.homework || []).length) h += hwBox(ME.homework || []);
     } else {
       var tc = ME.teaching || [];
       h += '<div class="box"><h3>' + (r === 'admin' ? 'All classes' : 'My classes') + '</h3>' + (tc.length ? tc.slice(0, 8).map(function (c) { return '<div class="cls"><div style="flex:1"><b><a href="#/class/' + c.id + '" style="text-decoration:none">' + esc(c.label) + '</a></b><p>' + esc(c.schedule || '') + (c.room ? ' · ' + esc(c.room) : '') + '</p></div></div>'; }).join('') + (tc.length > 8 ? '<a class="btn ghost sm" href="#/classes">All ' + tc.length + ' classes</a>' : '') :
@@ -478,10 +484,28 @@
       var act = d.students.filter(function (v) { return !/withdrawn|finished/i.test(v.record.status || ''); }), past = d.students.filter(function (v) { return /withdrawn|finished/i.test(v.record.status || ''); });
       view.innerHTML = '<div class="row" style="margin-top:18px"><a class="btn ghost sm" href="#/classes">← All classes</a></div>' +
         '<section class="hero" style="padding:16px 0 10px"><div class="eyebrow">' + esc(c.room || '') + (t ? ' · ' + esc(t.name) : '') + '</div><h1>' + esc(c.label) + '</h1><p class="lead">' + esc(c.schedule || '') + (b ? ' · ' + esc(b.title) + (b.ebook ? ' · <a href="' + esc(b.ebook) + '" target="_blank" rel="noopener">e-book ↗</a>' : '') : '') + '</p><div class="row" style="margin-top:12px"><button class="btn sm" id="exp">Export this class\'s results</button></div></section>' +
+        '<section class="hwset"><h3 style="margin:10px 0 6px">Homework and tests</h3><form id="hwf" class="hwform"><select class="inp" id="hwk"><option value="hw">📝 Homework</option><option value="test">🧪 Test</option></select><input class="inp" id="hwt" placeholder="e.g. Workbook p.24 ex. 1–3, or Unit 3 test" maxlength="600"><input class="inp" type="date" id="hwd"><input class="inp" type="time" id="hwtm" title="Test time (optional)"><button class="btn sm" type="submit">Add and tell the class</button></form><div id="hwl"><p class="small">Loading…</p></div><p class="small">Students get it on Telegram (or WhatsApp) right away, and a reminder the evening before it is due; tests also on the morning.</p></section>' +
         '<h3 style="margin:10px 0">Students (' + act.length + ')</h3>' + (act.length ? '<div class="people">' + act.map(studentCard).join('') + '</div>' : '<div class="empty">No students in this class yet.</div>') +
         (past.length ? '<h3 style="margin:22px 0 10px">Former students</h3><div class="people">' + past.map(studentCard).join('') + '</div>' : '');
       $('#exp').onclick = function () { exportDialog(c.id, [c]); };
+      wireHw(c);
     } catch (e) { view.innerHTML = '<div class="empty" style="margin-top:30px">This class could not be loaded.</div>'; }
+  }
+  function wireHw(c) {
+    var t = new Date(Date.now() + 5 * 3600e3), d = new Date(t.getTime() + 2 * 864e5); $('#hwd').value = d.toISOString().slice(0, 10);
+    function draw(list) {
+      $('#hwl').innerHTML = list.length ? list.slice().reverse().map(function (x) { return '<div class="hwrow"><span class="hwk">' + (x.kind === 'test' ? '🧪 Test' : '📝 Homework') + '</span><b>' + esc(x.text) + '</b><small>' + (x.kind === 'test' ? 'on ' : 'due ') + when(x.due) + (x.time ? ' ' + esc(x.time) : '') + ' · ' + esc(x.by || '') + ' <button class="linkbtn" data-del="' + x.id + '">Delete</button></small></div>'; }).join('') : '<p class="small">Nothing set yet.</p>';
+      view.querySelectorAll('[data-del]').forEach(function (b) { b.onclick = async function () { if (!confirm('Delete this?')) return; await api('teach/homework/' + b.dataset.del, { method: 'DELETE' }); load(); }; });
+    }
+    async function load() { try { draw((await api('teach/homework/' + c.id)).homework); } catch (e) { $('#hwl').innerHTML = '<p class="small">Could not load.</p>'; } }
+    $('#hwf').onsubmit = async function (ev) {
+      ev.preventDefault(); var b = $('button', this); if (!$('#hwt').value.trim() || !$('#hwd').value) return toast('Write the task and choose the date.');
+      b.disabled = true;
+      try { var r = await api('teach/homework', { method: 'POST', body: { classId: c.id, kind: $('#hwk').value, text: $('#hwt').value.trim(), due: $('#hwd').value, time: $('#hwtm').value } }); $('#hwt').value = ''; draw(r.homework); toast('Added. ' + r.sent + ' student' + (r.sent === 1 ? '' : 's') + ' told on Telegram/WhatsApp; all see it on their profile.'); }
+      catch (e) { toast('Could not save. Please try again.'); }
+      b.disabled = false;
+    };
+    load();
   }
   async function vStudent(id) {
     setNav('classes'); if (!staff()) return go('#/');
@@ -656,7 +680,7 @@
   /* ---------- admin ---------- */
   async function loadAdmin() { ADMIN = await api('admin/all'); try { ADMIN.att = (await api('admin/attendance')).attendance; } catch (e) { ADMIN.att = {}; } ME.books = ADMIN.books; ME.teachers = ADMIN.teachers; return ADMIN; }
   function adminTabs(on) {
-    return '<div class="tabs2">' + [['logins', 'Student logins'], ['accounts', 'Accounts' + ((ADMIN.accounts || []).filter(function (x) { return x.request; }).length ? ' (' + ADMIN.accounts.filter(function (x) { return x.request; }).length + ' waiting)' : '')], ['classes', 'Classes'], ['teachers', 'Teachers'], ['books', 'Books'], ['export', 'Export results'], ['placement', 'Placement tests'], ['bot', 'Bot & reminders']].map(function (t) {
+    return '<div class="tabs2">' + [['receipts', 'Receipts'], ['logins', 'Student logins'], ['accounts', 'Accounts' + ((ADMIN.accounts || []).filter(function (x) { return x.request; }).length ? ' (' + ADMIN.accounts.filter(function (x) { return x.request; }).length + ' waiting)' : '')], ['classes', 'Classes'], ['teachers', 'Teachers'], ['books', 'Books'], ['export', 'Export results'], ['placement', 'Placement tests'], ['bot', 'Bot & reminders']].map(function (t) {
       return '<a href="#/admin/' + t[0] + '" class="' + (on === t[0] ? 'on' : '') + '">' + t[1] + '</a>';
     }).join('') + '<a href="/me/ifadmin/" style="background:var(--navy);color:#fff;border-color:var(--navy)">IF Admin ↗</a><a href="#" onclick="window.IFAdminAI&&IFAdminAI.open();return false" style="border-color:#C9A227">✨ AI assistant</a></div>';
   }
@@ -667,10 +691,25 @@
     await loadAdmin();
     var head = '<section class="hero" style="padding-bottom:4px"><div class="eyebrow">Administrator</div><h1>School admin</h1><p class="lead">' + ADMIN.students.length + ' students · ' + ADMIN.classes.length + ' classes · ' + ADMIN.teachers.length + ' teachers · ' + ADMIN.accounts.length + ' accounts</p></section>' +
       '<div class="panel wide" style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-bottom:14px"><div style="flex:1;min-width:240px"><b>Students, payments, attendance and results are managed in IF Admin.</b><br><span class="sub">The website reads them from IF Admin automatically: student profiles, teacher views, the assistant and Telegram reminders. A payment marked in IF Admin stops that student\'s reminder.</span></div><a class="btn" href="/me/ifadmin/">Open IF Admin ↗</a></div>' + adminTabs(tab);
-    ({ students: aStudents, classes: aClasses, teachers: aTeachers, books: aBooks, accounts: aAccounts, logins: aLogins, import: aImport, export: aExport, placement: aPlacement, finance: aFinance, bot: aBot }[tab] || aAccounts)(head);
+    ({ receipts: aReceipts, students: aStudents, classes: aClasses, teachers: aTeachers, books: aBooks, accounts: aAccounts, logins: aLogins, import: aImport, export: aExport, placement: aPlacement, finance: aFinance, bot: aBot }[tab] || aAccounts)(head);
   }
 
   /* ---------- student logins: the school makes the accounts, students get a login and a one-time password ---------- */
+  async function aReceipts(head) {
+    view.innerHTML = head + '<p><span class="spin"></span> Loading receipts…</p>';
+    var d; try { d = await api('admin/receipts'); } catch (e) { view.innerHTML = head + '<div class="empty">Could not load receipts.</div>'; return; }
+    var L = d.receipts || [], mn = function (m) { return new Date(m + '-15').toLocaleDateString('en-GB', { month: 'long', year: 'numeric' }); };
+    var card = function (r) {
+      return '<div class="rcard ' + r.status + '"><a href="/api/school/admin/receipt-file/' + r.id + '" target="_blank" rel="noopener" class="rthumb">' + (/^image/.test(r.type) ? '<img src="/api/school/admin/receipt-file/' + r.id + '" alt="Receipt" loading="lazy">' : '<span>PDF</span>') + '</a>' +
+        '<div class="rinfo"><b>' + esc(r.name || 'Not linked to a student') + '</b><small>' + mn(r.month) + ' · sent ' + when(r.at) + '</small><p>AI read: <b>' + (r.amount ? r.amount.toLocaleString('ru-RU') + ' ₸' : 'amount not readable') + '</b>' + (r.date ? ' · ' + esc(r.date) : '') + (r.payer ? ' · ' + esc(r.payer) : '') + (r.method ? ' · ' + esc(r.method) : '') + (r.isReceipt === false ? ' · ⚠️ may not be a receipt' : '') + '</p>' +
+        (r.status === 'pending' ? '<div class="row"><button class="btn sm" data-rc="1" data-id="' + r.id + '">✅ Confirm payment</button><button class="btn ghost sm" data-rc="0" data-id="' + r.id + '">❌ Not right</button></div>' : '<span class="chip2 ' + (r.status === 'confirmed' ? 'ok' : 'mute') + '">' + (r.status === 'confirmed' ? 'Confirmed' + (r.saved ? ' · saved in IF Admin' : '') : 'Not right') + '</span>') + '</div></div>';
+    };
+    var P = L.filter(function (r) { return r.status === 'pending'; }), done = L.filter(function (r) { return r.status !== 'pending'; });
+    view.innerHTML = head + '<p class="small" style="margin-bottom:12px">Students send their payment receipt (photo or PDF) to the Telegram bot. AI reads the amount; you confirm. Confirming marks the month paid in IF Admin, stops the reminders and thanks the student. You also get each receipt in Telegram with the same buttons.</p>' +
+      '<h3 style="margin:6px 0 10px">Waiting (' + P.length + ')</h3>' + (P.length ? '<div class="rgrid">' + P.map(card).join('') + '</div>' : '<div class="empty">No receipts waiting.</div>') +
+      (done.length ? '<h3 style="margin:22px 0 10px">Done</h3><div class="rgrid">' + done.slice(0, 40).map(card).join('') + '</div>' : '');
+    view.querySelectorAll('[data-rc]').forEach(function (b) { b.onclick = async function () { b.disabled = true; try { await api('admin/receipts/' + b.dataset.id, { method: 'POST', body: { ok: b.dataset.rc === '1' } }); toast(b.dataset.rc === '1' ? 'Confirmed and saved in IF Admin' : 'Marked not right; the student was told'); aReceipts(head); } catch (e) { b.disabled = false; toast('Could not save'); } }; });
+  }
   async function aLogins(head) {
     view.innerHTML = head + '<div class="panel wide"><span class="spin"></span></div>';
     var d; try { d = await api('admin/logins'); } catch (e) { view.innerHTML = head + '<div class="panel wide">Could not load.</div>'; return; }

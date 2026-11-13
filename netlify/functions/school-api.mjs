@@ -6,6 +6,10 @@
 import { getStore } from '@netlify/blobs';
 import { getUser, refreshSession, admin as idAdmin } from '@netlify/identity';
 import { roleForCode, isStaff, lockKeysFromCode, verifyLockKeys, isPrivateCode } from '../lib/codes.mjs';
+import { listReceipts, decideReceipt, receiptFile } from '../lib/receipts.mjs';
+import { loadHomework, addHomework, removeHomework, forClasses, clean as cleanHw, hwText } from '../lib/homework.mjs';
+import { getLinks, tgSend, tgToken, addNote, uidsByStudent } from '../lib/bot-core.mjs';
+import { waReady, waSend, waNumber } from '../lib/whatsapp.mjs';
 import { tier, isMember, TRACKS, paidActive, accessUntil, TRIAL_DAYS, ensureTrial } from '../lib/access.mjs';
 import seed from '../lib/school-seed.json';
 import ckey from '../lib/content-key.json';
@@ -112,6 +116,22 @@ async function linkByPhone(uid, profile) {
     if (hit && (!hit.uid || hit.uid === uid)) { hit.uid = uid; profile.teacherId = hit.id; await save('teachers', list); }
   }
   return profile;
+}
+/** New homework or test: tell every active student of the class (website note, Telegram, WhatsApp). */
+async function tellClass(c, item) {
+  const students = (await doc('students')).filter(s => (s.classes || []).includes(c.label) && !/withdrawn|finished|frozen/i.test(s.status || ''));
+  const links = await getLinks(), prefs = (await S().get('waPrefs', { type: 'json' })) || {}, wa = waReady(), bySid = await uidsByStudent(links);
+  let n = 0;
+  for (const s0 of students) {
+    const s = { ...s0, uid: s0.uid || bySid[s0.id] || null };
+    const kind = item.kind === 'test' ? 'testNew' : 'hwNew', l = s.uid && links[s.uid], lang = l?.lang || prefs[s.id]?.lang || 'ru';
+    try {
+      if (s.uid) await addNote(s.uid, { kind, text: hwText(kind, item, l ? lang : 'en') });
+      if (l && tgToken()) { await tgSend(l.chatId, hwText(kind, item, lang)); n++; }
+      else if (wa && !prefs[s.id]?.off) for (const num of [...new Set([s.phone, s.parentPhone].map(waNumber).filter(Boolean))]) { await waSend(num, 'IF Academy\n' + hwText(kind, item, lang)); n++; }
+    } catch (e) { console.error('homework notify', s.id, e.message); }
+  }
+  return n;
 }
 async function classesForTeacher(profile) {
   const [classes, teachers] = await Promise.all([doc('classes'), doc('teachers')]);
@@ -299,6 +319,7 @@ export default async (req) => {
       const s = (await doc('students')).find(x => x.id === profile.studentId);
       const classes = (await doc('classes')).filter(c => (s?.classes || []).includes(c.label));
       out.student = publicStudent(s); out.classes = classes; out.attendance = await attendanceOf(profile.studentId);
+      out.homework = forClasses(await loadHomework(), classes.map(c => c.id));
     }
     if (profile && isStaff(profile.role)) out.teaching = await classesForTeacher(profile);
     if (profile) out.ielts = await ieltsSummary(uid);
@@ -439,6 +460,28 @@ export default async (req) => {
     if (!isStaff(profile.role)) return fail(403, 'staff');
     const classes = await classesForTeacher(profile), students = await doc('students');
     return json({ classes: classes.map(c => ({ ...c, count: students.filter(s => (s.classes || []).includes(c.label) && s.status !== 'withdrawn' && s.status !== 'finished').length })) });
+  }
+  /* ---- homework and test dates (teachers set them per class; the class is told at once) ---- */
+  const hwc = path.match(/^teach\/homework\/([A-Za-z0-9-]+)$/);
+  if (hwc && method === 'GET') {
+    if (!isStaff(profile.role)) return fail(403, 'staff');
+    return json({ homework: forClasses(await loadHomework(), [hwc[1]], { past: 30 }) });
+  }
+  if (path === 'teach/homework' && method === 'POST') {
+    if (!isStaff(profile.role)) return fail(403, 'staff');
+    const b = await req.json().catch(() => ({}));
+    const c = (await classesForTeacher(profile)).find(x => x.id === b.classId); if (!c) return fail(404, 'class');
+    const item = cleanHw(b, c, profile.name); if (!item) return fail(400, 'fields');
+    await addHomework(item);
+    const sent = await tellClass(c, item);
+    return json({ item, sent, homework: forClasses(await loadHomework(), [c.id], { past: 30 }) });
+  }
+  const hwd = path.match(/^teach\/homework\/([A-Za-z0-9-]+)$/);
+  if (hwd && method === 'DELETE') {
+    if (!isStaff(profile.role)) return fail(403, 'staff');
+    const mine = (await classesForTeacher(profile)).map(c => c.id);
+    const ok = await removeHomework(hwd[1], h => mine.includes(h.classId));
+    return ok ? json({ ok: true }) : fail(404, 'missing');
   }
   const tc = path.match(/^teach\/class\/([A-Za-z0-9-]+)$/);
   if (tc && method === 'GET') {
@@ -588,6 +631,12 @@ export default async (req) => {
       await putProfile(b.uid, p);
       return json({ profile: p });
     }
+    /* payment receipts sent to the Telegram bot */
+    if (path === 'admin/receipts' && method === 'GET') return json({ receipts: (await listReceipts()).slice(-120).reverse().map(({ chatId, msgId, ...r }) => r) });
+    const rd = path.match(/^admin\/receipts\/([a-z0-9]+)$/);
+    if (rd && method === 'POST') { const r = await decideReceipt(rd[1], !!b.ok, profile.name); return r ? json({ receipt: r }) : fail(404, 'missing'); }
+    const rf = path.match(/^admin\/receipt-file\/([a-z0-9]+)$/);
+    if (rf && method === 'GET') { const f = await receiptFile(rf[1]); if (!f) return fail(404, 'missing'); return new Response(f.data, { headers: { 'Content-Type': f.metadata?.type || 'application/octet-stream', 'Cache-Control': 'private, max-age=3600' } }); }
     if (path === 'admin/membership' && method === 'PUT') {
       const plans = {}; for (const k of [1, 3, 6]) { const v = Math.round(+String(b.plans?.[k] ?? '').replace(/[^\d]/g, '')); if (v > 0) plans[k] = v; }
       const m = { plans, trialDays: Math.max(0, Math.min(30, Math.round(+b.trialDays || 0))), offer: str(b.offer, 200), price: str(b.price, 120), how: str(b.how, 800), free: str(b.free, 600), at: new Date().toISOString() };

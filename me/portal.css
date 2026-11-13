@@ -179,3 +179,14 @@ select.inp{appearance:auto}
 .offer{background:#fbf3df;border:1px solid #ecd9a8;color:#5c4511;border-radius:12px;padding:10px 14px;font-weight:600;margin:6px 0 12px}
 .grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
 @media (max-width:640px){.plancards{grid-template-columns:1fr}.grid3{grid-template-columns:1fr}}
+/* homework and tests */
+.hwrow{display:grid;gap:2px;padding:9px 0;border-top:1px solid #f0ebe1}.hwrow:first-of-type{border-top:0}.hwrow.past{opacity:.6}
+.hwrow .hwk{font-size:12px;font-weight:700;color:#9a7a3c}.hwrow b{font-size:14.5px;font-weight:600}.hwrow small{font-size:12.5px;color:var(--muted,#6b7280)}
+.hwset{margin:10px 0 22px;padding:16px;border:1px solid var(--line,#e4dccd);border-radius:16px;background:#fff}
+.hwform{display:grid;grid-template-columns:150px 1fr 150px 110px auto;gap:8px;margin-bottom:10px}
+@media (max-width:760px){.hwform{grid-template-columns:1fr 1fr}.hwform #hwt{grid-column:1/-1}}
+/* receipts */
+.rgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px}
+.rcard{display:flex;gap:12px;padding:12px;border:1px solid var(--line,#e4dccd);border-radius:14px;background:#fff}.rcard.pending{border-color:#ecd9a8;background:#fffbf0}
+.rthumb{flex:none;width:90px;height:120px;border-radius:10px;overflow:hidden;background:#f4efe6;display:grid;place-items:center;font-weight:700;color:#9a7a3c;text-decoration:none}
+.rthumb img{width:100%;height:100%;object-fit:cover}.rinfo{display:grid;gap:4px;align-content:start;font-size:14px}.rinfo small{color:var(--muted,#6b7280)}.rinfo p{margin:0}

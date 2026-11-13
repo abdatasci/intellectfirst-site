@@ -1,13 +1,27 @@
-// Every 15 minutes: lesson reminders (evening before, 2 hours before) and tuition reminders (3 days before, due day,
-// 3 days overdue). Saved as website notifications for students with an account, sent on Telegram to students who
+// Every 15 minutes: lesson reminders (evening before, 2 hours before), homework (evening before it is due), tests
+// (evening before and that morning) and tuition reminders (3 days before, due day, 3 days overdue; paused while a
+// receipt waits for confirmation). Saved as website notifications for students with an account, sent on Telegram to students who
 // connected the bot, and on WhatsApp to the student's (and parent's) phone number from IF Admin.
-import { S, doc, getLinks, dueReminders, reminderText, tgSend, tgToken, addNote, ymd } from '../lib/bot-core.mjs';
+import { S, doc, getLinks, uidsByStudent, dueReminders, reminderText, tgSend, tgToken, tg, tgSecret, addNote, ymd } from '../lib/bot-core.mjs';
 import { waReady, waSend, waNumber } from '../lib/whatsapp.mjs';
+import { loadHomework } from '../lib/homework.mjs';
+
+/** Once: let the existing webhook also receive button presses (receipt Confirm / Not right). */
+async function upgradeWebhook() {
+  if (!tgToken() || (await S().get('bot/whv')) === '2') return;
+  try {
+    const w = await tg('getWebhookInfo', {});
+    if (w.url && !(w.allowed_updates || []).includes('callback_query')) await tg('setWebhook', { url: w.url, secret_token: await tgSecret(), allowed_updates: ['message', 'callback_query'] });
+    await S().set('bot/whv', '2');
+  } catch (e) { console.error('webhook upgrade', e.message); }
+}
 
 export default async () => {
+  await upgradeWebhook();
   const now = new Date();
-  const [students, classes, links] = await Promise.all([doc('students'), doc('classes'), getLinks()]);
-  const due = dueReminders({ students, classes, now });
+  const [students, classes, links, homework, receipts] = await Promise.all([doc('students'), doc('classes'), getLinks(), loadHomework(), S().get('receipts/pending', { type: 'json' }).then(x => x || {})]);
+  const bySid = await uidsByStudent(links);
+  const due = dueReminders({ students: students.map(s => s.uid || !bySid[s.id] ? s : { ...s, uid: bySid[s.id] }), classes, homework, receipts, now });
   if (!due.length) return new Response('nothing due');
   const sentKey = `bot/sent/${ymd(now).slice(0, 7)}`;
   const sent = (await S().get(sentKey, { type: 'json' })) || {};
