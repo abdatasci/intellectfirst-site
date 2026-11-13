@@ -106,14 +106,21 @@
     view.innerHTML = panel(isStaff ? 'Staff registration' : 'Create your account', isStaff ? 'For IF Academy teachers and staff. Your classes are linked to your account automatically by your name; if not, the administrator links them for you.' : 'For IF Academy students and teachers. Use the phone number you gave the school, so we can find your record.',
       '<form id="f" novalidate><div class="grid2"><div><label class="f">First name</label><input class="inp" id="fn" autocomplete="given-name"></div><div><label class="f">Surname</label><input class="inp" id="ln" autocomplete="family-name"></div></div>' +
       '<label class="f">Phone number</label><input class="inp" id="ph" type="tel" autocomplete="tel" placeholder="+7 7__ ___ __ __">' + (isStaff ? '' : '<p class="hint">Students: your own number or your parent\'s, as given to the school.</p>') +
+      (isStaff ? '' : '<div class="grid2"><div><label class="f">Your level</label><select class="inp" id="lv"><option value="">Choose…</option>' + ['Starters','Movers','Flyers','A1 Beginner','A2 Elementary / KET','B1 Intermediate / PET','B2 Upper-intermediate','C1 Advanced','IELTS','Not sure (I will take the placement test)'].map(function (l) { return '<option>' + esc(l) + '</option>'; }).join('') + '</select></div>' +
+        '<div><label class="f">Your class</label><select class="inp" id="cl"><option value="">Loading…</option></select></div></div><p class="hint">Not in a class yet? Choose “New student”.</p>') +
       '<label class="f">Email <span style="font-weight:400;color:var(--muted)">(optional)</span></label><input class="inp" id="em" type="email" autocomplete="email"><p class="hint">No email? Leave it empty: you will sign in with your phone number.</p>' +
       '<label class="f">Password</label><input class="inp" id="pw" type="password" autocomplete="new-password"><p class="hint">At least 8 characters.</p>' +
       '<label class="f">' + (isStaff ? 'Staff code' : 'Class code') + '</label><input class="inp" id="cc" autocomplete="off"><p class="hint">' + (isStaff ? 'Given to you by the school director.' : 'From your teacher. Teachers use the staff code.') + '</p>' +
       '<button class="btn" type="submit">Create account</button></form><p class="alt">Already registered? <a href="#/login">Sign in</a>' + (isStaff ? '' : ' · Teacher? <a href="#/staff">Staff registration</a>') + '</p>');
+    if ($('#cl')) fetch('/api/school/classes').then(function (r) { return r.json(); }).then(function (d) {
+      $('#cl').innerHTML = '<option value="">Choose…</option>' + (d.classes || []).map(function (c) { return '<option value="' + esc(c.label) + '">' + esc(c.label) + (c.schedule ? ' · ' + esc(c.schedule) : '') + '</option>'; }).join('') + '<option value="New student">New student (no class yet)</option>';
+    }).catch(function () { $('#cl').innerHTML = '<option value="New student">New student (no class yet)</option>'; });
     $('#f').onsubmit = async function (ev) {
       ev.preventDefault(); var f = ev.target, b = $('button', f);
       var name = ($('#fn').value.trim() + ' ' + $('#ln').value.trim()).trim(), ph = $('#ph').value.trim(), em = $('#em').value.trim(), pw = $('#pw').value, cc = $('#cc').value.trim();
       if (!name || !cc || !ph) return err(f, 'Please fill in your name, phone number and code.');
+      var lv = $('#lv') ? $('#lv').value : '', cl = $('#cl') ? $('#cl').value : '';
+      if (!isStaff && (!lv || !cl)) return err(f, 'Please choose your level and your class.');
       if (ph.replace(/\D/g, '').length < 10) return err(f, 'Please type the full phone number, for example +7 701 234 56 78.');
       if (em && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)) return err(f, 'That email does not look right. Check it, or leave it empty.');
       var byPhone = !em;
@@ -129,13 +136,13 @@
           }
           if (!u) throw new Error('This phone number already has accounts. Sign in instead, or add an email.');
         } else u = await ID.signup(em, pw, { full_name: name });
-        lsSet('if.pending', { code: cc, name: name, phone: ph });
+        lsSet('if.pending', { code: cc, name: name, phone: ph, level: lv, classChoice: cl });
         if (u && !u.confirmedAt && u.id) {   // confirm straight away so the student can sign in now
           try { var cr = await fetch('/api/school/confirm', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: u.id, email: em }) }); if (cr.ok) u.confirmedAt = new Date().toISOString(); } catch (e3) {}
         }
         if (u && u.confirmedAt) {
           await ID.login(em, pw); await loadMe(); header();
-          try { await api('activate', { method: 'POST', body: { code: cc, name: name, phone: ph } }); lsSet('if.pending', null); }
+          try { await api('activate', { method: 'POST', body: { code: cc, name: name, phone: ph, level: lv, classChoice: cl } }); lsSet('if.pending', null); }
           catch (e2) { toast(e2.code === 'code' ? 'Account created, but that code is not right.' : 'Account created. Now enter your code.'); return go('#/activate'); }
           await loadMe(); header(); toast(byPhone ? 'Welcome! Your login is your phone number: ' + em.split('@')[0] : 'Welcome to IF Academy'); go('#/');
         } else f.innerHTML = '<div class="ok-msg">Almost done: open the confirmation link we emailed to <b>' + esc(em) + '</b>.</div>';
@@ -716,7 +723,7 @@
     var A = ADMIN.accounts.slice().sort(function (a, b) { return String(a.name).localeCompare(String(b.name)); });
     view.innerHTML = head + '<p class="small" style="margin-bottom:10px">Everyone who has registered. Change a role, or link an account to a student or teacher record by hand when the phone number did not match.</p>' +
       '<div class="tscroll"><table class="t"><thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Linked record</th><th></th></tr></thead><tbody>' + A.map(function (a) {
-        return '<tr><td><b>' + esc(a.name) + '</b></td><td>' + esc(a.email) + '</td><td><select class="inp" data-role="' + a.id + '" style="padding:6px 8px">' + ['student', 'teacher', 'admin'].map(function (r) { return '<option' + (a.role === r ? ' selected' : '') + '>' + r + '</option>'; }).join('') + '</select></td>' +
+        return '<tr><td><b>' + esc(a.name) + '</b>' + (a.level || a.classChoice ? '<div class="small">' + esc([a.level, a.classChoice].filter(Boolean).join(' · ')) + '</div>' : '') + (a.phone ? '<div class="small">' + esc(a.phone) + '</div>' : '') + '</td><td>' + esc(/@students\.intellectfirst\.com$/.test(a.email || '') ? 'login ' + a.email.split('@')[0] : a.email) + '</td><td><select class="inp" data-role="' + a.id + '" style="padding:6px 8px">' + ['student', 'teacher', 'admin'].map(function (r) { return '<option' + (a.role === r ? ' selected' : '') + '>' + r + '</option>'; }).join('') + '</select></td>' +
           '<td><select class="inp" data-link="' + a.id + '" data-kind="' + (a.role === 'student' ? 'studentId' : 'teacherId') + '" style="padding:6px 8px">' +
           (a.role === 'student' ? opts(ADMIN.students.slice().sort(function (x, y) { return (x.first + x.last).localeCompare(y.first + y.last); }), a.studentId, function (s) { return s.first + ' ' + s.last + (s.phone ? ' · ' + s.phone : ''); }, '— not linked —')
             : opts(ADMIN.teachers, a.teacherId, function (t) { return t.name; }, '— not linked —')) + '</select></td><td></td></tr>';

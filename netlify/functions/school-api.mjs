@@ -64,7 +64,7 @@ async function getProfile(uid) { return (await U().get(`u/${uid}/profile`, { typ
 async function putProfile(uid, p) {
   await U().setJSON(`u/${uid}/profile`, p);
   const dir = (await U().get('directory', { type: 'json' })) || {};
-  dir[uid] = { name: p.name, email: p.email, role: p.role, studentId: p.studentId || null, teacherId: p.teacherId || null, photo: !!p.photo };
+  dir[uid] = { name: p.name, email: p.email, role: p.role, studentId: p.studentId || null, teacherId: p.teacherId || null, photo: !!p.photo, phone: p.phone || '', level: p.level || '', classChoice: p.classChoice || '' };
   await U().setJSON('directory', dir);
 }
 async function ieltsSummary(uid) {
@@ -238,6 +238,11 @@ export default async (req) => {
 
   if (path === 'books' && method === 'GET') return json({ books: await doc('books') });
 
+  // classes for the registration form (names and times only)
+  if (path === 'classes' && method === 'GET') {
+    const cl = await doc('classes');
+    return json({ classes: cl.map(c => ({ id: c.id, label: c.label, schedule: c.schedule || '', kind: c.kind || '' })) });
+  }
   // new self-registered accounts: skip the email-confirmation step (students rarely open that email)
   if (path === 'confirm' && method === 'POST') {
     const b = await req.json().catch(() => ({}));
@@ -293,7 +298,8 @@ export default async (req) => {
     if (!role) return fail(403, 'code');
     const finalRole = profile?.role && RANK[profile.role] > RANK[role] ? profile.role : role;
     profile = { ...(profile || {}), name: str(b.name, 80) || profile?.name || user.name || user.email.split('@')[0], email: user.email,
-      phone: str(b.phone, 40) || profile?.phone || '', role: finalRole, since: profile?.since || new Date().toISOString(), attempts: profile?.attempts || 0 };
+      phone: str(b.phone, 40) || profile?.phone || '', role: finalRole,
+      level: str(b.level, 30) || profile?.level || '', classChoice: str(b.classChoice, 80) || profile?.classChoice || '', since: profile?.since || new Date().toISOString(), attempts: profile?.attempts || 0 };
     profile = await linkByPhone(uid, profile);
     await putProfile(uid, profile);
     if (isStaff(role) && !(await S().get('contentKey', { type: 'json' }))) await storeKeyFrom(b.code);
