@@ -50,14 +50,14 @@ async function importDashboard() {
       added++;
     }
   }
-  for (const [sid, n] of Object.entries(data.renames || {})) if (studs[sid] && String(studs[sid].n).trim().split(/\s+/).length === 1) { studs[sid].n = n; renamed++; }
+  for (const [sid, rn] of Object.entries(data.renames || {})) if (studs[sid] && String(studs[sid].n).trim() === rn.from) { studs[sid].n = rn.to; renamed++; }
   const stamp = (await A.get('stamp', { type: 'json' })) || {};
   if (added) { await A.setJSON('c/results', res); stamp.results = Date.now(); }
   if (renamed) { await A.setJSON('c/students', studs); stamp.students = Date.now(); }
   if (added || renamed) await A.setJSON('stamp', stamp);
-  const list = (await T().get('recent', { type: 'json' })) || [], keys = new Set(list.map(x => x.key));
+  const ids = new Set(data.results.map(r => r.id));
+  const list = ((await T().get('recent', { type: 'json' })) || []).filter(x => !ids.has(x.key));   // re-import replaces the rows with corrected names
   for (const r of data.results) {
-    if (keys.has(r.id)) continue;
     list.push({ key: r.id, kind: 'centre', at: r.d, uid: null, studentId: r.sid, name: r.name, cls: r.cls, level: r.lv, test: r.t + (r.c ? ' · ' + r.c.replace(/ Test Centre$/, '') : ''),
       score: r.tot, max: r.max, pct: r.max ? Math.round(r.tot / r.max * 100) : 0, note: r.s.map(x => `${x[0]} ${x[1] == null ? '–' : x[1]}/${x[2]}`).join(', '), comment: '' });
   }
