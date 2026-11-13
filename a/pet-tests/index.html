@@ -44,7 +44,9 @@
   var data = document.getElementById('payload').textContent.trim();
   var ready = new Promise(function (res) { if (document.readyState === 'complete') res(); else window.addEventListener('load', function () { setTimeout(res, 0); }); });
   Promise.all([IFLock.decryptText(LVL, data), ready]).then(function (r) {
-    document.open(); document.write(r[0]); document.close();
+    var html = r[0], tag = '<script src="/a/ielts/identity.js"><\/script><script src="/tests/autosave.js"><\/script>';
+    html = /<\/body>/i.test(html) ? html.replace(/<\/body>(?![\s\S]*<\/body>)/i, tag + '</body>') : html + tag;
+    document.open(); document.write(html); document.close();
   }).catch(function () { IFLock.signOut(); locked(); });
 })();
 </script>

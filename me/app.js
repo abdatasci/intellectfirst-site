@@ -54,6 +54,7 @@
       $('#out').onclick = async function () { try { await ID.logout(); } catch (e) {} USER = null; ME = null; header(); go('#/login'); toast('Signed out'); };
     } else who.innerHTML = '';
     $('[data-nav=classes]').hidden = !staff();
+    var rn = $('[data-nav=results]'); if (rn) rn.hidden = !staff();
     $('[data-nav=admin]').hidden = role() !== 'admin';
     var ifa = $('[data-nav=ifadmin]'); if (ifa) ifa.hidden = role() !== 'admin';
     $('[data-nav=classroom]').hidden = !role();
@@ -1171,6 +1172,31 @@
     } catch (e) { b.innerHTML = ''; }
   }
 
+  /* ---------- test results from every test centre and the AI Test Centre (teachers) ---------- */
+  async function vResults() {
+    setNav('results'); if (!staff()) return go('#/');
+    view.innerHTML = '<p style="margin-top:30px"><span class="spin"></span> Loading results…</p>';
+    var rows; try { var r = await fetch('/api/tests/recent', { credentials: 'same-origin' }); rows = (await r.json()).rows || []; } catch (e) { view.innerHTML = '<div class="empty" style="margin-top:30px">Could not load results.</div>'; return; }
+    var mine = (ME.teaching || []).map(function (c) { return c.label; });
+    var f = vResults.f || (role() === 'admin' || !mine.length ? 'all' : 'mine'), q = vResults.q || '';
+    function draw() {
+      var list = rows.filter(function (r) {
+        if (f === 'mine' && !(r.classes || []).some(function (c) { return mine.indexOf(c) >= 0; })) return false;
+        return !q || (r.name + ' ' + r.test + ' ' + r.cls).toLowerCase().indexOf(q.toLowerCase()) >= 0;
+      });
+      $('#rt').innerHTML = list.length ? '<div class="tscroll"><table class="t"><thead><tr><th>When</th><th>Student</th><th>Test</th><th>Score</th><th>Sections</th></tr></thead><tbody>' + list.slice(0, 300).map(function (r) {
+        var cls = r.pct >= 85 ? 'ok' : r.pct >= 60 ? 'warn' : 'bad';
+        return '<tr><td class="small" style="white-space:nowrap">' + when(r.at) + '</td><td><b>' + (r.studentId ? '<a href="#/student/' + esc(r.studentId) + '">' + esc(r.name || '–') + '</a>' : esc(r.name || '–')) + '</b>' + (r.cls ? '<div class="small">' + esc(r.cls) + '</div>' : '') + '</td><td>' + esc(r.test) + (r.kind === 'ai' ? ' <span class="chip2 mute">AI</span>' : '') + '</td><td style="white-space:nowrap"><span class="chip2 ' + cls + '">' + r.pct + '%</span><div class="small">' + r.score + ' / ' + r.max + '</div></td><td class="small">' + esc(r.note || '') + (r.comment ? '<div style="margin-top:4px;color:var(--navy)">' + esc(r.comment) + '</div>' : '') + '</td></tr>';
+      }).join('') + '</tbody></table></div>' : '<div class="empty">No results yet. They appear here as soon as a student finishes a test.</div>';
+    }
+    view.innerHTML = '<section class="hero" style="padding-bottom:6px"><div class="eyebrow">Teachers</div><h1>Test results</h1><p class="lead">Every finished test, as soon as the student submits it: the Test Centres and the AI Test Centre. Results are also on each student\'s profile.</p></section>' +
+      '<div class="row" style="gap:10px;flex-wrap:wrap;margin-bottom:12px">' + (mine.length ? '<div class="tabs2" style="margin:0"><a href="#" data-f="mine" class="' + (f === 'mine' ? 'on' : '') + '">My classes</a><a href="#" data-f="all" class="' + (f === 'all' ? 'on' : '') + '">All students</a></div>' : '') +
+      '<input class="inp" id="rq" placeholder="Search student, test or class" value="' + esc(q) + '" style="max-width:300px"></div><div id="rt"></div>';
+    view.querySelectorAll('[data-f]').forEach(function (a) { a.onclick = function (e) { e.preventDefault(); vResults.f = f = a.dataset.f; view.querySelectorAll('[data-f]').forEach(function (b) { b.classList.toggle('on', b === a); }); draw(); }; });
+    $('#rq').oninput = function () { vResults.q = q = this.value; draw(); };
+    draw();
+  }
+
   /* ---------- router ---------- */
   async function route() {
     closeModal(); window.scrollTo(0, 0);
@@ -1191,6 +1217,7 @@
         case 'classroom': return vClassroom(parts[1]);
         case 'present': return vPresent(parts[1]);
         case 'assistant': return vAssistant();
+        case 'results': return vResults();
         default: return go('#/');
       }
     } catch (e) { console.error(e); view.innerHTML = '<div class="empty" style="margin-top:30px">Something went wrong loading this page. <a href="#/">Back</a></div>'; }
