@@ -75,6 +75,9 @@
     return fetch(url).then(function (r) { if (!r.ok) throw new Error('missing'); return r.arrayBuffer(); })
       .then(function (buf) { return decryptBytes(lvl, new Uint8Array(buf)); });
   }
+  /* a device that already opened the locked pages with the old class/staff code hands the keys to the site once,
+     so every signed-in account (and the new student/staff codes) can open them too */
+  try { if (ls('if.ks') && !sessionStorage.getItem('if.shared')) { sessionStorage.setItem('if.shared', '1'); share(); } } catch (e) {}
   /* pages without their own lock screen (apps grid, materials, IF English, login): unlock silently from the account */
   try {
     var last = +sessionStorage.getItem('if.sso') || 0;
