@@ -16,7 +16,7 @@
   function role() { return ME && ME.profile && ME.profile.role; }
   function staff() { return role() === 'teacher' || role() === 'admin'; }
   function paidActive(p) { return !!(p && p.paidUntil && Date.parse(p.paidUntil) > Date.now()); }
-  function freeAcct() { return role() === 'guest' && !paidActive(ME.profile); }
+  function freeAcct() { var p = ME.profile; return role() === 'guest' && !paidActive(p) && !(p && p.trialUntil && Date.parse(p.trialUntil) > Date.now()); }
   var TRACKS = {
     'if': ['An IF Academy student', 'I study in a class or group at IF Academy'],
     'private': ['An individual student of Abdoulie Manneh', 'I have private lessons with Abdoulie'],
@@ -361,34 +361,55 @@
       catch (e) { b.disabled = false; err(f, authMsg(e)); }
     };
   }
+  function trialOn(p) { return !!(p && p.trialUntil && Date.parse(p.trialUntil) > Date.now()); }
+  function daysLeft(iso) { return Math.max(1, Math.ceil((Date.parse(iso) - Date.now()) / 864e5)); }
+  function kzt(n) { return Math.round(n).toLocaleString('ru-RU').replace(/ /g, ' ') + ' ₸'; }
+  function plansOf(m) { var P = (m && m.plans) || {}; return [1, 3, 6].filter(function (k) { return +P[k] > 0; }).map(function (k) { return { months: k, total: +P[k], per: +P[k] / k }; }); }
+  function fromPrice(m) { var L = plansOf(m); return L.length ? Math.min.apply(null, L.map(function (x) { return x.per; })) : 0; }
   function accessBand(p) {
     if (role() !== 'guest') return '';
-    var rq = p.request, L = TRACKS[p.track] ? TRACKS[p.track][0] : '';
+    var rq = p.request, L = TRACKS[p.track] ? TRACKS[p.track][0] : '', fp = fromPrice(ME.membership);
     if (paidActive(p)) return '<div class="acc ok"><b>Full access until ' + when(p.paidUntil) + '</b><span>All test centres, IF English, IELTS marking, unlimited AI tests and the assistant.</span><a class="btn ghost sm" href="#/upgrade">Extend</a></div>';
     if (rq && rq.paid) return '<div class="acc wait"><b>Payment sent for checking</b><span>Your full access starts as soon as the school confirms the payment (' + rq.months + ' month' + (rq.months > 1 ? 's' : '') + ').</span></div>';
-    if (rq) return '<div class="acc wait"><b>Waiting for confirmation</b><span>Abdoulie will confirm you as: ' + esc(L.replace(/^An? /, '')) + '. Until then you have a free account. Have a code from your teacher? <a href="#/activate">Enter it</a> for full access now.</span></div>';
+    var trial = trialOn(p) ? '<div class="acc ok"><b>Full access trial: ' + daysLeft(p.trialUntil) + ' day' + (daysLeft(p.trialUntil) > 1 ? 's' : '') + ' left</b><span>Everything is open: every test centre, IF English, IELTS marking and unlimited AI practice. Make the most of it!</span><a class="btn ghost sm" href="#/upgrade">See plans</a></div>' : '';
+    if (rq) return trial + '<div class="acc wait"><b>Waiting for confirmation</b><span>Abdoulie will confirm you as: ' + esc(L.replace(/^An? /, '')) + '. Have a code from your teacher? <a href="#/activate">Enter it</a> for full access now.</span></div>';
+    if (trial) return trial;
+    if (p.trialUntil) return '<div class="acc"><b>Your free trial has ended</b><span>Keep full access' + (fp ? ' from <b>' + kzt(fp) + ' a month</b>' : '') + ': every test centre, IF English, IELTS marking and unlimited AI practice.</span><a class="btn sm" href="#/upgrade">Keep full access</a></div>';
     return '<div class="acc"><b>Free account</b><span>Games, quests, the placement test and a little AI practice every day. Full access opens every test centre, IF English, IELTS marking and unlimited AI practice.</span><a class="btn sm" href="#/upgrade">Get full access</a></div>';
   }
   function vUpgrade() {
     setNav('home');
     if (!USER) return go('#/login');
     if (!role()) return go('#/activate');
-    var p = ME.profile, m = ME.membership || {}, member = !freeAcct();
+    var p = ME.profile, m = ME.membership || {}, r = role(), student = r !== 'guest', paid = paidActive(p), trial = trialOn(p);
     var tick = function (a) { return '<ul class="plist">' + a.map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ul>'; };
     var free = ['Games and quests for every level (Flyers Arcade, KET and PET Quest, Skill Games, Grammar Game Centre…)', 'Free placement test', 'Join IF Live games with a PIN', '2 AI practice tests a day', '6 rounds of AI practice a day', 'Notifications on Telegram'];
     var full = ['Everything in the free account', 'All Test Centres: A1–C1, KET, PET, Young Learners, Teens', 'IF English: 12 vocabulary courses with audio and games', 'IELTS Centre: AI marking of Writing and Speaking', 'Unlimited AI tests and AI practice', 'AI study assistant', 'Results saved on your profile'];
-    view.innerHTML = '<section class="hero" style="padding-bottom:4px"><div class="eyebrow">IF Academy online</div><h1>' + (member ? 'You have full access' : 'Get full access') + '</h1><p class="lead">' + (member ? (p.paidUntil ? 'Your access runs until ' + when(p.paidUntil) + '. You can extend it below.' : 'As an IF Academy student you already have everything below.') : 'IF Academy students and Abdoulie\'s individual students get full access free. Everyone else can join online.') + '</p></section>' +
-      '<section class="section plans"><div class="box"><h3>Free account</h3>' + tick(free) + '</div><div class="box hl"><h3>Full access</h3><p class="price">' + (m.price ? esc(m.price) : 'Ask the school for the current price') + '</p>' + tick(full) + '</div></section>' +
-      (member && !p.paidUntil ? '' :
-      '<section class="section"><div class="panel wide"><h2>How to pay</h2><p class="sub" style="white-space:pre-line">' + esc(m.how || '') + '</p>' +
-        '<form id="pf" class="payrow"><label class="f">Months</label><select class="inp" id="mo">' + [1, 3, 6, 12].map(function (n) { return '<option value="' + n + '">' + n + ' month' + (n > 1 ? 's' : '') + '</option>'; }).join('') + '</select>' +
+    var L = plansOf(m), base = L.length ? L[0].per : 0, fp = fromPrice(m);
+    var lead = student ? 'As ' + (p.track === 'private' ? 'Abdoulie\'s individual student' : 'an IF Academy student') + ', full access is included free with your lessons.' :
+      paid ? 'Your access runs until ' + when(p.paidUntil) + '. You can extend it below.' :
+      trial ? 'Your free trial ends in ' + daysLeft(p.trialUntil) + ' day' + (daysLeft(p.trialUntil) > 1 ? 's' : '') + '. Choose a plan to keep everything open.' :
+      'IF Academy students and Abdoulie\'s individual students get full access free with their lessons. Everyone else can join online.';
+    var cards = L.map(function (x, i) {
+      var save = base && x.months > 1 ? Math.round((1 - x.per / base) * 100) : 0;
+      return '<label class="plan' + (i === L.length - 1 ? ' best' : '') + '"><input type="radio" name="pl" value="' + x.months + '"' + (i === L.length - 1 ? ' checked' : '') + '>' +
+        (i === L.length - 1 ? '<span class="tag">Best value</span>' : '') + '<b>' + x.months + ' month' + (x.months > 1 ? 's' : '') + '</b><span class="pm">' + kzt(x.per) + '<small> / month</small></span>' +
+        '<span class="tot">' + (x.months > 1 ? kzt(x.total) + ' in total' + (save > 0 ? ' · save ' + save + '%' : '') : 'Pay monthly') + '</span></label>';
+    }).join('');
+    view.innerHTML = '<section class="hero" style="padding-bottom:4px"><div class="eyebrow">IF Academy online</div><h1>' + (student || paid ? 'You have full access' : trial ? 'Keep full access' : 'Get full access') + '</h1><p class="lead">' + lead + '</p></section>' +
+      '<section class="section plans"><div class="box"><h3>Free account</h3>' + tick(free) + '</div><div class="box hl"><h3>Full access</h3>' + (student ? '<p class="price">Included with your lessons</p>' : fp ? '<p class="price">from ' + kzt(fp) + ' <small>a month</small></p>' : '') + tick(full) + '</div></section>' +
+      (student ? '' :
+      '<section class="section"><div class="panel wide"><h2>Choose your plan</h2>' + (m.offer ? '<p class="offer">' + esc(m.offer) + '</p>' : '') +
+        '<form id="pf" class="payrow"><div class="plancards">' + cards + '</div>' +
+        '<h3 style="margin:18px 0 4px">How to pay</h3><p class="sub" style="white-space:pre-line">' + esc(m.how || '') + '</p>' +
         '<label class="f">Note for the school <span style="font-weight:400;color:var(--muted)">(optional: e.g. the name on the Kaspi payment)</span></label><input class="inp" id="nt" maxlength="300">' +
-        '<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px"><button class="btn" type="submit">I have paid: switch on my access</button><a class="btn ghost" id="tgq" target="_blank" rel="noopener" href="#">Ask a question on Telegram</a></div></form></div></section>') +
-      (member ? '' : '<section class="section"><div class="panel wide"><h2>Already an IF Academy or individual student?</h2><p class="sub">You do not need to pay. Enter the code from your teacher, or ask Abdoulie to confirm you.</p><div style="display:flex;gap:10px;flex-wrap:wrap"><a class="btn" href="#/activate">Enter a code</a><button class="btn ghost" id="askp">I am Abdoulie\'s individual student</button><button class="btn ghost" id="aski">I study at IF Academy</button></div></div></section>');
+        '<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px"><button class="btn" type="submit">I have paid: switch on my access</button><a class="btn ghost" id="tgq" target="_blank" rel="noopener" href="#">Ask a question on Telegram</a></div></form>' +
+        '<p class="small" style="margin-top:14px">Want lessons with a teacher? IF Academy courses include full access free. <a href="/a/placement-test/">Take the free placement test</a> and we will suggest a group.</p></div></section>' +
+      '<section class="section"><div class="panel wide"><h2>Already an IF Academy or individual student?</h2><p class="sub">You do not need to pay. Enter the code from your teacher, or ask Abdoulie to confirm you.</p><div style="display:flex;gap:10px;flex-wrap:wrap"><a class="btn" href="#/activate">Enter a code</a><button class="btn ghost" id="askp">I am Abdoulie\'s individual student</button><button class="btn ghost" id="aski">I study at IF Academy</button></div></div></section>');
     var tg = $('#tgq'); if (tg) tg.href = 'https://t.me/abliem?text=' + encodeURIComponent('Hello! I would like full access to the IF Academy website. My name: ' + (p.name || '') + ', phone: ' + (p.phone || ''));
     var pf = $('#pf'); if (pf) pf.onsubmit = async function (ev) {
       ev.preventDefault(); var b = $('button', pf); b.disabled = true;
-      try { await api('upgrade', { method: 'POST', body: { track: 'outside', months: +$('#mo').value, note: $('#nt').value.trim() } }); await loadMe(); toast('Thank you! Your access starts when the school confirms the payment.'); go('#/'); }
+      try { await api('upgrade', { method: 'POST', body: { track: 'outside', months: +((view.querySelector('input[name=pl]:checked') || {}).value || 1), note: $('#nt').value.trim() } }); await loadMe(); toast('Thank you! Your access starts when the school confirms the payment.'); go('#/'); }
       catch (e) { b.disabled = false; err(pf, 'Could not send. Please try again.'); }
     };
     ['askp', 'aski'].forEach(function (id) { var el = $('#' + id); if (el) el.onclick = async function () {
@@ -401,7 +422,7 @@
     if (!role()) return go('#/activate');
     if (ME.profile && ME.profile.mustChange) return vNewPassword();
     var p = ME.profile, st = ME.student, r = role();
-    var roleLbl = r === 'admin' ? (p.teacherId === 't-abdoulie' ? 'Founder &amp; Director' : 'Administrator') : r === 'teacher' ? 'Teacher' : p.alumni ? '🎓 IF Alumni' : r === 'guest' ? (paidActive(p) ? 'Full access' : 'Free account') : p.track === 'private' ? 'Individual student' : 'Student';
+    var roleLbl = r === 'admin' ? (p.teacherId === 't-abdoulie' ? 'Founder &amp; Director' : 'Administrator') : r === 'teacher' ? 'Teacher' : p.alumni ? '🎓 IF Alumni' : r === 'guest' ? (paidActive(p) ? 'Full access' : trialOn(p) ? 'Full access trial' : 'Free account') : p.track === 'private' ? 'Individual student' : 'Student';
     var h = '<section class="prof"><div style="position:relative">' + avatar(ME.user.id, p.name, p.photo) + '<button class="avbtn" id="ph" style="border-radius:0 0 60px 60px">Change</button></div>' +
       '<div><div class="eyebrow">' + roleLbl + (st ? ' · ' + esc((st.classes || []).join(', ')) : '') + '</div><h1>' + esc(p.name) + '</h1><p class="lead" style="font-size:15.5px">' + (/@students\.intellectfirst\.com$/.test(ME.user.email) ? 'Login: ' + esc(ME.user.email.split('@')[0]) : esc(ME.user.email)) + (p.phone ? ' · ' + esc(p.phone) : '') + '</p>' +
       '<div class="chips">' + (st ? statusChip(st.status) : '') + (p.goals ? '<span class="chip2">Goal: ' + esc(p.goals) + '</span>' : '') + (p.since ? '<span class="chip2 mute">Member since ' + when(p.since) + '</span>' : '') + '</div></div></section>';
@@ -865,11 +886,11 @@
     var trk = function (t) { return TRACKS[t] ? TRACKS[t][0] : 'Outside learner'; };
     var acts = function (a) {
       return '<div class="accts"><button class="btn sm" data-acc="approve" data-trk="if" data-u="' + a.id + '">IF student</button><button class="btn sm" data-acc="approve" data-trk="private" data-u="' + a.id + '">Individual student</button>' +
-        '<span class="paybox"><select class="inp" data-mo="' + a.id + '">' + [1, 3, 6, 12].map(function (n) { return '<option value="' + n + '"' + (a.request && +a.request.months === n ? ' selected' : '') + '>' + n + ' mo</option>'; }).join('') + '</select><input class="inp" data-amt="' + a.id + '" placeholder="Amount ₸" inputmode="numeric"><button class="btn ghost sm" data-acc="paid" data-u="' + a.id + '">Paid</button></span>' +
+        '<span class="paybox"><select class="inp" data-mo="' + a.id + '">' + [1, 3, 6, 12].map(function (n) { return '<option value="' + n + '"' + (a.request && +a.request.months === n ? ' selected' : '') + '>' + n + ' mo</option>'; }).join('') + '</select><input class="inp" data-amt="' + a.id + '" placeholder="Plan price" title="Empty = the plan price" inputmode="numeric"><button class="btn ghost sm" data-acc="paid" data-u="' + a.id + '">Paid</button></span>' +
         (a.request ? '<button class="btn ghost sm" data-acc="decline" data-u="' + a.id + '">Decline</button>' : '') + (a.paidUntil ? '<button class="btn ghost sm" data-acc="stop" data-u="' + a.id + '">Stop access</button>' : '') + '</div>';
     };
     var row = function (a) {
-      var rq = a.request, what = rq ? (rq.paid ? '💳 Says they paid · ' + rq.months + ' mo' + (rq.note ? ' · “' + esc(rq.note) + '”' : '') : 'Asks to be confirmed as: ' + esc(trk(rq.track))) : a.paidUntil && Date.parse(a.paidUntil) > Date.now() ? 'Full access until ' + when(a.paidUntil) : 'Free account';
+      var rq = a.request, what = rq ? (rq.paid ? '💳 Says they paid · ' + rq.months + ' mo' + (rq.note ? ' · “' + esc(rq.note) + '”' : '') : 'Asks to be confirmed as: ' + esc(trk(rq.track))) : a.paidUntil && Date.parse(a.paidUntil) > Date.now() ? 'Full access until ' + when(a.paidUntil) : a.trialUntil && Date.parse(a.trialUntil) > Date.now() ? 'Trial until ' + when(a.trialUntil) : a.trialUntil ? 'Free account (trial ended)' : 'Free account';
       return '<tr><td><b>' + esc(a.name) + '</b><div class="small">' + esc([a.phone, a.level, a.goals].filter(Boolean).join(' · ')) + '</div></td><td>' + what + (rq ? '<div class="small">' + when(rq.at) + '</div>' : '') + '</td><td>' + acts(a) + '</td></tr>';
     };
     var M = ADMIN.membership || ME.membership || {};
@@ -877,7 +898,11 @@
       '<p class="sub">IF Academy students and your individual students get full access free: approve them with one tap. Outside learners start free; mark them paid for 1–12 months (the amount goes to Finance as “Online membership”).</p>' +
       (asked.length ? '<h3 style="margin:10px 0 6px">Waiting for you</h3><div class="tscroll"><table class="t"><tbody>' + asked.map(row).join('') + '</tbody></table></div>' : '<p class="small">Nobody is waiting right now.</p>') +
       (rest.length ? '<details style="margin-top:12px"><summary><b>Free and paid online accounts (' + rest.length + ')</b></summary><div class="tscroll"><table class="t"><tbody>' + rest.map(row).join('') + '</tbody></table></div></details>' : '') +
-      '<details style="margin-top:12px"><summary><b>Price and how to pay</b> (shown on the “Get full access” page)</summary><form id="msf" style="margin-top:10px"><label class="f">Price</label><input class="inp" id="msp" value="' + esc(M.price || '') + '" placeholder="e.g. 9 900 ₸ per month · 24 900 ₸ for 3 months"><label class="f">How to pay</label><textarea class="inp" id="msh" rows="3">' + esc(M.how || '') + '</textarea><button class="btn sm" style="margin-top:10px" type="submit">Save</button></form></details></div>';
+      '<details style="margin-top:12px"><summary><b>Online plans, trial and how to pay</b> (seen only by signed-in learners)</summary><form id="msf" style="margin-top:10px"><div class="grid3">' +
+        [1, 3, 6].map(function (k) { return '<div><label class="f">' + k + ' month' + (k > 1 ? 's' : '') + ' (₸ total)</label><input class="inp" data-plan="' + k + '" inputmode="numeric" value="' + esc((M.plans || {})[k] || '') + '"></div>'; }).join('') +
+        '</div><label class="f">Free trial for new accounts (days, 0 = no trial)</label><input class="inp" id="mst" inputmode="numeric" value="' + esc(M.trialDays == null ? 7 : M.trialDays) + '" style="max-width:120px">' +
+        '<label class="f">Offer line <span style="font-weight:400;color:var(--muted)">(optional, e.g. “First month 50% off until 31 December”)</span></label><input class="inp" id="mso" value="' + esc(M.offer || '') + '">' +
+        '<label class="f">How to pay</label><textarea class="inp" id="msh" rows="3">' + esc(M.how || '') + '</textarea><button class="btn sm" style="margin-top:10px" type="submit">Save</button></form></details></div>';
   }
   function wireOnline() {
     view.querySelectorAll('[data-acc]').forEach(function (b) { b.onclick = async function () {
@@ -887,7 +912,10 @@
       try { await api('admin/access', { method: 'POST', body: body }); toast({ approve: 'Approved: full access', paid: 'Marked paid', decline: 'Request declined', stop: 'Access stopped' }[body.action]); vAdmin('accounts'); }
       catch (e) { b.disabled = false; toast('Could not save'); }
     }; });
-    var f = $('#msf'); if (f) f.onsubmit = async function (ev) { ev.preventDefault(); await api('admin/membership', { method: 'PUT', body: { price: $('#msp').value, how: $('#msh').value } }); toast('Saved'); };
+    var f = $('#msf'); if (f) f.onsubmit = async function (ev) {
+      ev.preventDefault(); var plans = {}; f.querySelectorAll('[data-plan]').forEach(function (i) { plans[i.dataset.plan] = i.value; });
+      try { var r = await api('admin/membership', { method: 'PUT', body: { plans: plans, trialDays: +$('#mst').value || 0, offer: $('#mso').value, how: $('#msh').value } }); ME.membership = r.membership; toast('Saved'); } catch (e) { toast('Could not save'); }
+    };
   }
   function aAccounts(head) {
     var A = ADMIN.accounts.slice().sort(function (a, b) { return String(a.name).localeCompare(String(b.name)); });

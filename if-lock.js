@@ -64,7 +64,7 @@
       return r.ok ? r.json() : null;
     }).then(function (k) {
       if (!k || !k.ks) return false;
-      ls('if.ks', k.ks); ls('if.kt', k.kt || null); ls('if.role', k.kt ? 'teacher' : 'student');
+      ls('if.ks', k.ks); ls('if.kt', k.kt || null); ls('if.role', k.kt ? 'teacher' : 'student'); ls('if.until', k.until || null);
       return canOpen(lvl);
     }).catch(function () { return false; });
   }
@@ -76,7 +76,9 @@
     d.innerHTML = '<b style="display:block;margin-bottom:2px">This app is part of full access</b>You are signed in with a free account. IF Academy students and Abdoulie\u2019s individual students get it free; others can join online. <a href="/me/#/upgrade" style="color:#e9c98f;font-weight:700">Get full access \u2192</a>';
     (document.body || document.documentElement).appendChild(d);
   }
-  function signOut() { ['if.ks', 'if.kt', 'if.role'].forEach(function (k) { ls(k, null); }); }
+  function signOut() { ['if.ks', 'if.kt', 'if.role', 'if.until'].forEach(function (k) { ls(k, null); }); }
+  /* trial or paid online access: forget the keys on this device when it ends */
+  try { var u = ls('if.until'); if (u && Date.parse(u) < Date.now()) signOut(); } catch (e) {}
   function decryptBytes(lvl, bytes) {
     var raw = rawKey(lvl); if (!raw) return Promise.reject(new Error('locked'));
     return open(raw, bytes);

@@ -82,3 +82,11 @@ section, main section { padding-block: 60px !important; }
   .navlinks.open { max-height: calc(100dvh - 96px); overflow-y: auto; -webkit-overflow-scrolling: touch; padding-inline: 36px !important; }
   .navlinks.open > a:not(.cta) { padding-block: 14px; font-size: 16px; }
 }
+
+/* pricing: "from" prices per course group, exact price on request */
+#pricing .cat-from { margin: -4px 0 10px; font-size: 15px; color: var(--text-soft, #5b6475); }
+#pricing .cat-from b { font-size: 22px; color: var(--text, #0b1f3a); font-weight: 700; margin: 0 2px; }
+#pricing .cat-from small { font-size: 13px; }
+#pricing .prog-ask { justify-self: end; align-self: center; white-space: nowrap; font-size: 13.5px; font-weight: 600; padding: 8px 14px; border-radius: 999px; border: 1px solid var(--border-c, #d9d0bf); color: inherit; text-decoration: none; transition: border-color .2s, background .2s; }
+#pricing .prog-ask:hover { border-color: currentColor; }
+@media (max-width: 760px) { #pricing .prog-ask { justify-self: start; } }

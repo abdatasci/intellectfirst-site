@@ -14,7 +14,7 @@ import { aiJSON, cleanQ, str, MODEL_MARK } from '../lib/aiq.mjs';
 import { loadStudents, saveStudents } from '../lib/students.mjs';
 import dash from '../lib/dash-import.json';
 
-import { isMember, FREE } from '../lib/access.mjs';
+import { isMember, FREE, ensureTrial } from '../lib/access.mjs';
 const T = () => getStore({ name: 'tests', consistency: 'strong' });
 const U = () => getStore({ name: 'ielts', consistency: 'strong' });
 const json = (d, s = 200) => Response.json(d, { status: s, headers: { 'Cache-Control': 'no-store' } });
@@ -76,6 +76,7 @@ async function addRecent(row, key) {
 async function who() {
   let user = null; try { user = (await refreshSession().catch(() => null), await getUser()); } catch {}
   const profile = user ? (await U().get(`u/${user.id}/profile`, { type: 'json' })) || null : null;
+  if (user && profile && await ensureTrial(user.id, profile)) await U().setJSON(`u/${user.id}/profile`, profile);
   return { user, profile, staff: isStaff(profile?.role), free: !!profile && !isMember(profile) };
 }
 function ctx(b) {

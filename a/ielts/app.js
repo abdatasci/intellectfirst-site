@@ -265,6 +265,7 @@
         var tip = box.querySelector('[data-tip]'); tip.hidden = !r.tip; tip.textContent = r.tip || '';
       } catch (e) {
         if (e.code === 'quota') { set('[data-s]', 'Daily live checks used up. Submit for your full report.'); dead = true; }
+        else if (e.code === 'members') { set('[data-s]', 'Live scores are part of full access. Your draft is saved.'); dead = true; }
         else if (e.code === 'activate' || e.status === 401) { set('[data-s]', 'Sign in to see live scores.'); dead = true; }
         else set('[data-s]', 'Live score unavailable just now. Keep writing.');
       } finally { inflight = false; box.querySelector('[data-p]').classList.remove('on'); }
@@ -283,6 +284,12 @@
     return '<div class="eyebrow">' + (p === 1 ? 'Writing Task 1' : 'Writing Task 2') + ' · ' + esc(KIND[t.kind] || '') + '</div><h3 style="margin:6px 0 10px">' + esc(t.title) + '</h3><p class="q">' + esc(t.prompt) + '</p>' + extra;
   }
 
+  function membersBox(where) {
+    var d = where.querySelector('.members-box') || document.createElement('div');
+    d.className = 'members-box'; d.style.cssText = 'margin-top:12px;padding:12px 14px;border-radius:12px;background:#fbf3df;border:1px solid #ecd9a8;color:#5c4511;font-size:14.5px;line-height:1.45';
+    d.innerHTML = '<b style="display:block;margin-bottom:2px">Your answer is saved. AI marking needs full access.</b>IF Academy students: ask your teacher to confirm your account, or enter your class code. Then press Submit again. <a href="/me/#/upgrade" style="font-weight:700;color:inherit">Open My account →</a>';
+    where.appendChild(d);
+  }
   async function vWrite(id) {
     setNav('writing');
     await loadBank();
@@ -316,6 +323,7 @@
         await loadMe(); go('#/report/' + r.attempt.id);
       } catch (e) {
         b.disabled = false; b.textContent = 'Submit for full marking';
+        if (e.code === 'members') { lsSet(key, { text: ta.value, secs: secs }); return membersBox(b.parentNode); }
         toast(e.code === 'quota' ? 'You have used today\'s full markings (' + (e.data.limit || '') + '). Try again tomorrow.' : 'Marking failed. Your text is saved; please try again.');
       }
     };
@@ -409,7 +417,7 @@
         await loadMe(); go('#/mockreport/' + m.id);
       } catch (e) {
         m.status = 'running'; lsSet('ielts.mock', m); finishing = false;
-        view.innerHTML = '<div class="panel"><h2>Marking failed</h2><p class="sub">' + (e.code === 'quota' ? 'You have used today\'s full markings. Your answers are saved: submit again tomorrow.' : 'Your answers are saved on this device. Please try again.') + '</p><button class="btn" id="again">Try again</button></div>';
+        view.innerHTML = '<div class="panel"><h2>Marking failed</h2><p class="sub">' + (e.code === 'members' ? 'AI marking is part of full access. IF Academy students: ask your teacher to confirm your account (or enter your class code in My account). Your answer is saved on this device.' : e.code === 'quota' ? 'You have used today\'s full markings. Your answers are saved: submit again tomorrow.' : 'Your answers are saved on this device. Please try again.') + '</p><button class="btn" id="again">Try again</button></div>';
         $('#again').onclick = finish;
       }
     }
@@ -712,7 +720,7 @@
         LAST_AUDIO[r.attempt.id] = answers.map(function (a) { return a.audio; });
         await loadMe(); go('#/report/' + r.attempt.id);
       } catch (e) {
-        view.innerHTML = '<div class="panel"><h2>Marking failed</h2><p class="sub">' + (e.code === 'quota' ? 'You have used today\'s speaking markings. Try again tomorrow.' : 'Something went wrong. Please try again.') + '</p><button class="btn" id="again">Try again</button></div>';
+        view.innerHTML = '<div class="panel"><h2>Marking failed</h2><p class="sub">' + (e.code === 'members' ? 'AI marking is part of full access. IF Academy students: ask your teacher to confirm your account (or enter your class code in My account). Your answer is saved on this device.' : e.code === 'quota' ? 'You have used today\'s speaking markings. Try again tomorrow.' : 'Something went wrong. Please try again.') + '</p><button class="btn" id="again">Try again</button></div>';
         $('#again').onclick = finish;
       }
     }

@@ -6,7 +6,7 @@
 import { getStore } from '@netlify/blobs';
 import { getUser, refreshSession, admin as idAdmin } from '@netlify/identity';
 import { roleForCode, isStaff, lockKeysFromCode, verifyLockKeys, isPrivateCode } from '../lib/codes.mjs';
-import { tier, isMember, TRACKS, paidActive } from '../lib/access.mjs';
+import { tier, isMember, TRACKS, paidActive, accessUntil, TRIAL_DAYS, ensureTrial } from '../lib/access.mjs';
 import seed from '../lib/school-seed.json';
 import ckey from '../lib/content-key.json';
 import { loadStudents, saveStudents, loadAttendance } from '../lib/students.mjs';
@@ -66,15 +66,20 @@ async function getProfile(uid) { return (await U().get(`u/${uid}/profile`, { typ
 async function putProfile(uid, p) {
   await U().setJSON(`u/${uid}/profile`, p);
   const dir = (await U().get('directory', { type: 'json' })) || {};
-  dir[uid] = { goals: p.goals || '', track: p.track || '', request: p.request || null, paidUntil: p.paidUntil || null, alumni: !!p.alumni, name: p.name, email: p.email, role: p.role, studentId: p.studentId || null, teacherId: p.teacherId || null, photo: !!p.photo, phone: p.phone || '', level: p.level || '', classChoice: p.classChoice || '' };
+  dir[uid] = { trialUntil: p.trialUntil || null, goals: p.goals || '', track: p.track || '', request: p.request || null, paidUntil: p.paidUntil || null, alumni: !!p.alumni, name: p.name, email: p.email, role: p.role, studentId: p.studentId || null, teacherId: p.teacherId || null, photo: !!p.photo, phone: p.phone || '', level: p.level || '', classChoice: p.classChoice || '' };
   await U().setJSON('directory', dir);
 }
+// Online access plans, set against the 2026–27 brochure: the cheapest course is ₸45,000 a month (8 lessons with a teacher),
+// so self-study online access sits at about a fifth of it (6 months ≈ one month of group lessons).
 const MEMBERSHIP = {
+  plans: { 1: 9900, 3: 24900, 6: 44900 },
+  trialDays: TRIAL_DAYS,
+  offer: '',
   price: '',
   how: 'Pay by Kaspi transfer or in cash at IF Academy (Al-Farabi 19, Kostanay), then press "I have paid". Your full access is switched on as soon as the school confirms the payment.',
   free: ''
 };
-async function membership() { return { ...MEMBERSHIP, ...((await S().get('membership', { type: 'json' })) || {}) }; }
+async function membership() { const m = { ...MEMBERSHIP, ...((await S().get('membership', { type: 'json' })) || {}) }; m.plans = { ...MEMBERSHIP.plans, ...(m.plans || {}) }; return m; }
 async function ieltsSummary(uid) {
   const idx = (await U().get(`u/${uid}/index`, { type: 'json' })) || [];
   const scored = idx.filter(a => typeof a.band === 'number');
@@ -286,6 +291,7 @@ export default async (req) => {
   if (!user) return fail(401, 'signin');
   const uid = user.id;
   let profile = await getProfile(uid);
+  if (await ensureTrial(uid, profile)) await putProfile(uid, profile);   // free accounts made before the trial existed
 
   if (path === 'me' && method === 'GET') {
     const out = { user: { id: uid, email: user.email, name: profile?.name || user.name || '' }, profile, access: tier(profile), membership: await membership() };
@@ -322,6 +328,7 @@ export default async (req) => {
     if (finalRole === 'guest' && track !== 'outside') profile.request = { track, at: new Date().toISOString() };
     else if (finalRole !== 'guest') delete profile.request;
     profile = await linkByPhone(uid, profile);
+    await ensureTrial(uid, profile);
     await putProfile(uid, profile);
     if (role && isStaff(role) && !(await S().get('contentKey', { type: 'json' }))) await storeKeyFrom(code);
     if (role) await keepLockKeys(await lockKeysFromCode(code));
@@ -346,7 +353,8 @@ export default async (req) => {
     if (!isMember(profile)) return fail(403, 'members');
     const k = (await S().get('lockKeys', { type: 'json' })) || {};
     if (!k.ks) return fail(404, 'none');
-    return json(isStaff(profile.role) && k.kt ? { ks: k.ks, kt: k.kt, role: 'teacher' } : { ks: k.ks, role: 'student' });
+    const until = accessUntil(profile);   // trial / paid online access: the page forgets the keys when it ends
+    return json(isStaff(profile.role) && k.kt ? { ks: k.ks, kt: k.kt, role: 'teacher' } : { ks: k.ks, role: 'student', ...(until ? { until } : {}) });
   }
 
   if (!profile?.role) return fail(403, 'activate');
@@ -568,20 +576,21 @@ export default async (req) => {
         const from = paidActive(p) ? new Date(p.paidUntil) : new Date();
         from.setMonth(from.getMonth() + months);
         p.paidUntil = from.toISOString(); p.track = p.track || 'outside'; delete p.request;
-        const amount = Math.round(+String(b.amount || '').replace(/[^\d.]/g, '') || 0);
+        const amount = Math.round(+String(b.amount || '').replace(/[^\d.]/g, '') || 0) || (b.amount === '' || b.amount == null ? +((await membership()).plans[months] || 0) : 0);
         if (amount > 0) {
           const fin = await finDoc(), today = new Date().toISOString().slice(0, 10);
           fin.push({ id: newId('f'), month: today.slice(0, 7), date: today, type: 'income', category: 'Online membership', amount, note: `${p.name} · ${months} month${months > 1 ? 's' : ''}`, source: `member:${b.uid}:${Date.now()}` });
           await S().setJSON('finance', fin);
         }
-      } else if (b.action === 'stop') { p.paidUntil = null; if (p.role === 'student') { p.role = 'guest'; p.track = p.track === 'private' || p.track === 'if' ? p.track : 'outside'; } }
+      } else if (b.action === 'stop') { p.paidUntil = null; p.trialUntil = new Date(0).toISOString(); if (p.role === 'student') { p.role = 'guest'; p.track = p.track === 'private' || p.track === 'if' ? p.track : 'outside'; } }
       else if (b.action === 'decline') delete p.request;
       else return fail(400, 'action');
       await putProfile(b.uid, p);
       return json({ profile: p });
     }
     if (path === 'admin/membership' && method === 'PUT') {
-      const m = { price: str(b.price, 120), how: str(b.how, 800), free: str(b.free, 600), at: new Date().toISOString() };
+      const plans = {}; for (const k of [1, 3, 6]) { const v = Math.round(+String(b.plans?.[k] ?? '').replace(/[^\d]/g, '')); if (v > 0) plans[k] = v; }
+      const m = { plans, trialDays: Math.max(0, Math.min(30, Math.round(+b.trialDays || 0))), offer: str(b.offer, 200), price: str(b.price, 120), how: str(b.how, 800), free: str(b.free, 600), at: new Date().toISOString() };
       await S().setJSON('membership', m);
       return json({ membership: await membership() });
     }

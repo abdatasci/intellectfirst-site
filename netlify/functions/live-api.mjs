@@ -10,7 +10,7 @@ import { getUser, refreshSession } from '@netlify/identity';
 import { isStaff } from '../lib/codes.mjs';
 import { createHmac, randomBytes, randomInt } from 'node:crypto';
 
-import { isMember, FREE } from '../lib/access.mjs';
+import { isMember, FREE, ensureTrial } from '../lib/access.mjs';
 const L = () => getStore({ name: 'live', consistency: 'strong' });
 const U = () => getStore({ name: 'ielts', consistency: 'strong' });
 const json = (d, s = 200) => Response.json(d, { status: s, headers: { 'Cache-Control': 'no-store' } });
@@ -31,6 +31,7 @@ async function who() {
   let user = null; try { user = (await refreshSession().catch(() => null), await getUser()); } catch {}
   if (!user) return { user: null, profile: null };
   const profile = (await U().get(`u/${user.id}/profile`, { type: 'json' })) || null;
+  if (user && profile && await ensureTrial(user.id, profile)) await U().setJSON(`u/${user.id}/profile`, profile);
   return { user, profile };
 }
 const alive = r => r && r.status !== 'ended' && Date.now() - r.created < ROOM_HOURS * 3600e3;

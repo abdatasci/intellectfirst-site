@@ -8,7 +8,7 @@ import { getUser, refreshSession } from '@netlify/identity';
 import bank from '../../a/ielts/data/writing.json';
 import speakBank from '../../a/ielts/data/speaking.json';
 import { roleForCode, isStaff } from '../lib/codes.mjs';
-import { isMember } from '../lib/access.mjs';
+import { isMember, ensureTrial } from '../lib/access.mjs';
 
 const MODEL_LIVE = process.env.IELTS_MODEL_LIVE || 'claude-haiku-5-5';
 const MODEL_FINAL = process.env.IELTS_MODEL_FINAL || 'claude-sonnet-5-5';
@@ -200,6 +200,7 @@ export default async (req) => {
     return json({ profile });
   }
 
+  if (profile && await ensureTrial(uid, profile)) await putProfile(uid, profile);
   if (!profile?.role) return fail(403, 'activate');
   // AI marking is part of full access (free accounts can still read the tasks and model answers)
   if (!isMember(profile) && (path === 'score' || path === 'speaking')) return fail(403, 'members');
