@@ -5,7 +5,7 @@
 //   store "photos" – profile photos by account id
 import { getStore } from '@netlify/blobs';
 import { getUser } from '@netlify/identity';
-import { roleForCode, isStaff } from '../lib/codes.mjs';
+import { roleForCode, isStaff, lockKeysFromCode, verifyLockKeys } from '../lib/codes.mjs';
 import seed from '../lib/school-seed.json';
 import ckey from '../lib/content-key.json';
 import { loadStudents, saveStudents, loadAttendance } from '../lib/students.mjs';
@@ -141,6 +141,12 @@ async function unwrapKey(code) {
   }
   return null;
 }
+async function keepLockKeys(k) {
+  if (!k || !(k.ks || k.kt)) return {};
+  const cur = (await S().get('lockKeys', { type: 'json' })) || {};
+  if ((k.ks && k.ks !== cur.ks) || (k.kt && k.kt !== cur.kt)) await S().setJSON('lockKeys', { ...cur, ...k, at: new Date().toISOString() });
+  return k;
+}
 async function storeKeyFrom(code) {
   const k = await unwrapKey(code);
   if (k) await S().setJSON('contentKey', { key: k, at: new Date().toISOString() });
@@ -259,7 +265,21 @@ export default async (req) => {
     profile = await linkByPhone(uid, profile);
     await putProfile(uid, profile);
     if (isStaff(role) && !(await S().get('contentKey', { type: 'json' }))) await storeKeyFrom(b.code);
+    await keepLockKeys(await lockKeysFromCode(b.code));
     return json({ profile });
+  }
+
+  // locked pages: hand the class key (students) or class + staff keys (teachers/admin) to signed-in accounts
+  if (path === 'lockkeys' && method === 'POST') {
+    const b = await req.json().catch(() => ({}));
+    const got = await keepLockKeys(await verifyLockKeys(b));
+    return json({ ok: !!(got.ks || got.kt) });
+  }
+  if (path === 'lockkeys' && method === 'GET') {
+    if (!profile?.role) return fail(403, 'activate');
+    const k = (await S().get('lockKeys', { type: 'json' })) || {};
+    if (!k.ks) return fail(404, 'none');
+    return json(isStaff(profile.role) && k.kt ? { ks: k.ks, kt: k.kt, role: 'teacher' } : { ks: k.ks, role: 'student' });
   }
 
   if (!profile?.role) return fail(403, 'activate');

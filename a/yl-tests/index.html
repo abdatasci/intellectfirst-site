@@ -40,7 +40,7 @@
     var a = document.createElement('a'); a.className = 'btn'; a.href = ROOT + 'login/index.html?next=' + encodeURIComponent(HREF); a.textContent = 'Sign in'; b.appendChild(a);
     var back = document.createElement('a'); back.className = 'link'; back.href = ROOT + 'app/index.html'; back.textContent = 'Back to the apps'; b.appendChild(back);
   }
-  if (!IFLock.canOpen(LVL)) return locked();
+  if (!IFLock.canOpen(LVL)) return (IFLock.fromAccount ? IFLock.fromAccount(LVL) : Promise.resolve(false)).then(function (ok) { if (ok) location.reload(); else locked(); });
   var data = document.getElementById('payload').textContent.trim();
   var ready = new Promise(function (res) { if (document.readyState === 'complete') res(); else window.addEventListener('load', function () { setTimeout(res, 0); }); });
   Promise.all([IFLock.decryptText(LVL, data), ready]).then(function (r) {

@@ -38,3 +38,30 @@ export async function roleForCode(code) {
   return null;
 }
 export const isStaff = role => role === 'teacher' || role === 'admin';
+
+/* ---------- single sign-on for the locked pages (if-lock.js) ----------
+   The class/staff keys are derived from the website codes. When anyone uses a website code while signed in
+   (activation, or the code box on a locked page), the derived keys are checked against keys.json and kept
+   server-side, so later every signed-in student/teacher opens locked pages without typing a code again. */
+const b64e = u => Buffer.from(u).toString('base64');
+async function tryOpen(raw, b64) { return (await opens(raw, b64)) ? raw : null; }
+/** {ks, kt?} (base64) for a website class/staff code, or null. */
+export async function lockKeysFromCode(code) {
+  if (!norm(code)) return null;
+  const kt = await tryOpen(await bits(code, SALT.t), keys.check_t);
+  if (kt) {
+    const k = await globalThis.crypto.subtle.importKey('raw', kt, 'AES-GCM', false, ['decrypt']);
+    const blob = b64d(keys.s_by_t);
+    const ks = new Uint8Array(await globalThis.crypto.subtle.decrypt({ name: 'AES-GCM', iv: blob.slice(0, 12) }, k, blob.slice(12)));
+    return { ks: b64e(ks), kt: b64e(kt) };
+  }
+  const ks = await tryOpen(await bits(code, SALT.s), keys.check_s);
+  return ks ? { ks: b64e(ks) } : null;
+}
+/** Keep only keys that really open keys.json. */
+export async function verifyLockKeys(k) {
+  const out = {};
+  try { if (k?.ks && await opens(b64d(k.ks), keys.check_s)) out.ks = k.ks; } catch {}
+  try { if (k?.kt && await opens(b64d(k.kt), keys.check_t)) out.kt = k.kt; } catch {}
+  return out;
+}

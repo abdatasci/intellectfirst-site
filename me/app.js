@@ -229,6 +229,7 @@
       '<div><div class="eyebrow">' + roleLbl + (st ? ' · ' + esc((st.classes || []).join(', ')) : '') + '</div><h1>' + esc(p.name) + '</h1><p class="lead" style="font-size:15.5px">' + esc(ME.user.email) + (p.phone ? ' · ' + esc(p.phone) : '') + '</p>' +
       '<div class="chips">' + (st ? statusChip(st.status) : '') + (p.goals ? '<span class="chip2">Goal: ' + esc(p.goals) + '</span>' : '') + (p.since ? '<span class="chip2 mute">Member since ' + when(p.since) + '</span>' : '') + '</div></div></section>';
     if (r === 'student' && !st) h += '<div class="banner"><b>We have not found your school record yet.</b> Check that your phone number below is the one you gave IF Academy (yours or your parent\'s). If it still does not match, your teacher can link your account.</div>';
+    h += '<div id="tgband"></div>';
     h += '<section class="section cols">';
     if (r === 'student') {
       h += classBox(ME.classes);
@@ -246,7 +247,7 @@
     }
     h += '</section><section class="section">' + detailsForm(p) + '<p class="small" style="margin-top:12px">Have a staff or administrator code? <a href="#/activate">Enter it here</a>.</p></section>';
     view.innerHTML = h;
-    $('#ph').onclick = photoDialog; wireDetails();
+    $('#ph').onclick = photoDialog; wireDetails(); tgBand();
   }
 
   /* ---------- teacher ---------- */
@@ -299,7 +300,7 @@
 
   /* ---------- IF Classroom: online lessons (Jitsi) + lesson slides (view-only) ---------- */
   var LESSONS = null, CKEY = null, VIEWER = null;
-  var BOOKS_ORDER = ['b-ef-a2', 'b-ef-b1', 'b-ef-b2', 'b-ef-c1', 'b-teens-b2', 'b-wl', 'b-ielts', 'b-giu'];
+  var BOOKS_ORDER = ['b-ef-a2', 'b-ef-b1', 'b-ef-b2', 'b-ef-c1', 'b-teens-b2', 'b-wl', 'b-ket', 'b-ielts', 'b-giu'];
   function meetUrl(c) { return 'https://meet.jit.si/' + encodeURIComponent(c.meet) + '#userInfo.displayName=%22' + encodeURIComponent((ME && ME.profile && ME.profile.name) || '') + '%22'; }
   async function lessonsIndex() { if (!LESSONS) { var r = await fetch('/lessons/index.json', { cache: 'no-cache' }); LESSONS = r.ok ? await r.json() : { decks: [] }; } return LESSONS; }
   async function contentKey() {
@@ -1008,6 +1009,35 @@
       if (n.notes.some(function (x) { return !x.read; })) aapi('notes/read', { method: 'POST' }).catch(function () {});
     } catch (e) { $('#notes').innerHTML = '<p class="small">Could not load reminders.</p>'; }
   }
+  /* Telegram: one tap on a phone, QR code on a computer */
+  function tgConnectUI(el, bot, compact) {
+    el.innerHTML = '<div class="tgc"><button class="btn tgbtn" type="button"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M21.9 4.3 18.7 19.4c-.2 1.1-.9 1.3-1.8.8l-4.9-3.6-2.4 2.3c-.3.3-.5.5-1 .5l.3-5 9.1-8.2c.4-.4-.1-.6-.6-.2L6.2 13 1.4 11.5c-1-.3-1.1-1 .2-1.5L20.6 2.9c.9-.3 1.6.2 1.3 1.4z"/></svg> Connect Telegram</button>' +
+      (compact ? '' : '<button class="linkbtn tgqr" type="button">On a computer? Show a QR code</button>') + '</div><div class="tgout small"></div>';
+    var out = el.querySelector('.tgout');
+    async function link() { var r = await aapi('telegram/link', { method: 'POST' }); return r; }
+    el.querySelector('.tgbtn').onclick = async function () {
+      var w = window.open('', '_blank');
+      try { var r = await link(); if (w) w.location = r.url; else location.href = r.url;
+        out.innerHTML = '<p style="margin-top:10px">Telegram is opening. Press <b>Start</b> in the chat with <b>@' + esc(r.bot) + '</b>, then come back here.</p><p>Telegram didn\'t open? <a href="' + esc(r.url) + '" target="_blank" rel="noopener">Tap here</a>, or search <b>@' + esc(r.bot) + '</b> in Telegram and send the code <b>' + esc(r.url.split('start=')[1]) + '</b>.</p>';
+        tgWatch(); }
+      catch (e) { if (w) w.close(); toast('Could not create the link. Try again.'); }
+    };
+    var q = el.querySelector('.tgqr');
+    if (q) q.onclick = async function () {
+      try { var r = await link(), qr = qrcode(0, 'M'); qr.addData(r.url); qr.make();
+        out.innerHTML = '<div class="tgqrbox">' + qr.createSvgTag({ cellSize: 5, margin: 2, scalable: true }) + '<p>Open your <b>phone camera</b> and point it at this code. Telegram opens the chat with <b>@' + esc(r.bot) + '</b>: press <b>Start</b>. The code works for 30 minutes.</p></div>';
+        tgWatch(); }
+      catch (e) { toast('Could not create the code. Try again.'); }
+    };
+  }
+  /* after a link is made, check every few seconds until the bot reports the account as connected */
+  function tgWatch() {
+    clearInterval(tgWatch.t); var n = 0;
+    tgWatch.t = setInterval(async function () {
+      if (++n > 60) return clearInterval(tgWatch.t);
+      try { var t = await aapi('telegram'); if (t.linked) { clearInterval(tgWatch.t); toast('Telegram connected ✓'); if ($('#tgp')) tgPanel(); if ($('#tgband')) tgBand(); } } catch (e) {}
+    }, 4000);
+  }
   async function tgPanel() {
     var p = $('#tgp'); if (!p) return;
     try {
@@ -1016,16 +1046,23 @@
         p.innerHTML = '<h2>Telegram</h2><p class="sub"><span class="chip2 ok">Connected</span>' + (t.linked.username ? ' @' + esc(t.linked.username) : '') + '</p><p class="small">Reminders and chat also work in Telegram' + (t.bot ? ' with <a href="https://t.me/' + esc(t.bot) + '" target="_blank" rel="noopener">@' + esc(t.bot) + '</a>' : '') + '.</p><button class="linkbtn" id="tgx">Disconnect</button>';
         $('#tgx').onclick = async function () { if (!confirm('Stop Telegram reminders?')) return; await aapi('telegram', { method: 'DELETE' }); tgPanel(); };
       } else if (t.ready) {
-        p.innerHTML = '<h2>Telegram</h2><p class="sub">Get lesson and payment reminders on your phone, and chat with the assistant in Telegram.</p><button class="btn" id="tgc">Connect Telegram</button><p class="small" id="tgh" style="margin-top:8px"></p>';
-        $('#tgc').onclick = async function () {
-          var w = window.open('', '_blank');
-          try { var r = await aapi('telegram/link', { method: 'POST' }); if (w) w.location = r.url; else location.href = r.url;
-            $('#tgh').innerHTML = 'Telegram opened — press <b>Start</b> in the chat with @' + esc(r.bot) + '. Then come back and <a href="#/assistant">refresh</a>.'; }
-          catch (e) { if (w) w.close(); toast('Could not create the link. Try again.'); }
-        };
+        p.innerHTML = '<h2>Telegram</h2><p class="sub">Get lesson and payment reminders on your phone, and chat with the assistant in Telegram' + (t.bot ? ' (<b>@' + esc(t.bot) + '</b>)' : '') + '.</p><div id="tgui"></div>';
+        tgConnectUI($('#tgui'), t.bot);
       } else p.innerHTML = '<h2>Telegram</h2><p class="sub">The Telegram bot is being set up. For now, reminders appear here.</p>';
     } catch (e) { p.innerHTML = '<h2>Telegram</h2><p class="sub">Not available right now.</p>'; }
   }
+  /* big invitation on the profile page until the student has connected */
+  async function tgBand() {
+    var b = $('#tgband'); if (!b) return;
+    try {
+      var t = await aapi('telegram');
+      if (t.linked) { b.innerHTML = '<p class="small" style="margin:6px 0 0"><span class="chip2 ok">Telegram connected</span> Reminders come to ' + (t.linked.username ? '@' + esc(t.linked.username) : 'your Telegram') + (t.bot ? ' from <a href="https://t.me/' + esc(t.bot) + '" target="_blank" rel="noopener">@' + esc(t.bot) + '</a>' : '') + '.</p>'; return; }
+      if (!t.ready) { b.innerHTML = ''; return; }
+      b.innerHTML = '<div class="tgband"><div class="tgicon" aria-hidden="true">✈</div><div style="flex:1;min-width:220px"><b>Get your lesson and payment reminders on Telegram</b><p class="small" style="margin:4px 0 10px">Connect once with our bot' + (t.bot ? ' <b>@' + esc(t.bot) + '</b>' : '') + ': reminders before every lesson, tuition reminders, and you can ask the IF Assistant anything right in Telegram.</p><div id="tgbui"></div></div></div>';
+      tgConnectUI($('#tgbui'), t.bot);
+    } catch (e) { b.innerHTML = ''; }
+  }
+
   /* ---------- router ---------- */
   async function route() {
     closeModal(); window.scrollTo(0, 0);

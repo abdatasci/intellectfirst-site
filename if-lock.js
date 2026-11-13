@@ -35,17 +35,30 @@
       return derive(code, 't').then(function (kt) {
         return open(kt, b64d(K.check_t)).then(function () {
           return open(kt, b64d(K.s_by_t)).then(function (ks) {
-            ls('if.kt', b64e(kt)); ls('if.ks', b64e(new Uint8Array(ks))); ls('if.role', 'teacher'); return 'teacher';
+            ls('if.kt', b64e(kt)); ls('if.ks', b64e(new Uint8Array(ks))); ls('if.role', 'teacher'); share(); return 'teacher';
           });
         });
       }).catch(function () {
         return derive(code, 's').then(function (ks) {
           return open(ks, b64d(K.check_s)).then(function () {
-            ls('if.ks', b64e(ks)); ls('if.kt', null); ls('if.role', 'student'); return 'student';
+            ls('if.ks', b64e(ks)); ls('if.kt', null); ls('if.role', 'student'); share(); return 'student';
           });
         });
       });
     });
+  }
+  /* single sign-on with the IF Academy account: a code typed once while signed in is remembered for every account,
+     and signed-in students/teachers get the keys from the server instead of typing the code */
+  function share() { try { fetch('/api/school/lockkeys', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ks: ls('if.ks'), kt: ls('if.kt') }) }).catch(function () {}); } catch (e) {} }
+  var ssoP = null;
+  function fromAccount(lvl) {
+    if (canOpen(lvl)) return Promise.resolve(true);
+    if (ssoP) return ssoP.then(function () { return canOpen(lvl); });
+    return ssoP = fetch('/api/school/lockkeys', { credentials: 'same-origin' }).then(function (r) { return r.ok ? r.json() : null; }).then(function (k) {
+      if (!k || !k.ks) return false;
+      ls('if.ks', k.ks); ls('if.kt', k.kt || null); ls('if.role', k.kt ? 'teacher' : 'student');
+      return canOpen(lvl);
+    }).catch(function () { return false; });
   }
   function signOut() { ['if.ks', 'if.kt', 'if.role'].forEach(function (k) { ls(k, null); }); }
   function decryptBytes(lvl, bytes) {
@@ -57,5 +70,13 @@
     return fetch(url).then(function (r) { if (!r.ok) throw new Error('missing'); return r.arrayBuffer(); })
       .then(function (buf) { return decryptBytes(lvl, new Uint8Array(buf)); });
   }
-  window.IFLock = { signIn: signIn, signOut: signOut, role: role, canOpen: canOpen, decryptText: decryptText, decryptBytes: decryptBytes, fetchDecrypt: fetchDecrypt, norm: norm };
+  /* pages without their own lock screen (apps grid, materials, IF English, login): unlock silently from the account */
+  try {
+    var last = +sessionStorage.getItem('if.sso') || 0;
+    if (!role() && Date.now() - last > 120000 && !document.getElementById('payload')) {
+      sessionStorage.setItem('if.sso', String(Date.now()));
+      fromAccount('s').then(function (ok) { if (ok) location.reload(); });
+    }
+  } catch (e) {}
+  window.IFLock = { fromAccount: fromAccount, signIn: signIn, signOut: signOut, role: role, canOpen: canOpen, decryptText: decryptText, decryptBytes: decryptBytes, fetchDecrypt: fetchDecrypt, norm: norm };
 })();

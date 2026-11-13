@@ -601,7 +601,7 @@
         <svg class="dd dd-squig" viewBox="0 0 120 30"><path d="M4 18 Q 14 4, 24 18 T 44 18 T 64 18 T 84 18 T 104 18 T 118 14"/></svg>
       </div>
       <div class="x-bot" aria-hidden="true">
-        <span class="x-bubble">Hi! Сәлем! Привет!</span>
+        <span class="x-bubble"><span class="hi3d" id="hi3d">Hi!</span><span class="hi-lang" id="hilang">English</span></span>
         <svg viewBox="0 0 120 150" class="bot">
           <line x1="60" y1="8" x2="60" y2="24" class="b-stroke"/><circle cx="60" cy="7" r="5" class="b-oak"/>
           <rect x="22" y="24" width="76" height="56" rx="20" class="b-head"/>
@@ -2100,5 +2100,10 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')box.hidden=true});
 if(/[?&#]ask\b/.test(location.href))open();
 fetch('/api/assistant/public/info').then(r=>r.ok?r.json():null).then(d=>{if(d&&d.bot){const a=document.getElementById('botLink');a.href='https://t.me/'+d.bot;document.getElementById('botUser').textContent='@'+d.bot+' · Telegram';a.hidden=false}}).catch(()=>{});
 })();
+</script>
+<script>/* robot greeting: "Hi" in many languages, flipping in 3D */
+(function(){var W=[['Hi!','English'],['Сәлем!','Қазақша'],['Привет!','Русский'],['¡Hola!','Español'],['Bonjour!','Français'],['Hallo!','Deutsch'],['Ciao!','Italiano'],['Merhaba!','Türkçe'],['你好!','中文'],['こんにちは!','日本語'],['안녕!','한국어'],['مرحبا!','العربية'],['Olá!','Português'],['Salam!','Oʻzbekcha']],i=0,el=document.getElementById('hi3d'),lg=document.getElementById('hilang');
+if(!el||matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+setInterval(function(){el.className='hi3d out';setTimeout(function(){i=(i+1)%W.length;el.textContent=W[i][0];lg.textContent=W[i][1];el.className='hi3d in';},320);},2200);})();
 </script>
 </body></html>
