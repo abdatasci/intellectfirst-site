@@ -298,7 +298,7 @@
 
   /* ---------- IF Classroom: online lessons (Jitsi) + lesson slides (view-only) ---------- */
   var LESSONS = null, CKEY = null, VIEWER = null;
-  var BOOKS_ORDER = ['b-ef-a2', 'b-ef-b1', 'b-ef-b2', 'b-ef-c1', 'b-teens-b2', 'b-wl'];
+  var BOOKS_ORDER = ['b-ef-a2', 'b-ef-b1', 'b-ef-b2', 'b-ef-c1', 'b-teens-b2', 'b-wl', 'b-ielts', 'b-giu'];
   function meetUrl(c) { return 'https://meet.jit.si/' + encodeURIComponent(c.meet) + '#userInfo.displayName=%22' + encodeURIComponent((ME && ME.profile && ME.profile.name) || '') + '%22'; }
   async function lessonsIndex() { if (!LESSONS) { var r = await fetch('/lessons/index.json', { cache: 'no-cache' }); LESSONS = r.ok ? await r.json() : { decks: [] }; } return LESSONS; }
   async function contentKey() {
