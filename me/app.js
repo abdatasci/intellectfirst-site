@@ -106,18 +106,29 @@
     view.innerHTML = panel(isStaff ? 'Staff registration' : 'Create your account', isStaff ? 'For IF Academy teachers and staff. Your classes are linked to your account automatically by your name; if not, the administrator links them for you.' : 'For IF Academy students and teachers. Use the phone number you gave the school, so we can find your record.',
       '<form id="f" novalidate><div class="grid2"><div><label class="f">First name</label><input class="inp" id="fn" autocomplete="given-name"></div><div><label class="f">Surname</label><input class="inp" id="ln" autocomplete="family-name"></div></div>' +
       '<label class="f">Phone number</label><input class="inp" id="ph" type="tel" autocomplete="tel" placeholder="+7 7__ ___ __ __">' + (isStaff ? '' : '<p class="hint">Students: your own number or your parent\'s, as given to the school.</p>') +
-      '<label class="f">Email</label><input class="inp" id="em" type="email" autocomplete="email">' +
+      '<label class="f">Email <span style="font-weight:400;color:var(--muted)">(optional)</span></label><input class="inp" id="em" type="email" autocomplete="email"><p class="hint">No email? Leave it empty: you will sign in with your phone number.</p>' +
       '<label class="f">Password</label><input class="inp" id="pw" type="password" autocomplete="new-password"><p class="hint">At least 8 characters.</p>' +
       '<label class="f">' + (isStaff ? 'Staff code' : 'Class code') + '</label><input class="inp" id="cc" autocomplete="off"><p class="hint">' + (isStaff ? 'Given to you by the school director.' : 'From your teacher. Teachers use the staff code.') + '</p>' +
       '<button class="btn" type="submit">Create account</button></form><p class="alt">Already registered? <a href="#/login">Sign in</a>' + (isStaff ? '' : ' · Teacher? <a href="#/staff">Staff registration</a>') + '</p>');
     $('#f').onsubmit = async function (ev) {
       ev.preventDefault(); var f = ev.target, b = $('button', f);
       var name = ($('#fn').value.trim() + ' ' + $('#ln').value.trim()).trim(), ph = $('#ph').value.trim(), em = $('#em').value.trim(), pw = $('#pw').value, cc = $('#cc').value.trim();
-      if (!name || !em || !cc || !ph) return err(f, 'Please fill in every field.');
+      if (!name || !cc || !ph) return err(f, 'Please fill in your name, phone number and code.');
+      if (ph.replace(/\D/g, '').length < 10) return err(f, 'Please type the full phone number, for example +7 701 234 56 78.');
+      if (em && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)) return err(f, 'That email does not look right. Check it, or leave it empty.');
+      var byPhone = !em;
       if (pw.length < 8) return err(f, 'Choose a password with at least 8 characters.');
       b.disabled = true; b.innerHTML = '<span class="spin"></span> Creating account';
       try {
-        var u = await ID.signup(em, pw, { full_name: name });
+        var u = null;
+        if (byPhone) {   // no email: the login is the phone number (a brother or sister on the same number gets -2, -3)
+          for (var k = 1; k <= 6 && !u; k++) {
+            em = loginEmail(ph.replace(/\D/g, '').slice(-10) + (k > 1 ? '-' + k : ''));
+            try { u = await ID.signup(em, pw, { full_name: name }); }
+            catch (e4) { if (!/already|exists|registered/i.test(String(e4 && e4.message))) throw e4; }
+          }
+          if (!u) throw new Error('This phone number already has accounts. Sign in instead, or add an email.');
+        } else u = await ID.signup(em, pw, { full_name: name });
         lsSet('if.pending', { code: cc, name: name, phone: ph });
         if (u && !u.confirmedAt && u.id) {   // confirm straight away so the student can sign in now
           try { var cr = await fetch('/api/school/confirm', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: u.id, email: em }) }); if (cr.ok) u.confirmedAt = new Date().toISOString(); } catch (e3) {}
@@ -126,7 +137,7 @@
           await ID.login(em, pw); await loadMe(); header();
           try { await api('activate', { method: 'POST', body: { code: cc, name: name, phone: ph } }); lsSet('if.pending', null); }
           catch (e2) { toast(e2.code === 'code' ? 'Account created, but that code is not right.' : 'Account created. Now enter your code.'); return go('#/activate'); }
-          await loadMe(); header(); toast('Welcome to IF Academy'); go('#/');
+          await loadMe(); header(); toast(byPhone ? 'Welcome! Your login is your phone number: ' + em.split('@')[0] : 'Welcome to IF Academy'); go('#/');
         } else f.innerHTML = '<div class="ok-msg">Almost done: open the confirmation link we emailed to <b>' + esc(em) + '</b>.</div>';
       } catch (e) { b.disabled = false; b.textContent = 'Create account'; err(f, authMsg(e)); }
     };
@@ -254,7 +265,7 @@
     var p = ME.profile, st = ME.student, r = role();
     var roleLbl = r === 'admin' ? 'Administrator' : r === 'teacher' ? 'Teacher' : 'Student';
     var h = '<section class="prof"><div style="position:relative">' + avatar(ME.user.id, p.name, p.photo) + '<button class="avbtn" id="ph" style="border-radius:0 0 60px 60px">Change</button></div>' +
-      '<div><div class="eyebrow">' + roleLbl + (st ? ' · ' + esc((st.classes || []).join(', ')) : '') + '</div><h1>' + esc(p.name) + '</h1><p class="lead" style="font-size:15.5px">' + esc(ME.user.email) + (p.phone ? ' · ' + esc(p.phone) : '') + '</p>' +
+      '<div><div class="eyebrow">' + roleLbl + (st ? ' · ' + esc((st.classes || []).join(', ')) : '') + '</div><h1>' + esc(p.name) + '</h1><p class="lead" style="font-size:15.5px">' + (/@students\.intellectfirst\.com$/.test(ME.user.email) ? 'Login: ' + esc(ME.user.email.split('@')[0]) : esc(ME.user.email)) + (p.phone ? ' · ' + esc(p.phone) : '') + '</p>' +
       '<div class="chips">' + (st ? statusChip(st.status) : '') + (p.goals ? '<span class="chip2">Goal: ' + esc(p.goals) + '</span>' : '') + (p.since ? '<span class="chip2 mute">Member since ' + when(p.since) + '</span>' : '') + '</div></div></section>';
     if (r === 'student' && !st) h += '<div class="banner"><b>We have not found your school record yet.</b> Check that your phone number below is the one you gave IF Academy (yours or your parent\'s). If it still does not match, your teacher can link your account.</div>';
     h += '<div id="tgband"></div>';
