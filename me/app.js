@@ -92,6 +92,7 @@
     $('[data-nav=classes]').hidden = !staff();
     var rn = $('[data-nav=results]'); if (rn) rn.hidden = !staff();
     $('[data-nav=admin]').hidden = role() !== 'admin';
+    if (role() === 'admin' && !window.__ifaAIload) { window.__ifaAIload = true; var sc = document.createElement('script'); sc.src = '/me/ifadmin/ai-chat.js'; document.body.appendChild(sc); }
     var ifa = $('[data-nav=ifadmin]'); if (ifa) ifa.hidden = role() !== 'admin';
     $('[data-nav=classroom]').hidden = !role();
     $('[data-nav=assistant]').hidden = !role();
@@ -636,7 +637,7 @@
   function adminTabs(on) {
     return '<div class="tabs2">' + [['logins', 'Student logins'], ['accounts', 'Accounts' + ((ADMIN.accounts || []).filter(function (x) { return x.request; }).length ? ' (' + ADMIN.accounts.filter(function (x) { return x.request; }).length + ' waiting)' : '')], ['classes', 'Classes'], ['teachers', 'Teachers'], ['books', 'Books'], ['export', 'Export results'], ['placement', 'Placement tests'], ['bot', 'Bot & reminders']].map(function (t) {
       return '<a href="#/admin/' + t[0] + '" class="' + (on === t[0] ? 'on' : '') + '">' + t[1] + '</a>';
-    }).join('') + '<a href="/me/ifadmin/" style="background:var(--navy);color:#fff;border-color:var(--navy)">IF Admin ↗</a></div>';
+    }).join('') + '<a href="/me/ifadmin/" style="background:var(--navy);color:#fff;border-color:var(--navy)">IF Admin ↗</a><a href="#" onclick="window.IFAdminAI&&IFAdminAI.open();return false" style="border-color:#C9A227">✨ AI assistant</a></div>';
   }
   async function vAdmin(tab) {
     setNav('admin'); if (role() !== 'admin') return go('#/');

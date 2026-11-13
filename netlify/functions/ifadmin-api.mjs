@@ -4,10 +4,13 @@
 //   GET  /api/ifadmin/stamp          → change stamps per collection (for polling)
 //   PUT  /api/ifadmin/doc/<c>/<id>   → set one document      DELETE same → delete it
 //   POST /api/ifadmin/restore        → {collections:{...}} replace collections from a backup
+//   POST /api/ifadmin/ai             → {messages} AI assistant: reply + proposed changes (nothing saved)
+//   POST /api/ifadmin/ai/apply       → {ops} save the proposed changes (undo point kept)    POST ai/undo {id}
 // Data lives in the private Blobs store "ifadmin", one document per collection (key c/<name>) holding {id: doc}.
 import { getStore } from '@netlify/blobs';
 import { getUser, refreshSession } from '@netlify/identity';
 import enc from '../lib/ifadmin-app.json';
+import { chat, run } from '../lib/ifadmin-ai.mjs';
 
 const COLLS = ['students', 'groups', 'attendance', 'payments', 'expenses', 'settings', 'staff', 'results', 'access', 'mine'];
 const A = () => getStore({ name: 'ifadmin', consistency: 'strong' });
@@ -64,6 +67,38 @@ export default async (req) => {
       map[id] = body; await putColl(c, map); return json({ ok: true });
     }
     if (method === 'DELETE') { delete map[id]; await putColl(c, map); return json({ ok: true }); }
+  }
+
+  /* ---------- AI assistant: write what happened, check the changes, apply ---------- */
+  const loadAll = async () => { const D = {}; await Promise.all(COLLS.filter(c => c !== 'mine').map(async c => { D[c] = await getColl(c); })); return D; };
+  if (path === 'ai' && method === 'POST') {
+    const b = await req.json().catch(() => ({}));
+    const msgs = (Array.isArray(b.messages) ? b.messages : []).filter(m => m && typeof m.content === 'string').slice(-12);
+    if (!msgs.length || msgs.at(-1).role !== 'user') return fail(400, 'message');
+    const D = await loadAll();
+    let r; try { r = await chat(D, msgs); } catch (e) { console.error('ifadmin ai', e?.status, e?.message); return fail(502, 'ai'); }
+    if (r.ops && r.ops.length) { const pv = run(JSON.parse(JSON.stringify(D)), r.ops); r.lines = pv.lines; r.errors = pv.errors; }
+    return json(r);
+  }
+  if (path === 'ai/apply' && method === 'POST') {
+    const b = await req.json().catch(() => ({}));
+    if (!Array.isArray(b.ops) || !b.ops.length) return fail(400, 'ops');
+    const D = await loadAll(), before = JSON.parse(JSON.stringify(D));
+    const res = run(D, b.ops);
+    if (!res.touched.size) return json({ lines: res.lines, saved: 0 });
+    const id = new Date().toISOString().replace(/[:.]/g, '-');
+    const undo = {}; for (const c of res.touched) undo[c] = before[c];
+    await A().setJSON('undo/' + id, { at: new Date().toISOString(), by: user.email, ops: b.ops, before: undo });
+    for (const c of res.touched) await putColl(c, D[c]);
+    return json({ lines: res.lines, saved: res.lines.filter(l => l.ok).length, undo: id });
+  }
+  if (path === 'ai/undo' && method === 'POST') {
+    const b = await req.json().catch(() => ({}));
+    const u = /^[\w-]{10,40}$/.test(b.id || '') && await A().get('undo/' + b.id, { type: 'json' });
+    if (!u) return fail(404, 'undo');
+    for (const [c, m] of Object.entries(u.before || {})) if (COLLS.includes(c)) await putColl(c, m || {});
+    await A().delete('undo/' + b.id);
+    return json({ ok: true });
   }
 
   if (path === 'restore' && method === 'POST') {

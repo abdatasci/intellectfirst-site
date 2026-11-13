@@ -77,6 +77,9 @@
     catch (e) { alert('Could not load the backup. Please try again.'); }
   }
 
+  /* ---------- AI assistant panel (write what happened; it proposes the changes) ---------- */
+  function aiChat() { var sc = document.createElement('script'); sc.src = '/me/ifadmin/ai-chat.js'; document.body.appendChild(sc); }
+
   /* ---------- start ---------- */
   async function start() {
     var u = null; try { u = ID && await ID.getUser(); } catch (e) {}
@@ -104,7 +107,8 @@
       return;
     }
     document.open(); document.write(html); document.close();
-    var tries = 0, t = setInterval(function () { if (document.querySelector('main') || ++tries > 50) { clearInterval(t); toolbar(); } }, 100);
+    var tries = 0, t = setInterval(function () { if (document.querySelector('main') || ++tries > 50) { clearInterval(t); toolbar(); aiChat(); } }, 100);
+    window.addEventListener('ifadmin:changed', function () { setTimeout(poll, 300); });
     setInterval(poll, 20000); document.addEventListener('visibilitychange', function () { if (!document.hidden) poll(); });
   }
   start();
