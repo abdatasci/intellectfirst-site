@@ -4,7 +4,7 @@
 //   store "school" – students, classes, teachers, books (one JSON document each)
 //   store "photos" – profile photos by account id
 import { getStore } from '@netlify/blobs';
-import { getUser } from '@netlify/identity';
+import { getUser, refreshSession, admin as idAdmin } from '@netlify/identity';
 import { roleForCode, isStaff, lockKeysFromCode, verifyLockKeys } from '../lib/codes.mjs';
 import seed from '../lib/school-seed.json';
 import ckey from '../lib/content-key.json';
@@ -141,6 +141,8 @@ async function unwrapKey(code) {
   }
   return null;
 }
+/** easy to read and type: no 0/O, 1/l */
+function otp() { const A = 'abcdefghjkmnpqrstuvwxyz', D = '23456789', r = n => Array.from(globalThis.crypto.getRandomValues(new Uint32Array(n))); return r(4).map(x => A[x % A.length]).join('') + '-' + r(4).map(x => D[x % D.length]).join(''); }
 async function keepLockKeys(k) {
   if (!k || !(k.ks || k.kt)) return {};
   const cur = (await S().get('lockKeys', { type: 'json' })) || {};
@@ -236,6 +238,17 @@ export default async (req) => {
 
   if (path === 'books' && method === 'GET') return json({ books: await doc('books') });
 
+  // new self-registered accounts: skip the email-confirmation step (students rarely open that email)
+  if (path === 'confirm' && method === 'POST') {
+    const b = await req.json().catch(() => ({}));
+    try {
+      const u = await idAdmin.getUser(str(b.id, 80));
+      const made = Date.parse(u.createdAt || u.created_at || 0);
+      if (!u || String(u.email).toLowerCase() !== str(b.email, 200).toLowerCase() || !(Date.now() - made < 15 * 60000)) return fail(403, 'no');
+      await idAdmin.updateUser(u.id, { confirm: true });
+      return json({ ok: true });
+    } catch (e) { console.error('confirm', e); return fail(400, 'no'); }
+  }
   // keys typed on any device are checked against keys.json before they are kept
   if (path === 'lockkeys' && method === 'POST') {
     const b = await req.json().catch(() => ({}));
@@ -254,6 +267,7 @@ export default async (req) => {
     return json(isStaff(role) && k.kt ? { ks: k.ks, kt: k.kt, role: 'teacher' } : { ks: k.ks, role: 'student' });
   }
 
+  try { await refreshSession(); } catch {}   // an expired 1-hour token is renewed from the refresh cookie: people stay signed in
   let user; try { user = await getUser(); } catch { user = null; }
   if (!user) return fail(401, 'signin');
   const uid = user.id;
@@ -296,6 +310,15 @@ export default async (req) => {
   }
 
   if (!profile?.role) return fail(403, 'activate');
+
+  // the student chose their own password: forget the one-time password
+  if (path === 'password-changed' && method === 'POST') {
+    if (profile.mustChange) { delete profile.mustChange; await U().setJSON(`u/${uid}/profile`, profile); }
+    const L = (await S().get('logins', { type: 'json' })) || {};
+    for (const l of Object.values(L)) if (l.uid === uid) { delete l.pw; l.changed = new Date().toISOString(); }
+    await S().setJSON('logins', L);
+    return json({ ok: true });
+  }
 
   if (path === 'profile' && method === 'PUT') {
     const b = await req.json().catch(() => ({}));
@@ -544,6 +567,54 @@ export default async (req) => {
       const list = await doc('students'); let n = 0;
       for (const s of list) if (s.pay && +s.pay.fee > 0 && !(+s.pay.dueDay >= 1)) { s.pay.dueDay = day; n++; }
       await save('students', list); return json({ updated: n, students: list });
+    }
+    /* ---------- student logins made by the school (login = phone number, one-time password) ---------- */
+    if (path === 'admin/logins' && method === 'GET') {
+      const list = await doc('students'), L = (await S().get('logins', { type: 'json' })) || {};
+      const dir = (await U().get('directory', { type: 'json' })) || {};
+      return json({ rows: list.filter(st => st.status !== 'withdrawn').map(st => {
+        const l = L[st.id], acc = st.uid && dir[st.uid];
+        return { sid: st.id, name: `${st.first} ${st.last}`.trim(), phone: st.phone || '', classes: st.classes || [], uid: st.uid || null,
+          email: acc?.email || null, login: l?.login || null, pw: l?.pw || null, made: l?.at || null, changed: l?.changed || null, own: !!(st.uid && !l) };
+      }) });
+    }
+    if ((path === 'admin/logins/create' || path === 'admin/logins/reset') && method === 'POST') {
+      const want = new Set((b.sids || []).slice(0, 12));
+      const list = await doc('students'), L = (await S().get('logins', { type: 'json' })) || {};
+      const dir = (await U().get('directory', { type: 'json' })) || {};
+      const used = new Set(Object.values(L).map(l => l.login));
+      const done = [], errors = [];
+      for (const st of list.filter(x => want.has(x.id))) {
+        try {
+          const pw = otp();
+          if (path === 'admin/logins/reset') {
+            const uid2 = st.uid || L[st.id]?.uid; if (!uid2) throw new Error('no account');
+            await idAdmin.updateUser(uid2, { password: pw });
+            const pr = await getProfile(uid2); if (pr) { pr.mustChange = true; await U().setJSON(`u/${uid2}/profile`, pr); }
+            L[st.id] = { ...(L[st.id] || {}), uid: uid2, login: L[st.id]?.login || dir[uid2]?.email || '', pw, at: new Date().toISOString(), changed: null };
+            done.push(st.id); continue;
+          }
+          if (st.uid) continue;                                            // already has an account
+          let base = phoneKey(st.phone); if (base.length < 10) base = 'if' + st.id.replace(/[^a-z0-9]/gi, '').toLowerCase();
+          let login = base, n = 2; while (used.has(login)) login = `${base}-${n++}`;  // brothers and sisters can share a parent's phone
+          const email = `${login}@students.intellectfirst.com`;
+          let u;
+          try { u = await idAdmin.createUser({ email, password: pw, data: { user_metadata: { full_name: `${st.first} ${st.last}`.trim() } } }); }
+          catch (e) {   // made before, but the link was lost: find it and set a new password
+            const all = await idAdmin.listUsers({ perPage: 1000 }); u = all.find(x => x.email === email); if (!u) throw e;
+            await idAdmin.updateUser(u.id, { password: pw });
+          }
+          used.add(login);
+          const name = `${st.first} ${st.last}`.trim();
+          await putProfile(u.id, { name, email, phone: st.phone || '', role: 'student', since: new Date().toISOString(), studentId: st.id, mustChange: true, made: 'school' });
+          st.uid = u.id;
+          L[st.id] = { uid: u.id, login, pw, at: new Date().toISOString() };
+          done.push(st.id);
+        } catch (e) { console.error('login', st.id, e); errors.push({ sid: st.id, error: String(e.message || e).slice(0, 120) }); }
+      }
+      await saveStudents(list);
+      await S().setJSON('logins', L);
+      return json({ done, errors });
     }
     if (path === 'admin/attendance' && method === 'GET') return json({ attendance: await loadAttendance() });
     if (path === 'admin/finance' && method === 'GET') return json({ entries: await finDoc() });

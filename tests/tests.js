@@ -21,7 +21,7 @@
     if (!res.ok) { var e = new Error(d.error || res.status); e.code = d.error; e.status = res.status; throw e; }
     return d;
   }
-  async function loadMe() { try { var r = await fetch('/api/school/me', { credentials: 'same-origin' }); if (r.ok) { var d = await r.json(); ME = d.profile || null; } } catch (e) {} }
+  async function loadMe() { try { if (window.NFIdentity) await NFIdentity.getUser(); } catch (e) {} try { var r = await fetch('/api/school/me', { credentials: 'same-origin' }); if (r.ok) { var d = await r.json(); ME = d.profile || null; } } catch (e) {} }
   function staff() { return ME && (ME.role === 'teacher' || ME.role === 'admin'); }
   function bank(id) { return BANKS.filter(function (b) { return b.id === id; })[0]; }
   function course(id) { return COURSES.filter(function (c) { return c[0] === id; })[0]; }

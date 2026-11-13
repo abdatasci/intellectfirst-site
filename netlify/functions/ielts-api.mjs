@@ -4,7 +4,7 @@
 // AI scoring goes through Netlify AI Gateway with the Anthropic SDK (no API key in code).
 import Anthropic from '@anthropic-ai/sdk';
 import { getStore } from '@netlify/blobs';
-import { getUser } from '@netlify/identity';
+import { getUser, refreshSession } from '@netlify/identity';
 import bank from '../../a/ielts/data/writing.json';
 import speakBank from '../../a/ielts/data/speaking.json';
 import { roleForCode, isStaff } from '../lib/codes.mjs';
@@ -174,7 +174,7 @@ export default async (req) => {
   if (path === 'health') return json({ ok: true, ai: !!process.env.ANTHROPIC_BASE_URL || !!process.env.ANTHROPIC_API_KEY });
 
   let user;
-  try { user = await getUser(); } catch { user = null; }
+  try { user = (await refreshSession().catch(() => null), await getUser()); } catch { user = null; }
   if (!user) return fail(401, 'signin');
   const uid = user.id;
   let profile = await getProfile(uid);

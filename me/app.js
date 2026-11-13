@@ -70,9 +70,19 @@
   function panel(title, sub, inner) { return '<div class="panel"><h2>' + title + '</h2><p class="sub">' + sub + '</p>' + inner + '</div>'; }
   function err(el, msg) { var e = $('.err', el) || $('.ok-msg', el); if (e) e.remove(); var d = document.createElement('div'); d.className = 'err'; d.textContent = msg; el.appendChild(d); }
   function okm(el, msg) { var e = $('.err', el) || $('.ok-msg', el); if (e) e.remove(); var d = document.createElement('div'); d.className = 'ok-msg'; d.textContent = msg; el.appendChild(d); }
+  /* logins made by the school are the phone number (sisters/brothers: 7012345678-2) → <login>@students.intellectfirst.com */
+  function loginEmail(v) {
+    v = String(v || '').trim();
+    if (v.indexOf('@') >= 0) return v;
+    var x = v.toLowerCase().replace(/\s+/g, ''), m = x.match(/^(.*\d.*)(-[2-9])$/), head = x, tail = '';
+    if (m && m[1].replace(/\D/g, '').length >= 10) { head = m[1]; tail = m[2]; }
+    var d = head.replace(/\D/g, '');
+    var id = /^if/.test(head) ? head.replace(/[^a-z0-9]/g, '') : (d.length >= 10 ? d.slice(-10) : d);
+    return id + tail + '@students.intellectfirst.com';
+  }
   function authMsg(e) {
     var m = String((e && e.message) || e || '');
-    if (/invalid_grant|Invalid login|No user found/i.test(m)) return 'That email and password do not match.';
+    if (/invalid_grant|Invalid login|No user found/i.test(m)) return 'That login and password do not match. Check the phone number or email, and the password from the school.';
     if (/confirm/i.test(m)) return 'Please confirm your email first, then sign in.';
     if (/already registered|exists/i.test(m)) return 'An account with this email already exists. Sign in instead.';
     if (/at least|weak|short/i.test(m)) return 'Choose a password with at least 8 characters.';
@@ -83,11 +93,11 @@
   function vLogin() {
     setNav('');
     view.innerHTML = panel('Sign in', 'One account for your IF Academy profile, classes and the IELTS Centre.',
-      '<form id="f" novalidate><label class="f">Email</label><input class="inp" id="em" type="email" autocomplete="email"><label class="f">Password</label><input class="inp" id="pw" type="password" autocomplete="current-password"><button class="btn" type="submit">Sign in</button></form>' +
+      '<form id="f" novalidate><label class="f">Phone number or email</label><input class="inp" id="em" type="text" inputmode="email" autocomplete="username" placeholder="701 234 56 78  or  name@mail.com"><p class="hint">Got a login from the school? Type the phone number it shows.</p><label class="f">Password</label><input class="inp" id="pw" type="password" autocomplete="current-password"><button class="btn" type="submit">Sign in</button></form>' +
       '<p class="alt"><a href="#/forgot">Forgot password?</a> · New here? <a href="#/register">Create an account</a><br>Teacher or staff? <a href="#/staff">Staff registration</a></p>');
     $('#f').onsubmit = async function (ev) {
       ev.preventDefault(); var f = ev.target, b = $('button', f); b.disabled = true;
-      try { await ID.login($('#em').value.trim(), $('#pw').value); await loadMe(); header(); go(role() ? '#/' : '#/activate'); }
+      try { await ID.login(loginEmail($('#em').value), $('#pw').value); await loadMe(); header(); go(role() ? '#/' : '#/activate'); }
       catch (e) { err(f, authMsg(e)); b.disabled = false; }
     };
   }
@@ -109,6 +119,9 @@
       try {
         var u = await ID.signup(em, pw, { full_name: name });
         lsSet('if.pending', { code: cc, name: name, phone: ph });
+        if (u && !u.confirmedAt && u.id) {   // confirm straight away so the student can sign in now
+          try { var cr = await fetch('/api/school/confirm', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: u.id, email: em }) }); if (cr.ok) u.confirmedAt = new Date().toISOString(); } catch (e3) {}
+        }
         if (u && u.confirmedAt) {
           await ID.login(em, pw); await loadMe(); header();
           try { await api('activate', { method: 'POST', body: { code: cc, name: name, phone: ph } }); lsSet('if.pending', null); }
@@ -219,10 +232,25 @@
       catch (e) { toast('Could not save. Try again.'); }
     };
   }
+  function vNewPassword() {
+    setNav('');
+    view.innerHTML = panel('Choose your own password', 'You signed in with the one-time password from IF Academy. Choose a password only you know; you will use it from now on.',
+      '<form id="f" novalidate><label class="f">New password</label><input class="inp" id="p1" type="password" autocomplete="new-password"><p class="hint">At least 8 characters.</p><label class="f">Repeat it</label><input class="inp" id="p2" type="password" autocomplete="new-password"><button class="btn" type="submit">Save my password</button></form>' +
+      (/@students\.intellectfirst\.com$/.test(ME.user.email) ? '<p class="alt">Your login stays your phone number: <b>' + esc(ME.user.email.split('@')[0]) + '</b></p>' : ''));
+    $('#f').onsubmit = async function (ev) {
+      ev.preventDefault(); var f = ev.target, b = $('button', f), a = $('#p1').value, c = $('#p2').value;
+      if (a.length < 8) return err(f, 'Choose a password with at least 8 characters.');
+      if (a !== c) return err(f, 'The two passwords are different.');
+      b.disabled = true;
+      try { await ID.updateUser({ password: a }); await api('password-changed', { method: 'POST' }); await loadMe(); toast('Password saved'); go('#/'); }
+      catch (e) { b.disabled = false; err(f, authMsg(e)); }
+    };
+  }
   async function vProfile() {
     setNav('home');
     if (!USER) return go('#/login');
     if (!role()) return go('#/activate');
+    if (ME.profile && ME.profile.mustChange) return vNewPassword();
     var p = ME.profile, st = ME.student, r = role();
     var roleLbl = r === 'admin' ? 'Administrator' : r === 'teacher' ? 'Teacher' : 'Student';
     var h = '<section class="prof"><div style="position:relative">' + avatar(ME.user.id, p.name, p.photo) + '<button class="avbtn" id="ph" style="border-radius:0 0 60px 60px">Change</button></div>' +
@@ -454,18 +482,57 @@
   /* ---------- admin ---------- */
   async function loadAdmin() { ADMIN = await api('admin/all'); try { ADMIN.att = (await api('admin/attendance')).attendance; } catch (e) { ADMIN.att = {}; } ME.books = ADMIN.books; ME.teachers = ADMIN.teachers; return ADMIN; }
   function adminTabs(on) {
-    return '<div class="tabs2">' + [['accounts', 'Accounts'], ['classes', 'Classes'], ['teachers', 'Teachers'], ['books', 'Books'], ['export', 'Export results'], ['placement', 'Placement tests'], ['bot', 'Bot & reminders']].map(function (t) {
+    return '<div class="tabs2">' + [['logins', 'Student logins'], ['accounts', 'Accounts'], ['classes', 'Classes'], ['teachers', 'Teachers'], ['books', 'Books'], ['export', 'Export results'], ['placement', 'Placement tests'], ['bot', 'Bot & reminders']].map(function (t) {
       return '<a href="#/admin/' + t[0] + '" class="' + (on === t[0] ? 'on' : '') + '">' + t[1] + '</a>';
     }).join('') + '<a href="/me/ifadmin/" style="background:var(--navy);color:#fff;border-color:var(--navy)">IF Admin ↗</a></div>';
   }
   async function vAdmin(tab) {
     setNav('admin'); if (role() !== 'admin') return go('#/');
-    if (!tab || tab === 'students' || tab === 'finance' || tab === 'import') tab = 'accounts';
+    if (!tab || tab === 'students' || tab === 'finance' || tab === 'import') tab = 'logins';
     view.innerHTML = '<p style="margin-top:30px"><span class="spin"></span> Loading school records…</p>';
     await loadAdmin();
     var head = '<section class="hero" style="padding-bottom:4px"><div class="eyebrow">Administrator</div><h1>School admin</h1><p class="lead">' + ADMIN.students.length + ' students · ' + ADMIN.classes.length + ' classes · ' + ADMIN.teachers.length + ' teachers · ' + ADMIN.accounts.length + ' accounts</p></section>' +
       '<div class="panel wide" style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-bottom:14px"><div style="flex:1;min-width:240px"><b>Students, payments, attendance and results are managed in IF Admin.</b><br><span class="sub">The website reads them from IF Admin automatically: student profiles, teacher views, the assistant and Telegram reminders. A payment marked in IF Admin stops that student\'s reminder.</span></div><a class="btn" href="/me/ifadmin/">Open IF Admin ↗</a></div>' + adminTabs(tab);
-    ({ students: aStudents, classes: aClasses, teachers: aTeachers, books: aBooks, accounts: aAccounts, import: aImport, export: aExport, placement: aPlacement, finance: aFinance, bot: aBot }[tab] || aAccounts)(head);
+    ({ students: aStudents, classes: aClasses, teachers: aTeachers, books: aBooks, accounts: aAccounts, logins: aLogins, import: aImport, export: aExport, placement: aPlacement, finance: aFinance, bot: aBot }[tab] || aAccounts)(head);
+  }
+
+  /* ---------- student logins: the school makes the accounts, students get a login and a one-time password ---------- */
+  async function aLogins(head) {
+    view.innerHTML = head + '<div class="panel wide"><span class="spin"></span></div>';
+    var d; try { d = await api('admin/logins'); } catch (e) { view.innerHTML = head + '<div class="panel wide">Could not load.</div>'; return; }
+    var rows = d.rows, none = rows.filter(function (r) { return !r.uid; }), pending = rows.filter(function (r) { return r.pw; });
+    var site = location.origin + '/me/';
+    function msg(r) {
+      return 'IF Academy — ' + r.name + '\nYour student account / Ваш аккаунт ученика:\n' + site + '\nLogin / Логин: ' + r.login + '\nPassword / Пароль: ' + r.pw +
+        '\nThis password works once: after you sign in, choose your own. / Это временный пароль: после входа придумайте свой.';
+    }
+    function wa(r) { var ph = String(r.phone || '').replace(/\D/g, ''); if (ph.length === 10) ph = '7' + ph; if (ph.length === 11 && ph[0] === '8') ph = '7' + ph.slice(1); return ph.length >= 11 ? 'https://wa.me/' + ph + '?text=' + encodeURIComponent(msg(r)) : null; }
+    view.innerHTML = head +
+      '<div class="panel wide"><h2>Student logins</h2><p class="sub">Make an account for every student in IF Admin. The login is the student\'s phone number; the password works once, then the student chooses their own. Send each student their details by WhatsApp or Telegram, or print them.</p>' +
+      '<div class="row" style="gap:10px;flex-wrap:wrap"><button class="btn" id="mkall"' + (none.length ? '' : ' disabled') + '>Create accounts for ' + none.length + ' student' + (none.length === 1 ? '' : 's') + '</button>' +
+      (pending.length ? '<button class="btn ghost" id="cpall">Copy all ' + pending.length + ' messages</button><button class="btn ghost" onclick="print()">Print</button>' : '') + '<span class="small" id="prog"></span></div>' +
+      '<div style="overflow-x:auto;margin-top:14px"><table class="t"><thead><tr><th>Student</th><th>Phone</th><th>Login</th><th>One-time password</th><th>Status</th><th></th></tr></thead><tbody>' +
+      rows.map(function (r) {
+        var st = !r.uid ? '<span class="chip2 mute">No account</span>' : r.pw ? '<span class="chip2 warn">Waiting for first sign-in</span>' : r.own ? '<span class="chip2 ok">Own account</span>' : '<span class="chip2 ok">Active</span>';
+        var w = r.pw && wa(r);
+        return '<tr><td><b>' + esc(r.name) + '</b><div class="small">' + esc((r.classes || []).join(', ')) + '</div></td><td>' + esc(r.phone || '–') + '</td><td><code>' + esc(r.login || (r.email || '–')) + '</code></td><td>' + (r.pw ? '<code style="font-size:15px">' + esc(r.pw) + '</code>' : '–') + '</td><td>' + st + '</td><td style="white-space:nowrap">' +
+          (r.pw ? (w ? '<a class="linkbtn" target="_blank" rel="noopener" href="' + w + '">WhatsApp</a> · ' : '') + '<button class="linkbtn" data-cp="' + esc(r.sid) + '">Copy</button> · ' : '') +
+          (!r.uid ? '<button class="linkbtn" data-mk="' + esc(r.sid) + '">Create</button>' : '<button class="linkbtn" data-rs="' + esc(r.sid) + '">New password</button>') + '</td></tr>';
+      }).join('') + '</tbody></table></div></div>';
+    var byId = {}; rows.forEach(function (r) { byId[r.sid] = r; });
+    async function run(path, ids) {
+      var p = $('#prog'), all = ids.slice(), errs = 0;
+      for (var i = 0; i < all.length; i += 10) {
+        p.innerHTML = '<span class="spin"></span> ' + Math.min(i + 10, all.length) + ' of ' + all.length + '…';
+        try { var r = await api(path, { method: 'POST', body: { sids: all.slice(i, i + 10) } }); errs += r.errors.length; } catch (e) { errs += 10; }
+      }
+      toast(errs ? 'Done, but ' + errs + ' could not be made. Try again.' : 'Done'); aLogins(head);
+    }
+    var mk = $('#mkall'); if (mk) mk.onclick = function () { if (confirm('Create accounts for ' + none.length + ' students?')) run('admin/logins/create', none.map(function (r) { return r.sid; })); };
+    view.querySelectorAll('[data-mk]').forEach(function (b) { b.onclick = function () { run('admin/logins/create', [b.dataset.mk]); }; });
+    view.querySelectorAll('[data-rs]').forEach(function (b) { b.onclick = function () { if (confirm('Give ' + byId[b.dataset.rs].name + ' a new one-time password? Their current password stops working.')) run('admin/logins/reset', [b.dataset.rs]); }; });
+    view.querySelectorAll('[data-cp]').forEach(function (b) { b.onclick = function () { try { navigator.clipboard.writeText(msg(byId[b.dataset.cp])); toast('Message copied'); } catch (e) {} }; });
+    var cp = $('#cpall'); if (cp) cp.onclick = function () { try { navigator.clipboard.writeText(pending.map(msg).join('\n\n———\n\n')); toast('All messages copied'); } catch (e) {} };
   }
 
   /* ---------- tuition (student.pay = {fee, dueDay, paid:{'YYYY-MM': 'YYYY-MM-DD'}}) ---------- */

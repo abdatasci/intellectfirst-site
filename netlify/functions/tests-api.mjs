@@ -7,7 +7,7 @@
 //   GET  /api/tests/mine      my tests and results
 // Store "tests": t/<code>, r/<code>/<rid>, u/<uid> (index), quota/<uid>/<day>
 import { getStore } from '@netlify/blobs';
-import { getUser } from '@netlify/identity';
+import { getUser, refreshSession } from '@netlify/identity';
 import { randomInt } from 'node:crypto';
 import { isStaff } from '../lib/codes.mjs';
 import { aiJSON, cleanQ, str, MODEL_MARK } from '../lib/aiq.mjs';
@@ -25,7 +25,7 @@ const SYS = `You write English tests for IF Academy, a language school in Kazakh
 Use natural, correct British English at exactly the requested CEFR level. Every multiple-choice question has exactly one clearly correct answer and plausible wrong options. Classroom-friendly content only. Reply with JSON only.`;
 
 async function who() {
-  let user = null; try { user = await getUser(); } catch {}
+  let user = null; try { user = (await refreshSession().catch(() => null), await getUser()); } catch {}
   const profile = user ? (await U().get(`u/${user.id}/profile`, { type: 'json' })) || null : null;
   return { user, profile, staff: isStaff(profile?.role) };
 }

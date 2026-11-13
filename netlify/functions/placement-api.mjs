@@ -5,7 +5,7 @@
 // so every candidate is measured against the same items. AI is used only where human judgement is needed.
 import Anthropic from '@anthropic-ai/sdk';
 import { getStore } from '@netlify/blobs';
-import { getUser } from '@netlify/identity';
+import { getUser, refreshSession } from '@netlify/identity';
 import bank from '../../a/placement-test/bank.json';
 import { loadStudents, saveStudents } from '../lib/students.mjs';
 
@@ -62,7 +62,7 @@ async function rate(writing, speaking) {
 }
 
 async function whoami() {
-  let user = null; try { user = await getUser(); } catch { user = null; }
+  let user = null; try { user = (await refreshSession().catch(() => null), await getUser()); } catch { user = null; }
   if (!user) return { user: null, profile: null };
   const profile = (await U().get(`u/${user.id}/profile`, { type: 'json' })) || null;
   return { user, profile };

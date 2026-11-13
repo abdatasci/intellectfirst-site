@@ -6,7 +6,7 @@
 //   POST /api/ifadmin/restore        → {collections:{...}} replace collections from a backup
 // Data lives in the private Blobs store "ifadmin", one document per collection (key c/<name>) holding {id: doc}.
 import { getStore } from '@netlify/blobs';
-import { getUser } from '@netlify/identity';
+import { getUser, refreshSession } from '@netlify/identity';
 import enc from '../lib/ifadmin-app.json';
 
 const COLLS = ['students', 'groups', 'attendance', 'payments', 'expenses', 'settings', 'staff', 'results', 'access', 'mine'];
@@ -36,7 +36,7 @@ async function appHtml() {
 export default async (req) => {
   const url = new URL(req.url);
   const path = url.pathname.replace(/^\/api\/ifadmin\/?/, '').replace(/\/$/, '');
-  let user; try { user = await getUser(); } catch { user = null; }
+  let user; try { user = (await refreshSession().catch(() => null), await getUser()); } catch { user = null; }
   if (!user) return fail(401, 'signin');
   const profile = (await U().get(`u/${user.id}/profile`, { type: 'json' })) || null;
   if (profile?.role !== 'admin') return fail(403, 'admin');
