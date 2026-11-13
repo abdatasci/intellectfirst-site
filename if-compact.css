@@ -56,3 +56,22 @@ section, main section { padding-block: 60px !important; }
 #teachers .eco-card.open > .profile-subheading { display: block; }
 #teachers .eco-card.open > .profile-subheading ~ p { display: block; }
 #teachers .t-more { margin-top: 10px; align-self: flex-start; background: none; border: 0; padding: 0; font: 600 13px/1.4 inherit; color: var(--accent, #b08a3e); cursor: pointer; text-decoration: underline; }
+
+/* ---------- tablets (iPad portrait and landscape) ---------- */
+@media (min-width: 641px) and (max-width: 1100px) {
+  .x-hero .hero-actions { flex-direction: row !important; flex-wrap: wrap; align-items: center !important; justify-content: flex-start !important; }
+  .x-hero .hero-actions .cta { flex: none; }
+  /* robot sits top-right, clear of the buttons and the facts row */
+  .x-bot { right: 28px; bottom: auto; top: 118px; width: 128px; }
+  .bot { width: 128px; }
+  .x-bubble { right: 104px; top: -26px; min-width: 120px; padding: 8px 14px 7px; }
+  .hi3d { font-size: 26px; }
+  .hi-lang { font-size: 10px; }
+}
+/* the open menu on tablets: bigger tap targets, scrolls if it is taller than the screen */
+@media (min-width: 641px) and (max-width: 1280px) {
+  .navlinks.open { max-height: calc(100dvh - 96px); overflow-y: auto; -webkit-overflow-scrolling: touch; padding-inline: 36px !important; }
+  .navlinks.open > a:not(.cta) { padding-block: 14px; font-size: 16px; }
+}
+/* touch screens: no hover-only lift */
+@media (hover: none) { #gallery .g-item:hover { transform: none; } }
