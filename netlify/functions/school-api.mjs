@@ -64,7 +64,7 @@ async function getProfile(uid) { return (await U().get(`u/${uid}/profile`, { typ
 async function putProfile(uid, p) {
   await U().setJSON(`u/${uid}/profile`, p);
   const dir = (await U().get('directory', { type: 'json' })) || {};
-  dir[uid] = { name: p.name, email: p.email, role: p.role, studentId: p.studentId || null, teacherId: p.teacherId || null, photo: !!p.photo, phone: p.phone || '', level: p.level || '', classChoice: p.classChoice || '' };
+  dir[uid] = { alumni: !!p.alumni, name: p.name, email: p.email, role: p.role, studentId: p.studentId || null, teacherId: p.teacherId || null, photo: !!p.photo, phone: p.phone || '', level: p.level || '', classChoice: p.classChoice || '' };
   await U().setJSON('directory', dir);
 }
 async function ieltsSummary(uid) {
@@ -241,7 +241,7 @@ export default async (req) => {
   // classes for the registration form (names and times only)
   if (path === 'classes' && method === 'GET') {
     const cl = await doc('classes');
-    return json({ classes: cl.map(c => ({ id: c.id, label: c.label, schedule: c.schedule || '', kind: c.kind || '' })) });
+    return json({ classes: [...cl.map(c => ({ id: c.id, label: c.label, schedule: c.schedule || '', kind: c.kind || '' })), { id: 'alumni', label: 'IF Alumni', schedule: 'Former students who finished their course', kind: 'alumni' }] });
   }
   // new self-registered accounts: skip the email-confirmation step (students rarely open that email)
   if (path === 'confirm' && method === 'POST') {
@@ -299,7 +299,8 @@ export default async (req) => {
     const finalRole = profile?.role && RANK[profile.role] > RANK[role] ? profile.role : role;
     profile = { ...(profile || {}), name: str(b.name, 80) || profile?.name || user.name || user.email.split('@')[0], email: user.email,
       phone: str(b.phone, 40) || profile?.phone || '', role: finalRole,
-      level: str(b.level, 30) || profile?.level || '', classChoice: str(b.classChoice, 80) || profile?.classChoice || '', since: profile?.since || new Date().toISOString(), attempts: profile?.attempts || 0 };
+      level: str(b.level, 30) || profile?.level || '', classChoice: str(b.classChoice, 80) || profile?.classChoice || '',
+      alumni: b.classChoice === 'IF Alumni' ? true : !!profile?.alumni, since: profile?.since || new Date().toISOString(), attempts: profile?.attempts || 0 };
     profile = await linkByPhone(uid, profile);
     await putProfile(uid, profile);
     if (isStaff(role) && !(await S().get('contentKey', { type: 'json' }))) await storeKeyFrom(b.code);
@@ -486,6 +487,7 @@ export default async (req) => {
       // manually link / unlink an account to a student or teacher record, or change role
       const p = await getProfile(str(b.uid, 60)); if (!p) return fail(404, 'missing');
       if ('role' in b && RANK[b.role]) p.role = b.role;
+      if ('alumni' in b) p.alumni = !!b.alumni;
       if ('studentId' in b) {
         const list = await doc('students');
         list.forEach(s => { if (s.uid === b.uid) s.uid = null; });
@@ -578,9 +580,9 @@ export default async (req) => {
     if (path === 'admin/logins' && method === 'GET') {
       const list = await doc('students'), L = (await S().get('logins', { type: 'json' })) || {};
       const dir = (await U().get('directory', { type: 'json' })) || {};
-      return json({ rows: list.filter(st => st.status !== 'withdrawn').map(st => {
+      return json({ rows: list.map(st => {
         const l = L[st.id], acc = st.uid && dir[st.uid];
-        return { sid: st.id, name: `${st.first} ${st.last}`.trim(), phone: st.phone || '', classes: st.classes || [], uid: st.uid || null,
+        return { former: st.status === 'withdrawn', alumni: !!acc?.alumni, sid: st.id, name: `${st.first} ${st.last}`.trim(), phone: st.phone || '', classes: st.classes || [], uid: st.uid || null,
           email: acc?.email || null, login: l?.login || null, pw: l?.pw || null, made: l?.at || null, changed: l?.changed || null, own: !!(st.uid && !l) };
       }) });
     }
@@ -612,7 +614,7 @@ export default async (req) => {
           }
           used.add(login);
           const name = `${st.first} ${st.last}`.trim();
-          await putProfile(u.id, { name, email, phone: st.phone || '', role: 'student', since: new Date().toISOString(), studentId: st.id, mustChange: true, made: 'school' });
+          await putProfile(u.id, { name, email, phone: st.phone || '', role: 'student', since: new Date().toISOString(), studentId: st.id, mustChange: true, made: 'school', ...(st.status === 'withdrawn' ? { alumni: true, classChoice: 'IF Alumni' } : {}) });
           st.uid = u.id;
           L[st.id] = { uid: u.id, login, pw, at: new Date().toISOString() };
           done.push(st.id);
