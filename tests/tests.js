@@ -1,4 +1,4 @@
-/* IF AI Test Centre — create AI-written tests for any course/unit/level, take them, see AI marking and class results. */
+/* IF Test Centre — every IF test centre in one place, plus create AI-written tests for any course/unit/level, take them, see AI marking and class results. */
 (function () {
   'use strict';
   var L = window.LIVE, $ = L.$, esc = L.esc, view = $('#view');
@@ -33,15 +33,32 @@
     view.innerHTML = '<div class="hwrap"><p class="mini">Loading…</p></div>';
     if (!BANKS) try { BANKS = (await (await fetch('/live/banks.json')).json()).banks; } catch (e) { BANKS = []; }
     var mine = null; if (ME) try { mine = await api('mine'); } catch (e) {}
-    var h = '<div class="hwrap"><div class="hero"><h1>AI Test Centre</h1><p>AI writes a new test for any course, unit or level in seconds: grammar, vocabulary, reading and writing. It is marked straight away, the writing too, with explanations and advice on what to revise.</p></div>' +
+    var h = '<div class="hwrap"><div class="hero"><h1>IF Test Centre</h1><p>Every IF test in one place, all supported by AI: the placement test, every course test centre, Cambridge and IELTS, plus new AI tests for any course. Writing is marked by AI and results go straight to your profile and your teacher.</p></div>' +
+      centres() +
       '<div class="grid2"><div>' +
       '<div class="panel"><h2>Have a test code?</h2><p class="sub">Your teacher gives you a 6-letter code or a link.</p><form class="codebox" id="cf"><input class="inp" id="code" maxlength="6" placeholder="CODE" autocomplete="off"><button class="btn navy">Open test</button></form><div class="err" id="cerr" style="color:var(--bad)"></div></div>' +
-      '<div class="panel"><h2>' + (staff() ? 'Create a test for your class' : 'Make a practice test') + '</h2><p class="sub">' + (staff() ? 'You get a code, link and QR code for students. Results come back to you, and are added to each student\'s record.' : 'A new test every time, marked instantly.') + '</p>' +
+      '<div class="panel"><h2>' + (staff() ? 'Create an AI test for your class' : 'Make an AI practice test') + '</h2><p class="sub">' + (staff() ? 'AI writes it in seconds. You get a code, link and QR code for students; results come back to you and are added to each student\'s record.' : 'AI writes a new test for any course, unit or level, and marks it instantly.') + '</p>' +
       (ME ? '<div id="form"></div>' : '<p>Please <a href="/me/#/login">sign in</a> to make AI tests. If your teacher gave you a code, enter it above (no account needed).</p>') + '</div></div>' +
-      '<div>' + (mine ? mineHtml(mine) : '') + '<div class="panel"><h2>Other tests</h2><div class="list"><div class="row"><div style="flex:1"><b>IF Placement Test</b><div class="mini">Find your level · AI marks writing and speaking</div></div><a class="btn sm navy" href="/a/placement-test/">Open</a></div><div class="row"><div style="flex:1"><b>IELTS Centre</b><div class="mini">AI-marked IELTS Writing and Speaking</div></div><a class="btn sm navy" href="/a/ielts/">Open</a></div></div></div></div></div></div>';
+      '<div>' + (mine ? mineHtml(mine) : '<div class="panel"><h2>Your results</h2><p class="sub">Results from every test here are saved to your profile automatically. <a href="/me/">Open My account</a>.</p></div>') + '</div></div></div>';
     view.innerHTML = h;
     $('#cf').onsubmit = function (e) { e.preventDefault(); var c = $('#code').value.trim().toUpperCase(); if (c.length !== 6) { $('#cerr').textContent = 'The code has 6 letters and numbers.'; return; } location.hash = '#/t/' + c; };
     if (ME) form();
+  }
+  /* every IF test centre in one place */
+  var CENTRES = [
+    ['Start here', [['IF Placement Test', 'Adaptive, free: grammar, vocabulary, reading, listening, writing and speaking, all marked by AI', '/a/placement-test/', 0]]],
+    ['English File', [['Elementary · A1', 'Entry, file, progress and end-of-course tests', '/a/ef-a1-tests/', 1], ['Pre-intermediate · A2', 'Entry, file, progress and end-of-course tests', '/a/ef-a2-tests/', 1], ['Intermediate · B1', 'Entry, file, progress and end-of-course tests', '/a/ef-b1-tests/', 1], ['Upper-intermediate · B2', 'Entry, file, progress and end-of-course tests', '/a/ef-b2-tests/', 1], ['Advanced · C1', 'Entry, file, progress and end-of-course tests', '/a/ef-c1-tests/', 1]]],
+    ['English for Teenagers', [['B1–B2', '46 tests: entry, unit, part, progress and end-of-course', '/a/teens-b1-tests/', 1], ['B2–C1', 'Entry, unit, part, progress and end-of-course tests', '/a/teens-b2-tests/', 1]]],
+    ['Cambridge exams', [['Young Learners · Starters, Movers, Flyers', 'Practice tests for ages 6–12', '/a/yl-tests/', 1], ['PET · B1 Preliminary', 'Exam-style tests with every part', '/a/pet-tests/', 1]]],
+    ['IELTS', [['IELTS Centre', 'Mock tests, Writing and Speaking with live AI band scores', '/a/ielts/', 0]]]
+  ];
+  function centres() {
+    return '<div class="panel tc"><h2>All test centres</h2><p class="sub">Every test is supported by AI: writing is marked by AI and every result is saved to the student\'s profile and the teacher\'s results.</p>' +
+      CENTRES.map(function (g) {
+        return '<div class="tc-g"><h3>' + esc(g[0]) + '</h3><div class="tc-grid">' + g[1].map(function (t) {
+          return '<a class="tc-card" href="' + t[2] + '"><b>' + esc(t[0]) + '</b><span>' + esc(t[1]) + '</span><span class="tc-tags"><i class="ai">✨ AI-marked</i>' + (t[3] ? '<i>Students</i>' : '<i>Open to all</i>') + '</span></a>';
+        }).join('') + '</div></div>';
+      }).join('') + '</div>';
   }
   function mineHtml(m) {
     var h = '';
