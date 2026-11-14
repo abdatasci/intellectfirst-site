@@ -4,6 +4,8 @@
 //   store "school" – students, classes, teachers, books (one JSON document each)
 //   store "photos" – profile photos by account id
 import { getStore } from '@netlify/blobs';
+import { readFile } from 'node:fs/promises';
+import { join } from 'node:path';
 import { getUser, refreshSession, admin as idAdmin } from '@netlify/identity';
 import { roleForCode, isStaff, lockKeysFromCode, verifyLockKeys, isPrivateCode } from '../lib/codes.mjs';
 import { listReceipts, decideReceipt, receiptFile } from '../lib/receipts.mjs';
@@ -379,6 +381,20 @@ export default async (req) => {
   }
 
   if (!profile?.role) return fail(403, 'activate');
+
+  // study PDFs (IELTS Studio vocabulary and writing language banks): students and teachers only
+  if (path.startsWith('download/') && method === 'GET') {
+    const FILES = { 'ielts-vocabulary-bank': 'IF Academy - IELTS Vocabulary Bank.pdf', 'ielts-writing-language-bank': 'IF Academy - IELTS Writing Language Bank.pdf' };
+    const id = path.slice(9).replace(/\.pdf$/, '');
+    if (!FILES[id]) return fail(404, 'none');
+    if (!isMember(profile) && !isStaff(profile.role)) return fail(403, 'members');
+    let bytes = null;
+    for (const base of [process.cwd(), process.env.LAMBDA_TASK_ROOT || '', '/var/task']) {
+      try { bytes = await readFile(join(base, 'netlify/files/pdf', id + '.pdf')); break; } catch {}
+    }
+    if (!bytes) return fail(404, 'missing');
+    return new Response(bytes, { headers: { 'Content-Type': 'application/pdf', 'Content-Disposition': `attachment; filename="${FILES[id]}"`, 'Cache-Control': 'private, no-store' } });
+  }
 
   // the student chose their own password: forget the one-time password
   if (path === 'password-changed' && method === 'POST') {

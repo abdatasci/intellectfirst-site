@@ -9,6 +9,10 @@
   directory = "netlify/functions"
   node_bundler = "esbuild"
 
+# study PDFs handed out by /api/school/download/<name> to signed-in students and teachers
+[functions."school-api"]
+  included_files = ["netlify/files/pdf/*.pdf"]
+
 # Lesson slides are encrypted and versioned (?v=), so browsers may keep them.
 [[headers]]
   for = "/lessons/*"

@@ -443,7 +443,7 @@ function lvl(w){return P.vocab[w]||0;}
 function renderVocab(){
   const t=VOCAB[V.topic];
   $("#v-vocabulary").innerHTML=`
-  <div class="view-head"><div><div class="label">Vocabulary</div><h1>Vocabulary bank</h1><p>Organised by the units of Cambridge Vocabulary for IELTS, plus writing language and speaking topics. Every entry has its own definition, Russian translation, Band 7.5+ example and a 7.5+ upgrade. Study with flashcards, then test yourself. A word counts as mastered after you get it right twice.</p></div></div>
+  <div class="view-head"><div><div class="label">Vocabulary</div><h1>Vocabulary bank</h1><p>Organised by the units of Cambridge Vocabulary for IELTS, plus writing language and speaking topics. Every entry has its own definition, Russian translation, Band 7.5+ example and a 7.5+ upgrade. Study with flashcards, then test yourself. A word counts as mastered after you get it right twice.</p></div><div><button class="btn gold" data-pdf="ielts-vocabulary-bank">⬇ Download PDF</button><p class="hint" id="pdfMsg" style="margin:6px 0 0;max-width:260px"></p></div></div>
   <div class="grid2">
     <div><input class="gap search" id="vSearch" type="search" placeholder="Search ${VOCAB.reduce((a,t)=>a+t.words.length,0).toLocaleString("en-GB")} words…" value="${esc(V.q)}" aria-label="Search all words">
     <div class="rail" id="vRail">${VOCAB.map((x,i)=>{const m=x.words.filter(w=>lvl(w.w)>=2).length,g=vGroup(x),prev=i?vGroup(VOCAB[i-1]):null;return `${g!==prev?`<div class="railhead">${g}</div>`:""}<button aria-pressed="${i===V.topic}" data-i="${i}"><span>${esc(x.topic)}</span><small class="num">${m}/${x.words.length}</small></button>`;}).join("")}</div></div>
@@ -1040,13 +1040,31 @@ function langForTask(w){
 function languageBank(){
   const which=WR.lang||"t1";
   $("#wBody").innerHTML=`<div class="row" style="margin-bottom:14px"><div class="ptabs">${[["t1","Task 1 language"],["t2","Task 2 language"]].map(([k,l])=>`<button aria-selected="${which===k}" data-lk="${k}">${l}</button>`).join("")}</div>
-  <button class="btn sm" id="lVocab">Practise as flashcards</button></div>
+  <button class="btn sm" id="lVocab">Practise as flashcards</button><button class="btn sm gold" data-pdf="ielts-writing-language-bank">⬇ Download PDF</button></div><p class="hint" id="pdfMsg" style="margin:-6px 0 12px"></p>
   <nav class="langnav">${LANG[which].map(s=>`<a href="#L-${s.id}" data-jump-l="${s.id}">${esc(({intro:"Introduction",overview:"Overview",up:"Going up",down:"Going down",stable:"No change",degree:"How much",structures:"Sentence patterns",prep:"Prepositions",compare:"Comparing",approx:"Proportions",process:"Process",map:"Maps",t1errors:"Mistakes",t2intro:"Introduction",t2body:"Body paragraphs",t2concede:"Balancing",t2concl:"Conclusion",t2formal:"Formal words",t2errors:"Mistakes"})[s.id]||s.title)}</a>`).join("")}</nav>
   <div class="langgrid">${LANG[which].map(langSection).join("")}</div>`;
   $$("#wBody [data-lk]").forEach(b=>b.onclick=()=>{WR.lang=b.dataset.lk;languageBank();});
   $$("#wBody [data-jump-l]").forEach(a=>a.onclick=e=>{e.preventDefault();const el=document.getElementById("L-"+a.dataset.jumpL);if(el)el.scrollIntoView({behavior:"smooth",block:"start"});});
   $("#lVocab").onclick=()=>{const u=which==="t1"?23:24;const i=VOCAB.findIndex(t=>t.unit===u);if(i>=0){V.topic=i;V.i=0;V.flip=false;V.mode="study";V.q="";}go("vocabulary");};
 }
+
+/* ---------- PDF downloads (signed-in IF Academy students and teachers) ---------- */
+document.addEventListener("click",async e=>{
+  const b=e.target.closest("[data-pdf]");if(!b)return;
+  const msg=$("#pdfMsg"),say=t=>{if(msg)msg.innerHTML=t;};
+  b.disabled=true;const was=b.textContent;b.textContent="Preparing…";say("");
+  try{
+    const r=await fetch("/api/school/download/"+b.dataset.pdf,{credentials:"same-origin"});
+    if(r.ok){const blob=await r.blob(),u=URL.createObjectURL(blob),a=document.createElement("a");
+      a.href=u;a.download=(b.dataset.pdf==="ielts-vocabulary-bank"?"IF Academy - IELTS Vocabulary Bank":"IF Academy - IELTS Writing Language Bank")+".pdf";
+      document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),60000);say("Downloaded. Look in your Downloads folder (on iPhone: the Files app).");}
+    else{let d={};try{d=await r.json();}catch(x){}
+      if(r.status===401||d.error==="signin"||d.error==="login"||d.error==="activate")say('PDFs are for IF Academy students and teachers. <a href="/me/#/login" target="_top">Sign in</a> or <a href="/me/#/register" target="_top">create an account</a>, then come back.');
+      else if(d.error==="members")say('PDFs are part of full access for IF Academy students. <a href="/me/" target="_top">See your account</a>.');
+      else say("Could not download right now. Please try again.");}
+  }catch(x){say("Could not download right now. Check your internet and try again.");}
+  b.disabled=false;b.textContent=was;
+});
 
 /* ---------- boot ---------- */
 go((location.hash||"").slice(1)||"home");
