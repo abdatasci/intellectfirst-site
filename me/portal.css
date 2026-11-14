@@ -243,3 +243,14 @@ tr.regrow-admin td{background:#fbf8f1}
 .calacts{display:grid;grid-template-columns:1fr auto;gap:18px;align-items:end}
 @media(max-width:700px){.calacts{grid-template-columns:1fr}}
 .calform .row .inp{width:auto;flex:0 0 auto}
+
+/* student feedback */
+.fb-form textarea.inp{resize:vertical;min-height:130px;font:inherit}
+.fb-stars{display:flex;gap:4px;margin:4px 0 10px}
+.fb-stars button{font-size:30px;line-height:1;background:none;border:0;padding:2px;cursor:pointer;color:#d9d2c4;transition:transform .12s}
+.fb-stars button.on{color:#C9A227}.fb-stars button:hover{transform:scale(1.15)}
+.fb-admin{border:1px solid var(--line,#e6dfd2);border-radius:14px;padding:14px 16px;margin:10px 0;background:#fff}
+.fb-top{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.fb-r{color:#C9A227;letter-spacing:1px}.fb-r i{color:#d9d2c4;font-style:normal}
+.fb-text{margin:10px 0;white-space:pre-wrap;line-height:1.55}
+.fb-admin .row{display:flex;gap:8px;flex-wrap:wrap}.fb-admin .btn{width:auto;margin:0}

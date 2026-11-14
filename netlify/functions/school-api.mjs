@@ -9,6 +9,7 @@ import { join } from 'node:path';
 import { getUser, refreshSession, admin as idAdmin } from '@netlify/identity';
 import { roleForCode, isStaff, lockKeysFromCode, verifyLockKeys, isPrivateCode } from '../lib/codes.mjs';
 import { listReceipts, decideReceipt, receiptFile } from '../lib/receipts.mjs';
+import { publicFeedback, mine as myFeedback, submit as submitFeedback, removeMine as removeFeedback, decide as decideFeedback, loadFeedback } from '../lib/feedback.mjs';
 import { loadHomework, addHomework, removeHomework, forClasses, clean as cleanHw, hwText } from '../lib/homework.mjs';
 import { getLinks, tgSend, tgToken, addNote, uidsByStudent, inClass, loadChanges, saveChanges } from '../lib/bot-core.mjs';
 import { waReady, waSend, waNumber } from '../lib/whatsapp.mjs';
@@ -298,6 +299,8 @@ export default async (req) => {
 
   if (path === 'books' && method === 'GET') return json({ books: await doc('books') });
 
+  // student feedback approved by the director (homepage)
+  if (path === 'feedback/public' && method === 'GET') return Response.json({ feedback: await publicFeedback() }, { headers: { 'Cache-Control': 'public, max-age=120' } });
   // classes for the registration form (names and times only)
   if (path === 'classes' && method === 'GET') {
     const cl = await doc('classes');
@@ -405,6 +408,25 @@ export default async (req) => {
   }
 
   if (!profile?.role) return fail(403, 'activate');
+
+  /* ---------- student feedback: one per account, shown on the homepage after the director approves it ---------- */
+  if (path === 'feedback' && method === 'GET') return json({ feedback: await myFeedback(uid) });
+  if (path === 'feedback' && method === 'POST') {
+    if (isStaff(profile.role)) return fail(403, 'students');
+    const b = await req.json().catch(() => ({}));
+    let sname = profile.name;
+    if (profile.studentId) { const s = (await doc('students')).find(x => x.id === profile.studentId); if (s) sname = `${s.first} ${s.last}`.trim() || sname; }
+    try {
+      const f = await submitFeedback(uid, profile, sname, b);
+      try {   // let the director know on Telegram
+        const links = await getLinks();
+        for (const [u, l] of Object.entries(links)) { const p = await U().get(`u/${u}/profile`, { type: 'json' }); if (p?.role !== 'admin') continue;
+          await tgSend(l.chatId, `💬 New student feedback from ${f.name}${f.course ? ' (' + f.course + ')' : ''} — ${'★'.repeat(f.rating)}${'☆'.repeat(5 - f.rating)}\n\n“${f.text}”\n\nApprove it in Admin → Feedback: https://intellectfirst.com/me/#/admin/feedback`); }
+      } catch (e) { console.error('feedback notify', e.message); }
+      return json({ feedback: f });
+    } catch (e) { return fail(400, e.code || 'bad'); }
+  }
+  if (path === 'feedback' && method === 'DELETE') { await removeFeedback(uid); return json({ ok: true }); }
 
   // study PDFs (IELTS Studio vocabulary and writing language banks): students and teachers only
   if (path.startsWith('download/') && method === 'GET') {
@@ -778,6 +800,9 @@ export default async (req) => {
       await putProfile(b.uid, p);
       return json({ profile: p });
     }
+    if (path === 'admin/feedback' && method === 'GET') return json({ feedback: (await loadFeedback()).slice().sort((x, y) => (y.editedAt || y.at).localeCompare(x.editedAt || x.at)) });
+    const fbk = path.match(/^admin\/feedback\/([a-z0-9]+)$/);
+    if (fbk && method === 'POST') { const r = await decideFeedback(fbk[1], b, profile.name); return r ? json({ feedback: r }) : fail(404, 'missing'); }
     /* payment receipts sent to the Telegram bot */
     if (path === 'admin/receipts' && method === 'GET') return json({ receipts: (await listReceipts()).slice(-120).reverse().map(({ chatId, msgId, ...r }) => r) });
     const rd = path.match(/^admin\/receipts\/([a-z0-9]+)$/);

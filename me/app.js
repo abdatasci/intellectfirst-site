@@ -92,6 +92,7 @@
     $('[data-nav=classes]').hidden = !staff();
     var cn = $('[data-nav=calendar]'); if (cn) cn.hidden = !staff();
     var rn = $('[data-nav=results]'); if (rn) rn.hidden = !staff();
+    var fbn = $('[data-nav=feedback]'); if (fbn) fbn.hidden = !role() || staff();
     $('[data-nav=admin]').hidden = role() !== 'admin';
     if (role() === 'admin' && !window.__ifaAIload) { window.__ifaAIload = true; var sc = document.createElement('script'); sc.src = '/me/ifadmin/ai-chat.js'; document.body.appendChild(sc); }
     var ifa = $('[data-nav=ifadmin]'); if (ifa) ifa.hidden = role() !== 'admin';
@@ -815,7 +816,7 @@
   /* ---------- admin ---------- */
   async function loadAdmin() { ADMIN = await api('admin/all'); try { ADMIN.att = (await api('admin/attendance')).attendance; } catch (e) { ADMIN.att = {}; } ME.books = ADMIN.books; ME.teachers = ADMIN.teachers; return ADMIN; }
   function adminTabs(on) {
-    return '<div class="tabs2">' + [['lessons', 'Lessons'], ['telegram', 'Telegram'], ['receipts', 'Receipts'], ['logins', 'Student logins'], ['accounts', 'Accounts' + ((ADMIN.accounts || []).filter(function (x) { return x.request; }).length ? ' (' + ADMIN.accounts.filter(function (x) { return x.request; }).length + ' waiting)' : '')], ['classes', 'Classes'], ['teachers', 'Teachers'], ['books', 'Books'], ['export', 'Export results'], ['placement', 'Placement tests'], ['bot', 'Bot & reminders']].map(function (t) {
+    return '<div class="tabs2">' + [['lessons', 'Lessons'], ['telegram', 'Telegram'], ['receipts', 'Receipts'], ['feedback', 'Feedback'], ['logins', 'Student logins'], ['accounts', 'Accounts' + ((ADMIN.accounts || []).filter(function (x) { return x.request; }).length ? ' (' + ADMIN.accounts.filter(function (x) { return x.request; }).length + ' waiting)' : '')], ['classes', 'Classes'], ['teachers', 'Teachers'], ['books', 'Books'], ['export', 'Export results'], ['placement', 'Placement tests'], ['bot', 'Bot & reminders']].map(function (t) {
       return '<a href="#/admin/' + t[0] + '" class="' + (on === t[0] ? 'on' : '') + '">' + t[1] + '</a>';
     }).join('') + '<a href="/me/ifadmin/" style="background:var(--navy);color:#fff;border-color:var(--navy)">IF Admin ↗</a><a href="#" onclick="window.IFAdminAI&&IFAdminAI.open();return false" style="border-color:#C9A227">✨ AI assistant</a></div>';
   }
@@ -826,7 +827,7 @@
     await loadAdmin();
     var head = '<section class="hero" style="padding-bottom:4px"><div class="eyebrow">Administrator</div><h1>School admin</h1><p class="lead">' + ADMIN.students.length + ' students · ' + ADMIN.classes.length + ' classes · ' + ADMIN.teachers.length + ' teachers · ' + ADMIN.accounts.length + ' accounts</p></section>' +
       '<div class="panel wide" style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-bottom:14px"><div style="flex:1;min-width:240px"><b>Students, payments, attendance and results are managed in IF Admin.</b><br><span class="sub">The website reads them from IF Admin automatically: student profiles, teacher views, the assistant and Telegram reminders. A payment marked in IF Admin stops that student\'s reminder.</span></div><a class="btn" href="/me/ifadmin/">Open IF Admin ↗</a></div>' + adminTabs(tab);
-    ({ lessons: aLessons, telegram: aTelegram, receipts: aReceipts, students: aStudents, classes: aClasses, teachers: aTeachers, books: aBooks, accounts: aAccounts, logins: aLogins, import: aImport, export: aExport, placement: aPlacement, finance: aFinance, bot: aBot }[tab] || aAccounts)(head);
+    ({ lessons: aLessons, telegram: aTelegram, receipts: aReceipts, feedback: aFeedback, students: aStudents, classes: aClasses, teachers: aTeachers, books: aBooks, accounts: aAccounts, logins: aLogins, import: aImport, export: aExport, placement: aPlacement, finance: aFinance, bot: aBot }[tab] || aAccounts)(head);
   }
 
   /* ---------- lessons monitor: every lesson of a day, teachers' check-ins and registers, punctuality this month ---------- */
@@ -1661,6 +1662,69 @@
     draw();
   }
 
+
+  /* ---------- student feedback: written here, approved by the director, shown on the homepage ---------- */
+  async function vFeedback() {
+    setNav('feedback'); if (!role()) return go('#/login');
+    if (staff()) return go('#/admin/feedback');
+    view.innerHTML = '<p style="margin-top:30px"><span class="spin"></span></p>';
+    var f = null; try { f = (await api('feedback')).feedback; } catch (e) {}
+    var cls = ((ME.student && ME.student.classes) || [])[0] || ((ME.classes || [])[0] || {}).label || '';
+    var rating = f ? f.rating : 5, st = f ? { pending: ['warn', 'Waiting for approval'], shown: ['ok', 'On the website'], hidden: ['mute', 'Not shown on the website'] }[f.status] : null;
+    view.innerHTML = '<section class="hero" style="padding-bottom:6px"><div class="eyebrow">Your voice</div><h1>Feedback</h1><p class="lead">How are your lessons at IF Academy? Your words help other students choose — and help us get better. After the director reads it, your feedback can appear on our homepage with your first name and the first letter of your surname.</p></section>' +
+      '<div class="panel wide fb-form">' + (st ? '<p><span class="chip2 ' + st[0] + '">' + st[1] + '</span> <span class="small">sent ' + when(f.editedAt || f.at) + '</span></p>' : '') +
+      '<label class="f">Your rating</label><div class="fb-stars" id="fbs" role="radiogroup" aria-label="Rating">' + [1, 2, 3, 4, 5].map(function (n) { return '<button type="button" role="radio" data-n="' + n + '" aria-label="' + n + ' of 5">★</button>'; }).join('') + '</div>' +
+      '<label class="f" for="fbc">Your course or class</label><input class="inp" id="fbc" maxlength="80" placeholder="e.g. IELTS Preparation, Starters, Business English" value="' + esc(f ? f.course : cls) + '">' +
+      '<label class="f" for="fbt">Your feedback</label><textarea class="inp" id="fbt" rows="6" maxlength="800" placeholder="What do you like about the lessons, the teachers and the school? What has changed for you since you started?">' + esc(f ? f.text : '') + '</textarea><p class="hint"><span id="fbn">0</span> / 800 · at least 20 characters · English, Russian or Kazakh</p>' +
+      '<label class="chk" style="display:flex;gap:8px;align-items:flex-start;margin:12px 0"><input type="checkbox" id="fbk"' + (f ? ' checked' : '') + '> <span>I agree that IF Academy may show this feedback on its website with my first name and the first letter of my surname.</span></label>' +
+      '<div class="row"><button class="btn" id="fbsend">' + (f ? 'Save changes' : 'Send feedback') + '</button>' + (f ? '<button class="btn ghost" id="fbdel">Delete my feedback</button>' : '') + '</div>' +
+      (f ? '<p class="hint">Changing your feedback sends it to the director again before it shows on the website.</p>' : '') + '</div>';
+    var paint = function () { view.querySelectorAll('#fbs button').forEach(function (b) { var on = +b.dataset.n <= rating; b.classList.toggle('on', on); b.setAttribute('aria-checked', String(+b.dataset.n === rating)); }); };
+    view.querySelectorAll('#fbs button').forEach(function (b) { b.onclick = function () { rating = +b.dataset.n; paint(); }; }); paint();
+    var cnt = function () { $('#fbn').textContent = $('#fbt').value.trim().length; }; $('#fbt').oninput = cnt; cnt();
+    $('#fbsend').onclick = async function () {
+      var text = $('#fbt').value.trim();
+      if (text.length < 20) return toast('Please write a little more (at least 20 characters).');
+      if (!$('#fbk').checked) return toast('Please tick the box to agree to show it on the website.');
+      this.disabled = true;
+      var lang = /[әғқңөұүһі]/i.test(text) ? 'kk' : /[а-яё]/i.test(text) ? 'ru' : 'en';
+      try { await api('feedback', { method: 'POST', body: { rating: rating, course: $('#fbc').value, text: text, consent: true, lang: lang } }); toast('Thank you! The director will read it soon.'); vFeedback(); }
+      catch (e) { this.disabled = false; toast('Could not send it. Please try again.'); }
+    };
+    if ($('#fbdel')) $('#fbdel').onclick = async function () { if (!confirmDel()) return; try { await api('feedback', { method: 'DELETE' }); toast('Deleted.'); vFeedback(); } catch (e) { toast('Could not delete.'); } };
+  }
+  function confirmDel() { return window.confirm ? window.confirm('Delete your feedback?') : true; }
+
+  async function aFeedback(head) {
+    view.innerHTML = head + '<p><span class="spin"></span> Loading feedback…</p>';
+    var d; try { d = await api('admin/feedback'); } catch (e) { view.innerHTML = head + '<div class="empty">Could not load feedback.</div>'; return; }
+    var L = d.feedback || [], f = aFeedback.f || 'pending';
+    var n = function (k) { return L.filter(function (x) { return x.status === k; }).length; };
+    var draw = function () {
+      var list = L.filter(function (x) { return f === 'all' || x.status === f; });
+      $('#fbl').innerHTML = list.length ? list.map(function (x) {
+        var st = { pending: ['warn', 'Waiting'], shown: ['ok', 'On the website'], hidden: ['mute', 'Hidden'] }[x.status] || ['mute', x.status];
+        return '<div class="fb-admin" data-id="' + x.id + '"><div class="fb-top"><b>' + esc(x.name) + '</b>' + (x.course ? ' · <span class="small">' + esc(x.course) + '</span>' : '') + ' <span class="fb-r">' + '★★★★★'.slice(0, x.rating) + '<i>' + '★★★★★'.slice(x.rating) + '</i></span> <span class="chip2 ' + st[0] + '">' + st[1] + '</span><span class="small" style="margin-left:auto">' + when(x.editedAt || x.at) + (x.studentId ? ' · <a href="#/student/' + esc(x.studentId) + '">student record</a>' : '') + '</span></div>' +
+          '<p class="fb-text">“' + esc(x.text) + '”</p><div class="row">' +
+          (x.status !== 'shown' ? '<button class="btn sm" data-a="shown">✓ Show on website</button>' : '') + (x.status !== 'hidden' ? '<button class="btn ghost sm" data-a="hidden">Hide</button>' : '') +
+          '<button class="btn ghost sm" data-a="name">Edit name / course</button><button class="btn ghost sm" data-a="delete" style="color:#b42318">Delete</button></div></div>';
+      }).join('') : '<div class="empty">' + (f === 'pending' ? 'Nothing waiting. New feedback from students appears here (you also get a Telegram message).' : 'No feedback here yet.') + '</div>';
+      view.querySelectorAll('.fb-admin [data-a]').forEach(function (b) {
+        b.onclick = async function () {
+          var id = b.closest('.fb-admin').dataset.id, x = L.find(function (y) { return y.id === id; }), a = b.dataset.a, body;
+          if (a === 'delete') { if (!window.confirm('Delete this feedback for good?')) return; body = { delete: true }; }
+          else if (a === 'name') { var nm = window.prompt('Name shown on the website', x.name); if (nm == null) return; var co = window.prompt('Course shown on the website', x.course || ''); if (co == null) return; body = { name: nm, course: co }; }
+          else body = { status: a };
+          try { await api('admin/feedback/' + id, { method: 'POST', body: body }); toast(a === 'shown' ? 'Now on the website.' : a === 'hidden' ? 'Hidden.' : a === 'delete' ? 'Deleted.' : 'Saved.'); aFeedback(head); } catch (e) { toast('Could not save.'); }
+        };
+      });
+    };
+    view.innerHTML = head + '<div class="panel wide"><h2>Student feedback</h2><p class="sub">Students write feedback in their account (menu “Feedback”). Nothing appears on the homepage until you press “Show on website”.</p>' +
+      '<div class="tabs2" style="margin:10px 0">' + [['pending', 'Waiting (' + n('pending') + ')'], ['shown', 'On the website (' + n('shown') + ')'], ['hidden', 'Hidden (' + n('hidden') + ')'], ['all', 'All (' + L.length + ')']].map(function (t) { return '<a href="#" data-f="' + t[0] + '" class="' + (f === t[0] ? 'on' : '') + '">' + t[1] + '</a>'; }).join('') + '</div><div id="fbl"></div></div>';
+    view.querySelectorAll('[data-f]').forEach(function (a) { a.onclick = function (e) { e.preventDefault(); aFeedback.f = f = a.dataset.f; view.querySelectorAll('[data-f]').forEach(function (b) { b.classList.toggle('on', b === a); }); draw(); }; });
+    draw();
+  }
+
   /* ---------- router ---------- */
   async function route() {
     closeModal(); window.scrollTo(0, 0);
@@ -1684,6 +1748,7 @@
         case 'assistant': return vAssistant();
         case 'upgrade': return vUpgrade();
         case 'results': return vResults();
+        case 'feedback': return vFeedback();
         case 'teacher': return vTeacher(parts[1]);
         default: return go('#/');
       }
