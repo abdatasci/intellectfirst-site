@@ -54,7 +54,7 @@ export function payAlerts(D) {
 /* ---------------- context for the model ---------------- */
 function studentLine(id, s, G) {
   const gs = (s.gs && s.gs.length ? s.gs : [s.g]).filter(Boolean).map(g => `${g}=${G[g]?.n || g}`).join(', ');
-  return `${id} | ${s.n} | ${gs || '-'} | ${s.st || 'active'}${s.lv ? ' | ' + s.lv : ''}${s.ph ? ' | ph ' + s.ph : ''}`;
+  return `${id} | ${s.n} | ${gs || '-'} | ${s.st || 'active'}${s.lv ? ' | ' + s.lv : ''}${s.ph ? ' | ph ' + s.ph : ''}${s.pph ? ' | parent ' + s.pph : ''}`;
 }
 function context(D) {
   const G = D.groups || {}, S = D.students || {};
@@ -73,7 +73,7 @@ DATA MODEL
 - attendance: per group, per student, per lesson date: P = present, UA = absent (unexcused), EA = excused absence, FZ = frozen. "" removes a mark.
 - payments: per month (YYYY-MM), one row per student: paid, due (monthly fee), disc (discount), method (${METHODS.join(', ')}), date paid, status (Paid / Partially / Pending), note. A payment "for November" goes to month 2026-11 even if paid on another day. If the month is not said, use the current month.
 - expenses: per month: date, category, amount, description, method/who paid. Known categories: ${c.cats}.
-- students: name, phone, group, level, status (active / frozen / left), note.
+- students: name, phone (ph, the student's), parent phone (pph), group, level, status (active / frozen / left), note. Phone numbers are how students and parents connect to the Telegram bot. When he gives several names with numbers at once, propose one student change per person.
 
 RULES
 - Match people by name loosely (Latin/Cyrillic spellings, first name only, nicknames). If a name matches several students, or none, do NOT guess: ask a short question instead of proposing.
@@ -128,7 +128,7 @@ const TOOLS = [
               due: { type: 'number' }, disc: { type: 'number' },
               method: { type: 'string' }, status: { type: 'string' }, note: { type: 'string' },
               cat: { type: 'string' }, amt: { type: 'number' }, desc: { type: 'string' }, by: { type: 'string', description: 'expense: method or who paid' },
-              set: { type: 'object', description: 'student: fields to change {n, ph, st, lv, note, g}', properties: { n: { type: 'string' }, ph: { type: 'string' }, st: { type: 'string' }, lv: { type: 'string' }, note: { type: 'string' }, g: { type: 'string' } } },
+              set: { type: 'object', description: 'student: fields to change {n, ph (student phone), pph (parent phone), st, lv, note, g}', properties: { n: { type: 'string' }, ph: { type: 'string' }, pph: { type: 'string' }, st: { type: 'string' }, lv: { type: 'string' }, note: { type: 'string' }, g: { type: 'string' } } },
               n: { type: 'string', description: 'student_add: full name' }, ph: { type: 'string' }, lv: { type: 'string' }
             }
           }
@@ -275,6 +275,7 @@ export function run(D, ops) {
         const set = o.set || {}, ch = [];
         if (set.n && str(set.n, 80) !== s.n) { ch.push(`name ${s.n} → ${str(set.n, 80)}`); s.n = str(set.n, 80); }
         if (set.ph != null && str(set.ph, 30) !== (s.ph || '')) { ch.push(`phone → ${str(set.ph, 30)}`); s.ph = str(set.ph, 30); }
+        if (set.pph != null && str(set.pph, 30) !== (s.pph || '')) { ch.push(`parent phone → ${str(set.pph, 30)}`); s.pph = str(set.pph, 30); }
         if (set.lv != null && str(set.lv, 20) !== (s.lv || '')) { ch.push(`level → ${str(set.lv, 20)}`); s.lv = str(set.lv, 20); }
         if (set.st) { const st = STUDENT_ST.find(x => x === String(set.st).toLowerCase()) || ({ withdrawn: 'left', paused: 'frozen', finished: 'left' })[String(set.st).toLowerCase()]; if (!st) { bad(`Student ${s.n}: unknown status “${str(set.st, 20)}”`); continue; } if (st !== s.st) { ch.push(`status ${s.st || 'active'} → ${st}`); s.st = st; } }
         if (set.g) { if (!G[set.g]) { bad(`Student ${s.n}: unknown group “${str(set.g, 30)}”`); continue; } if (set.g !== s.g) { ch.push(`group ${G[s.g]?.n || s.g || '-'} → ${G[set.g].n}`); s.g = set.g; s.gs = [set.g]; s.bg = G[set.g].n; } }

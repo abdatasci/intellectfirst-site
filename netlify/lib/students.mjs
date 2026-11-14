@@ -37,7 +37,7 @@ function derive(sid, a, ctx) {
   const gs = [...new Set([...(Array.isArray(a.gs) ? a.gs : []), a.g].filter(Boolean))];
   const { first, last } = splitName(a.n);
   const status = a.st === 'left' ? 'withdrawn' : a.st === 'frozen' ? 'frozen' : 'active';
-  const s = { id: sid, first, last, phone: a.ph || '', level: a.lv || '', status, notes: a.note || '',
+  const s = { id: sid, first, last, phone: a.ph || '', parentPhone: a.pph || '', level: a.lv || '', status, notes: a.note || '',
     classes: gs.map(g => labels[g] || g), groups: gs, noFee: !!a.nofee, source: 'ifadmin' };
   // tuition
   const pay = { fee: 0, dueDay, paid: {}, amounts: {}, methods: {}, dueDates: {} };
@@ -112,7 +112,7 @@ export async function loadStudents() {
     if (ov.uid) s.uid = ov.uid;
     if (ov.comments) s.comments = ov.comments;
     if (ov.email) s.email = ov.email;
-    if (ov.parentPhone) s.parentPhone = ov.parentPhone;
+    if (ov.parentPhone && !s.parentPhone) s.parentPhone = ov.parentPhone;
     if (ov.tests?.length) s.tests = [...s.tests, ...ov.tests].sort((x, y) => String(x.date).localeCompare(String(y.date)));
   }
   return list;
