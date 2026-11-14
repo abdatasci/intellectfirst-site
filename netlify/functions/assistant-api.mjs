@@ -11,7 +11,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import { waReady, waSend, waState, waNumber } from '../lib/whatsapp.mjs';
 import KB from '../lib/public-kb.json';
 import {
-  S, doc, getProfile, contextFor, reply, allow, tg, tgToken, tgSecret, tgSend, getLinks, saveLinks,
+  S, U, doc, getProfile, contextFor, reply, allow, tg, tgToken, tgSecret, tgSend, getLinks, saveLinks, uidsByStudent,
   dueReminders, reminderText, local, ymd, upcomingLessons, payStatus, SCHOOL
 } from '../lib/bot-core.mjs';
 
@@ -121,6 +121,28 @@ export default async (req, context) => {
   /* ---- admin ---- */
   if (path.startsWith('bot/')) {
     if (profile.role !== 'admin') return fail(403, 'admin');
+    // who is connected to the Telegram bot, and personal invite links for those who are not
+    if (path === 'bot/students' && method === 'GET') {
+      const info = await botInfo(), links = await getLinks(), bySid = await uidsByStudent(links);
+      const dir = (await U().get('directory', { type: 'json' })) || {};
+      const acc = {}; for (const [u, d] of Object.entries(dir)) if (d.studentId) acc[d.studentId] = u;
+      const students = (await doc('students')).filter(s => !/withdrawn|finished/i.test(s.status || '')).map(s => {
+        const key = bySid[s.id] || (links['sid:' + s.id] ? 'sid:' + s.id : null) || (s.uid && links[s.uid] ? s.uid : null);
+        const l = key && links[key];
+        return { id: s.id, name: `${s.first} ${s.last}`.trim(), classes: s.classes || [], status: s.status || 'active', phone: s.phone || '', parentPhone: s.parentPhone || '', account: !!(s.uid || acc[s.id]), connected: l ? { username: l.username || '', at: l.at } : null };
+      }).sort((a, b) => a.name.localeCompare(b.name));
+      return json({ bot: info?.username || null, ready: !!(tgToken() && info?.username), students });
+    }
+    if (path === 'bot/invite' && method === 'POST') {
+      const info = await botInfo(); if (!tgToken() || !info?.username) return fail(503, 'bot_not_ready');
+      const b = await req.json().catch(() => ({}));
+      const s = (await doc('students')).find(x => x.id === b.studentId); if (!s) return fail(404, 'student');
+      const dir = (await U().get('directory', { type: 'json' })) || {};
+      const accUid = s.uid || Object.entries(dir).find(([, d]) => d.studentId === s.id)?.[0];
+      const c = code();
+      await S().setJSON(`bot/link/${c}`, { uid: accUid || 'sid:' + s.id, exp: Date.now() + 30 * 864e5, by: 'admin-invite' });
+      return json({ url: `https://t.me/${info.username}?start=${c}`, bot: info.username });
+    }
     if (path === 'bot/status' && method === 'GET') {
       const info = await botInfo(), links = await getLinks();
       let hook = null;

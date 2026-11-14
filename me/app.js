@@ -680,7 +680,7 @@
   /* ---------- admin ---------- */
   async function loadAdmin() { ADMIN = await api('admin/all'); try { ADMIN.att = (await api('admin/attendance')).attendance; } catch (e) { ADMIN.att = {}; } ME.books = ADMIN.books; ME.teachers = ADMIN.teachers; return ADMIN; }
   function adminTabs(on) {
-    return '<div class="tabs2">' + [['receipts', 'Receipts'], ['logins', 'Student logins'], ['accounts', 'Accounts' + ((ADMIN.accounts || []).filter(function (x) { return x.request; }).length ? ' (' + ADMIN.accounts.filter(function (x) { return x.request; }).length + ' waiting)' : '')], ['classes', 'Classes'], ['teachers', 'Teachers'], ['books', 'Books'], ['export', 'Export results'], ['placement', 'Placement tests'], ['bot', 'Bot & reminders']].map(function (t) {
+    return '<div class="tabs2">' + [['telegram', 'Telegram'], ['receipts', 'Receipts'], ['logins', 'Student logins'], ['accounts', 'Accounts' + ((ADMIN.accounts || []).filter(function (x) { return x.request; }).length ? ' (' + ADMIN.accounts.filter(function (x) { return x.request; }).length + ' waiting)' : '')], ['classes', 'Classes'], ['teachers', 'Teachers'], ['books', 'Books'], ['export', 'Export results'], ['placement', 'Placement tests'], ['bot', 'Bot & reminders']].map(function (t) {
       return '<a href="#/admin/' + t[0] + '" class="' + (on === t[0] ? 'on' : '') + '">' + t[1] + '</a>';
     }).join('') + '<a href="/me/ifadmin/" style="background:var(--navy);color:#fff;border-color:var(--navy)">IF Admin ↗</a><a href="#" onclick="window.IFAdminAI&&IFAdminAI.open();return false" style="border-color:#C9A227">✨ AI assistant</a></div>';
   }
@@ -691,10 +691,57 @@
     await loadAdmin();
     var head = '<section class="hero" style="padding-bottom:4px"><div class="eyebrow">Administrator</div><h1>School admin</h1><p class="lead">' + ADMIN.students.length + ' students · ' + ADMIN.classes.length + ' classes · ' + ADMIN.teachers.length + ' teachers · ' + ADMIN.accounts.length + ' accounts</p></section>' +
       '<div class="panel wide" style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-bottom:14px"><div style="flex:1;min-width:240px"><b>Students, payments, attendance and results are managed in IF Admin.</b><br><span class="sub">The website reads them from IF Admin automatically: student profiles, teacher views, the assistant and Telegram reminders. A payment marked in IF Admin stops that student\'s reminder.</span></div><a class="btn" href="/me/ifadmin/">Open IF Admin ↗</a></div>' + adminTabs(tab);
-    ({ receipts: aReceipts, students: aStudents, classes: aClasses, teachers: aTeachers, books: aBooks, accounts: aAccounts, logins: aLogins, import: aImport, export: aExport, placement: aPlacement, finance: aFinance, bot: aBot }[tab] || aAccounts)(head);
+    ({ telegram: aTelegram, receipts: aReceipts, students: aStudents, classes: aClasses, teachers: aTeachers, books: aBooks, accounts: aAccounts, logins: aLogins, import: aImport, export: aExport, placement: aPlacement, finance: aFinance, bot: aBot }[tab] || aAccounts)(head);
   }
 
   /* ---------- student logins: the school makes the accounts, students get a login and a one-time password ---------- */
+  /* who is connected to the Telegram bot; one-tap personal invites for the rest */
+  async function aTelegram(head, keep) {
+    view.innerHTML = head + '<p><span class="spin"></span> Loading…</p>';
+    var d; try { d = await aapi('bot/students'); } catch (e) { view.innerHTML = head + '<div class="empty">Could not load the list.</div>'; return; }
+    if (!d.ready) { view.innerHTML = head + '<div class="empty">The Telegram bot is not connected yet: open <b>Bot &amp; reminders</b> and press Connect bot.</div>'; return; }
+    var st = keep || { f: 'no', g: '', q: '' }, L = d.students;
+    var groups = []; L.forEach(function (x) { x.classes.forEach(function (c) { if (groups.indexOf(c) < 0) groups.push(c); }); }); groups.sort();
+    var on = L.filter(function (x) { return x.connected; }).length;
+    var wa = function (p) { var n = String(p || '').replace(/\D/g, ''); if (n.length === 10) n = '7' + n; if (n.length === 11 && n[0] === '8') n = '7' + n.slice(1); return n.length >= 11 ? n : ''; };
+    var msg = function (x, url) { var f = x.name.split(' ')[0]; return 'Здравствуйте! Это IF Academy.\nПодключите нашего Telegram-бота: напоминания о занятиях, домашних заданиях, тестах и оплате, а также отправка чеков.\n' + f + ', откройте ссылку и нажмите «Start»:\n' + url + '\n\nHello from IF Academy! Open the link above and press Start to get lesson, homework and payment reminders in Telegram.'; };
+    function list() {
+      var q = st.q.toLowerCase();
+      return L.filter(function (x) { return (st.f === 'all' || (st.f === 'no' ? !x.connected : !!x.connected)) && (!st.g || x.classes.indexOf(st.g) >= 0) && (!q || x.name.toLowerCase().indexOf(q) >= 0); });
+    }
+    function rows() {
+      var R = list();
+      return R.length ? R.map(function (x) {
+        var phones = [x.phone, x.parentPhone].filter(Boolean);
+        return '<tr><td><b>' + esc(x.name) + '</b><div class="small">' + esc(x.classes.join(', ')) + (x.status === 'frozen' ? ' · frozen' : '') + '</div></td><td class="small">' + (phones.length ? phones.map(esc).join('<br>') : '<span style="color:#b42318">no phone in IF Admin</span>') + '</td><td>' +
+          (x.connected ? '<span class="chip2 ok">✓ Connected' + (x.connected.username ? ' @' + esc(x.connected.username) : '') + '</span>'
+            : '<div class="row" style="gap:6px;flex-wrap:wrap">' + phones.map(function (p, i) { return wa(p) ? '<button class="btn sm" data-wa="' + x.id + '" data-n="' + wa(p) + '">WhatsApp' + (phones.length > 1 ? (i ? ' parent' : ' student') : '') + '</button>' : ''; }).join('') +
+              '<button class="btn ghost sm" data-cp="' + x.id + '">Copy invite</button><button class="btn ghost sm" data-qr="' + x.id + '">QR</button></div><div class="small qrout" id="q-' + x.id + '"></div>') + '</td></tr>';
+      }).join('') : '<tr><td colspan="3"><div class="empty">Nobody here.</div></td></tr>';
+    }
+    view.innerHTML = head + '<p class="small" style="margin-bottom:12px"><b>' + on + ' of ' + L.length + '</b> students are connected to <a href="https://t.me/' + esc(d.bot) + '" target="_blank" rel="noopener">@' + esc(d.bot) + '</a>. For the others, press <b>WhatsApp</b>: it opens WhatsApp with a personal link already written. They tap it, press <b>Start</b> in Telegram, and they are connected (no sign-in). Links work once, for 30 days. In class, show the <b>QR</b> code instead.</p>' +
+      '<div class="row" style="gap:8px;flex-wrap:wrap;margin-bottom:10px"><select class="inp" id="tf" style="max-width:190px"><option value="no">Not connected</option><option value="yes">Connected</option><option value="all">Everyone</option></select><select class="inp" id="tg" style="max-width:240px"><option value="">All groups</option>' + groups.map(function (g) { return '<option>' + esc(g) + '</option>'; }).join('') + '</select><input class="inp" id="tq" placeholder="Search a name" style="max-width:220px"></div>' +
+      '<div class="tscroll"><table class="t"><thead><tr><th>Student</th><th>Phone</th><th>Telegram</th></tr></thead><tbody id="trows"></tbody></table></div>';
+    $('#tf').value = st.f; $('#tg').value = st.g; $('#tq').value = st.q;
+    function draw() {
+      $('#trows').innerHTML = rows();
+      view.querySelectorAll('[data-wa]').forEach(function (b) { b.onclick = async function () {
+        var x = L.find(function (y) { return y.id === b.dataset.wa; }), w = window.open('', '_blank');
+        try { var r = await aapi('bot/invite', { method: 'POST', body: { studentId: x.id } }); var u = 'https://wa.me/' + b.dataset.n + '?text=' + encodeURIComponent(msg(x, r.url)); if (w) w.location = u; else location.href = u; }
+        catch (e) { if (w) w.close(); toast('Could not create the link'); }
+      }; });
+      view.querySelectorAll('[data-cp]').forEach(function (b) { b.onclick = async function () {
+        var x = L.find(function (y) { return y.id === b.dataset.cp; });
+        try { var r = await aapi('bot/invite', { method: 'POST', body: { studentId: x.id } }); await navigator.clipboard.writeText(msg(x, r.url)); toast('Invite copied: paste it into WhatsApp, Telegram or SMS'); } catch (e) { toast('Could not copy'); }
+      }; });
+      view.querySelectorAll('[data-qr]').forEach(function (b) { b.onclick = async function () {
+        var x = L.find(function (y) { return y.id === b.dataset.qr; }), out = $('#q-' + x.id);
+        try { var r = await aapi('bot/invite', { method: 'POST', body: { studentId: x.id } }), qr = qrcode(0, 'M'); qr.addData(r.url); qr.make(); out.innerHTML = '<div class="tgqrbox">' + qr.createSvgTag({ cellSize: 4, margin: 2, scalable: true }) + '<p>' + esc(x.name.split(' ')[0]) + ': point your phone camera here, then press <b>Start</b>.</p></div>'; } catch (e) { toast('Could not create the code'); }
+      }; });
+    }
+    $('#tf').onchange = function () { st.f = this.value; draw(); }; $('#tg').onchange = function () { st.g = this.value; draw(); }; $('#tq').oninput = function () { st.q = this.value; draw(); };
+    draw();
+  }
   async function aReceipts(head) {
     view.innerHTML = head + '<p><span class="spin"></span> Loading receipts…</p>';
     var d; try { d = await api('admin/receipts'); } catch (e) { view.innerHTML = head + '<div class="empty">Could not load receipts.</div>'; return; }
