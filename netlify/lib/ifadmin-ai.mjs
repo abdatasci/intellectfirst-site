@@ -115,10 +115,12 @@ const TOOLS = [
           type: 'array', items: {
             type: 'object', required: ['op'],
             properties: {
-              op: { type: 'string', enum: ['attendance', 'lesson_move', 'lesson_remove', 'group_member', 'payment', 'expense', 'student', 'student_add', 'package'] },
+              op: { type: 'string', enum: ['attendance', 'lesson_move', 'lesson_remove', 'group_member', 'payment', 'expense', 'student', 'student_add', 'package', 'group_add', 'group_set'] },
               to: { type: 'string', description: 'lesson_move: the new date YYYY-MM-DD (date = the old one)' },
               action: { type: 'string', description: 'group_member: add | remove' },
-              group: { type: 'string', description: 'attendance: group id; student_add: group id' },
+              group: { type: 'string', description: 'attendance / student_add / group_member: group id. group_add: a short new id (lowercase letters and digits, e.g. "stb"); later ops in the same list can use it' },
+              sch: { type: 'string', description: 'group_add / group_set: timetable, days then times, e.g. "Tue, Fri 15:00-16:00"' },
+              teacher: { type: 'string', description: 'group_add / group_set: the teacher\'s name' }, room: { type: 'string', description: 'group_add / group_set: room (optional)' },
               date: { type: 'string', description: 'YYYY-MM-DD (lesson date, payment date or expense date)' },
               marks: { type: 'object', description: 'attendance: {studentId: "P"|"UA"|"EA"|"FZ"|""}', additionalProperties: { type: 'string' } },
               month: { type: 'string', description: 'payment/expense: YYYY-MM' },
@@ -129,7 +131,7 @@ const TOOLS = [
               method: { type: 'string' }, status: { type: 'string' }, note: { type: 'string' },
               cat: { type: 'string' }, amt: { type: 'number' }, desc: { type: 'string' }, by: { type: 'string', description: 'expense: method or who paid' },
               set: { type: 'object', description: 'student: fields to change {n, ph (student phone), pph (parent phone), st, lv, note, g}', properties: { n: { type: 'string' }, ph: { type: 'string' }, pph: { type: 'string' }, st: { type: 'string' }, lv: { type: 'string' }, note: { type: 'string' }, g: { type: 'string' } } },
-              n: { type: 'string', description: 'student_add: full name' }, ph: { type: 'string' }, lv: { type: 'string' }
+              n: { type: 'string', description: 'student_add: full name; group_add: group name' }, ph: { type: 'string' }, lv: { type: 'string' }
             }
           }
         }
@@ -334,6 +336,26 @@ export function run(D, ops) {
           G[g].ps = c.after || nextDay(c.last || today()); touched.add('groups');
           out.push({ ok: true, text: `New package · ${G[g].n}: starts ${G[g].ps} (${c.done}/${c.size} lessons done), alert removed${sid ? ' (for the whole group)' : ''}` });
         }
+      } else if (o.op === 'group_set') {
+        const g = G[o.group]; if (!g) { bad(`Group: unknown group “${str(o.group, 30)}”`); continue; }
+        const was = g.sch || '—', parts = [];
+        if (o.n && str(o.n, 60) !== g.n) { parts.push(`renamed from ${g.n}`); g.n = str(o.n, 60); }
+        if (o.sch) { g.sch = str(o.sch, 60); parts.push(`timetable ${was} → ${g.sch}`); }
+        (D.newGroups ||= []).push({ id: o.group, n: g.n, sch: o.sch ? g.sch : '', teacher: str(o.teacher, 60), room: str(o.room, 30), update: true });
+        if (o.teacher) parts.push('teacher ' + str(o.teacher, 60));
+        touched.add('groups');
+        out.push({ ok: true, text: `Group · ${g.n}: ${parts.join(', ') || 'no change'}` });
+      } else if (o.op === 'group_add') {
+        const n = str(o.n, 60); if (!n) { bad('New group: name missing'); continue; }
+        const same = Object.keys(G).find(k => (G[k].n || '').toLowerCase() === n.toLowerCase());
+        if (same) { bad(`New group: “${n}” already exists (id ${same})`); continue; }
+        let id = String(o.group || n).toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 12) || 'g';
+        if (G[id]) { let k = 2; while (G[id + k]) k++; id = id + k; }
+        G[id] = { n, sch: str(o.sch, 60) || '—', dates: [] };
+        (D.newGroups ||= []).push({ id, n, sch: str(o.sch, 60), teacher: str(o.teacher, 60), room: str(o.room, 30) });
+        if (o.group && o.group !== id) for (const x of ops) if (x !== o && x.group === o.group) x.group = id;
+        touched.add('groups');
+        out.push({ ok: true, text: `New group · ${n}${o.sch ? ' · ' + str(o.sch, 60) : ''}${o.teacher ? ' · ' + str(o.teacher, 60) : ''}` });
       } else if (o.op === 'student_add') {
         const n = str(o.n, 80); if (!n) { bad('New student: name missing'); continue; }
         if (o.group && !G[o.group]) { bad(`New student ${n}: unknown group “${str(o.group, 30)}”`); continue; }

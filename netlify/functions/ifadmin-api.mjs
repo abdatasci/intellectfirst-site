@@ -92,6 +92,19 @@ export default async (req) => {
     const undo = {}; for (const c of res.touched) undo[c] = before[c];
     await A().setJSON('undo/' + id, { at: new Date().toISOString(), by: user.email, ops: b.ops, before: undo });
     for (const c of res.touched) await putColl(c, D[c]);
+    // a new group also becomes a website class (teacher, timetable, room): "My classes", check-in and registers use it
+    for (const g of D.newGroups || []) {
+      try {
+        const W = getStore({ name: 'school', consistency: 'strong' });
+        const classes = (await W.get('classes', { type: 'json' })) || [], teachers = (await W.get('teachers', { type: 'json' })) || [];
+        const tn = g.teacher.toLowerCase(), t = tn && teachers.find(x => (x.name || '').toLowerCase() === tn || (x.name || '').toLowerCase().split(' ')[0] === tn.split(' ')[0] && (x.name || '').toLowerCase().includes(tn.split(' ').slice(-1)[0]));
+        const ex = classes.find(c => c.id === 'c-' + g.id);
+        if (!ex) classes.push({ id: 'c-' + g.id, label: g.n, teacherId: t ? t.id : '', schedule: g.sch || '', room: g.room || '' });
+        else { ex.label = g.n; if (t) ex.teacherId = t.id; if (g.sch) ex.schedule = g.sch; if (g.room) ex.room = g.room; }
+        await W.setJSON('classes', classes);
+        res.lines.push({ ok: true, text: `Website class · ${g.n}: ${t ? 'teacher ' + t.name : g.teacher ? 'teacher “' + g.teacher + '” not found, set it in Admin → Classes' : g.update ? 'teacher unchanged' : 'no teacher yet'}${g.sch ? ' · ' + g.sch : ''}` });
+      } catch (e) { console.error('website class', e.message); }
+    }
     return json({ lines: res.lines, saved: res.lines.filter(l => l.ok).length, undo: id });
   }
   if (path === 'ai/undo' && method === 'POST') {
