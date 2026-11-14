@@ -2213,10 +2213,12 @@ if(/[?&#]ask\b/.test(location.href))open();
 fetch('/api/assistant/public/info').then(r=>r.ok?r.json():null).then(d=>{if(d&&d.bot){const a=document.getElementById('botLink');a.href='https://t.me/'+d.bot;document.getElementById('botUser').textContent='@'+d.bot+' · Telegram';a.hidden=false}}).catch(()=>{});
 })();
 </script>
-<script>/* robot greeting: "Hi" in many languages, flipping in 3D */
-(function(){var W=[['Hi!','English'],['Сәлем!','Қазақша'],['Привет!','Русский'],['¡Hola!','Español'],['Bonjour!','Français'],['Hallo!','Deutsch'],['Ciao!','Italiano'],['Merhaba!','Türkçe'],['你好!','中文'],['こんにちは!','日本語'],['안녕!','한국어'],['مرحبا!','العربية'],['Olá!','Português'],['Salam!','Oʻzbekcha']],i=0,el=document.getElementById('hi3d'),lg=document.getElementById('hilang');
+<script>/* robot greeting: "Hi!" then "How are you?" in 10 languages, flipping in 3D */
+(function(){var W=[['Hi!','How are you?','English'],['Сәлем!','Қалың қалай?','Қазақша'],['Привет!','Как дела?','Русский'],['¡Hola!','¿Cómo estás?','Español'],['Bonjour !','Comment ça va ?','Français'],['Hallo!','Wie geht’s?','Deutsch'],['Merhaba!','Nasılsın?','Türkçe'],['你好！','你好吗？','中文'],['مرحبا!','كيف حالك؟','العربية'],['こんにちは！','お元気ですか？','日本語']],k=0,el=document.getElementById('hi3d'),lg=document.getElementById('hilang'),bot=document.querySelector('.x-bot');
 if(!el||matchMedia('(prefers-reduced-motion: reduce)').matches)return;
-setInterval(function(){el.className='hi3d out';setTimeout(function(){i=(i+1)%W.length;el.textContent=W[i][0];lg.textContent=W[i][1];el.className='hi3d in';},320);},2200);})();
+function step(){el.className='hi3d out';setTimeout(function(){k=(k+1)%(W.length*2);var w=W[k>>1],q=k%2;el.textContent=w[q];el.classList.toggle('q',!!q);el.dir=w[2]==='العربية'?'rtl':'ltr';lg.textContent=w[2];el.className='hi3d in'+(q?' q':'');
+if(bot){bot.classList.remove('jump');void bot.offsetWidth;bot.classList.add('jump')}setTimeout(step,q?2600:1800)},320)}
+setTimeout(step,1800);})();
 </script>
 <script src="/if-lock.js" defer></script>
 <script>/* apps directory: show the first rows, the rest on demand */
