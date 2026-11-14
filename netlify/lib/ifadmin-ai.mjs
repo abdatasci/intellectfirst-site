@@ -247,7 +247,8 @@ export function run(D, ops) {
         if (isDate(o.date)) r.d = o.date; else if (add != null || (paid != null && !r.d)) r.d = today();
         if (o.note != null) r.note = str(o.note, 300);
         const st = STATUSES.find(x => x.toLowerCase() === String(o.status || '').toLowerCase());
-        r.s = st || (r.paid > 0 && r.paid >= (r.due || 0) - (r.disc || 0) ? 'Paid' : r.paid > 0 ? 'Partially' : 'Pending');
+        const net = (+r.due || 0) - (+r.disc || 0);
+        r.s = st || (net <= 0 && (due != null || disc != null || prev) ? 'Paid' : r.paid > 0 && r.paid >= net ? 'Paid' : r.paid > 0 ? 'Partially' : 'Pending');   // nothing to pay (frozen, no fee) counts as settled
         doc.rows[sid] = r; touched.add('payments');
         const ch = [];
         if (!prev) ch.push('new row');
@@ -258,7 +259,7 @@ export function run(D, ops) {
         if (r.d && (!prev || prev.d !== r.d)) ch.push(`date ${r.d}`);
         if (!prev || prev.s !== r.s) ch.push(`status ${r.s}`);
         if (o.note) ch.push(`note “${r.note}”`);
-        out.push({ ok: !!r.due || r.paid > 0, text: `Payment · ${m} · ${nm(sid)}: ${ch.join(', ')}` });
+        out.push({ ok: !!r.due || r.paid > 0 || due != null || disc != null, text: `Payment · ${m} · ${nm(sid)}: ${ch.join(', ')}` });
       } else if (o.op === 'expense') {
         const amt = num(o.amt); if (!(amt > 0)) { bad('Expense: amount missing'); continue; }
         const d = isDate(o.date) ? o.date : today();
