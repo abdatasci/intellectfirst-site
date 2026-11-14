@@ -484,6 +484,30 @@
   .staff-row input{flex:1 1 180px;min-width:0;font:inherit;padding:11px 14px;border:1px solid var(--border-c);border-radius:8px;background:var(--bg);color:var(--text);letter-spacing:.12em}
   .staff-row input:focus-visible{outline:3px solid var(--ice);outline-offset:2px}
   .staff-msg{margin:0;min-height:1.2em;font-size:.9rem;color:var(--text-soft)}
+  /* ---------- Gallery: 3D carousel ---------- */
+  #gallery .cf{position:relative;margin:6px 0 30px;-webkit-user-select:none;user-select:none}
+  #gallery .cf-stage{position:relative;height:clamp(300px,46vw,540px);perspective:1300px;overflow:hidden;touch-action:pan-y;outline:none;border-radius:22px;background:radial-gradient(ellipse at 50% 62%,rgba(201,162,106,.22),rgba(201,162,106,0) 66%)}
+  #gallery .cf-stage:focus-visible{box-shadow:0 0 0 3px #c9a26a}
+  #gallery .cf-card{position:absolute;left:50%;top:50%;padding:0;border:0;border-radius:16px;overflow:hidden;background:#0a182f;cursor:pointer;box-shadow:0 34px 60px -30px rgba(10,24,47,.75);transition:transform .75s cubic-bezier(.2,.8,.2,1),opacity .5s,filter .5s,width .5s,height .5s;filter:brightness(.62) saturate(.85)}
+  #gallery .cf-card.on{filter:none;cursor:zoom-in}
+  #gallery .cf-card img{display:block;width:100%;height:100%;object-fit:cover;pointer-events:none}
+  #gallery .cf-btn{position:absolute;top:calc(clamp(300px,46vw,540px) / 2);transform:translateY(-50%);z-index:60;width:52px;height:52px;border-radius:50%;border:0;background:rgba(255,255,255,.94);color:#0a182f;font-size:32px;line-height:1;cursor:pointer;box-shadow:0 10px 24px -10px rgba(0,0,0,.5)}
+  #gallery .cf-btn:hover{background:#c9a26a;color:#fff}
+  #gallery .cf-prev{left:12px}#gallery .cf-next{right:12px}
+  #gallery .cf-bar{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:14px;flex-wrap:wrap}
+  #gallery .cf-cap{font-size:15px;text-align:center}
+  @media (max-width:640px){#gallery .cf-cap{flex:1 0 100%;order:-1;font-size:14px}#gallery .cf-sm{width:32px;height:32px;font-size:11px}#gallery .cf-stage{height:clamp(260px,78vw,360px)}#gallery .cf-btn{top:calc(clamp(260px,78vw,360px) / 2)}}
+  #gallery .cf-n{font-size:12.5px;color:var(--text-soft);font-variant-numeric:tabular-nums}
+  #gallery .cf-sm{width:36px;height:36px;border-radius:50%;border:1px solid var(--border-c,#d9d2c4);background:transparent;color:inherit;font-size:12px;cursor:pointer}
+  #gallery .cf-sm:hover{border-color:#c9a26a;color:#c9a26a}
+  #gallery .cf-strip{display:flex;gap:8px;overflow-x:auto;padding:12px 2px 10px;margin-top:8px;scrollbar-width:thin;scrollbar-color:#c9a26a transparent}
+  #gallery .cf-strip::-webkit-scrollbar{height:8px}#gallery .cf-strip::-webkit-scrollbar-thumb{background:#c9a26a;border-radius:8px}
+  #gallery .cf-th{flex:0 0 auto;width:66px;height:66px;padding:0;border:2px solid transparent;border-radius:10px;overflow:hidden;opacity:.55;cursor:pointer;background:#e9e3d8;transition:opacity .2s}
+  #gallery .cf-th:hover{opacity:.85}#gallery .cf-th.on{border-color:#c9a26a;opacity:1}
+  #gallery .cf-th img{display:block;width:100%;height:100%;object-fit:cover}
+  #gallery #g-grid[hidden]{display:none!important}
+  @media (max-width:640px){#gallery .cf-btn{width:40px;height:40px;font-size:26px}#gallery .cf-prev{left:4px}#gallery .cf-next{right:4px}#gallery .cf-th{width:54px;height:54px}}
+  @media (prefers-reduced-motion:reduce){#gallery .cf-card{transition:none}}
 </style>
 <link rel="stylesheet" href="academy.css">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -667,7 +691,19 @@
           <button class="g-tab" data-f="moments" data-i18n="g_moments">Moments</button>
         </div>
       </div>
-      <div class="g-grid" id="g-grid">
+      <div class="cf" id="cf" aria-roledescription="carousel" aria-label="Photo gallery">
+        <div class="cf-stage" tabindex="0" aria-live="polite"></div>
+        <button type="button" class="cf-btn cf-prev" aria-label="Previous photo">‹</button>
+        <button type="button" class="cf-btn cf-next" aria-label="Next photo">›</button>
+        <div class="cf-bar">
+          <button type="button" class="cf-sm cf-up" aria-label="Previous album" title="Previous album">▲</button>
+          <span class="cf-cap"></span><span class="cf-n"></span>
+          <button type="button" class="cf-sm cf-down" aria-label="Next album" title="Next album">▼</button>
+          <button type="button" class="cf-sm cf-play" aria-label="Pause or play the slideshow" title="Pause / play">❚❚</button>
+        </div>
+        <div class="cf-strip" aria-label="All photos"></div>
+      </div>
+      <div class="g-grid" id="g-grid" hidden>
         <figure class="g-item" data-cat="space"><a href="media/space/class-crest-xl.webp" data-lb><img src="media/space/class-crest.webp" alt="A lesson in our main classroom" width="1000" height="750" loading="lazy" decoding="async"></a><figcaption data-i18n="g_c_crest">A lesson in our main classroom</figcaption></figure>
         <figure class="g-item" data-cat="space"><a href="media/space/class-table-xl.webp" data-lb><img src="media/space/class-table.webp" alt="Working through the Student's Book" width="750" height="1000" loading="lazy" decoding="async"></a><figcaption data-i18n="g_c_table">Working through the Student's Book</figcaption></figure>
         <figure class="g-item" data-cat="space"><a href="media/space/class-glass-xl.webp" data-lb><img src="media/space/class-glass.webp" alt="Teens group in class" width="1000" height="750" loading="lazy" decoding="async"></a><figcaption data-i18n="g_c_glass">Teens group in class</figcaption></figure>
@@ -694,6 +730,18 @@
         <figure class="g-item" data-cat="moments"><a href="media/bbq/moment-handshake-xl.webp" data-lb><img src="media/bbq/moment-handshake.webp" alt="Congratulations all round" width="640" height="960" loading="lazy" decoding="async"></a><figcaption data-i18n="g_c_hand">Congratulations all round</figcaption></figure>
         <figure class="g-item" data-cat="moments"><a href="media/bbq/moment-sunglasses-xl.webp" data-lb><img src="media/bbq/moment-sunglasses.webp" alt="Sunshine and good company" width="640" height="960" loading="lazy" decoding="async"></a><figcaption data-i18n="g_c_sun">Sunshine and good company</figcaption></figure>
         <figure class="g-item" data-cat="moments"><a href="media/bbq/moment-white-tee-xl.webp" data-lb><img src="media/bbq/moment-white-tee.webp" alt="Students and teachers, off the clock" width="640" height="960" loading="lazy" decoding="async"></a><figcaption data-i18n="g_c_tee">Students and teachers, off the clock</figcaption></figure>
+        <figure class="g-item" data-cat="awards"><a href="media/gallery/cert-handover-xl.webp" data-lb><img src="media/gallery/cert-handover.webp" alt="Certificates handed out at the end-of-year party" width="1000" height="667" loading="lazy" decoding="async"></a><figcaption data-i18n="g_n_hand">Certificates handed out at the end-of-year party</figcaption></figure>
+        <figure class="g-item" data-cat="awards"><a href="media/gallery/cert-1-xl.webp" data-lb><img src="media/gallery/cert-1.webp" alt="End-of-year certificate" width="667" height="1000" loading="lazy" decoding="async"></a><figcaption data-i18n="g_n_cert">End-of-year certificate</figcaption></figure>
+        <figure class="g-item" data-cat="awards"><a href="media/gallery/cert-2-xl.webp" data-lb><img src="media/gallery/cert-2.webp" alt="End-of-year certificate" width="667" height="1000" loading="lazy" decoding="async"></a><figcaption data-i18n="g_n_cert">End-of-year certificate</figcaption></figure>
+        <figure class="g-item" data-cat="awards"><a href="media/gallery/cert-3-xl.webp" data-lb><img src="media/gallery/cert-3.webp" alt="End-of-year certificate" width="667" height="1000" loading="lazy" decoding="async"></a><figcaption data-i18n="g_n_cert">End-of-year certificate</figcaption></figure>
+        <figure class="g-item" data-cat="awards"><a href="media/gallery/cert-4-xl.webp" data-lb><img src="media/gallery/cert-4.webp" alt="End-of-year certificate" width="667" height="1000" loading="lazy" decoding="async"></a><figcaption data-i18n="g_n_cert">End-of-year certificate</figcaption></figure>
+        <figure class="g-item" data-cat="awards"><a href="media/gallery/cert-5-xl.webp" data-lb><img src="media/gallery/cert-5.webp" alt="End-of-year certificate" width="667" height="1000" loading="lazy" decoding="async"></a><figcaption data-i18n="g_n_cert">End-of-year certificate</figcaption></figure>
+        <figure class="g-item" data-cat="awards"><a href="media/gallery/book-gift-1-xl.webp" data-lb><img src="media/gallery/book-gift-1.webp" alt="A gift for a great year" width="667" height="1000" loading="lazy" decoding="async"></a><figcaption data-i18n="g_n_book">A gift for a great year</figcaption></figure>
+        <figure class="g-item" data-cat="awards"><a href="media/gallery/book-gift-2-xl.webp" data-lb><img src="media/gallery/book-gift-2.webp" alt="A gift for a great year" width="667" height="1000" loading="lazy" decoding="async"></a><figcaption data-i18n="g_n_book">A gift for a great year</figcaption></figure>
+        <figure class="g-item" data-cat="awards"><a href="media/gallery/cert-group-xl.webp" data-lb><img src="media/gallery/cert-group.webp" alt="Proud certificate holders" width="1000" height="667" loading="lazy" decoding="async"></a><figcaption data-i18n="g_n_group">Proud certificate holders</figcaption></figure>
+        <figure class="g-item" data-cat="games"><a href="media/gallery/rope-game-xl.webp" data-lb><img src="media/gallery/rope-game.webp" alt="The rope challenge" width="1000" height="667" loading="lazy" decoding="async"></a><figcaption data-i18n="g_n_rope">The rope challenge</figcaption></figure>
+        <figure class="g-item" data-cat="moments"><a href="media/gallery/moment-chat-xl.webp" data-lb><img src="media/gallery/moment-chat.webp" alt="Catching up between games" width="1000" height="667" loading="lazy" decoding="async"></a><figcaption data-i18n="g_n_chat">Catching up between games</figcaption></figure>
+        <figure class="g-item" data-cat="moments"><a href="media/gallery/moment-friends-xl.webp" data-lb><img src="media/gallery/moment-friends.webp" alt="Friends from every group" width="1000" height="667" loading="lazy" decoding="async"></a><figcaption data-i18n="g_n_friends">Friends from every group</figcaption></figure>
       </div>
       <dialog class="g-lb" id="g-lb" aria-label="Photo viewer"><button class="g-x" data-x aria-label="Close">×</button><button class="g-prev" aria-label="Previous">‹</button><figure><img alt=""><figcaption></figcaption></figure><button class="g-next" aria-label="Next">›</button></dialog>
       <h3 class="ig-head serif" data-i18n="ig_head">More on Instagram</h3>
@@ -1532,7 +1580,7 @@
       eco2_desc: "Intensive small-group work, IELTS-focused sessions and workshops for professional development.",
       eco3_desc: "Individual and online lessons, video production and podcasts — content that extends learning beyond the room.",
       sec03_num: "06 — Gallery", sec03_title: "Life at the academy",
-      g_kicker: "End-of-year BBQ party · Glamping park, Kostanay", g_all: "All", g_awards: "Awards & certificates", g_games: "Team games & activities", g_moments: "Moments", g_c_speech: "The director presenting end-of-year awards", g_c_ielts: "IELTS Achievement Award", g_c_annual: "Annual Achievement Certificate", g_c_commit: "Commitment Certificate", g_c_media: "Media & Marketing Excellence Award", g_c_teach: "Teaching Excellence Award", g_c_journey: "Learning Journey Award", g_c_teams: "Teams getting ready for the games", g_c_badges: "Handing out team badges", g_c_wolves: "Team Wolves", g_c_eagles: "Team Eagles planning their strategy", g_c_hoop: "The hoop relay", g_c_brief: "Briefing before the next round", g_c_host: "The host announcing the next challenge", g_c_lineup: "Teams lined up for the challenge", g_c_group: "All smiles with our team badges", g_c_fist: "Fist bump — well played!", g_c_hand: "Congratulations all round", g_c_sun: "Sunshine and good company", g_c_tee: "Students and teachers, off the clock",
+      g_n_hand: "Certificates handed out at the end-of-year party", g_n_cert: "End-of-year certificate", g_n_book: "A gift for a great year", g_n_group: "Proud certificate holders", g_n_rope: "The rope challenge", g_n_chat: "Catching up between games", g_n_friends: "Friends from every group", g_kicker: "End-of-year BBQ party · Glamping park, Kostanay", g_all: "All", g_awards: "Awards & certificates", g_games: "Team games & activities", g_moments: "Moments", g_c_speech: "The director presenting end-of-year awards", g_c_ielts: "IELTS Achievement Award", g_c_annual: "Annual Achievement Certificate", g_c_commit: "Commitment Certificate", g_c_media: "Media & Marketing Excellence Award", g_c_teach: "Teaching Excellence Award", g_c_journey: "Learning Journey Award", g_c_teams: "Teams getting ready for the games", g_c_badges: "Handing out team badges", g_c_wolves: "Team Wolves", g_c_eagles: "Team Eagles planning their strategy", g_c_hoop: "The hoop relay", g_c_brief: "Briefing before the next round", g_c_host: "The host announcing the next challenge", g_c_lineup: "Teams lined up for the challenge", g_c_group: "All smiles with our team badges", g_c_fist: "Fist bump — well played!", g_c_hand: "Congratulations all round", g_c_sun: "Sunshine and good company", g_c_tee: "Students and teachers, off the clock",
       sec03_desc: "Real moments from our classes and events — students, teachers and the IF community.",
       frame_1: "General English — mini-group session", frame_2: "IF Hub — speaking club", frame_3: "IELTS mock testing",
       frame_4: "IF Studio — recording session", frame_5: "Corporate training on-site", frame_6: "Student showcase and graduation",
@@ -1730,7 +1778,7 @@
       eco2_desc: "Интенсивная работа в малых группах, занятия по подготовке к IELTS и мастер-классы для профессионального роста.",
       eco3_desc: "Индивидуальные и онлайн-занятия, видеопродакшн и подкасты — контент, который продолжает обучение за пределами класса.",
       sec03_num: "06 — Галерея", sec03_title: "Жизнь академии",
-      g_kicker: "Барбекю в конце учебного года · Глэмпинг, Костанай", g_all: "Все", g_awards: "Награды и сертификаты", g_games: "Командные игры", g_moments: "Моменты", g_c_speech: "Директор вручает награды по итогам года", g_c_ielts: "Награда за результаты IELTS", g_c_annual: "Сертификат за достижения года", g_c_commit: "Сертификат за целеустремлённость", g_c_media: "Награда за медиа и маркетинг", g_c_teach: "Награда за преподавание", g_c_journey: "Награда «Путь обучения»", g_c_teams: "Команды готовятся к играм", g_c_badges: "Вручаем командные значки", g_c_wolves: "Команда «Волки»", g_c_eagles: "Команда «Орлы» обсуждает стратегию", g_c_hoop: "Эстафета с обручем", g_c_brief: "Инструктаж перед следующим раундом", g_c_host: "Ведущий объявляет новое задание", g_c_lineup: "Команды на старте", g_c_group: "Улыбки и командные значки", g_c_fist: "Отличная игра!", g_c_hand: "Поздравления", g_c_sun: "Солнце и хорошая компания", g_c_tee: "Студенты и преподаватели в неформальной обстановке",
+      g_n_hand: "Вручение сертификатов на празднике в конце года", g_n_cert: "Сертификат по итогам года", g_n_book: "Подарок за отличный год", g_n_group: "Гордые обладатели сертификатов", g_n_rope: "Испытание с канатом", g_n_chat: "Разговоры между играми", g_n_friends: "Друзья из всех групп", g_kicker: "Барбекю в конце учебного года · Глэмпинг, Костанай", g_all: "Все", g_awards: "Награды и сертификаты", g_games: "Командные игры", g_moments: "Моменты", g_c_speech: "Директор вручает награды по итогам года", g_c_ielts: "Награда за результаты IELTS", g_c_annual: "Сертификат за достижения года", g_c_commit: "Сертификат за целеустремлённость", g_c_media: "Награда за медиа и маркетинг", g_c_teach: "Награда за преподавание", g_c_journey: "Награда «Путь обучения»", g_c_teams: "Команды готовятся к играм", g_c_badges: "Вручаем командные значки", g_c_wolves: "Команда «Волки»", g_c_eagles: "Команда «Орлы» обсуждает стратегию", g_c_hoop: "Эстафета с обручем", g_c_brief: "Инструктаж перед следующим раундом", g_c_host: "Ведущий объявляет новое задание", g_c_lineup: "Команды на старте", g_c_group: "Улыбки и командные значки", g_c_fist: "Отличная игра!", g_c_hand: "Поздравления", g_c_sun: "Солнце и хорошая компания", g_c_tee: "Студенты и преподаватели в неформальной обстановке",
       sec03_desc: "Настоящие моменты наших занятий и событий — студенты, преподаватели и сообщество IF.",
       frame_1: "Общий английский — занятие в мини-группе", frame_2: "IF Hub — speaking-клуб", frame_3: "Пробное тестирование IELTS",
       frame_4: "IF Studio — запись", frame_5: "Корпоративное обучение на выезде", frame_6: "Выпускной и достижения студентов",
@@ -1929,7 +1977,7 @@
       eco2_desc: "Қарқынды шағын топтық жұмыс, IELTS-ке бағытталған сабақтар және кәсіби дамуға арналған шеберханалар.",
       eco3_desc: "Жеке және онлайн сабақтар, бейне түсіру және подкасттар — оқуды сынып қабырғасынан тыс жалғастыратын контент.",
       sec03_num: "06 — Галерея", sec03_title: "Академиядағы өмір",
-      g_kicker: "Оқу жылының соңындағы барбекю · Глэмпинг, Қостанай", g_all: "Барлығы", g_awards: "Марапаттар мен сертификаттар", g_games: "Командалық ойындар", g_moments: "Сәттер", g_c_speech: "Директор жыл қорытындысы бойынша марапаттарды табыстауда", g_c_ielts: "IELTS жетістік марапаты", g_c_annual: "Жылдық жетістік сертификаты", g_c_commit: "Табандылық сертификаты", g_c_media: "Медиа және маркетинг марапаты", g_c_teach: "Үздік оқытушы марапаты", g_c_journey: "«Оқу жолы» марапаты", g_c_teams: "Командалар ойынға дайындалуда", g_c_badges: "Командалық белгілерді таратамыз", g_c_wolves: "«Қасқырлар» командасы", g_c_eagles: "«Бүркіттер» командасы стратегия құруда", g_c_hoop: "Шеңбер эстафетасы", g_c_brief: "Келесі раунд алдындағы нұсқаулық", g_c_host: "Жүргізуші жаңа тапсырманы жариялауда", g_c_lineup: "Командалар сапта", g_c_group: "Командалық белгілермен күлкі", g_c_fist: "Керемет ойын!", g_c_hand: "Құттықтаулар", g_c_sun: "Күн нұры мен жақсы көңіл", g_c_tee: "Оқушылар мен мұғалімдер, сабақтан тыс",
+      g_n_hand: "Жыл соңындағы мерекеде сертификаттар табыстау", g_n_cert: "Жыл қорытындысы бойынша сертификат", g_n_book: "Тамаша жыл үшін сыйлық", g_n_group: "Сертификат иегерлері", g_n_rope: "Арқан сынағы", g_n_chat: "Ойындар арасындағы әңгіме", g_n_friends: "Барлық топтардан достар", g_kicker: "Оқу жылының соңындағы барбекю · Глэмпинг, Қостанай", g_all: "Барлығы", g_awards: "Марапаттар мен сертификаттар", g_games: "Командалық ойындар", g_moments: "Сәттер", g_c_speech: "Директор жыл қорытындысы бойынша марапаттарды табыстауда", g_c_ielts: "IELTS жетістік марапаты", g_c_annual: "Жылдық жетістік сертификаты", g_c_commit: "Табандылық сертификаты", g_c_media: "Медиа және маркетинг марапаты", g_c_teach: "Үздік оқытушы марапаты", g_c_journey: "«Оқу жолы» марапаты", g_c_teams: "Командалар ойынға дайындалуда", g_c_badges: "Командалық белгілерді таратамыз", g_c_wolves: "«Қасқырлар» командасы", g_c_eagles: "«Бүркіттер» командасы стратегия құруда", g_c_hoop: "Шеңбер эстафетасы", g_c_brief: "Келесі раунд алдындағы нұсқаулық", g_c_host: "Жүргізуші жаңа тапсырманы жариялауда", g_c_lineup: "Командалар сапта", g_c_group: "Командалық белгілермен күлкі", g_c_fist: "Керемет ойын!", g_c_hand: "Құттықтаулар", g_c_sun: "Күн нұры мен жақсы көңіл", g_c_tee: "Оқушылар мен мұғалімдер, сабақтан тыс",
       sec03_desc: "Сабақтарымыз бен іс-шараларымыздан нақты сәттер — оқушылар, мұғалімдер және IF қауымдастығы.",
       frame_1: "General English — шағын топтық сабақ", frame_2: "IF Hub — сөйлесу клубы", frame_3: "IELTS сынақ тестілеуі",
       frame_4: "IF Studio — жазу сессиясы", frame_5: "Корпоративтік оқыту — ұйымның өзінде", frame_6: "Оқушылар көрсетілімі және бітіру",
@@ -2068,30 +2116,52 @@
 })();
 </script>
 <script>
-(()=>{const g=document.getElementById('g-grid');if(!g)return;const items=[...g.querySelectorAll('.g-item')];
-/* gallery: one featured photo with a slow zoom, a tidy grid around it, and "show all" for long sets */
-const MAX=9,more=document.createElement('button');more.type='button';more.className='g-more';g.after(more);let open=false,cur_f='space';
-const build=f=>{cur_f=f;const v=items.filter(it=>f==='all'||it.dataset.cat===f);
-  items.forEach(it=>{it.hidden=true;it.classList.remove('feat','in')});
-  v.forEach((it,i)=>{it.hidden=!open&&i>=MAX;it.classList.toggle('feat',i===0);it.style.setProperty('--d',(i%MAX)*60+'ms');if(it.parentNode===g)g.appendChild(it)});
-  fill(v.filter(it=>!it.hidden));requestAnimationFrame(()=>v.forEach(it=>it.classList.add('in')));
-  more.hidden=v.length<=MAX;more.textContent=open?'Show fewer':'Show all '+v.length+' photos'};
-/* complete rows: widen a few landscape photos so the grid never ends with a gap */
-function fill(v){v.forEach(it=>it.classList.remove('wide'));const cols=getComputedStyle(g).gridTemplateColumns.split(' ').length||4;if(v.length<2)return;
-  let extra=(cols-(4+v.length-1)%cols)%cols;const land=v.slice(1).filter(it=>{const i=it.querySelector('img');return +i.getAttribute('width')>=+i.getAttribute('height')}).reverse();
-  for(const it of land){if(extra<=0)break;it.classList.add('wide');extra--}}
-let rt;addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>fill(items.filter(it=>!it.hidden)),150)});
-more.onclick=()=>{open=!open;build(cur_f);if(!open)g.scrollIntoView({block:'nearest',behavior:'smooth'})};
-build('space'); document.querySelectorAll('.g-tab').forEach(x=>x.classList.toggle('on',x.dataset.f==='space'));
-document.querySelectorAll('.g-tab').forEach(t=>t.addEventListener('click',()=>{document.querySelectorAll('.g-tab').forEach(x=>x.classList.toggle('on',x===t));open=false;build(t.dataset.f)}));
-const lb=document.getElementById('g-lb'),im=lb.querySelector('img'),cap=lb.querySelector('figcaption');let cur=0;
-const vis=()=>items.filter(i=>cur_f==='all'||i.dataset.cat===cur_f);
-const show=n=>{const v=vis();cur=(n+v.length)%v.length;const it=v[cur];im.src=it.querySelector('a').href;im.alt=it.querySelector('img').alt;cap.textContent=it.querySelector('figcaption').textContent};
-g.addEventListener('click',e=>{const a=e.target.closest('a[data-lb]');if(!a)return;e.preventDefault();const it=a.closest('.g-item');show(vis().indexOf(it));lb.showModal()});
-lb.querySelector('.g-prev').onclick=()=>show(cur-1);lb.querySelector('.g-next').onclick=()=>show(cur+1);
+(()=>{/* gallery: a 3D carousel — the current photo in front, the others angled away on both sides; one photo after another */
+const g=document.getElementById('g-grid'),cf=document.getElementById('cf');if(!g||!cf)return;
+const items=[...g.querySelectorAll('.g-item')],stage=cf.querySelector('.cf-stage'),strip=cf.querySelector('.cf-strip'),capEl=cf.querySelector('.cf-cap'),nEl=cf.querySelector('.cf-n'),playB=cf.querySelector('.cf-play');
+const tabs=[...document.querySelectorAll('.g-tab')],lb=document.getElementById('g-lb'),lim=lb.querySelector('img'),lcap=lb.querySelector('figcaption');
+let f='all',v=[],cur=0,cards=[],paused=matchMedia('(prefers-reduced-motion: reduce)').matches,hover=false,seen=false,last=Date.now();
+const cap=it=>it.querySelector('figcaption').textContent;
+function build(nf){f=nf;v=items.filter(it=>f==='all'||it.dataset.cat===f);cur=0;stage.innerHTML='';strip.innerHTML='';
+  cards=v.map((it,i)=>{const im=it.querySelector('img'),c=document.createElement('button');c.type='button';c.className='cf-card';c.ar=(+im.getAttribute('width')||4)/(+im.getAttribute('height')||3);
+    const ci=document.createElement('img');ci.alt=im.alt;ci.decoding='async';ci.dataset.src=im.getAttribute('src');c.appendChild(ci);c.addEventListener('click',()=>{if(moved)return;i===cur?openLb(i):go(i)});stage.appendChild(c);
+    const t=document.createElement('button');t.type='button';t.className='cf-th';t.setAttribute('aria-label',im.alt);const ti=document.createElement('img');ti.alt='';ti.loading='lazy';ti.src=im.getAttribute('src');t.appendChild(ti);t.onclick=()=>go(i);strip.appendChild(t);return c});
+  tabs.forEach(x=>x.classList.toggle('on',x.dataset.f===f));layout()}
+function layout(){const n=v.length,W=stage.clientWidth,H=stage.clientHeight,gap=Math.min(W*.16,200),mc=cards[cur],mw=mc?Math.min(H*.84*mc.ar,W*.78):0;
+  cards.forEach((c,i)=>{let o=i-cur;if(o>n/2)o-=n;if(o<-n/2)o+=n;const a=Math.abs(o),s=Math.sign(o);
+    let h=H*.84,w=h*c.ar;if(w>W*(a?.5:.78)){w=W*(a?.5:.78);h=w/c.ar}
+    const x=a?s*(Math.max(gap*1.1,w*.42,mw*.5-w*.15)+(a-1)*gap*.72):0;
+    c.style.width=w+'px';c.style.height=h+'px';c.style.transform=`translate(-50%,-50%) translateX(${x}px) translateZ(${-a*180}px) rotateY(${-s*Math.min(a,1)*40}deg)`;
+    c.style.zIndex=50-a;c.style.opacity=a>3?0:1;c.style.visibility=a>4?'hidden':'';c.classList.toggle('on',a===0);c.tabIndex=-1;c.setAttribute('aria-hidden',a?'true':'false');
+    if(a<=3){const im=c.firstChild;if(!im.src)im.src=im.dataset.src}});
+  const it=v[cur];capEl.textContent=it?cap(it):'';nEl.textContent=n?(cur+1)+' / '+n:'';
+  [...strip.children].forEach((t,i)=>t.classList.toggle('on',i===cur));const t=strip.children[cur];if(t)strip.scrollTo({left:t.offsetLeft-strip.clientWidth/2+t.offsetWidth/2,behavior:'smooth'})}
+const go=i=>{const n=v.length;if(!n)return;cur=(i%n+n)%n;last=Date.now();layout()};
+const album=d=>{const k=tabs.findIndex(x=>x.dataset.f===f);const nt=tabs[((k<0?0:k)+d+tabs.length)%tabs.length];if(nt)build(nt.dataset.f);last=Date.now()};
+cf.querySelector('.cf-prev').onclick=()=>go(cur-1);cf.querySelector('.cf-next').onclick=()=>go(cur+1);
+cf.querySelector('.cf-up').onclick=()=>album(-1);cf.querySelector('.cf-down').onclick=()=>album(1);
+const setPlay=()=>{playB.textContent=paused?'▶':'❚❚';playB.setAttribute('aria-pressed',String(!paused))};setPlay();
+playB.onclick=()=>{paused=!paused;last=Date.now();setPlay()};
+tabs.forEach(t=>t.addEventListener('click',()=>build(t.dataset.f)));
+stage.addEventListener('keydown',e=>{if(e.key==='ArrowLeft'){e.preventDefault();go(cur-1)}else if(e.key==='ArrowRight'){e.preventDefault();go(cur+1)}else if(e.key==='Enter')openLb(cur)});
+/* swipe left/right; up and down stay with the page so scrolling is never blocked */
+let sx=0,sy=0,moved=false;
+stage.addEventListener('pointerdown',e=>{sx=e.clientX;sy=e.clientY;moved=false});
+stage.addEventListener('pointerup',e=>{const dx=e.clientX-sx,dy=e.clientY-sy;if(Math.abs(dx)>40&&Math.abs(dx)>Math.abs(dy)){moved=true;go(cur+(dx<0?1:-1));setTimeout(()=>moved=false,50)}});
+cf.addEventListener('mouseenter',()=>hover=true);cf.addEventListener('mouseleave',()=>hover=false);
+if('IntersectionObserver'in window)new IntersectionObserver(es=>{seen=es[0].isIntersecting},{threshold:.3}).observe(stage);else seen=true;
+setInterval(()=>{if(!paused&&!hover&&seen&&!document.hidden&&!lb.open&&Date.now()-last>=4000)go(cur+1)},500);
+let rt;addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(layout,120)});
+new MutationObserver(()=>setTimeout(layout,30)).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});
+/* full-size viewer */
+let lc=0;const show=n=>{lc=(n%v.length+v.length)%v.length;const it=v[lc];lim.src=it.querySelector('a').getAttribute('href');lim.alt=it.querySelector('img').alt;lcap.textContent=cap(it)};
+function openLb(i){show(i);lb.showModal()}
+lb.querySelector('.g-prev').onclick=()=>show(lc-1);lb.querySelector('.g-next').onclick=()=>show(lc+1);
 lb.addEventListener('click',e=>{if(e.target===lb||e.target.hasAttribute('data-x'))lb.close()});
-lb.addEventListener('keydown',e=>{if(e.key==='ArrowLeft')show(cur-1);if(e.key==='ArrowRight')show(cur+1)});
-let sx=0;lb.addEventListener('touchstart',e=>sx=e.touches[0].clientX,{passive:true});lb.addEventListener('touchend',e=>{const d=e.changedTouches[0].clientX-sx;if(Math.abs(d)>50)show(cur+(d<0?1:-1))});})();
+lb.addEventListener('keydown',e=>{if(e.key==='ArrowLeft')show(lc-1);if(e.key==='ArrowRight')show(lc+1)});
+lb.addEventListener('close',()=>go(lc));
+let lx=0;lb.addEventListener('touchstart',e=>lx=e.touches[0].clientX,{passive:true});lb.addEventListener('touchend',e=>{const d=e.changedTouches[0].clientX-lx;if(Math.abs(d)>50)show(lc+(d<0?1:-1))});
+build('all')})();
 </script>
 <script>
 (()=>{const dd=document.getElementById('hubDD');if(dd){const b=dd.querySelector('.nav-dd-btn');const set=o=>{dd.classList.toggle('open',o);b.setAttribute('aria-expanded',o)};
