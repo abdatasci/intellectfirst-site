@@ -147,9 +147,9 @@
       (isStaff ? '' : whoPicker('if') + '<div class="grid2"><div><label class="f">Your level</label><select class="inp" id="lv"><option value="">Choose…</option>' + ['Starters','Movers','Flyers','A1 Beginner','A2 Elementary / KET','B1 Intermediate / PET','B2 Upper-intermediate','C1 Advanced','IELTS','Not sure (I will take the placement test)'].map(function (l) { return '<option>' + esc(l) + '</option>'; }).join('') + '</select></div>' +
         '<div><label class="f">Main goal</label>' + goalSelect('gl') + '</div>' +
         '<div id="clw"><label class="f">Your class</label><select class="inp" id="cl"><option value="">Loading…</option></select></div></div><p class="hint" id="clh">Not in a class yet? Choose “New student”.</p>') +
+      '<div id="ccw"><label class="f">' + (isStaff ? 'Staff code' : 'Code <span style="font-weight:400;color:var(--muted)">(optional)</span>') + '</label><input class="inp" id="cc" name="school-code" type="text" autocomplete="off" autocapitalize="characters" autocorrect="off" spellcheck="false" data-1p-ignore data-lpignore="true"><p class="hint">' + (isStaff ? 'Given to you by the school director.' : 'From your teacher: it gives full access straight away. No code? Abdoulie confirms you after you register.') + '</p></div>' +
       '<label class="f">Email <span style="font-weight:400;color:var(--muted)">(optional)</span></label><input class="inp" id="em" type="email" autocomplete="email"><p class="hint">No email? Leave it empty: you will sign in with your phone number.</p>' +
-      '<label class="f">Password</label><input class="inp" id="pw" type="password" autocomplete="new-password"><p class="hint">At least 8 characters.</p>' +
-      '<div id="ccw"><label class="f">' + (isStaff ? 'Staff code' : 'Code <span style="font-weight:400;color:var(--muted)">(optional)</span>') + '</label><input class="inp" id="cc" autocomplete="off"><p class="hint">' + (isStaff ? 'Given to you by the school director.' : 'From your teacher: it gives full access straight away. No code? Abdoulie confirms you after you register.') + '</p></div>' +
+      '<label class="f">Password</label><input class="inp" id="pw" name="new-password" type="password" autocomplete="new-password" passwordrules="minlength: 8;"><p class="hint">At least 8 characters. On iPhone you can accept “Use Strong Password” or tap “Other Options” to type your own.</p>' +
       '<button class="btn" type="submit">Create account</button></form><p class="alt">Already registered? <a href="#/login">Sign in</a>' + (isStaff ? '' : ' · Teacher? <a href="#/staff">Staff registration</a>') + '</p>');
     function syncWho() {
       if (isStaff) return; var t = track();
@@ -165,6 +165,7 @@
       ev.preventDefault(); var f = ev.target, b = $('button', f);
       var name = ($('#fn').value.trim() + ' ' + $('#ln').value.trim()).trim(), ph = $('#ph').value.trim(), em = $('#em').value.trim(), pw = $('#pw').value, cc = $('#cc').value.trim();
       var trk = isStaff ? '' : track();
+      if (cc && cc === pw) cc = '';   // iPhone's password AutoFill can paste the new password into the code box
       if (!name || !ph || (isStaff && !cc)) return err(f, isStaff ? 'Please fill in your name, phone number and staff code.' : 'Please fill in your name and phone number.');
       if (trk === 'outside') cc = '';
       var lv = $('#lv') ? $('#lv').value : '', cl = $('#cl') ? $('#cl').value : '';
@@ -196,7 +197,11 @@
           await ID.login(em, pw); await loadMe(); header();
           var act = null;
           try { act = await api('activate', { method: 'POST', body: actBody }); lsSet('if.pending', null); }
-          catch (e2) { toast(e2.code === 'code' ? 'Account created, but that code is not right.' : 'Account created. Please check your details.'); return go('#/activate'); }
+          catch (e2) {
+            if (e2.code === 'code' && !isStaff && actBody.code) {   // wrong student code: register anyway, the director confirms later
+              try { actBody.code = ''; act = await api('activate', { method: 'POST', body: actBody }); lsSet('if.pending', null); await loadMe(); header(); toast('That code was not right, so your account is waiting for Abdoulie to confirm it. ' + welcomeMsg(act)); return go('#/'); } catch (e5) {}
+            }
+            toast(e2.code === 'code' ? 'Account created, but that code is not right.' : 'Account created. Please check your details.'); return go('#/activate'); }
           await loadMe(); header(); toast((byPhone ? 'Your login is your phone number: ' + em.split('@')[0] + '. ' : '') + welcomeMsg(act)); go('#/');
         } else f.innerHTML = '<div class="ok-msg">Almost done: open the confirmation link we emailed to <b>' + esc(em) + '</b>.</div>';
       } catch (e) { b.disabled = false; b.textContent = 'Create account'; err(f, authMsg(e)); }
