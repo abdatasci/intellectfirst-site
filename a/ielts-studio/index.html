@@ -301,7 +301,8 @@ const paras=t=>String(t||"").split(/\n\s*\n/).map(p=>`<p>${esc(p.trim())}</p>`).
 const wordsOf=t=>(String(t).match(/[A-Za-z0-9'’-]+/g)||[]);
 let P={};
 try{P=JSON.parse(localStorage.getItem("if-ielts-studio")||"{}")||{};}catch(e){P={};}
-P.vocab=P.vocab||{};P.reading=P.reading||{};P.writing=P.writing||{};P.writing.drafts=P.writing.drafts||{};P.writing.done=P.writing.done||{};P.speaking=P.speaking||{};P.speaking.done=P.speaking.done||{};P.target=P.target||7;
+function fixP(){const O=x=>x&&typeof x==="object"&&!Array.isArray(x);if(!O(P))P={};["vocab","reading","writing","speaking"].forEach(k=>{if(!O(P[k]))P[k]={};});if(!O(P.writing.drafts))P.writing.drafts={};if(!O(P.writing.done))P.writing.done={};if(!O(P.speaking.done))P.speaking.done={};P.target=[5.5,6,6.5,7,7.5,8,8.5].includes(+P.target)?+P.target:7;Object.keys(P.reading).forEach(k=>{const r=P.reading[k];if(!O(r)||typeof r.score!=="number")delete P.reading[k];});}
+fixP();
 let saveT;function save(){clearTimeout(saveT);saveT=setTimeout(()=>{try{localStorage.setItem("if-ielts-studio",JSON.stringify(P));}catch(e){}},200);}
 const canSpeak=(()=>{try{return "speechSynthesis" in window&&typeof SpeechSynthesisUtterance!=="undefined";}catch(e){return false;}})();
 function say(t){try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang="en-GB";u.rate=.9;speechSynthesis.speak(u);}catch(e){}}
@@ -325,7 +326,14 @@ function go(v){
   VIEWS.forEach(x=>$("#v-"+x).hidden=x!==v);
   $$(".nav button").forEach(b=>b.setAttribute("aria-current",b.dataset.v===v?"page":"false"));
   try{history.replaceState(null,"","#"+v);}catch(e){}
-  ({home:renderHome,vocabulary:renderVocab,reading:renderReading,writing:renderWriting,speaking:renderSpeaking})[v]();
+  const R={home:renderHome,vocabulary:renderVocab,reading:renderReading,writing:renderWriting,speaking:renderSpeaking}[v];
+  try{R();}catch(err){
+    // progress saved by an older version of the Studio can break a page: keep a backup, start fresh, and draw again
+    console.error("IELTS Studio",err);
+    if(!go.reset){go.reset=true;try{localStorage.setItem("if-ielts-studio.backup",localStorage.getItem("if-ielts-studio")||"");}catch(e){}
+      const t=P.target;P={target:t};fixP();P.custom={reading:[],writing:[]};save();try{R();}catch(e2){$("#v-"+v).innerHTML='<div class="panel"><h3>Sorry, this page could not open.</h3><p>Please reload. If it keeps happening, tell your teacher.</p></div>';}
+      const n=document.createElement("p");n.className="note";n.textContent="Your saved Studio progress on this device was from an older version and could not be read, so the Studio started fresh.";$("#v-"+v).prepend(n);}
+  }
   window.scrollTo(0,0);
 }
 document.addEventListener("click",e=>{const b=e.target.closest("[data-go]");if(b){e.preventDefault();go(b.dataset.go);}});
@@ -843,7 +851,7 @@ async function spGen(k,q){
 /* =========================================================
    BOOK TESTS (answer sheets) + SHARE CODES
    ========================================================= */
-P.custom=P.custom||{};P.custom.reading=P.custom.reading||[];P.custom.writing=P.custom.writing||[];
+if(!P.custom||typeof P.custom!=="object")P.custom={};if(!Array.isArray(P.custom.reading))P.custom.reading=[];if(!Array.isArray(P.custom.writing))P.custom.writing=[];
 const enc=o=>"IF1:"+btoa(unescape(encodeURIComponent(JSON.stringify(o))));
 const dec=s=>{s=String(s).trim();if(!s.startsWith("IF1:"))throw new Error("code");return JSON.parse(decodeURIComponent(escape(atob(s.slice(4).replace(/\s+/g,"")))));};
 function copyText(btn,text){const done=()=>{const o=btn.textContent;btn.textContent="Copied";setTimeout(()=>btn.textContent=o,1200);};try{navigator.clipboard.writeText(text).then(done,()=>selectNext(btn));}catch(e){selectNext(btn);}}

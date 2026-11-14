@@ -126,6 +126,7 @@ select.inp{appearance:auto}
 .tgc{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
 .btn.tgbtn{background:#229ED9;border-color:#229ED9;color:#fff;display:inline-flex;gap:8px;align-items:center}
 .btn.tgbtn:hover{background:#1b8bc0}
+a.btn.tgbtn{text-decoration:none}
 .tgqrbox{display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin-top:12px}
 .tgqrbox svg{width:170px;height:170px;background:#fff;border-radius:10px;padding:4px}
 .tgqrbox p{flex:1;min-width:200px}

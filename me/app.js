@@ -1409,13 +1409,24 @@
       (compact ? '' : '<button class="linkbtn tgqr" type="button">On a computer? Show a QR code</button>') + '</div>' + (compact ? '' : '<p class="small" style="margin-top:8px">Or open <a href="https://t.me/IF_Academy_bot" target="_blank" rel="noopener">@IF_Academy_bot</a> in Telegram on your phone and press <b>📱 Connect with my phone number</b>.</p>') + '<div class="tgout small"></div>';
     var out = el.querySelector('.tgout');
     async function link() { var r = await aapi('telegram/link', { method: 'POST' }); return r; }
-    el.querySelector('.tgbtn').onclick = async function () {
-      var w = window.open('', '_blank');
-      try { var r = await link(); if (w) w.location = r.url; else location.href = r.url;
-        out.innerHTML = '<p style="margin-top:10px">Telegram is opening. Press <b>Start</b> in the chat with <b>@' + esc(r.bot) + '</b>, then come back here.</p><p>Telegram didn\'t open? <a href="' + esc(r.url) + '" target="_blank" rel="noopener">Tap here</a>, or search <b>@' + esc(r.bot) + '</b> in Telegram and send the code <b>' + esc(r.url.split('start=')[1]) + '</b>.</p>';
-        tgWatch(); }
-      catch (e) { if (w) w.close(); toast('Could not create the link. Try again.'); }
-    };
+    // iPhone/iPad only hand a link to the Telegram app when the tap itself opens it, so the link is made in advance and
+    // the button becomes a real link (opening an empty tab and redirecting it later left students on about:blank).
+    var btn = el.querySelector('.tgbtn'), ready = null;
+    function shown(r) {
+      out.innerHTML = '<p style="margin-top:10px">Telegram is opening. Press <b>Start</b> in the chat with <b>@' + esc(r.bot) + '</b>, then come back here.</p><p class="small">Telegram didn\'t open? <a href="' + esc(r.url) + '" target="_blank" rel="noopener">Tap here</a>' + (r.url.indexOf('start=') > 0 ? ', or <a href="tg://resolve?domain=' + esc(r.bot) + '&start=' + esc(r.url.split('start=')[1]) + '">open the Telegram app</a>' : '') + '. No Telegram yet? Install it from the App Store or Google Play first.</p>';
+      tgWatch();
+    }
+    function arm(r) {
+      ready = r; ready.at = Date.now();
+      var a = document.createElement('a'); a.className = btn.className; a.innerHTML = btn.innerHTML; a.href = r.url; a.target = '_blank'; a.rel = 'noopener';
+      a.onclick = function () { if (Date.now() - ready.at > 25 * 60000) { a.href = '#'; link().then(function (x) { arm(x); location.href = x.url; }); return false; } setTimeout(function () { shown(ready); }, 300); };
+      btn.replaceWith(a); btn = a;
+    }
+    link().then(arm).catch(function () {
+      btn.onclick = async function () {   // could not prepare the link: make it on tap and open it in this tab
+        try { var r = await link(); shown(r); location.href = r.url; } catch (e) { toast('Could not create the link. Try again.'); }
+      };
+    });
     var q = el.querySelector('.tgqr');
     if (q) q.onclick = async function () {
       try { var r = await link(), qr = qrcode(0, 'M'); qr.addData(r.url); qr.make();
