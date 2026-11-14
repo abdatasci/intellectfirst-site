@@ -545,6 +545,19 @@
   #feedback .fbk-btn{display:inline-block;padding:12px 22px;border-radius:999px;background:#0a182f;color:#fff;font-weight:600;font-size:14.5px;text-decoration:none;transition:background .2s}
   #feedback .fbk-btn:hover{background:#c9a26a;color:#fff}
   @media (max-width:640px){#feedback .fbk-card{flex-basis:84%}}
+  /* ---------- waving flags of English-speaking countries around the robot ---------- */
+  .x-bot .wf-set{position:absolute;inset:0;pointer-events:none;z-index:-1}
+  .x-bot .wf{position:absolute;width:64px;height:78px;animation:wfIn .8s cubic-bezier(.2,.8,.2,1) both}
+  .x-bot .wf i{position:absolute;left:0;top:0;width:3px;height:78px;border-radius:2px;background:linear-gradient(90deg,#f6dc8c,#9c7322);box-shadow:0 2px 4px rgba(0,0,0,.35)}
+  .x-bot .wf i::before{content:"";position:absolute;left:-2.5px;top:-5px;width:8px;height:8px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#fff3c4,#c99a30)}
+  .x-bot .wf b{position:absolute;left:3px;top:3px;width:58px;height:30px;display:flex;filter:drop-shadow(0 4px 5px rgba(0,0,0,.35))}
+  .x-bot .wf b s{flex:1;height:100%;background-repeat:no-repeat;position:relative;animation:wfWave 1.6s ease-in-out infinite}
+  .x-bot .wf b s::after{content:"";position:absolute;inset:0;background:#000;opacity:0;animation:wfShade 1.6s ease-in-out infinite;animation-delay:inherit}
+  @keyframes wfWave{0%,100%{transform:translateY(0)}50%{transform:translateY(4px)}}
+  @keyframes wfShade{0%,100%{opacity:0}50%{opacity:.22}}
+  @keyframes wfIn{from{opacity:0;transform:translateY(16px) scale(.6)}to{opacity:1;transform:none}}
+  @media (max-width:760px){.x-bot .wf-set{display:none}}
+  @media (prefers-reduced-motion:reduce){.x-bot .wf b s,.x-bot .wf b s::after{animation:none}}
 </style>
 <link rel="stylesheet" href="academy.css">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -664,17 +677,60 @@
       </div>
       <div class="x-bot" aria-hidden="true">
         <span class="x-bubble"><span class="hi3d" id="hi3d">Hi!</span><span class="hi-lang" id="hilang">English</span></span>
-        <svg viewBox="0 0 120 150" class="bot">
-          <line x1="60" y1="8" x2="60" y2="24" class="b-stroke"/><circle cx="60" cy="7" r="5" class="b-oak"/>
-          <rect x="22" y="24" width="76" height="56" rx="20" class="b-head"/>
-          <rect x="32" y="34" width="56" height="34" rx="12" class="b-face"/>
-          <circle cx="48" cy="50" r="5" class="b-eye"/><circle cx="72" cy="50" r="5" class="b-eye"/>
-          <path d="M50 60 Q60 67 70 60" class="b-smile"/>
-          <rect x="34" y="86" width="52" height="42" rx="14" class="b-body"/>
-          <circle cx="60" cy="104" r="7" class="b-oak"/>
-          <path d="M34 96 Q16 100 14 116" class="b-arm"/>
-          <g class="b-wave"><path d="M86 96 Q104 90 108 72" class="b-arm"/><circle cx="108" cy="68" r="5" class="b-hand"/></g>
-          <rect x="40" y="130" width="14" height="10" rx="4" class="b-foot"/><rect x="66" y="130" width="14" height="10" rx="4" class="b-foot"/>
+        <div class="wf-set" id="wfset"></div>
+        <svg viewBox="0 0 120 150" class="bot" overflow="visible">
+          <defs>
+            <radialGradient id="rgHead" cx="38%" cy="28%" r="80%"><stop offset="0" stop-color="#ffffff"/><stop offset=".55" stop-color="#e3e9f1"/><stop offset="1" stop-color="#9eabbe"/></radialGradient>
+            <linearGradient id="rgVisor" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#22396a"/><stop offset="1" stop-color="#050d1c"/></linearGradient>
+            <linearGradient id="rgSuit" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2b4a85"/><stop offset=".5" stop-color="#16294f"/><stop offset="1" stop-color="#08142b"/></linearGradient>
+            <linearGradient id="rgSleeve" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#16294f"/><stop offset=".5" stop-color="#2f4f8c"/><stop offset="1" stop-color="#0d1c3a"/></linearGradient>
+            <linearGradient id="rgGold" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f6dc8c"/><stop offset=".5" stop-color="#d4a640"/><stop offset="1" stop-color="#8c6418"/></linearGradient>
+            <radialGradient id="rgGlove" cx="35%" cy="30%" r="75%"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#b9c4d4"/></radialGradient>
+            <radialGradient id="rgEye" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#ffffff"/><stop offset=".35" stop-color="#9ff0ff"/><stop offset="1" stop-color="#1fa6e0"/></radialGradient>
+            <linearGradient id="rgShoe" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a3f4a"/><stop offset="1" stop-color="#0b0d12"/></linearGradient>
+            <linearGradient id="rgBook" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#c0392b"/><stop offset="1" stop-color="#6e1a12"/></linearGradient>
+          </defs>
+          <ellipse cx="60" cy="146" rx="34" ry="4" fill="#000" opacity=".25"/>
+          <!-- antenna and ears -->
+          <line x1="60" y1="6" x2="60" y2="20" stroke="#9eabbe" stroke-width="3" stroke-linecap="round"/>
+          <circle cx="60" cy="6" r="5" fill="url(#rgGold)"/><circle cx="58.4" cy="4.4" r="1.6" fill="#fff" opacity=".8"/>
+          <rect x="15" y="34" width="10" height="22" rx="5" fill="url(#rgGold)"/><rect x="95" y="34" width="10" height="22" rx="5" fill="url(#rgGold)"/>
+          <!-- head -->
+          <rect x="21" y="18" width="78" height="56" rx="23" fill="url(#rgHead)" stroke="#7d8aa0" stroke-width="1"/>
+          <path d="M30 26 Q44 19 62 20" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round" opacity=".9"/>
+          <rect x="29" y="28" width="62" height="36" rx="14" fill="url(#rgVisor)"/>
+          <path d="M33 33 Q52 28 70 30 L68 34 Q50 32 35 37 Z" fill="#fff" opacity=".14"/>
+          <circle cx="47" cy="45" r="5" fill="url(#rgEye)" class="b-eye"/><circle cx="73" cy="45" r="5" fill="url(#rgEye)" class="b-eye"/>
+          <!-- reading glasses -->
+          <rect x="38.5" y="37.5" width="17" height="15" rx="6" fill="none" stroke="url(#rgGold)" stroke-width="1.8"/><rect x="64.5" y="37.5" width="17" height="15" rx="6" fill="none" stroke="url(#rgGold)" stroke-width="1.8"/>
+          <path d="M55.5 44 Q60 41.5 64.5 44" fill="none" stroke="url(#rgGold)" stroke-width="1.6"/>
+          <path d="M51 56 Q60 61.5 69 56" fill="none" stroke="#9ff0ff" stroke-width="2.6" stroke-linecap="round"/>
+          <!-- neck -->
+          <rect x="52" y="73" width="16" height="7" rx="2" fill="#9eabbe"/>
+          <!-- left arm holding a book -->
+          <path d="M33 86 Q22 98 22 113" stroke="url(#rgSleeve)" stroke-width="10" fill="none" stroke-linecap="round"/>
+          <g transform="translate(-8 0) rotate(-12 16 116)"><rect x="5" y="104" width="22" height="26" rx="2.5" fill="url(#rgBook)"/><rect x="7" y="104" width="2" height="26" fill="#000" opacity=".25"/><rect x="11" y="110" width="12" height="2" rx="1" fill="#f6dc8c"/><text x="17" y="122" font-family="Georgia,serif" font-size="7" font-weight="700" fill="#f6dc8c" text-anchor="middle">ABC</text></g>
+          <circle cx="22" cy="116" r="5.5" fill="url(#rgGlove)"/>
+          <!-- suit -->
+          <path d="M31 88 Q31 79 41 79 L79 79 Q89 79 89 88 L87 126 Q87 131 82 131 L38 131 Q33 131 33 126 Z" fill="url(#rgSuit)"/>
+          <path d="M50 79 L60 101 L70 79 Z" fill="#f4f6fa"/>
+          <path d="M57 81 L63 81 L64.5 85 L61.5 106 L60 108 L58.5 106 L55.5 85 Z" fill="url(#rgGold)"/><path d="M56.5 80 L63.5 80 L62.5 85 L57.5 85 Z" fill="#b8892a"/>
+          <path d="M50 79 L43 83 L50 98 L47 101 L60 108 L52 92 Z" fill="#0b1a36" stroke="#3d5d9b" stroke-width=".8"/>
+          <path d="M70 79 L77 83 L70 98 L73 101 L60 108 L68 92 Z" fill="#0b1a36" stroke="#3d5d9b" stroke-width=".8"/>
+          <path d="M72 94 L80 94 L79 97 L73 97 Z" fill="#fff"/><path d="M73 94 L75 90 L77 94 Z" fill="#fff"/>
+          <circle cx="44" cy="91" r="2.6" fill="url(#rgGold)"/>
+          <circle cx="60" cy="115" r="1.8" fill="url(#rgGold)"/><circle cx="60" cy="123" r="1.8" fill="url(#rgGold)"/>
+          <path d="M35 90 Q34 110 36 128" stroke="#fff" stroke-width="1.4" fill="none" opacity=".18" stroke-linecap="round"/>
+          <!-- legs and shoes -->
+          <rect x="41" y="130" width="13" height="9" fill="#0b1630"/><rect x="66" y="130" width="13" height="9" fill="#0b1630"/>
+          <ellipse cx="46" cy="141" rx="10" ry="4.6" fill="url(#rgShoe)"/><ellipse cx="74" cy="141" rx="10" ry="4.6" fill="url(#rgShoe)"/>
+          <ellipse cx="43" cy="139.5" rx="4" ry="1.2" fill="#fff" opacity=".35"/><ellipse cx="71" cy="139.5" rx="4" ry="1.2" fill="#fff" opacity=".35"/>
+          <!-- waving arm -->
+          <g class="b-wave" style="transform-origin:87px 86px">
+            <path d="M87 86 Q101 80 105 64" stroke="url(#rgSleeve)" stroke-width="10" fill="none" stroke-linecap="round"/>
+            <rect x="100.5" y="57" width="10" height="5" rx="1.5" fill="#f4f6fa" transform="rotate(-14 105 60)"/>
+            <circle cx="106" cy="53" r="6.5" fill="url(#rgGlove)"/><circle cx="104" cy="51" r="2" fill="#fff" opacity=".8"/>
+          </g>
         </svg>
       </div>
       <a class="x-scroll" href="#teachers"><span data-i18n="x_scroll">Scroll</span><i></i></a>
@@ -2301,6 +2357,22 @@ nav.hidden=data.length<2;if(data.length>=3){var a=data.reduce(function(s,f){retu
 [].forEach.call(nav.querySelectorAll('.fbk-b'),function(b){b.onclick=function(){var c=row.querySelector('.fbk-card');row.scrollBy({left:(+b.dataset.d)*((c?c.offsetWidth:300)+18),behavior:'smooth'})}});
 fetch('/api/school/feedback/public').then(function(r){return r.ok?r.json():{feedback:[]}}).then(function(d){data=d.feedback||[];draw()}).catch(function(){draw()});
 new MutationObserver(function(){draw()}).observe(document.documentElement,{attributes:true,attributeFilter:['lang']});})();
+</script>
+<script>/* waving flags (UK, USA, Canada, Australia, New Zealand, Ireland) around the robot: each flag is cut into strips that ripple one after another */
+(function(){var set=document.getElementById('wfset');if(!set)return;
+function star(cx,cy,r,ri,n,fill,stroke){n=n||5;var p=[];for(var k=0;k<n*2;k++){var a=Math.PI/n*k-Math.PI/2,rr=k%2?ri:r;p.push((cx+rr*Math.cos(a)).toFixed(2)+','+(cy+rr*Math.sin(a)).toFixed(2))}return '<polygon points="'+p.join(' ')+'" fill="'+fill+'"'+(stroke?' stroke="'+stroke+'" stroke-width=".6"':'')+'/>'}
+var UJ='<rect width="60" height="30" fill="#012169"/><path d="M0 0L60 30M60 0L0 30" stroke="#fff" stroke-width="6"/><path d="M0 0L60 30M60 0L0 30" stroke="#C8102E" stroke-width="2"/><path d="M30 0V30M0 15H60" stroke="#fff" stroke-width="10"/><path d="M30 0V30M0 15H60" stroke="#C8102E" stroke-width="6"/>';
+var us='<rect width="60" height="30" fill="#fff"/>';for(var k=0;k<13;k+=2)us+='<rect y="'+(k*30/13).toFixed(2)+'" width="60" height="'+(30/13).toFixed(2)+'" fill="#B22234"/>';us+='<rect width="26" height="16.2" fill="#3C3B6E"/>';for(var y=0;y<5;y++)for(var x=0;x<6;x++)us+='<circle cx="'+(2.4+x*4.3+(y%2?2.1:0)).toFixed(1)+'" cy="'+(2+y*3.1).toFixed(1)+'" r=".75" fill="#fff"/>';
+var leaf='M30 5L31.6 8.2L33.6 7.4L32.8 12L35.6 9.8L36.4 11.6L39.2 11L38.2 14.4L39.6 15.2L35 19L35.6 20.6L30.8 20L31 24L29 24L29.2 20L24.4 20.6L25 19L20.4 15.2L21.8 14.4L20.8 11L23.6 11.6L24.4 9.8L27.2 12L26.4 7.4L28.4 8.2Z';
+var au='<rect width="60" height="30" fill="#012169"/><g transform="scale(.5)">'+UJ+'</g>'+star(15,23,4,1.8,7,'#fff')+star(45,25,2,.9,7,'#fff')+star(39,14,2,.9,7,'#fff')+star(45,5.5,2,.9,7,'#fff')+star(51,12,2,.9,7,'#fff')+star(47.5,16.5,1.1,.5,5,'#fff');
+var nz='<rect width="60" height="30" fill="#012169"/><g transform="scale(.5)">'+UJ+'</g>'+star(45,25,2.2,.9,5,'#C8102E','#fff')+star(39,13.5,2,.85,5,'#C8102E','#fff')+star(45,5.5,1.8,.75,5,'#C8102E','#fff')+star(51,11.5,2,.85,5,'#C8102E','#fff');
+var F=[['United Kingdom',UJ],['United States',us],['Canada','<rect width="60" height="30" fill="#fff"/><rect width="15" height="30" fill="#D80621"/><rect x="45" width="15" height="30" fill="#D80621"/><path d="'+leaf+'" fill="#D80621"/>'],['Australia',au],['New Zealand',nz],['Ireland','<rect width="20" height="30" fill="#169B62"/><rect x="20" width="20" height="30" fill="#fff"/><rect x="40" width="20" height="30" fill="#FF883E"/>']];
+/* positions around the robot (left %, top %), the last three on its right */
+var P=[[-36,30],[-50,56],[-34,82],[96,18],[104,50],[94,80]],N=12;
+F.forEach(function(f,n){var url='url("data:image/svg+xml,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 30" preserveAspectRatio="none">'+f[1]+'</svg>')+'")';
+var el=document.createElement('span');el.className='wf'+(n>2?' r':'');el.title=f[0];el.style.left=P[n][0]+'%';el.style.top=P[n][1]+'%';el.style.animationDelay=(2.4+n*.12)+'s';
+var h='<i></i><b>';for(var k=0;k<N;k++)h+='<s style="background-image:'+url.replace(/"/g,"'")+';background-size:'+(N*100)+'% 100%;background-position:'+(k/(N-1)*100).toFixed(2)+'% 0;animation-delay:'+(-(k*.09+n*.27)).toFixed(2)+'s"></s>';
+el.innerHTML=h+'</b>';set.appendChild(el)});})();
 </script>
 <script>/* robot greeting: "Hi!" then "How are you?" in 10 languages, flipping in 3D */
 (function(){var W=[['Hi!','How are you?','English'],['Сәлем!','Қалың қалай?','Қазақша'],['Привет!','Как дела?','Русский'],['¡Hola!','¿Cómo estás?','Español'],['Bonjour !','Comment ça va ?','Français'],['Hallo!','Wie geht’s?','Deutsch'],['Merhaba!','Nasılsın?','Türkçe'],['你好！','你好吗？','中文'],['مرحبا!','كيف حالك؟','العربية'],['こんにちは！','お元気ですか？','日本語']],k=0,el=document.getElementById('hi3d'),lg=document.getElementById('hilang'),bot=document.querySelector('.x-bot');
