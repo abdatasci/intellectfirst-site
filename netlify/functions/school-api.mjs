@@ -16,6 +16,7 @@ import { tier, isMember, TRACKS, paidActive, accessUntil, TRIAL_DAYS, ensureTria
 import seed from '../lib/school-seed.json';
 import ckey from '../lib/content-key.json';
 import { loadStudents, saveStudents, loadAttendance } from '../lib/students.mjs';
+import { lessonsOn, loadLog, withEntry, checkIn, saveRegister, setCancelled, monthLessons, punctuality, classAttendance, today as todayStr, GRACE_MIN, EARLY_MIN } from '../lib/lessons.mjs';
 
 const S = () => getStore({ name: 'school', consistency: 'strong' });
 const U = () => getStore({ name: 'ielts', consistency: 'strong' });
@@ -476,6 +477,56 @@ export default async (req) => {
     if (!isStaff(profile.role)) return fail(403, 'staff');
     const classes = await classesForTeacher(profile), students = await doc('students');
     return json({ classes: classes.map(c => ({ ...c, count: students.filter(s => (s.classes || []).includes(c.label) && s.status !== 'withdrawn' && s.status !== 'finished').length })) });
+  }
+  /* ---- lesson check-in and registers (teachers check in at the start of every lesson, then take the register) ---- */
+  if (path === 'teach/today' && method === 'GET') {
+    if (!isStaff(profile.role)) return fail(403, 'staff');
+    const date = /^\d{4}-\d{2}-\d{2}$/.test(url.searchParams.get('date') || '') ? url.searchParams.get('date') : todayStr();
+    const [mine, students, teachers] = await Promise.all([classesForTeacher(profile), doc('students'), doc('teachers')]);
+    const own = profile.role === 'admin' && url.searchParams.get('all') !== '1' ? mine.filter(c => c.teacherId === profile.teacherId) : mine;
+    const L = await loadLog(date.slice(0, 7)), now = new Date();
+    const lessons = withEntry(lessonsOn(own, date), L, now).map(l => ({ ...l, teacher: (teachers.find(t => t.id === l.teacherId) || {}).name || '',
+      students: students.filter(s => (s.classes || []).includes(l.label) && !/withdrawn|finished/i.test(s.status || '')).map(s => ({ sid: s.id, name: `${s.first} ${s.last}`.trim(), frozen: s.status === 'frozen' })).sort((a, b) => a.name.localeCompare(b.name)) }));
+    const month = await monthLessons(profile.role === 'admin' ? mine.filter(c => c.teacherId === profile.teacherId) : mine, date.slice(0, 7), now);
+    return json({ date, now: now.toISOString(), grace: GRACE_MIN, early: EARLY_MIN, lessons, me: punctuality(month, teachers)[0] || null });
+  }
+  if ((path === 'teach/checkin' || path === 'teach/register') && method === 'POST') {
+    if (!isStaff(profile.role)) return fail(403, 'staff');
+    const b = await req.json().catch(() => ({}));
+    const [cid, date] = String(b.key || '').split('|');
+    const c = (await classesForTeacher(profile)).find(x => x.id === cid); if (!c || !/^\d{4}-\d{2}-\d{2}$/.test(date || '')) return fail(404, 'lesson');
+    const lesson = lessonsOn([c], date).find(l => l.key === b.key); if (!lesson) return fail(404, 'lesson');
+    const who = { uid, name: profile.name || '', role: profile.role };
+    try {
+      if (path === 'teach/checkin') return json({ entry: await checkIn(lesson, who) });
+      return json(await saveRegister(lesson, b.marks, b.lateBy, who));
+    } catch (e) { if (e.code) return fail(409, e.code); throw e; }
+  }
+  const ta = path.match(/^teach\/attendance\/([A-Za-z0-9-]+)$/);
+  if (ta && method === 'GET') {
+    if (!isStaff(profile.role)) return fail(403, 'staff');
+    const c = (await classesForTeacher(profile)).find(x => x.id === ta[1]); if (!c) return fail(404, 'missing');
+    const students = (await doc('students')).filter(s => (s.classes || []).includes(c.label));
+    return json(await classAttendance(c, students));
+  }
+  /* the director/manager: every lesson of a day, who checked in and when, registers taken; teachers' punctuality this month */
+  if (path === 'admin/lessons' && method === 'GET') {
+    if (profile.role !== 'admin') return fail(403, 'admin');
+    const date = /^\d{4}-\d{2}-\d{2}$/.test(url.searchParams.get('date') || '') ? url.searchParams.get('date') : todayStr();
+    const [classes, teachers, students] = await Promise.all([doc('classes'), doc('teachers'), doc('students')]);
+    const now = new Date(), L = await loadLog(date.slice(0, 7));
+    const count = label => students.filter(s => (s.classes || []).includes(label) && s.status === 'active').length;
+    const lessons = withEntry(lessonsOn(classes, date), L, now).map(l => ({ ...l, teacher: (teachers.find(t => t.id === l.teacherId) || {}).name || '', size: count(l.label) }));
+    const month = await monthLessons(classes, date.slice(0, 7), now);
+    return json({ date, now: now.toISOString(), grace: GRACE_MIN, lessons, teachers: punctuality(month, teachers), missedList: month.filter(l => l.state === 'missed').map(l => ({ key: l.key, date: l.date, start: l.start, label: l.label, teacher: (teachers.find(t => t.id === l.teacherId) || {}).name || '' })).slice(-40).reverse() });
+  }
+  if (path === 'admin/lesson' && method === 'POST') {
+    if (profile.role !== 'admin') return fail(403, 'admin');
+    const b = await req.json().catch(() => ({}));
+    const [cid, date] = String(b.key || '').split('|');
+    const c = (await doc('classes')).find(x => x.id === cid); if (!c || !/^\d{4}-\d{2}-\d{2}$/.test(date || '')) return fail(404, 'lesson');
+    const lesson = lessonsOn([c], date).find(l => l.key === b.key); if (!lesson) return fail(404, 'lesson');
+    return json({ entry: await setCancelled(lesson, !!b.cancelled, b.note) });
   }
   /* ---- homework and test dates (teachers set them per class; the class is told at once) ---- */
   const hwc = path.match(/^teach\/homework\/([A-Za-z0-9-]+)$/);

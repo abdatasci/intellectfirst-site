@@ -452,6 +452,7 @@
       h += '<div class="box"><h3>Games and practice</h3><p class="small" style="margin-bottom:12px">Games, quests and AI practice for every level' + (freeAcct() ? ' (free accounts: a few AI rounds a day)' : '') + '.</p><a class="btn sm" href="/#apps">Open the apps</a> <a class="btn ghost sm" href="/live/">AI practice</a> <a class="btn ghost sm" href="/tests/">AI tests</a></div>';
       if (r === 'student' || (ME.homework || []).length) h += hwBox(ME.homework || []);
     } else {
+      h += '<div id="todaybox" class="wide2"></div>';
       var tc = ME.teaching || [];
       h += '<div class="box"><h3>' + (r === 'admin' ? 'All classes' : 'My classes') + '</h3>' + (tc.length ? tc.slice(0, 8).map(function (c) { return '<div class="cls"><div style="flex:1"><b><a href="#/class/' + c.id + '" style="text-decoration:none">' + esc(c.label) + '</a></b><p>' + esc(c.schedule || '') + (c.room ? ' · ' + esc(c.room) : '') + '</p></div></div>'; }).join('') + (tc.length > 8 ? '<a class="btn ghost sm" href="#/classes">All ' + tc.length + ' classes</a>' : '') :
         '<p class="small">No classes are linked to your account yet. The administrator can assign them.</p>') + '</div>';
@@ -461,6 +462,77 @@
     h += '</section>' + (staff() ? '<section class="section">' + proView(p, true) + '</section>' : '') + '<section class="section">' + detailsForm(p) + '<p class="small" style="margin-top:12px">Have a staff or administrator code? <a href="#/activate">Enter it here</a>.</p></section>';
     view.innerHTML = h;
     $('#ph').onclick = photoDialog; wireDetails(); tgBand(); wirePro(); wireGoal();
+    if (staff()) todayBox($('#todaybox'));
+  }
+
+  /* ---------- lessons: teacher check-in and the register ---------- */
+  var LSTATE = { upcoming: ['mute', 'Later today'], open: ['mute', 'Check in now'], overdue: ['bad', 'Not checked in'], missed: ['bad', 'Missed: no check-in'], 'in': ['ok', 'Checked in on time'], 'in-late': ['bad', 'Checked in late'], cancelled: ['mute', 'Cancelled'] };
+  function hm(iso) { var d = new Date(new Date(iso).getTime() + 5 * 3600e3); return d.toISOString().slice(11, 16); }
+  function lessonLine(l) {
+    var st = LSTATE[l.state] || ['mute', l.state], e = l.entry || {};
+    var when = e.checkIn ? ' · ' + hm(e.checkIn) + (e.lateMin > 0 ? ' (' + e.lateMin + ' min after start)' : '') : '';
+    return '<span class="chip2 ' + st[0] + '">' + st[1] + when + '</span>' + (e.takenAt ? ' <span class="chip2 ok">Register taken</span>' : '');
+  }
+  /** Today's lessons for the signed-in teacher: check in, then take the register. `el` is filled; `onlyClass` limits it to one class. */
+  async function todayBox(el, onlyClass) {
+    if (!el) return;
+    var d; try { d = await api('teach/today'); } catch (e) { el.innerHTML = ''; return; }
+    var L = d.lessons.filter(function (l) { return !onlyClass || l.classId === onlyClass; });
+    if (!L.length) { el.innerHTML = onlyClass ? '' : '<div class="box lessonsbox"><h3>Today</h3><p class="small">No lessons on your timetable today.</p>' + punct(d.me) + '</div>'; return; }
+    el.innerHTML = '<div class="box lessonsbox"><h3>' + (onlyClass ? 'Today\'s lesson' : 'Today: your lessons') + '</h3><p class="small" style="margin:0 0 10px">Check in when you arrive (from ' + d.early + ' minutes before the start). Checking in is required before every lesson; after ' + d.grace + ' minutes past the start it counts as late. Then take the register.</p>' +
+      L.map(function (l, i) {
+        var e = l.entry || {}, can = l.state === 'open' || l.state === 'overdue';
+        return '<div class="lesson" data-i="' + i + '"><div class="lh"><b>' + esc(l.start) + (l.end ? '–' + esc(l.end) : '') + '</b> <a href="#/class/' + esc(l.classId) + '">' + esc(l.label) + '</a>' + (l.room ? ' <span class="small">· ' + esc(l.room) + '</span>' : '') + '<span class="spacer"></span>' + lessonLine(l) + '</div>' +
+          (can ? '<button class="btn primary checkin" data-k="' + esc(l.key) + '">✅ Check in: I\'m here</button>' : '') +
+          (e.checkIn && !e.cancelled ? '<button class="btn sm ' + (e.takenAt ? 'ghost' : '') + ' regbtn" data-i="' + i + '">' + (e.takenAt ? 'Edit the register' : '📋 Take the register') + '</button><div class="reg" id="reg' + i + '" hidden></div>' : '') +
+          (l.state === 'upcoming' ? '<p class="small" style="margin:6px 0 0">Check-in opens at ' + hm(new Date(Date.parse(l.at) - d.early * 60000).toISOString()) + '.</p>' : '') +
+          (l.state === 'missed' ? '<p class="small" style="margin:6px 0 0">This lesson ended without a check-in. If it did not take place, tell the administrator.</p>' : '') + '</div>';
+      }).join('') + (onlyClass ? '' : punct(d.me)) + '</div>';
+    el.querySelectorAll('.checkin').forEach(function (b) {
+      b.onclick = async function () {
+        b.disabled = true;
+        try { await api('teach/checkin', { method: 'POST', body: { key: b.dataset.k } }); toast('Checked in ✓'); todayBox(el, onlyClass); }
+        catch (e) { b.disabled = false; toast(e.message === 'early' ? 'Check-in opens 30 minutes before the lesson.' : e.message === 'over' ? 'This lesson has already ended.' : 'Could not check in. Try again.'); }
+      };
+    });
+    el.querySelectorAll('.regbtn').forEach(function (b) { b.onclick = function () { register(el.querySelector('#reg' + b.dataset.i), L[+b.dataset.i], function () { todayBox(el, onlyClass); }); }; });
+  }
+  function punct(me) {
+    if (!me || !me.lessons) return '';
+    return '<p class="small" style="margin:12px 0 0;border-top:1px solid var(--line);padding-top:10px"><b>Your punctuality this month:</b> ' + me.onTime + ' of ' + me.lessons + ' lessons on time' + (me.late ? ' · ' + me.late + ' late (average ' + me.avgLate + ' min)' : '') + (me.missed ? ' · <span style="color:#b0372f">' + me.missed + ' without check-in</span>' : '') + ' · registers taken: ' + me.registers + '</p>';
+  }
+  function register(box, l, done) {
+    if (!box) return; box.hidden = !box.hidden; if (box.hidden) return;
+    var e = l.entry || {}, M = e.marks || {}, LB = e.lateBy || {};
+    var opts = [['on', 'On time'], ['late', 'Late'], ['abs', 'Absent'], ['exc', 'Excused']];
+    box.innerHTML = (l.students.length ? '<div class="regrows">' + l.students.map(function (s) {
+      var m = M[s.sid] || (e.takenAt ? '' : s.frozen ? '' : 'on');
+      return '<div class="regrow" data-sid="' + esc(s.sid) + '"><span class="rn">' + esc(s.name) + (s.frozen ? ' <span class="small">(frozen)</span>' : '') + '</span><span class="seg2">' + opts.map(function (o) { return '<button type="button" data-m="' + o[0] + '" class="' + (m === o[0] ? 'on ' + o[0] : '') + '">' + o[1] + '</button>'; }).join('') + '</span><input class="inp lm" type="number" min="1" max="180" placeholder="min" value="' + (LB[s.sid] || '') + '" ' + (m === 'late' ? '' : 'hidden') + ' title="Minutes late"></div>';
+    }).join('') + '</div><div class="row" style="gap:10px;margin-top:10px"><button class="btn primary savereg">Save the register</button><span class="small">Saved to IF Admin attendance (on time and late = present).</span></div>' : '<p class="small">No students in this class.</p>');
+    box.querySelectorAll('.regrow').forEach(function (r) {
+      r.querySelectorAll('[data-m]').forEach(function (b) {
+        b.onclick = function () { r.querySelectorAll('[data-m]').forEach(function (x) { x.className = ''; }); b.className = 'on ' + b.dataset.m; r.querySelector('.lm').hidden = b.dataset.m !== 'late'; if (b.dataset.m === 'late') r.querySelector('.lm').focus(); };
+      });
+    });
+    var sv = box.querySelector('.savereg'); if (sv) sv.onclick = async function () {
+      var marks = {}, lateBy = {};
+      box.querySelectorAll('.regrow').forEach(function (r) { var on = r.querySelector('[data-m].on'); if (on) { marks[r.dataset.sid] = on.dataset.m; if (on.dataset.m === 'late') lateBy[r.dataset.sid] = +r.querySelector('.lm').value || 0; } });
+      sv.disabled = true;
+      try { await api('teach/register', { method: 'POST', body: { key: l.key, marks: marks, lateBy: lateBy } }); toast('Register saved ✓'); done && done(); }
+      catch (e) { sv.disabled = false; toast(e.message === 'checkin' ? 'Check in first, then take the register.' : e.message === 'closed' ? 'Registers can be changed on the day of the lesson. Ask the administrator.' : 'Could not save. Try again.'); }
+    };
+  }
+  /** A class's attendance: grid of recent lessons, each student's totals, and the teachers' check-ins. */
+  async function classAttBox(el, classId) {
+    if (!el) return;
+    var d; try { d = await api('teach/attendance/' + classId); } catch (e) { el.innerHTML = ''; return; }
+    var dates = d.dates.slice(-12), lab = { P: '✓', L: 'L', UA: '✗', EA: 'E', FZ: '·' };
+    var rows = d.rows.filter(function (r) { return !/withdrawn|finished/i.test(r.status || ''); });
+    el.innerHTML = '<h3 style="margin:22px 0 8px">Attendance</h3>' + (rows.length && dates.length ?
+      '<div class="attwrap"><table class="attgrid"><thead><tr><th>Student</th>' + dates.map(function (x) { return '<th>' + x.slice(8) + '.' + x.slice(5, 7) + '</th>'; }).join('') + '<th>Present</th><th>Late</th><th>Absent</th></tr></thead><tbody>' +
+      rows.map(function (r) { var st = r.stats; return '<tr><td>' + esc(r.name) + '</td>' + dates.map(function (x) { var m = r.marks[x] || ''; return '<td class="m ' + m + '" title="' + (m === 'L' && r.lateMins[x] > 0 ? r.lateMins[x] + ' min late' : '') + '">' + (lab[m] || '') + '</td>'; }).join('') + '<td><b>' + (st.rate == null ? '–' : st.rate + '%') + '</b></td><td>' + st.late + '</td><td>' + st.absent + (st.excused ? ' <span class="small">+' + st.excused + ' exc.</span>' : '') + '</td></tr>'; }).join('') +
+      '</tbody></table></div><p class="small">✓ on time · L late · ✗ absent · E excused · last ' + dates.length + ' lessons. Present % counts on time and late.</p>' : '<p class="small">No attendance marked for this class yet.</p>') +
+      (d.lessons.length ? '<details class="more" style="margin-top:10px"><summary>Teacher check-ins (' + d.lessons.length + ')</summary><table class="t small"><tr><th>Date</th><th>Lesson</th><th>Check-in</th><th>Register</th></tr>' + d.lessons.slice(0, 30).map(function (x) { return '<tr><td>' + x.date.slice(8) + '.' + x.date.slice(5, 7) + '</td><td>' + esc(x.start) + '</td><td>' + (x.cancelled ? 'Cancelled' : x.checkIn ? esc(x.by) + ' ' + hm(x.checkIn) + (x.lateMin > 2 ? ' <span style="color:#b0372f">(' + x.lateMin + ' min late)</span>' : ' ✓') : '<span style="color:#b0372f">No check-in</span>') + '</td><td>' + (x.register ? '✓' : '–') + '</td></tr>'; }).join('') + '</table></details>' : '');
   }
 
   /* ---------- teacher ---------- */
@@ -494,6 +566,8 @@
         (past.length ? '<h3 style="margin:22px 0 10px">Former students</h3><div class="people">' + past.map(studentCard).join('') + '</div>' : '');
       $('#exp').onclick = function () { exportDialog(c.id, [c]); };
       wireHw(c);
+      var tdy = document.createElement('div'); tdy.id = 'ctoday'; var hero = view.querySelector('.hero'); if (hero) hero.after(tdy); todayBox(tdy, c.id);
+      var ab = document.createElement('div'); ab.id = 'catt'; var hw = view.querySelector('.hwset'); if (hw) hw.after(ab); else view.appendChild(ab); classAttBox(ab, c.id);
     } catch (e) { view.innerHTML = '<div class="empty" style="margin-top:30px">This class could not be loaded.</div>'; }
   }
   function wireHw(c) {
@@ -685,7 +759,7 @@
   /* ---------- admin ---------- */
   async function loadAdmin() { ADMIN = await api('admin/all'); try { ADMIN.att = (await api('admin/attendance')).attendance; } catch (e) { ADMIN.att = {}; } ME.books = ADMIN.books; ME.teachers = ADMIN.teachers; return ADMIN; }
   function adminTabs(on) {
-    return '<div class="tabs2">' + [['telegram', 'Telegram'], ['receipts', 'Receipts'], ['logins', 'Student logins'], ['accounts', 'Accounts' + ((ADMIN.accounts || []).filter(function (x) { return x.request; }).length ? ' (' + ADMIN.accounts.filter(function (x) { return x.request; }).length + ' waiting)' : '')], ['classes', 'Classes'], ['teachers', 'Teachers'], ['books', 'Books'], ['export', 'Export results'], ['placement', 'Placement tests'], ['bot', 'Bot & reminders']].map(function (t) {
+    return '<div class="tabs2">' + [['lessons', 'Lessons'], ['telegram', 'Telegram'], ['receipts', 'Receipts'], ['logins', 'Student logins'], ['accounts', 'Accounts' + ((ADMIN.accounts || []).filter(function (x) { return x.request; }).length ? ' (' + ADMIN.accounts.filter(function (x) { return x.request; }).length + ' waiting)' : '')], ['classes', 'Classes'], ['teachers', 'Teachers'], ['books', 'Books'], ['export', 'Export results'], ['placement', 'Placement tests'], ['bot', 'Bot & reminders']].map(function (t) {
       return '<a href="#/admin/' + t[0] + '" class="' + (on === t[0] ? 'on' : '') + '">' + t[1] + '</a>';
     }).join('') + '<a href="/me/ifadmin/" style="background:var(--navy);color:#fff;border-color:var(--navy)">IF Admin ↗</a><a href="#" onclick="window.IFAdminAI&&IFAdminAI.open();return false" style="border-color:#C9A227">✨ AI assistant</a></div>';
   }
@@ -696,7 +770,33 @@
     await loadAdmin();
     var head = '<section class="hero" style="padding-bottom:4px"><div class="eyebrow">Administrator</div><h1>School admin</h1><p class="lead">' + ADMIN.students.length + ' students · ' + ADMIN.classes.length + ' classes · ' + ADMIN.teachers.length + ' teachers · ' + ADMIN.accounts.length + ' accounts</p></section>' +
       '<div class="panel wide" style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-bottom:14px"><div style="flex:1;min-width:240px"><b>Students, payments, attendance and results are managed in IF Admin.</b><br><span class="sub">The website reads them from IF Admin automatically: student profiles, teacher views, the assistant and Telegram reminders. A payment marked in IF Admin stops that student\'s reminder.</span></div><a class="btn" href="/me/ifadmin/">Open IF Admin ↗</a></div>' + adminTabs(tab);
-    ({ telegram: aTelegram, receipts: aReceipts, students: aStudents, classes: aClasses, teachers: aTeachers, books: aBooks, accounts: aAccounts, logins: aLogins, import: aImport, export: aExport, placement: aPlacement, finance: aFinance, bot: aBot }[tab] || aAccounts)(head);
+    ({ lessons: aLessons, telegram: aTelegram, receipts: aReceipts, students: aStudents, classes: aClasses, teachers: aTeachers, books: aBooks, accounts: aAccounts, logins: aLogins, import: aImport, export: aExport, placement: aPlacement, finance: aFinance, bot: aBot }[tab] || aAccounts)(head);
+  }
+
+  /* ---------- lessons monitor: every lesson of a day, teachers' check-ins and registers, punctuality this month ---------- */
+  async function aLessons(head, date) {
+    view.innerHTML = head + '<p><span class="spin"></span></p>';
+    var d; try { d = await api('admin/lessons' + (date ? '?date=' + date : '')); } catch (e) { view.innerHTML = head + '<div class="empty">Could not load lessons.</div>'; return; }
+    var L = d.lessons, n = function (st) { return L.filter(function (l) { return st.indexOf(l.state) >= 0; }).length; };
+    var reg = function (l) { var e = l.entry || {}, m = e.marks || {}, v = Object.keys(m).map(function (k) { return m[k]; }); return e.takenAt ? v.filter(function (x) { return x === 'on' || x === 'late'; }).length + '/' + v.length + ' present' + (v.filter(function (x) { return x === 'late'; }).length ? ' · ' + v.filter(function (x) { return x === 'late'; }).length + ' late' : '') + (v.filter(function (x) { return x === 'abs'; }).length ? ' · ' + v.filter(function (x) { return x === 'abs'; }).length + ' absent' : '') : (e.checkIn ? '<span class="small">not taken yet</span>' : '–'); };
+    view.innerHTML = head +
+      '<div class="panel wide"><div class="row" style="gap:12px;flex-wrap:wrap;align-items:center"><h2 style="margin:0">Lessons</h2><input class="inp" type="date" id="ldate" value="' + d.date + '" style="max-width:180px"><button class="btn ghost sm" id="lnow">Today</button><span class="spacer"></span>' +
+      '<span class="chip2 ok">' + n(['in']) + ' on time</span><span class="chip2 bad">' + n(['in-late']) + ' late</span><span class="chip2 bad">' + n(['overdue', 'missed']) + ' no check-in</span><span class="chip2 mute">' + n(['upcoming', 'open']) + ' to come</span></div>' +
+      (L.length ? '<div class="attwrap"><table class="t lessons"><tr><th>Time</th><th>Class</th><th>Teacher</th><th>Check-in</th><th>Register</th><th></th></tr>' + L.map(function (l) {
+        return '<tr class="' + l.state + '"><td><b>' + esc(l.start) + '</b>' + (l.end ? '–' + esc(l.end) : '') + '</td><td><a href="#/class/' + esc(l.classId) + '">' + esc(l.label) + '</a><div class="small">' + esc(l.room || '') + ' · ' + l.size + ' students</div></td><td>' + esc(l.teacher || '—') + '</td><td>' + lessonLine(l).replace(' <span class="chip2 ok">Register taken</span>', '') + '</td><td>' + reg(l) + '</td><td>' + (l.state === 'missed' || l.state === 'overdue' || l.state === 'upcoming' || l.state === 'open' ? '<button class="linkbtn lcan" data-k="' + esc(l.key) + '">Lesson cancelled</button>' : l.state === 'cancelled' ? '<button class="linkbtn lun" data-k="' + esc(l.key) + '">Undo</button>' : '') + '</td></tr>';
+      }).join('') + '</table></div>' : '<p class="sub">No lessons on the timetable on this day.</p>') + '</div>' +
+      '<div class="panel wide"><h2>Teachers\' punctuality · ' + esc(monthLabel(d.date.slice(0, 7))) + '</h2><p class="sub">Lessons so far this month (cancelled lessons not counted). Teachers must check in on the website at the start of every lesson; more than ' + d.grace + ' minutes after the start counts as late.</p>' +
+      (d.teachers.length ? '<table class="t"><tr><th>Teacher</th><th>Lessons</th><th>On time</th><th>Late</th><th>No check-in</th><th>Registers</th></tr>' + d.teachers.map(function (t) { return '<tr><td><b>' + esc(t.name) + '</b></td><td>' + t.lessons + '</td><td>' + t.onTime + (t.lessons ? ' <span class="small">(' + Math.round(t.onTime / t.lessons * 100) + '%)</span>' : '') + '</td><td>' + (t.late ? t.late + ' <span class="small">avg ' + t.avgLate + ' min</span>' : '0') + '</td><td>' + (t.missed ? '<b style="color:#b0372f">' + t.missed + '</b>' : '0') + '</td><td>' + t.registers + '/' + t.lessons + '</td></tr>'; }).join('') + '</table>' : '<p class="sub">No lessons yet this month.</p>') +
+      (d.missedList.length ? '<details class="more" style="margin-top:12px"><summary>Lessons without a check-in (' + d.missedList.length + ')</summary><table class="t small">' + d.missedList.map(function (m) { return '<tr><td>' + m.date.slice(8) + '.' + m.date.slice(5, 7) + ' ' + esc(m.start) + '</td><td>' + esc(m.label) + '</td><td>' + esc(m.teacher) + '</td><td><button class="linkbtn lcan" data-k="' + esc(m.key) + '">Lesson cancelled</button></td></tr>'; }).join('') + '</table></details>' : '') + '</div>';
+    $('#ldate').onchange = function () { aLessons(head, this.value); };
+    $('#lnow').onclick = function () { aLessons(head); };
+    view.querySelectorAll('.lcan,.lun').forEach(function (b) {
+      b.onclick = async function () {
+        var cancel = b.classList.contains('lcan'), note = cancel ? prompt('Why was the lesson cancelled? (optional)') : '';
+        if (cancel && note === null) return;
+        try { await api('admin/lesson', { method: 'POST', body: { key: b.dataset.k, cancelled: cancel, note: note || '' } }); aLessons(head, $('#ldate').value); } catch (e) { toast('Could not save.'); }
+      };
+    });
   }
 
   /* ---------- student logins: the school makes the accounts, students get a login and a one-time password ---------- */

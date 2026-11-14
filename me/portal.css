@@ -191,3 +191,30 @@ a.btn.tgbtn{text-decoration:none}
 .rcard{display:flex;gap:12px;padding:12px;border:1px solid var(--line,#e4dccd);border-radius:14px;background:#fff}.rcard.pending{border-color:#ecd9a8;background:#fffbf0}
 .rthumb{flex:none;width:90px;height:120px;border-radius:10px;overflow:hidden;background:#f4efe6;display:grid;place-items:center;font-weight:700;color:#9a7a3c;text-decoration:none}
 .rthumb img{width:100%;height:100%;object-fit:cover}.rinfo{display:grid;gap:4px;align-content:start;font-size:14px}.rinfo small{color:var(--muted,#6b7280)}.rinfo p{margin:0}
+
+/* lessons: teacher check-in, register, attendance grid, admin monitor */
+.wide2{grid-column:1/-1}
+.lessonsbox .lesson{border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:10px;display:grid;gap:8px}
+.lessonsbox .lh{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.lessonsbox .lh .spacer{flex:1}
+.lessonsbox .checkin{font-size:16px;padding:12px 18px;justify-self:start}
+.lessonsbox .regbtn{justify-self:start}
+.regrows{display:grid;gap:6px}
+.regrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:6px 0;border-bottom:1px solid var(--line)}
+.regrow .rn{flex:1;min-width:150px;font-weight:600}
+.seg2{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.seg2 button{border:0;background:#fff;padding:7px 11px;font-size:13.5px;cursor:pointer;border-right:1px solid var(--line)}
+.seg2 button:last-child{border-right:0}
+.seg2 button.on.on{background:#1d7a4c;color:#fff}
+.seg2 button.on.late{background:#c98a1d;color:#fff}
+.seg2 button.on.abs{background:#b0372f;color:#fff}
+.seg2 button.on.exc{background:#56627d;color:#fff}
+.regrow .lm{width:80px;padding:6px 8px}
+.attwrap{overflow-x:auto}
+.attgrid{border-collapse:collapse;font-size:13.5px;min-width:100%}
+.attgrid th,.attgrid td{border-bottom:1px solid var(--line);padding:6px 7px;text-align:center;white-space:nowrap}
+.attgrid th:first-child,.attgrid td:first-child{text-align:left;position:sticky;left:0;background:#fff}
+.attgrid td.m.P{color:#1d7a4c;font-weight:700}.attgrid td.m.L{color:#c98a1d;font-weight:700;background:#fdf3e1}
+.attgrid td.m.UA{color:#b0372f;font-weight:700;background:#f9e2df}.attgrid td.m.EA{color:#56627d}
+table.lessons tr.missed td,table.lessons tr.overdue td{background:#fdf0ee}
+table.lessons tr.cancelled td{opacity:.55}
