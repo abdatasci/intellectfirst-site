@@ -1,6 +1,7 @@
 // One-time data updates shipped with the site: each runs once (marked in store "school" → migrations), the first time
 // the site handles a request after the deploy. Only record ids here, never names: this repository is public.
 import { getStore } from '@netlify/blobs';
+import { createHash } from 'node:crypto';
 
 const S = () => getStore({ name: 'school', consistency: 'strong' });
 const A = () => getStore({ name: 'ifadmin', consistency: 'strong' });
@@ -54,17 +55,36 @@ export async function applyTimetable(tt) {
   return lines;
 }
 
-const MIGRATIONS = [['timetable-2026-11-14', () => applyTimetable(TT_2026_11_14)]];
+/* Students not yet in IF Admin when the timetable came: matched later by a fingerprint of the first name (sha-256, first
+   16 hex characters of the lower-case name) so no name is stored here. Applied as soon as the student's record exists. */
+const PENDING_2026_11_14 = [['c18e7785082767a5', 'ind', 'Mon, Wed, Fri 10:00-11:00', 't-olya']];
+const fp = n => createHash('sha256').update(String(n || '').trim().split(/\s+/)[0].toLowerCase()).digest('hex').slice(0, 16);
+async function applyPending(list) {
+  const students = (await A().get('c/students', { type: 'json' })) || {}, found = [];
+  for (const [h, gid, sch, tid] of list) {
+    const sid = Object.keys(students).find(k => students[k].st !== 'left' && fp(students[k].n) === h);
+    if (sid) found.push([sid, gid, sch, tid]);
+  }
+  if (found.length < list.length) return null;   // not every student is in IF Admin yet: try again later
+  return applyTimetable({ individual: found });
+}
+
+const MIGRATIONS = [['timetable-2026-11-14', () => applyTimetable(TT_2026_11_14)], ['timetable-2026-11-14-pending', () => applyPending(PENDING_2026_11_14), true]];
 let running = null;
 /** Run any migration that has not run yet. Safe to call on every request (cached per instance). */
+let checkedAt = 0;
 export function migrate() {
+  if (running && Date.now() - checkedAt > 5 * 60000) running = null;   // look again every few minutes for waiting updates
+  checkedAt = checkedAt || Date.now();
   return running || (running = (async () => {
+    checkedAt = Date.now();
     try {
       const done = (await S().get('migrations', { type: 'json' })) || {};
       for (const [id, fn] of MIGRATIONS) {
         if (done[id]) continue;
         if (!Object.keys((await A().get('c/students', { type: 'json' })) || {}).length) continue;   // IF Admin not loaded yet
         const lines = await fn();
+        if (!lines) continue;   // waiting for data (e.g. a student not added yet)
         done[id] = { at: new Date().toISOString(), lines: lines.slice(0, 40) };
         await S().setJSON('migrations', done);
         console.log('migration', id, lines.join(' | '));
