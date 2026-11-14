@@ -395,8 +395,10 @@
   /* ================= stage rendering (host and watchers) ================= */
   function render() {
     if (WATCH) return renderStage(ST, false);
-    if (!H) return;
-    renderStage(snapshot(true), true);
+    if (!H) { if (L.Music) L.Music.follow('setup'); return; }
+    var snap = snapshot(true);
+    if (L.Music) { L.Music.ui($('#back')); L.Music.follow(H.phase, H.mode, H.phase === 'q' ? H.qStart + H.time * 1000 - Date.now() : snap.left); }
+    renderStage(snap, true);
   }
   function teamColor(t) { return t >= 0 ? L.HEX[t] : 'rgba(255,255,255,.4)'; }
   function renderStage(s, host) {
