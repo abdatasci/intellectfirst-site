@@ -10,12 +10,13 @@ import { getUser, refreshSession, admin as idAdmin } from '@netlify/identity';
 import { roleForCode, isStaff, lockKeysFromCode, verifyLockKeys, isPrivateCode } from '../lib/codes.mjs';
 import { listReceipts, decideReceipt, receiptFile } from '../lib/receipts.mjs';
 import { loadHomework, addHomework, removeHomework, forClasses, clean as cleanHw, hwText } from '../lib/homework.mjs';
-import { getLinks, tgSend, tgToken, addNote, uidsByStudent } from '../lib/bot-core.mjs';
+import { getLinks, tgSend, tgToken, addNote, uidsByStudent, inClass } from '../lib/bot-core.mjs';
 import { waReady, waSend, waNumber } from '../lib/whatsapp.mjs';
 import { tier, isMember, TRACKS, paidActive, accessUntil, TRIAL_DAYS, ensureTrial } from '../lib/access.mjs';
 import seed from '../lib/school-seed.json';
 import ckey from '../lib/content-key.json';
 import { loadStudents, saveStudents, loadAttendance } from '../lib/students.mjs';
+import { migrate as runMigrations } from '../lib/migrate.mjs';
 import { lessonsOn, loadLog, withEntry, checkIn, saveRegister, setCancelled, correct, since as checkSince, monthLessons, punctuality, classAttendance, today as todayStr, GRACE_MIN, EARLY_MIN } from '../lib/lessons.mjs';
 
 const S = () => getStore({ name: 'school', consistency: 'strong' });
@@ -122,7 +123,7 @@ async function linkByPhone(uid, profile) {
 }
 /** New homework or test: tell every active student of the class (website note, Telegram, WhatsApp). */
 async function tellClass(c, item) {
-  const students = (await doc('students')).filter(s => (s.classes || []).includes(c.label) && !/withdrawn|finished|frozen/i.test(s.status || ''));
+  const students = (await doc('students')).filter(s => inClass(c, s) && !/withdrawn|finished|frozen/i.test(s.status || ''));
   const links = await getLinks(), prefs = (await S().get('waPrefs', { type: 'json' })) || {}, wa = waReady(), bySid = await uidsByStudent(links);
   let n = 0;
   for (const s0 of students) {
@@ -145,8 +146,7 @@ async function classesForTeacher(profile) {
 async function canSeeStudent(profile, student) {
   if (profile.role === 'admin') return true;
   if (profile.role !== 'teacher') return false;
-  const mine = (await classesForTeacher(profile)).map(c => c.label);
-  return (student.classes || []).some(c => mine.includes(c));
+  return (await classesForTeacher(profile)).some(c => inClass(c, student));
 }
 async function attendanceOf(id) { const a = await loadAttendance(); return a[id] || []; }
 async function studentView(s) {
@@ -269,6 +269,7 @@ async function syncTuition(before, after) {
 
 /* ---------- routes ---------- */
 export default async (req) => {
+  await runMigrations();
   const url = new URL(req.url);
   const path = url.pathname.replace(/^\/api\/school\/?/, '').replace(/\/$/, '');
   const method = req.method;
@@ -320,7 +321,7 @@ export default async (req) => {
     const out = { user: { id: uid, email: user.email, name: profile?.name || user.name || '' }, profile, access: tier(profile), membership: await membership() };
     if (profile?.studentId) {
       const s = (await doc('students')).find(x => x.id === profile.studentId);
-      const classes = (await doc('classes')).filter(c => (s?.classes || []).includes(c.label));
+      const classes = (await doc('classes')).filter(c => inClass(c, s));
       out.student = publicStudent(s); out.classes = classes; out.attendance = await attendanceOf(profile.studentId);
       out.homework = forClasses(await loadHomework(), classes.map(c => c.id));
     }
@@ -476,7 +477,7 @@ export default async (req) => {
   if (path === 'teach/classes' && method === 'GET') {
     if (!isStaff(profile.role)) return fail(403, 'staff');
     const classes = await classesForTeacher(profile), students = await doc('students');
-    return json({ classes: classes.map(c => ({ ...c, count: students.filter(s => (s.classes || []).includes(c.label) && s.status !== 'withdrawn' && s.status !== 'finished').length })) });
+    return json({ classes: classes.map(c => ({ ...c, count: students.filter(s => inClass(c, s) && s.status !== 'withdrawn' && s.status !== 'finished').length })) });
   }
   /* ---- lesson check-in and registers (teachers check in at the start of every lesson, then take the register) ---- */
   if (path === 'teach/today' && method === 'GET') {
@@ -486,7 +487,7 @@ export default async (req) => {
     const own = profile.role === 'admin' && url.searchParams.get('all') !== '1' ? mine.filter(c => c.teacherId === profile.teacherId) : mine;
     const L = await loadLog(date.slice(0, 7)), now = new Date(), cutoff = await checkSince();
     const lessons = withEntry(lessonsOn(own, date), L, now, cutoff).map(l => ({ ...l, teacher: (teachers.find(t => t.id === l.teacherId) || {}).name || '',
-      students: students.filter(s => (s.classes || []).includes(l.label) && !/withdrawn|finished/i.test(s.status || '')).map(s => ({ sid: s.id, name: `${s.first} ${s.last}`.trim(), frozen: s.status === 'frozen' })).sort((a, b) => a.name.localeCompare(b.name)) }));
+      students: students.filter(s => inClass(own.find(c => c.id === l.classId), s) && !/withdrawn|finished/i.test(s.status || '')).map(s => ({ sid: s.id, name: `${s.first} ${s.last}`.trim(), frozen: s.status === 'frozen' })).sort((a, b) => a.name.localeCompare(b.name)) }));
     const month = await monthLessons(profile.role === 'admin' ? mine.filter(c => c.teacherId === profile.teacherId) : mine, date.slice(0, 7), now);
     return json({ date, now: now.toISOString(), grace: GRACE_MIN, early: EARLY_MIN, lessons, me: punctuality(month, teachers)[0] || null });
   }
@@ -506,7 +507,7 @@ export default async (req) => {
   if (ta && method === 'GET') {
     if (!isStaff(profile.role)) return fail(403, 'staff');
     const c = (await classesForTeacher(profile)).find(x => x.id === ta[1]); if (!c) return fail(404, 'missing');
-    const students = (await doc('students')).filter(s => (s.classes || []).includes(c.label));
+    const students = (await doc('students')).filter(s => inClass(c, s));
     return json(await classAttendance(c, students));
   }
   /* the director/manager: every lesson of a day, who checked in and when, registers taken; teachers' punctuality this month */
@@ -515,9 +516,9 @@ export default async (req) => {
     const date = /^\d{4}-\d{2}-\d{2}$/.test(url.searchParams.get('date') || '') ? url.searchParams.get('date') : todayStr();
     const [classes, teachers, students] = await Promise.all([doc('classes'), doc('teachers'), doc('students')]);
     const now = new Date(), L = await loadLog(date.slice(0, 7)), cutoff = await checkSince();
-    const count = label => students.filter(s => (s.classes || []).includes(label) && s.status === 'active').length;
-    const roster = label => students.filter(s => (s.classes || []).includes(label) && !/withdrawn|finished/i.test(s.status || '')).map(s => ({ sid: s.id, name: `${s.first} ${s.last}`.trim(), frozen: s.status === 'frozen' })).sort((a, b) => a.name.localeCompare(b.name));
-    const lessons = withEntry(lessonsOn(classes, date), L, now, cutoff).map(l => ({ ...l, teacher: (teachers.find(t => t.id === l.teacherId) || {}).name || '', size: count(l.label), students: roster(l.label) }));
+    const count = cid => students.filter(s => inClass(classes.find(c => c.id === cid), s) && s.status === 'active').length;
+    const roster = cid => students.filter(s => inClass(classes.find(c => c.id === cid), s) && !/withdrawn|finished/i.test(s.status || '')).map(s => ({ sid: s.id, name: `${s.first} ${s.last}`.trim(), frozen: s.status === 'frozen' })).sort((a, b) => a.name.localeCompare(b.name));
+    const lessons = withEntry(lessonsOn(classes, date), L, now, cutoff).map(l => ({ ...l, teacher: (teachers.find(t => t.id === l.teacherId) || {}).name || '', size: count(l.classId), students: roster(l.classId) }));
     const month = await monthLessons(classes, date.slice(0, 7), now);
     return json({ date, now: now.toISOString(), grace: GRACE_MIN, since: cutoff, lessons, teachers: punctuality(month, teachers), missedList: month.filter(l => l.state === 'missed').map(l => ({ key: l.key, date: l.date, start: l.start, label: l.label, teacher: (teachers.find(t => t.id === l.teacherId) || {}).name || '' })).slice(-40).reverse() });
   }
@@ -557,7 +558,7 @@ export default async (req) => {
     if (!isStaff(profile.role)) return fail(403, 'staff');
     const c = (await classesForTeacher(profile)).find(x => x.id === tc[1]);
     if (!c) return fail(404, 'missing');
-    const students = (await doc('students')).filter(s => (s.classes || []).includes(c.label));
+    const students = (await doc('students')).filter(s => inClass(c, s));
     return json({ class: c, students: await Promise.all(students.map(studentView)) });
   }
   const ts = path.match(/^teach\/student\/([A-Za-z0-9-]+)$/);
@@ -597,7 +598,7 @@ export default async (req) => {
     if (isStaff(profile.role)) mine = await classesForTeacher(profile);
     else if (profile.studentId) {
       const s = (await doc('students')).find(x => x.id === profile.studentId);
-      mine = (await doc('classes')).filter(c => (s?.classes || []).includes(c.label));
+      mine = (await doc('classes')).filter(c => inClass(c, s));
     }
     if (mine.some(c => !c.meet)) {
       const all = await doc('classes');

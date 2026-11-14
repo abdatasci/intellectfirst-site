@@ -11,6 +11,7 @@ import { getStore } from '@netlify/blobs';
 import { getUser, refreshSession } from '@netlify/identity';
 import enc from '../lib/ifadmin-app.json';
 import { chat, run } from '../lib/ifadmin-ai.mjs';
+import { applyTimetable } from '../lib/migrate.mjs';
 
 const COLLS = ['students', 'groups', 'attendance', 'payments', 'expenses', 'settings', 'staff', 'results', 'access', 'mine'];
 const A = () => getStore({ name: 'ifadmin', consistency: 'strong' });
@@ -104,6 +105,15 @@ export default async (req) => {
         await W.setJSON('classes', classes);
         res.lines.push({ ok: true, text: `Website class · ${g.n}: ${t ? 'teacher ' + t.name : g.teacher ? 'teacher “' + g.teacher + '” not found, set it in Admin → Classes' : g.update ? 'teacher unchanged' : 'no teacher yet'}${g.sch ? ' · ' + g.sch : ''}` });
       } catch (e) { console.error('website class', e.message); }
+    }
+    if ((D.slots || []).length) {   // individual students' own lesson times and teacher (website classes)
+      try {
+        const teachers = (await getStore({ name: 'school', consistency: 'strong' }).get('teachers', { type: 'json' })) || [];
+        const tid = n => { const t = String(n || '').toLowerCase().trim(); if (!t) return ''; const x = teachers.find(y => (y.name || '').toLowerCase() === t) || teachers.find(y => (y.name || '').toLowerCase().split(' ')[0] === t.split(' ')[0]); return x ? x.id : ''; };
+        const miss = D.slots.filter(x => x.teacher && !tid(x.teacher)).map(x => x.teacher);
+        await applyTimetable({ individual: D.slots.map(x => [x.sid, x.gid, x.sch, tid(x.teacher), x.room]) });
+        res.lines.push({ ok: true, text: `Website: ${D.slots.length} individual timetable${D.slots.length > 1 ? 's' : ''} saved${miss.length ? ' (teacher not found: ' + miss.join(', ') + ' — set it in Admin → Classes)' : ''}` });
+      } catch (e) { console.error('slots', e.message); }
     }
     return json({ lines: res.lines, saved: res.lines.filter(l => l.ok).length, undo: id });
   }

@@ -5,6 +5,7 @@
 import { S, doc, getLinks, uidsByStudent, dueReminders, reminderText, tgSend, tgToken, tg, tgSecret, addNote, ymd } from '../lib/bot-core.mjs';
 import { waReady, waSend, waNumber } from '../lib/whatsapp.mjs';
 import { loadHomework } from '../lib/homework.mjs';
+import { migrate } from '../lib/migrate.mjs';
 import { lessonsOn, loadLog, today as todayStr } from '../lib/lessons.mjs';
 import { getStore } from '@netlify/blobs';
 
@@ -53,6 +54,7 @@ async function lessonWatch(classes, links) {
 }
 
 export default async () => {
+  await migrate();
   await upgradeWebhook();
   try { const [cl, lk] = await Promise.all([doc('classes'), getLinks()]); await lessonWatch(cl, lk); } catch (e) { console.error('lesson watch', e.message); }
   const now = new Date();

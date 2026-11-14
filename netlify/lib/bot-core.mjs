@@ -17,6 +17,9 @@ export const SCHOOL = {
   telegram: '@abliem', whatsapp: '+7 707 381 0988', site: 'https://intellectfirst.com'
 };
 
+/** Is this student in this website class? A class can be a whole IF Admin group (by its label) or chosen students
+    inside a group (studentIds: e.g. one individual student's own timetable inside "Individual (local teacher)"). */
+export const inClass = (c, s) => !!c && !!s && (Array.isArray(c.studentIds) && c.studentIds.length ? c.studentIds.includes(s.id) : (s.classes || []).includes(c.label));
 export async function doc(name) {
   if (name === 'students') return loadStudents();
   const v = await S().get(name, { type: 'json' });
@@ -130,7 +133,7 @@ export async function contextFor(uid) {
     const s = students.find(x => x.id === profile.studentId);
     if (s) {
       ctx.student = s;
-      ctx.classes = classes.filter(c => (s.classes || []).includes(c.label));
+      ctx.classes = classes.filter(c => inClass(c, s));
       ctx.pay = payStatus(s);
     }
   } else if (profile.role === 'teacher' || profile.role === 'admin') {
@@ -303,7 +306,7 @@ export function dueReminders({ students, classes, homework = [], receipts = {}, 
   for (const s of students) {
     if (/withdrawn|finished|frozen/i.test(s.status || '')) continue;
     if (!s.uid && !s.phone && !s.parentPhone) continue;   // no account and no phone: nobody to tell
-    const mine = classes.filter(c => (s.classes || []).includes(c.label));
+    const mine = classes.filter(c => inClass(c, s));
     for (const x of upcomingLessons(mine, now, 2)) {
       const mins = (x.at - now) / 60000;
       if (mins > 60 && mins <= 125) out.push({ uid: s.uid || null, studentId: s.id, phones: [s.phone, s.parentPhone].filter(Boolean), kind: 'lesson2h', key: `l2:${x.classId}:${x.date}:${x.start}`, lesson: x });

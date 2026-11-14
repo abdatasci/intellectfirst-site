@@ -24,7 +24,7 @@ export function lessonsOn(classes, date) {
     const [hh, mm] = s.start.split(':').map(Number), at = fromLocal(y, m - 1, d, hh, mm);
     let endAt = new Date(at.getTime() + LESSON_MIN * 60000);
     if (s.end) { const [eh, em] = s.end.split(':').map(Number); const e = fromLocal(y, m - 1, d, eh, em); if (e > at) endAt = e; }
-    out.push({ key: `${c.id}|${date}|${s.start}`, classId: c.id, label: c.label, room: c.room || '', teacherId: c.teacherId || '', date, start: s.start, end: s.end || '', at: at.toISOString(), endAt: endAt.toISOString() });
+    out.push({ key: `${c.id}|${date}|${s.start}`, classId: c.id, group: c.group || '', label: c.label, room: c.room || '', teacherId: c.teacherId || '', date, start: s.start, end: s.end || '', at: at.toISOString(), endAt: endAt.toISOString() });
   }
   return out.sort((a, b) => a.at.localeCompare(b.at));
 }
@@ -70,7 +70,7 @@ export async function saveRegister(lesson, marks, lateBy, who) {
   // IF Admin attendance (website class "c-<groupId>" ↔ IF Admin group)
   let saved = null;
   try {
-    const gid = String(lesson.classId).replace(/^c-/, '');
+    const gid = lesson.group || String(lesson.classId).replace(/^c-/, '');
     const D = { students: (await A().get('c/students', { type: 'json' })) || {}, groups: (await A().get('c/groups', { type: 'json' })) || {}, attendance: (await A().get('c/attendance', { type: 'json' })) || {} };
     if (D.groups[gid]) {
       const ifa = {}; for (const [sid, m] of Object.entries(clean)) if (D.students[sid]) ifa[sid] = TO_IFA[m];
@@ -137,7 +137,7 @@ export function punctuality(lessons, teachers) {
 
 /** A class's attendance from IF Admin, with the website's lateness on top: {dates, rows:[{sid, name, marks:{date: P|L|UA|EA|FZ}, stats}]}. */
 export async function classAttendance(cls, students, months = 3) {
-  const gid = String(cls.id).replace(/^c-/, '');
+  const gid = cls.group || String(cls.id).replace(/^c-/, '');
   const att = ((await A().get('c/attendance', { type: 'json' })) || {})[gid] || {};
   const cut = new Date(local().getTime() - months * 31 * 864e5).toISOString().slice(0, 10);
   const late = {}, now = local(), logs = [];

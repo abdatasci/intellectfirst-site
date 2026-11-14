@@ -115,12 +115,12 @@ const TOOLS = [
           type: 'array', items: {
             type: 'object', required: ['op'],
             properties: {
-              op: { type: 'string', enum: ['attendance', 'lesson_move', 'lesson_remove', 'group_member', 'payment', 'expense', 'student', 'student_add', 'package', 'group_add', 'group_set'] },
+              op: { type: 'string', enum: ['attendance', 'lesson_move', 'lesson_remove', 'group_member', 'payment', 'expense', 'student', 'student_add', 'package', 'group_add', 'group_set', 'individual'] },
               to: { type: 'string', description: 'lesson_move: the new date YYYY-MM-DD (date = the old one)' },
               action: { type: 'string', description: 'group_member: add | remove' },
               group: { type: 'string', description: 'attendance / student_add / group_member: group id. group_add: a short new id (lowercase letters and digits, e.g. "stb"); later ops in the same list can use it' },
-              sch: { type: 'string', description: 'group_add / group_set: timetable, days then times, e.g. "Tue, Fri 15:00-16:00"' },
-              teacher: { type: 'string', description: 'group_add / group_set: the teacher\'s name' }, room: { type: 'string', description: 'group_add / group_set: room (optional)' },
+              sch: { type: 'string', description: 'group_add / group_set / individual / student_add: timetable, days then times, e.g. "Tue, Fri 15:00-16:00"' },
+              teacher: { type: 'string', description: 'group_add / group_set / individual / student_add: the teacher\'s name. individual = one student\'s own lesson times and teacher (individual lessons); student_add with sch+teacher also sets them' }, room: { type: 'string', description: 'group_add / group_set: room (optional)' },
               date: { type: 'string', description: 'YYYY-MM-DD (lesson date, payment date or expense date)' },
               marks: { type: 'object', description: 'attendance: {studentId: "P"|"UA"|"EA"|"FZ"|""}', additionalProperties: { type: 'string' } },
               month: { type: 'string', description: 'payment/expense: YYYY-MM' },
@@ -336,6 +336,11 @@ export function run(D, ops) {
           G[g].ps = c.after || nextDay(c.last || today()); touched.add('groups');
           out.push({ ok: true, text: `New package · ${G[g].n}: starts ${G[g].ps} (${c.done}/${c.size} lessons done), alert removed${sid ? ' (for the whole group)' : ''}` });
         }
+      } else if (o.op === 'individual') {
+        const st = S[o.student]; if (!st) { bad(`Individual timetable: unknown student ${str(o.student, 30)}`); continue; }
+        if (!o.sch) { bad(`Individual timetable ${st.n}: timetable missing`); continue; }
+        (D.slots ||= []).push({ sid: o.student, gid: o.group && G[o.group] ? o.group : stuGroups(st)[0] || 'ind', sch: str(o.sch, 60), teacher: str(o.teacher, 60), room: str(o.room, 30) });
+        out.push({ ok: true, text: `Individual timetable · ${st.n}: ${str(o.sch, 60)}${o.teacher ? ' · ' + str(o.teacher, 60) : ''}` });
       } else if (o.op === 'group_set') {
         const g = G[o.group]; if (!g) { bad(`Group: unknown group “${str(o.group, 30)}”`); continue; }
         const was = g.sch || '—', parts = [];
@@ -362,6 +367,7 @@ export function run(D, ops) {
         let k = 1; for (const id of Object.keys(S)) { const x = +(id.match(/^s(\d+)$/) || [])[1]; if (x >= k) k = x + 1; }
         const id = 's' + String(k).padStart(2, '0');
         S[id] = { bg: G[o.group]?.n || '', g: o.group || '', gs: o.group ? [o.group] : [], n, note: '', ph: str(o.ph, 30), st: 'active', ...(o.lv ? { lv: str(o.lv, 20) } : {}) };
+        if (o.sch) (D.slots ||= []).push({ sid: id, gid: o.group || 'ind', sch: str(o.sch, 60), teacher: str(o.teacher, 60), room: str(o.room, 30) });
         touched.add('students');
         out.push({ ok: true, text: `New student · ${n}${o.group ? ' · ' + G[o.group].n : ''}${o.ph ? ' · ' + str(o.ph, 30) : ''}${o.lv ? ' · ' + str(o.lv, 20) : ''}` });
       } else bad(`Unknown change “${str(o.op, 20)}”`);
