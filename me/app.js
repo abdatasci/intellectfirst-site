@@ -1182,11 +1182,11 @@
   async function waPanel() {
     var box = $('#wap'); if (!box) return;
     var w; try { w = await aapi('whatsapp'); } catch (e) { box.innerHTML = '<h2>WhatsApp reminders</h2><p class="sub">Could not load.</p>'; return; }
-    var head = '<h2>WhatsApp reminders</h2><p class="sub">The same lesson and payment reminders, sent on WhatsApp to each student\'s phone number in IF Admin (and the parent\'s number when there is one). ' + w.withPhone + ' of ' + w.active + ' current students have a phone number.</p>';
+    var head = '<h2>WhatsApp reminders</h2><p class="sub">The same lesson, homework, test and payment reminders as the Telegram bot, sent on WhatsApp to each student\'s phone number in IF Admin (and the parent\'s number when there is one). ' + w.withPhone + ' of ' + w.active + ' current students have a phone number.</p>';
     if (!w.ready) {
       box.innerHTML = head + '<ol class="small" style="line-height:1.9"><li>Sign up at <a href="https://green-api.com" target="_blank" rel="noopener">green-api.com</a> and create an instance (the <b>Business</b> plan for sending to students).</li>' +
         '<li>In the instance, press <b>Scan QR code</b> and scan it with the school\'s WhatsApp (WhatsApp → Linked devices). Use the school number, e.g. ' + esc('+7 707 381 0988') + '.</li>' +
-        '<li>Copy <b>idInstance</b>, <b>apiTokenInstance</b> and <b>apiUrl</b> from the instance page, and send them to Claude (or add them in Netlify → Environment variables as <code>WA_INSTANCE</code>, <code>WA_TOKEN</code>, <code>WA_API_URL</code>), then redeploy.</li></ol>';
+        '<li>Copy <b>idInstance</b>, <b>apiTokenInstance</b> and <b>apiUrl</b> from the instance page, and add them in Netlify → Project configuration → Environment variables as <code>WA_INSTANCE</code>, <code>WA_TOKEN</code> and <code>WA_API_URL</code> (mark the token as secret). Then deploy the site again.</li><li>Come back here and send a test message to your own phone.</li></ol>';
       return;
     }
     var ok = w.state === 'authorized';

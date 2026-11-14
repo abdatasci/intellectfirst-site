@@ -7,6 +7,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import { S, tg, tgSend, tgToken, getLinks, getProfile, payStatus, addNote, money, local } from './bot-core.mjs';
 import { loadStudents } from './students.mjs';
 import { run } from './ifadmin-ai.mjs';
+import { waReady, waSend, waNumber } from './whatsapp.mjs';
 
 const R = () => getStore({ name: 'receipts', consistency: 'strong' });
 const A = () => getStore({ name: 'ifadmin', consistency: 'strong' });
@@ -111,6 +112,9 @@ export async function decideReceipt(id, ok, by) {
   if (rec.studentId) { const P = await pending(); if (P[rec.studentId]?.id === id) { delete P[rec.studentId]; await S().setJSON('receipts/pending', P); } }
   const links = await getLinks(), l = links[rec.uid], lang = l?.lang || 'ru', t = T[lang] || T.en;
   const text = ok ? t.ok(mname(rec.month, lang)) : t.no;
+  if (!l && rec.studentId && waReady()) {   // no Telegram: confirm on WhatsApp to the student's (and parent's) phone
+    try { const st = (await loadStudents()).find(x => x.id === rec.studentId); for (const n of [...new Set([st?.phone, st?.parentPhone].map(waNumber).filter(Boolean))]) await waSend(n, 'IF Academy\n' + text); } catch (e) { console.error('receipt whatsapp', e.message); }
+  }
   try { if (l) await tgSend(l.chatId, text); if (rec.uid) await addNote(rec.uid, { kind: ok ? 'payOk' : 'payNo', text: ok ? T.en.ok(mname(rec.month, 'en')) : T.en.no }); } catch (e) { console.error('receipt reply', e.message); }
   return rec;
 }
