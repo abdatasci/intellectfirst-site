@@ -36,10 +36,11 @@
         onState: function () {}
       };
     }
-    var client = new Ably.Realtime({
+    var A = window.AblyPubSub || window.Ably, opts = {
       authCallback: function (p, cb) { o.token().then(function (t) { cb(null, t); }, function (e) { cb(e.message || String(e), null); }); },
       echoMessages: false, disconnectedRetryTimeout: 2000
-    });
+    };
+    var client = A.createClient ? A.createClient(opts) : new A.Realtime(opts);   // @ably/pubsub-device (needed since Ably's MAU pricing; old SDKs get error 80019/40168)
     var ch = function (c) { return client.channels.get('live:' + o.pin + ':' + c, c === 'h' ? { params: { rewind: '1' } } : undefined); };
     return {
       pub: function (c, name, data) { ch(c).publish(name, data).catch(function (e) { console.warn('publish', e); }); },
