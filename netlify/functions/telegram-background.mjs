@@ -1,15 +1,19 @@
 // Telegram webhook for the IF Academy bot (background function: Telegram gets an immediate 202, the AI reply follows).
 // Webhook URL and secret are set from Admin → Bot ("Connect bot"), which calls setWebhook with a secret derived from the token.
-import { S, getProfile, contextFor, reply, publicReply, allow, tgSecret, tgSend, tg, getLinks, saveLinks, local, money, langOf, localise } from '../lib/bot-core.mjs';
+import { S, getProfile, contextFor, reply, publicReply, allow, tgSecret, tgSend, tg, getLinks, saveLinks, linkChat, matchPhone, local, money, langOf, localise } from '../lib/bot-core.mjs';
 import { handleReceipt, decideReceipt } from '../lib/receipts.mjs';
 import { loadHomework, forClasses, isUpcoming } from '../lib/homework.mjs';
 
 const SITE = 'https://intellectfirst.com/me/#/assistant';
+const PHONE_KB = lang => ({ keyboard: [[{ text: { en: '📱 Connect with my phone number', ru: '📱 Подключиться по номеру телефона', kk: '📱 Телефон нөмірі арқылы қосылу' }[lang] || '📱 Connect with my phone number', request_contact: true }]], resize_keyboard: true, one_time_keyboard: true });
 const KB = { keyboard: [[{ text: '📅 Next lessons' }, { text: '📝 Homework & tests' }], [{ text: '💳 Payment' }, { text: '📎 Send receipt' }], [{ text: '❓ Help' }]], resize_keyboard: true, is_persistent: true };
 const L = {
   en: {
     hello: n => `Hi ${n}! 👋 Your IF Academy account is connected.\nI'll remind you about lessons (the evening before and 2 hours before), homework, tests and tuition payments. After paying, send the receipt here.\nAsk me anything about your classes, or practise English with me.`,
-    unlinked: `Hi! 👋 This is the IF Academy assistant. Ask me anything about the school: courses, prices, the timetable, the placement test.\nStudents: connect your website account for reminders, homework and payments:\n1) open ${SITE}\n2) sign in and press "Connect Telegram".`,
+    unlinked: `Hi! 👋 This is the IF Academy assistant. Ask me anything about the school: courses, prices, the timetable, the placement test.\n\nIF Academy students and parents: press "📱 Connect with my phone number" below to get lesson, homework and payment reminders here. Use the number the school has for you.`,
+    phoneOwn: 'Please share your own number with the button below (not someone else\'s contact).',
+    phoneNone: n => `I couldn't find the number ${n} in IF Academy's records. Please send the school the number you use (@abliem or WhatsApp +7 707 381 0988), or connect from the website: ${SITE}`,
+    phonePick: 'This number belongs to more than one student. Who are you connecting?',
     expired: `This link has expired. Open ${SITE} and press "Connect Telegram" again.`,
     stopped: 'Disconnected. You will not get reminders here any more. You can reconnect from the website at any time.',
     busy: 'You have reached today\'s message limit. Please try again tomorrow.',
@@ -21,7 +25,10 @@ const L = {
   },
   ru: {
     hello: n => `Здравствуйте, ${n}! 👋 Ваш аккаунт IF Academy подключён.\nЯ буду напоминать о занятиях (накануне вечером и за 2 часа), домашних заданиях, тестах и оплате. После оплаты отправьте чек сюда.\nСпрашивайте о своих занятиях или практикуйте английский со мной.`,
-    unlinked: `Здравствуйте! 👋 Это помощник IF Academy. Спрашивайте о школе: курсы, цены, расписание, тест уровня.\nУченикам: подключите аккаунт сайта для напоминаний, домашних заданий и оплаты:\n1) откройте ${SITE}\n2) войдите и нажмите «Connect Telegram».`,
+    unlinked: `Здравствуйте! 👋 Это помощник IF Academy. Спрашивайте о школе: курсы, цены, расписание, тест уровня.\n\nУченикам и родителям IF Academy: нажмите «📱 Подключиться по номеру телефона» ниже, чтобы получать здесь напоминания о занятиях, домашних заданиях и оплате. Используйте номер, который есть у школы.`,
+    phoneOwn: 'Пожалуйста, отправьте свой номер кнопкой ниже (а не чужой контакт).',
+    phoneNone: n => `Номер ${n} не найден в базе IF Academy. Сообщите школе номер, которым пользуетесь (@abliem или WhatsApp +7 707 381 0988), или подключитесь на сайте: ${SITE}`,
+    phonePick: 'Этот номер указан у нескольких учеников. Кого подключаем?',
     expired: `Ссылка устарела. Откройте ${SITE} и снова нажмите «Connect Telegram».`,
     stopped: 'Чат отключён, напоминания сюда больше не придут. Подключиться снова можно на сайте.',
     busy: 'Дневной лимит сообщений исчерпан. Попробуйте завтра.',
@@ -35,7 +42,11 @@ const L = {
 L.kk = { ...L.ru,
   hello: n => `Сәлем, ${n}! 👋 IF Academy аккаунтыңыз қосылды.\nСабақтар (алдыңғы күні кешке және 2 сағат бұрын), үй тапсырмасы, тесттер мен төлем туралы еске саламын. Төлегеннен кейін түбіртекті осында жіберіңіз.\nСабақтарыңыз туралы сұраңыз немесе менімен ағылшын тілін жаттықтырыңыз.`,
   stopped: 'Чат ажыратылды, енді еске салулар келмейді. Сайттан қайта қосуға болады.',
-  none: 'Алдағы 7 күнде уақыты көрсетілген сабақ жоқ.', hwNone: 'Алдағы күндерге үй тапсырмасы мен тест жоқ. 🎉', receiptHow: '📎 Төлем түбіртегін осында фото немесе PDF ретінде жіберіңіз (Kaspi немесе банк). ЖИ оқиды, мектеп растайды.' };
+  none: 'Алдағы 7 күнде уақыты көрсетілген сабақ жоқ.',
+  unlinked: `Сәлем! 👋 Бұл IF Academy көмекшісі. Мектеп туралы сұраңыз: курстар, бағалар, кесте, деңгей тесті.\n\nIF Academy оқушылары мен ата-аналары: сабақ, үй тапсырмасы және төлем туралы еске салуларды алу үшін төмендегі «📱 Телефон нөмірі арқылы қосылу» батырмасын басыңыз. Мектепте тіркелген нөмірді пайдаланыңыз.`,
+  phoneOwn: 'Төмендегі батырма арқылы өз нөміріңізді жіберіңіз (басқа біреудің контактісін емес).',
+  phoneNone: n => `${n} нөмірі IF Academy базасынан табылмады. Пайдаланатын нөміріңізді мектепке хабарлаңыз (@abliem немесе WhatsApp +7 707 381 0988) немесе сайт арқылы қосылыңыз: ${SITE}`,
+  phonePick: 'Бұл нөмір бірнеше оқушыда көрсетілген. Кімді қосамыз?', hwNone: 'Алдағы күндерге үй тапсырмасы мен тест жоқ. 🎉', receiptHow: '📎 Төлем түбіртегін осында фото немесе PDF ретінде жіберіңіз (Kaspi немесе банк). ЖИ оқиды, мектеп растайды.' };
 const DAY = { en: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'], ru: ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'], kk: ['Жс', 'Дс', 'Сс', 'Ср', 'Бс', 'Жм', 'Сб'] };
 
 function nextText(ctx, lang) {
@@ -62,6 +73,19 @@ export default async (req) => {
   // the director presses Confirm / Not right under a receipt
   if (up?.callback_query) {
     const q = up.callback_query, mm = String(q.data || '').match(/^rc:(ok|no):([a-z0-9]+)$/);
+    const pk = String(q.data || '').match(/^ph:(\d+)$/);
+    if (pk) {   // a parent's number matched several children: they picked one
+      try {
+        const chatId = q.message?.chat?.id, pend = await S().get(`bot/phonepick/${chatId}`, { type: 'json' });
+        const c = pend && pend.exp > Date.now() && pend.cands[+pk[1]];
+        const lang = pend?.lang || 'ru';
+        if (!c) { await tg('answerCallbackQuery', { callback_query_id: q.id, text: 'Expired. Share your number again.' }); return new Response('ok'); }
+        await linkChat(c.key, chatId, q.from?.username, lang); await S().delete(`bot/phonepick/${chatId}`);
+        await tg('answerCallbackQuery', { callback_query_id: q.id, text: '✓' });
+        await tgSend(chatId, L[lang].hello(c.name.split(' ')[0]), { reply_markup: KB });
+      } catch (e) { console.error('phone pick', e.message); }
+      return new Response('ok');
+    }
     try {
       const uid = await S().get(`bot/chat/${q.from?.id}`), p = uid && await getProfile(uid);
       if (!mm || p?.role !== 'admin') { await tg('answerCallbackQuery', { callback_query_id: q.id, text: 'Only the administrator can do this.' }); return new Response('ok'); }
@@ -85,7 +109,7 @@ export default async (req) => {
     let uid = await S().get(`bot/chat/${chatId}`);
     if (start && start[1]) {
       const link = await S().get(`bot/link/${start[1]}`, { type: 'json' });
-      if (!link || link.exp < Date.now()) { await tgSend(chatId, L[lang].expired); return new Response('ok'); }
+      if (!link || link.exp < Date.now()) { await tgSend(chatId, L[lang].expired, { reply_markup: PHONE_KB(lang) }); return new Response('ok'); }
       await S().delete(`bot/link/${start[1]}`);
       const links = await getLinks();
       for (const [u, l] of Object.entries(links)) if (l.chatId === chatId && u !== link.uid) delete links[u];
@@ -96,15 +120,24 @@ export default async (req) => {
       await tgSend(chatId, L[lang].hello((p?.name || m.from?.first_name || '').split(' ')[0]), { reply_markup: KB });
       return new Response('ok');
     }
+    if (m.contact) {   // connect by phone number (Telegram's "share my number" button)
+      if (m.contact.user_id && m.contact.user_id !== m.from?.id) { await tgSend(chatId, L[lang].phoneOwn, { reply_markup: PHONE_KB(lang) }); return new Response('ok'); }
+      const cands = await matchPhone(m.contact.phone_number);
+      if (!cands.length) { await tgSend(chatId, L[lang].phoneNone('+' + String(m.contact.phone_number).replace(/^\+/, '')), { reply_markup: { remove_keyboard: true } }); return new Response('ok'); }
+      if (cands.length === 1) { await linkChat(cands[0].key, chatId, m.from?.username, lang); await tgSend(chatId, L[lang].hello(cands[0].name.split(' ')[0]), { reply_markup: KB }); return new Response('ok'); }
+      await S().setJSON(`bot/phonepick/${chatId}`, { cands: cands.slice(0, 8), lang, exp: Date.now() + 30 * 60e3 });
+      await tgSend(chatId, L[lang].phonePick, { reply_markup: { inline_keyboard: cands.slice(0, 8).map((c, i) => [{ text: c.name + (c.classes ? ' · ' + c.classes : ''), callback_data: 'ph:' + i }]) } });
+      return new Response('ok');
+    }
     if (!uid) {   // not connected: answer questions about the school, and explain how to connect
-      if (!text || /^\/start\b/i.test(text)) { await tgSend(chatId, L[lang].unlinked); return new Response('ok'); }
+      if (!text || /^\/start\b/i.test(text)) { await tgSend(chatId, L[lang].unlinked, { reply_markup: PHONE_KB(lang) }); return new Response('ok'); }
       if (!(await allow('chat:' + chatId, false))) { await tgSend(chatId, L[lang].busy); return new Response('ok'); }
       tg('sendChatAction', { chat_id: chatId, action: 'typing' }).catch(() => {});
       const hk = `bot/hist/${chatId}`, hist = (await S().get(hk, { type: 'json' })) || [];
       hist.push({ role: 'user', content: text.slice(0, 2000) });
       const answer = await publicReply(hist); hist.push({ role: 'assistant', content: answer });
       await S().setJSON(hk, hist.slice(-12));
-      await tgSend(chatId, answer || L[lang].error);
+      await tgSend(chatId, answer || L[lang].error, { reply_markup: PHONE_KB(lang) });
       return new Response('ok');
     }
 
@@ -118,7 +151,7 @@ export default async (req) => {
     if (/^\/receipt\b|^📎/i.test(text)) { await tgSend(chatId, L[lang].receiptHow, { reply_markup: KB }); return new Response('ok'); }
     if (/^\/start\b|^\/help\b|^❓/i.test(text)) { await tgSend(chatId, L[lang].help, { reply_markup: KB }); return new Response('ok'); }
     const ctx = await contextFor(uid);
-    if (!ctx) { await tgSend(chatId, L[lang].unlinked); return new Response('ok'); }
+    if (!ctx) { await tgSend(chatId, L[lang].unlinked, { reply_markup: PHONE_KB(lang) }); return new Response('ok'); }
     if (/^\/next\b|^📅/i.test(text)) { await tgSend(chatId, ctx.student || ctx.classes.length ? nextText(ctx, lang) : L[lang].unlinkedRecord); return new Response('ok'); }
     if (/^\/hw\b|^\/homework\b|^📝/i.test(text)) { await tgSend(chatId, ctx.classes.length ? hwListText(forClasses(await loadHomework(), ctx.classes.map(c => c.id), { past: 0 }).filter(isUpcoming), lang) : L[lang].unlinkedRecord); return new Response('ok'); }
     if (/^\/pay\b|^💳/i.test(text)) { await tgSend(chatId, ctx.student ? payText(ctx, lang) : L[lang].unlinkedRecord); return new Response('ok'); }

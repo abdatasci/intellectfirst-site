@@ -22,7 +22,33 @@ export async function doc(name) {
   const v = await S().get(name, { type: 'json' });
   return v || structuredClone(seed[name] || []);
 }
-export async function getProfile(uid) { return (await U().get(`u/${uid}/profile`, { type: 'json' })) || null; }
+export async function getProfile(uid) {
+  // 'sid:<studentId>': a Telegram chat connected by phone number to a school record, for a student with no website account
+  if (String(uid).startsWith('sid:')) { const s = (await loadStudents()).find(x => x.id === uid.slice(4)); return s ? { role: 'student', studentId: s.id, name: `${s.first} ${s.last}`.trim(), viaPhone: true } : null; }
+  return (await U().get(`u/${uid}/profile`, { type: 'json' })) || null;
+}
+const phoneKey = p => { const d = String(p || '').replace(/\D/g, ''); return d.length >= 10 ? d.slice(-10) : ''; };
+/** Who has this phone number: website accounts and school records (a parent's number can match several children). */
+export async function matchPhone(phone) {
+  const key = phoneKey(phone); if (!key) return [];
+  const dir = (await U().get('directory', { type: 'json' })) || {};
+  const students = await loadStudents(), out = [], seen = new Set();
+  for (const s of students.filter(s => !/withdrawn|finished/i.test(s.status || '') && (phoneKey(s.phone) === key || phoneKey(s.parentPhone) === key))) {
+    const acc = Object.entries(dir).find(([, d]) => d.studentId === s.id);
+    const k = acc ? acc[0] : 'sid:' + s.id; if (seen.has(k)) continue; seen.add(k);
+    out.push({ key: k, name: `${s.first} ${s.last}`.trim(), classes: (s.classes || []).join(', ') });
+  }
+  for (const [uid, d] of Object.entries(dir)) if (!seen.has(uid) && phoneKey(d.phone) === key) { seen.add(uid); out.push({ key: uid, name: d.name || '', classes: d.role === 'admin' ? 'Administrator' : d.role === 'teacher' ? 'Teacher' : (d.classChoice || '') }); }
+  return out;
+}
+/** Connect a Telegram chat to an account (uid) or a school record ('sid:<id>'). */
+export async function linkChat(uid, chatId, username, lang) {
+  const links = await getLinks();
+  for (const [u, l] of Object.entries(links)) if (l.chatId === chatId && u !== uid) delete links[u];
+  if (links[uid] && links[uid].chatId !== chatId) await S().delete(`bot/chat/${links[uid].chatId}`);
+  links[uid] = { chatId, username: username || '', lang, at: new Date().toISOString() };
+  await saveLinks(links); await S().set(`bot/chat/${chatId}`, uid);
+}
 
 /* ---------- time (Kostanay local) ---------- */
 export const local = (d = new Date()) => new Date(d.getTime() + TZ_OFFSET_MIN * 60000); // read with getUTC*

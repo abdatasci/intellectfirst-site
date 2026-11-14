@@ -1354,7 +1354,7 @@
   /* Telegram: one tap on a phone, QR code on a computer */
   function tgConnectUI(el, bot, compact) {
     el.innerHTML = '<div class="tgc"><button class="btn tgbtn" type="button"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M21.9 4.3 18.7 19.4c-.2 1.1-.9 1.3-1.8.8l-4.9-3.6-2.4 2.3c-.3.3-.5.5-1 .5l.3-5 9.1-8.2c.4-.4-.1-.6-.6-.2L6.2 13 1.4 11.5c-1-.3-1.1-1 .2-1.5L20.6 2.9c.9-.3 1.6.2 1.3 1.4z"/></svg> Connect Telegram</button>' +
-      (compact ? '' : '<button class="linkbtn tgqr" type="button">On a computer? Show a QR code</button>') + '</div><div class="tgout small"></div>';
+      (compact ? '' : '<button class="linkbtn tgqr" type="button">On a computer? Show a QR code</button>') + '</div>' + (compact ? '' : '<p class="small" style="margin-top:8px">Or open <a href="https://t.me/IF_Academy_bot" target="_blank" rel="noopener">@IF_Academy_bot</a> in Telegram on your phone and press <b>📱 Connect with my phone number</b>.</p>') + '<div class="tgout small"></div>';
     var out = el.querySelector('.tgout');
     async function link() { var r = await aapi('telegram/link', { method: 'POST' }); return r; }
     el.querySelector('.tgbtn').onclick = async function () {
