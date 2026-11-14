@@ -7,7 +7,12 @@
 
   function show(h) { view.innerHTML = h; }
   function flash(ok) { var f = $('#flash'); f.className = 'flash ' + (ok ? 'ok' : 'no'); clearTimeout(flash.t); flash.t = setTimeout(function () { f.className = 'flash'; }, 380); }
-  function meChip() { var m = $('#me'); m.hidden = !S.name; m.innerHTML = esc(S.name) + (S.st && S.st.you && S.st.you[S.pid] ? ' · <span class="score-chip">' + S.st.you[S.pid][0] + '</span>' : ''); }
+  function meChip() { var m = $('#me'), M = L.mode(S.st && S.st.mode); m.hidden = !S.name; m.innerHTML = esc(S.name) + (S.st && S.st.you && S.st.you[S.pid] ? ' · <span class="score-chip">' + (M.power ? L.fmtN(S.st.you[S.pid][0]) + ' ' + M.cur : S.st.you[S.pid][0]) + '</span>' : ''); }
+  function toast(text, kind) {
+    var t = document.createElement('div'); t.className = 'toast ' + (kind || ''); t.textContent = text; document.body.appendChild(t);
+    setTimeout(function () { t.classList.add('out'); }, 3200); setTimeout(function () { t.remove(); }, 3800);
+  }
+  function myScore() { var y = S.st && S.st.you && S.st.you[S.pid]; return y ? y[0] : 0; }
 
   /* ---------- join ---------- */
   async function prefill() {
@@ -50,7 +55,8 @@
 
   /* ---------- host messages ---------- */
   function onHost(name, d) {
-    if (name === 'qs') { if (!S.race || S.race.id !== d.id) S.race = { id: d.id, qs: d.qs, salt: d.salt, order: L.shuffle(d.qs.map(function (_, i) { return i; })), i: 0, s: 0, ok: 0, n: 0, streak: 0, lock: 0 }; if (S.st && S.st.phase === 'race') vRace(); return; }
+    if (name === 'qs') { if (!S.race || S.race.id !== d.id) S.race = { id: d.id, qs: d.qs, salt: d.salt, order: L.shuffle(d.qs.map(function (_, i) { return i; })), i: 0, s: 0, ok: 0, n: 0, streak: 0, lock: 0 }; if (S.st && S.st.phase === 'race' && !S.busy) vPlay(); return; }
+    if (name === 'ev') return onEvent(d);
     if (name !== 'st') return;
     var prev = S.st; S.st = d; d.at = Date.now();
     if (d.roster && d.roster[S.pid]) S.team = d.roster[S.pid][1];
@@ -58,13 +64,15 @@
     if (d.phase === 'lobby') return vWait();
     if (d.phase === 'q') { if (!prev || prev.phase !== 'q' || prev.i !== d.i) return vQuestion(); return; }
     if (d.phase === 'reveal' || d.phase === 'board') return vResult();
-    if (d.phase === 'race') { if (!S.race) { S.bus.pub('p', 'need', { pid: S.pid }); return vWait('Get ready…'); } if (!prev || prev.phase !== 'race') vRace(); else raceTop(); return; }
-    if (d.phase === 'end') return vEnd();
+    if (d.phase === 'race') { if (!S.race) { S.bus.pub('p', 'need', { pid: S.pid }); return vWait('Get ready…'); } if (!prev || prev.phase !== 'race') vPlay(); else raceTop(); return; }
+    if (d.phase === 'match') return vMatch(prev);
+    if (d.phase === 'end') { S.busy = false; return vEnd(); }
   }
   function teamTag() { var t = S.team; return t >= 0 && S.st && S.st.teams && S.st.teams.length ? '<div class="teamtag" style="background:' + L.HEX[t] + '">' + esc(S.st.teams[t]) + '</div>' : ''; }
   function vWait(msg) {
     var inRoom = S.st && S.st.roster && S.st.roster[S.pid];
-    show('<div class="wait"><div class="pulse"></div><h2>' + (inRoom ? 'You\'re in!' : 'Connecting…') + '</h2><p>' + esc(msg || (inRoom ? 'See your name on the screen? The game starts soon.' : 'Joining game ' + S.pin)) + '</p>' + teamTag() + '</div>');
+    show('<div class="wait"><div class="pulse"></div><h2>' + (inRoom ? 'You\'re in!' : 'Connecting…') + '</h2><p>' + esc(msg || (inRoom ? 'See your name on the screen? The game starts soon.' : 'Joining game ' + S.pin)) + '</p>' + teamTag() + '<p style="margin-top:22px"><button class="btn ghost sm" id="snd">' + (L.sfx.off ? '🔇 Sound off' : '🔊 Sound on') + '</button></p></div>');
+    $('#snd').onclick = function () { L.sfx.off = !L.sfx.off; L.ls.set('live.mute', L.sfx.off || null); this.textContent = L.sfx.off ? '🔇 Sound off' : '🔊 Sound on'; if (!L.sfx.off) L.sfx('ok'); };
   }
 
   /* ---------- classic question ---------- */
@@ -107,27 +115,34 @@
   function ordinal(n) { var s = ['th', 'st', 'nd', 'rd'], v = n % 100; return n + (s[(v - 20) % 10] || s[v] || s[0]); }
 
   /* ---------- race (self-paced) ---------- */
+  function vPlay() {
+    var m = S.st && S.st.mode;
+    if (m === 'hack' && !S.pwSet) return vPassword();
+    S.busy = false; vRace();
+  }
   function vRace() {
     var R = S.race; if (!R) return;
+    var power = L.mode(S.st && S.st.mode).power;
     if (R.i >= R.order.length) { R.order = L.shuffle(R.order); R.i = 0; }
     var q = R.qs[R.order[R.i]], long = L.isLong(q.o);
-    show('<div class="pq"><div class="meta"><span id="rk"></span><span class="score-chip" id="rs">' + R.s + '</span></div>' +
+    show('<div class="pq"><div class="meta"><span id="rk"></span><span class="score-chip" id="rs">' + (power ? L.fmtN(myScore()) + ' ' + L.mode(S.st.mode).cur : R.s) + '</span></div>' + (S.st.mode === 'fish' && S.st.fz ? '<div class="fzline">🌊 FRENZY — catches ×2</div>' : '') +
       '<div class="prompt">' + esc(q.p) + '</div><div class="lock" id="lk"></div>' +
       '<div class="opts' + (long ? ' long' : '') + '">' + q.o.map(function (o, k) { return '<button class="opt o' + k + '" data-k="' + k + '"><span class="sh">' + L.SHAPES[k] + '</span>' + esc(o) + '</button>'; }).join('') + '</div></div>');
     raceTop();
     view.querySelectorAll('.opt').forEach(function (b) {
       b.onclick = function () {
-        if (Date.now() < R.lock || S.st.phase !== 'race') return;
+        if (Date.now() < R.lock || S.st.phase !== 'race' || !b.isConnected) return;
         var k = +b.dataset.k, ok = k === L.unhide(q.h, R.salt);
         R.n++;
-        if (ok) { R.ok++; R.streak++; R.s += 100 + Math.min(R.streak - 1, 5) * 20; flash(true); }
+        if (ok) { R.ok++; R.streak++; R.s += 100 + Math.min(R.streak - 1, 5) * 20; flash(true); L.sfx('ok'); }
         else {
-          R.streak = 0; R.lock = Date.now() + 1500; flash(false);
+          R.streak = 0; R.lock = Date.now() + 1500; flash(false); L.sfx('no');
           b.classList.add('dim'); var right = view.querySelector('[data-k="' + L.unhide(q.h, R.salt) + '"]'); if (right) right.classList.add('pick');
-          $('#lk').textContent = 'Wait a moment…';
+          var lk = $('#lk'); if (lk) lk.textContent = 'Wait a moment…';
         }
-        S.bus.pub('p', 'race', { pid: S.pid, s: R.s, ok: R.ok, n: R.n });
         R.i++;
+        if (power) { S.bus.pub('p', 'res', { pid: S.pid, ok: ok }); if (ok) { S.busy = true; return setTimeout(reward, 350); } return setTimeout(vPlay, 1500); }
+        S.bus.pub('p', 'race', { pid: S.pid, s: R.s, ok: R.ok, n: R.n });
         setTimeout(vRace, ok ? 180 : 1500);
       };
     });
@@ -138,12 +153,130 @@
   }
   setInterval(function () { if (S.st && S.st.phase === 'race') raceTop(); }, 1000);
 
+  /* ---------- power modes ---------- */
+  function pick(a) { return a[Math.floor(Math.random() * a.length)]; }
+  function others() { return ((S.st && S.st.all) || []).filter(function (e) { return e[0] !== S.pid; }); }
+  function cont(ms) { setTimeout(function () { if (S.st && S.st.phase === 'race') vPlay(); }, ms); }
+  function reward() { var m = S.st.mode; if (m === 'gold') chests('gold'); else if (m === 'hack') chests('hack'); else if (m === 'fish') cast(); else vPlay(); }
+  function outcome(m) {
+    var r = Math.random(), cnt = S.race ? S.race.ok : 0, lvl = 1 + Math.floor(cnt / 6);
+    if (m === 'hack') {
+      if (r < .62) { var v = pick([25, 50, 75, 100, 150, 200, 300]) * lvl; return { k: 'add', v: v, l: '+' + v + ' ₿', ic: '💾' }; }
+      if (r < .72) return { k: 'mul', v: 2, l: 'Double!', ic: '⚡' };
+      return { k: 'hack', l: 'HACK!', ic: '🕵️' };
+    }
+    if (r < .42) { var g = pick([10, 20, 25, 30, 40, 50, 75, 100]) * lvl; return { k: 'add', v: g, l: '+' + g + ' 🪙', ic: '🪙' }; }
+    if (r < .52) return { k: 'mul', v: 2, l: 'Double!', ic: '✖️2' };
+    if (r < .57) return { k: 'mul', v: 3, l: 'Triple!', ic: '✖️3' };
+    if (r < .65) return { k: 'lose', v: .25, l: 'Lose 25%', ic: '💸' };
+    if (r < .69) return { k: 'lose', v: .5, l: 'Lose 50%', ic: '🕳️' };
+    if (r < .77) return { k: 'none', l: 'Nothing!', ic: '🕸️' };
+    if (r < .9) { var pc = pick([.1, .25]); return { k: 'steal', v: pc, l: 'Take ' + pc * 100 + '%', ic: '🦝' }; }
+    return { k: 'swap', l: 'Swap!', ic: '🔄' };
+  }
+  function chests(m) {
+    var opts = [outcome(m), outcome(m), outcome(m)], icon = m === 'hack' ? '🗄️' : '🎁';
+    show('<div class="pw"><h2>' + (m === 'hack' ? 'Pick a server' : 'Choose a chest!') + '</h2><div class="chests">' + opts.map(function (o, i) { return '<button class="chest" data-i="' + i + '"><span class="ci">' + icon + '</span><span class="cl"></span></button>'; }).join('') + '</div><p class="mini" style="color:rgba(255,255,255,.6)">' + L.fmtN(myScore()) + ' ' + L.mode(m).cur + ' now</p></div>');
+    view.querySelectorAll('.chest').forEach(function (b) {
+      b.onclick = function () {
+        if (view.querySelector('.chest.open')) return;
+        var o = opts[+b.dataset.i];
+        view.querySelectorAll('.chest').forEach(function (x, i) { x.classList.add('open'); if (x !== b) x.classList.add('dim'); x.querySelector('.ci').textContent = opts[i].ic; x.querySelector('.cl').textContent = opts[i].l; });
+        var bad = o.k === 'lose' || o.k === 'none'; L.sfx(bad ? 'bad' : o.k === 'hack' ? 'hack' : 'coin'); if (navigator.vibrate) navigator.vibrate(bad ? [60, 40, 60] : 40);
+        setTimeout(function () { apply(m, o); }, 1100);
+      };
+    });
+  }
+  function apply(m, o) {
+    var list = others();
+    if ((o.k === 'steal' || o.k === 'swap' || o.k === 'hack') && !list.length) o = { k: 'add', v: 50, l: '+50' };
+    if (o.k === 'add' || o.k === 'mul' || o.k === 'lose') { S.bus.pub('p', 'gain', { pid: S.pid, k: o.k, v: o.v }); return cont(250); }
+    if (o.k === 'none') return cont(200);
+    targets(o.k === 'steal' ? 'Take ' + o.v * 100 + '% from…' : o.k === 'swap' ? 'Swap your total with…' : 'Hack who?', list, function (e) {
+      if (o.k === 'hack') return guess(e);
+      S.bus.pub('p', o.k, { pid: S.pid, to: e[0], pct: o.v }); L.sfx('coin'); cont(300);
+    });
+  }
+  function targets(title, list, done) {
+    var cur = L.mode(S.st.mode).cur;
+    list = list.slice().sort(function (a, b) { return b[2] - a[2]; }).slice(0, 12);
+    show('<div class="pw"><h2>' + esc(title) + '</h2><div class="tlist">' + list.map(function (e, i) { return '<button class="tg" data-i="' + i + '"><b>' + esc(e[1]) + '</b><span>' + L.fmtN(e[2]) + ' ' + cur + '</span></button>'; }).join('') + '</div></div>');
+    view.querySelectorAll('.tg').forEach(function (b) { b.onclick = function () { done(list[+b.dataset.i]); }; });
+  }
+  function guess(e) {
+    var opts = e[4] || L.PASSWORDS.slice(0, 3);
+    show('<div class="pw"><h2>Hack ' + esc(e[1]) + '</h2><p style="color:rgba(255,255,255,.75)">Guess their password:</p><div class="tlist">' + opts.map(function (o) { return '<button class="tg pwg" data-v="' + esc(o) + '"><b>🔑 ' + esc(o) + '</b></button>'; }).join('') + '</div></div>');
+    view.querySelectorAll('.pwg').forEach(function (b) {
+      b.onclick = function () {
+        show('<div class="wait"><div class="pulse hackp"></div><h2>Hacking…</h2></div>'); L.sfx('hack');
+        S.bus.pub('p', 'hack', { pid: S.pid, to: e[0], guess: b.dataset.v });
+        var done = false;
+        S.hackWait = function (ev) {
+          if (done || ev.b !== e[0]) return; done = true; S.hackWait = null;
+          if (ev.ok) { L.sfx('win'); show('<div class="res good"><div class="big">Hacked!</div><div class="gain">+' + L.fmtN(ev.v) + ' ₿ from ' + esc(e[1]) + '</div></div>'); }
+          else { L.sfx('bad'); show('<div class="res bad"><div class="big">Access denied</div><p>Wrong password. Keep mining!</p></div>'); }
+          cont(1600);
+        };
+        setTimeout(function () { if (!done) { done = true; S.hackWait = null; vPlay(); } }, 6000);
+      };
+    });
+  }
+  function vPassword() {
+    S.busy = true;
+    var opts = L.shuffle(L.PASSWORDS).slice(0, 6);
+    show('<div class="pw"><h2>💻 Choose your password</h2><p style="color:rgba(255,255,255,.75)">Others will try to guess it to hack you. Keep it secret!</p><div class="tlist two">' + opts.map(function (o) { return '<button class="tg pwp" data-v="' + o + '"><b>🔒 ' + o + '</b></button>'; }).join('') + '</div></div>');
+    view.querySelectorAll('.pwp').forEach(function (b) { b.onclick = function () { S.pwSet = b.dataset.v; S.bus.pub('p', 'pw', { pid: S.pid, pw: S.pwSet }); L.sfx('ok'); vPlay(); }; });
+  }
+  var FISH = [['👢', 'an old boot', 0, 0, 8], ['🐟', 'a sardine', 1, 3, 30], ['🐠', 'a clownfish', 2, 6, 22], ['🐡', 'a pufferfish', 4, 9, 14], ['🦑', 'a squid', 6, 15, 10], ['🐙', 'an octopus', 10, 25, 7], ['🐬', 'a dolphin', 20, 40, 4], ['🦈', 'a shark', 30, 60, 3], ['🐋', 'a whale', 60, 120, 1.2], ['🧜', 'a golden mermaid', 100, 200, .3]];
+  function cast() {
+    var streak = S.race ? S.race.streak : 0, fz = S.st.fz && (S.st.fz - (Date.now() - S.st.at)) > 0;
+    var w = FISH.map(function (f, i) { return f[4] * (i >= 4 ? 1 + Math.min(streak, 8) * .15 : 1); }), tot = w.reduce(function (a, b) { return a + b; }, 0), r = Math.random() * tot, i = 0;
+    while (r > w[i]) { r -= w[i]; i++; }
+    var f = FISH[Math.min(i, FISH.length - 1)], kg = f[2] + Math.round(Math.random() * (f[3] - f[2])); if (fz) kg *= 2;
+    show('<div class="wait"><div class="cast">🎣</div><h2>Casting…</h2>' + (streak > 1 ? '<p>🔥 Streak ' + streak + ': better bait!</p>' : '') + '</div>'); L.sfx('splash');
+    setTimeout(function () {
+      L.sfx(kg ? (kg >= 30 ? 'win' : 'coin') : 'bad');
+      show('<div class="res ' + (kg ? 'good' : 'bad') + '"><div class="fishbig">' + f[0] + '</div><div class="big">' + (kg ? 'You caught ' + f[1] + '!' : 'Just ' + f[1] + '…') + '</div><div class="gain">' + (kg ? '+' + kg + ' kg' + (fz ? ' (Frenzy ×2)' : '') : '0 kg') + '</div><p style="margin-top:16px"><button class="btn" id="nx">Cast again →</button></p></div>');
+      S.bus.pub('p', 'gain', { pid: S.pid, k: 'add', v: kg, fish: f[1] });
+      var t = setTimeout(vPlay, 2200); $('#nx').onclick = function () { clearTimeout(t); vPlay(); };
+    }, 900);
+  }
+  function onEvent(e) {
+    if (!e || !S.pid) return;
+    if (e.a === S.pid && e.k === 'hack' && S.hackWait) return S.hackWait(e);
+    if (e.b === S.pid && !e.quiet && e.t) { toast(e.k === 'hack' ? '🚨 ' + e.t : e.t, 'bad'); L.sfx('bad'); if (navigator.vibrate) navigator.vibrate([80, 50, 80]); return; }
+    if (e.k === 'fz') { toast(e.t, 'gold'); L.sfx('win'); }
+  }
+
+  /* ---------- Team Match ---------- */
+  function vMatch(prev) {
+    var d = S.st, T = d.tm && d.tm[S.team];
+    if (!T) return vWait('You will join a team in a moment.');
+    var lt = T.last;
+    if (lt && lt.seq !== S.seenLast) { S.seenLast = lt.seq; flash(lt.ok === 1); L.sfx(lt.ok ? 'ok' : 'bad'); }
+    if (prev && prev.phase === 'match' && S.mSeq === T.seq && view.querySelector('.mt')) { var pe = $('#mprog'); if (pe) pe.innerHTML = dots(T.prog, d.goal); return; }
+    S.mSeq = T.seq;
+    var mine = (T.a || {})[S.pid] || [], col = L.HEX[S.team];
+    show('<div class="pq mt"><div class="meta"><span class="teamtag" style="margin:0;padding:4px 12px;background:' + col + '">' + esc(d.teams[S.team]) + '</span><span id="mprog">' + dots(T.prog, d.goal) + '</span></div>' +
+      (lt ? '<div class="mlast ' + (lt.ok ? 'ok' : 'no') + '">' + (lt.ok ? '✓ ' + esc(lt.by) + ' got it: “' + esc(lt.w) + '”' : '✗ Back to zero! The answer was “' + esc(lt.r) + '”') + '</div>' : '<div class="mlast">Only one teammate has the right answer. Talk!</div>') +
+      '<div class="prompt">' + esc(T.p || '') + '</div>' +
+      (mine.length ? '<div class="opts long">' + mine.map(function (o, k) { return '<button class="opt o' + (k % 4) + '" data-v="' + esc(o) + '"><span class="sh">' + L.SHAPES[k % 4] + '</span>' + esc(o) + '</button>'; }).join('') + '</div>' : '<p style="color:rgba(255,255,255,.75)">Your teammates hold the answers this time. Help them choose!</p>') + '</div>');
+    view.querySelectorAll('.opt').forEach(function (b) {
+      b.onclick = function () {
+        if (S.mSent === T.seq) return; S.mSent = T.seq;
+        S.bus.pub('p', 'pick', { pid: S.pid, seq: T.seq, v: b.dataset.v });
+        view.querySelectorAll('.opt').forEach(function (x) { x.classList.add(x === b ? 'pick' : 'dim'); });
+      };
+    });
+  }
+  function dots(n, g) { var h = ''; for (var i = 0; i < g; i++) h += '<i class="dot' + (i < n ? ' on' : '') + '"></i>'; return h; }
+
   function clock(ms) { var s = Math.max(0, Math.ceil(ms / 1000)); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); }
   function vEnd() {
     var d = S.st, y = (d.you || {})[S.pid], tb = d.tboard || [];
     var team = S.team >= 0 && tb.length ? tb.filter(function (t) { return t[2] === S.team; })[0] : null;
     show('<div class="res good"><p>Game over</p><div class="big">' + (y ? ordinal(y[1]) + ' place' : 'Thanks for playing') + '</div>' +
-      (y ? '<div class="gain">' + y[0] + ' points</div>' : '') +
+      (y ? '<div class="gain">' + (L.mode(d.mode).power ? L.fmtN(y[0]) + ' ' + L.mode(d.mode).unit : y[0] + ' points') + '</div>' : '') +
       (team ? '<div class="rank">' + esc(d.teams[S.team]) + ' finished ' + ordinal(tb.indexOf(team) + 1) + (tb.indexOf(team) === 0 ? ' 🏆' : '') + '</div>' : '') +
       '<p style="margin-top:26px"><a class="btn ghost" href="/live/">Join another game</a></p></div>');
   }

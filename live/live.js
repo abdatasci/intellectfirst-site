@@ -127,5 +127,38 @@
     return LIVE.shuffle(qs).slice(0, +c.count || 15);
   };
 
+  /* ---- game modes ----
+     self: everyone plays at their own speed during a timed round (phase 'race'); power modes add rewards after right answers.
+     The host decides anything that touches another player (steal, swap, hack) so totals stay fair. */
+  LIVE.MODES = {
+    classic: { name: 'Classic', icon: '🎯', tag: 'Teacher-paced', blurb: 'One question at a time on the big screen. Students answer on their phones; faster right answers score more.' },
+    race: { name: 'Race', icon: '🏁', tag: 'Self-paced', self: true, unit: 'points', blurb: 'Everyone answers at their own speed. The screen shows a live race of scores. A wrong answer freezes the player for a moment.' },
+    gold: { name: 'Treasure Hunt', icon: '🪙', tag: 'Self-paced · chests', self: true, power: true, unit: 'gold', cur: '🪙', blurb: 'Every right answer opens a treasure chest: gold, double, triple… or steal from a classmate, or swap totals! Most gold wins.' },
+    hack: { name: 'Cyber Heist', icon: '💻', tag: 'Self-paced · hacking', self: true, power: true, unit: 'crypto', cur: '₿', blurb: 'Students pick a secret password. Right answers mine crypto; hack classmates by guessing their password and steal their coins.' },
+    fish: { name: 'Fishing Frenzy', icon: '🎣', tag: 'Self-paced · catches', self: true, power: true, unit: 'kg', cur: 'kg', blurb: 'Every right answer casts a line. Catch heavier and rarer fish; Frenzy time doubles every catch. The heaviest haul wins.' },
+    match: { name: 'Team Match', icon: '🤝', tag: 'Teams · talk together', team: true, unit: 'points', blurb: 'Played in teams. The answers are split across teammates\' phones, so they must talk to find the right one. A wrong answer sends the team back to zero!' }
+  };
+  LIVE.mode = function (m) { return LIVE.MODES[m] || LIVE.MODES.classic; };
+  LIVE.PASSWORDS = ['pancake', 'dragon42', 'lemonade', 'galaxy', 'tiger7', 'banana', 'rocket', 'snowball', 'pizza99', 'thunder', 'unicorn', 'cactus'];
+  LIVE.fmtN = function (n) { n = Math.round(+n || 0); return Math.abs(n) >= 10000 ? (n / 1000).toFixed(n >= 100000 ? 0 : 1).replace(/\.0$/, '') + 'k' : String(n); };
+
+  /* little sound effects (no files): ok, no, coin, bad, win, hack, splash */
+  var AC = null;
+  LIVE.sfx = function (kind) {
+    if (LIVE.sfx.off) return;
+    try {
+      AC = AC || new (window.AudioContext || window.webkitAudioContext)();
+      var notes = { ok: [[660, .08], [880, .12]], no: [[220, .18]], coin: [[988, .06], [1319, .14]], bad: [[330, .12], [247, .2]], win: [[523, .1], [659, .1], [784, .1], [1047, .25]], hack: [[1200, .04], [900, .04], [1200, .04], [900, .08]], splash: [[180, .06], [140, .12]] }[kind] || [[600, .1]];
+      var t = AC.currentTime;
+      notes.forEach(function (n) {
+        var o = AC.createOscillator(), g = AC.createGain();
+        o.type = kind === 'no' || kind === 'bad' ? 'sawtooth' : 'triangle'; o.frequency.value = n[0];
+        g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(.18, t + .01); g.gain.exponentialRampToValueAtTime(.0001, t + n[1]);
+        o.connect(g); g.connect(AC.destination); o.start(t); o.stop(t + n[1] + .02); t += n[1] * .9;
+      });
+    } catch (e) {}
+  };
+  LIVE.sfx.off = !!LIVE.ls.get('live.mute');
+
   LIVE.qr = function (text) { var q = qrcode(0, 'M'); q.addData(text); q.make(); return q.createSvgTag({ cellSize: 6, margin: 2, scalable: true }); };
 })();

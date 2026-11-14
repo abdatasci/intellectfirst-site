@@ -29,7 +29,7 @@
     h += '<div class="grid2"><div class="panel"><h2>Start a live game</h2><p class="sub">Students join on their phones with the QR code or the PIN. You run the game from this screen; project it in class.</p>' +
       '<label class="f">Questions from</label><div class="seg" id="src">' + [['gen', 'General English ✨'], ['v', 'Book vocabulary'], ['g', 'Grammar'], ['custom', 'My own questions']].map(function (s) { return '<button data-v="' + s[0] + '" class="' + (CFG.source === s[0] ? 'on' : '') + '">' + s[1] + '</button>'; }).join('') + '</div>' +
       '<div id="srcbox"></div>' +
-      '<label class="f">Game type</label><div class="seg" id="mode">' + [['classic', 'Classic · teacher-paced'], ['race', 'Race · self-paced']].map(function (s) { return '<button data-v="' + s[0] + '" class="' + (CFG.mode === s[0] ? 'on' : '') + '">' + s[1] + '</button>'; }).join('') + '</div>' +
+      '<label class="f">Game mode</label><div class="modes" id="mode">' + Object.keys(L.MODES).map(function (k) { var m = L.MODES[k]; return '<button data-v="' + k + '" class="' + (CFG.mode === k ? 'on' : '') + '"><span class="mi">' + m.icon + '</span><b>' + esc(m.name) + '</b><small>' + esc(m.tag) + '</small></button>'; }).join('') + '</div>' +
       '<p class="mini" id="modehelp" style="margin-top:6px"></p>' +
       '<div id="timebox"></div>' +
       '<label class="f">Teams</label><div class="seg" id="teams">' + [[0, 'Everyone for themselves'], [2, '2 teams'], [3, '3 teams'], [4, '4 teams']].map(function (s) { return '<button data-v="' + s[0] + '" class="' + (+CFG.teams === s[0] ? 'on' : '') + '">' + s[1] + '</button>'; }).join('') + '</div>' +
@@ -89,16 +89,16 @@
     count();
   }
   function timeBox() {
-    var race = CFG.mode === 'race';
-    $('#modehelp').textContent = race ? 'Everyone answers at their own speed on the phone. The screen shows a live race of scores. Wrong answers pause the player for a moment.' : 'One question at a time on the big screen, students answer on their phones. Faster correct answers get more points.';
-    $('#timebox').innerHTML = race ? '<label class="f">Race length</label><div class="seg" id="tm">' + [3, 5, 8, 10].map(function (m) { return '<button data-v="' + m + '" class="' + (+CFG.race === m ? 'on' : '') + '">' + m + ' min</button>'; }).join('') + '</div>'
+    var M = L.mode(CFG.mode), race = !!(M.self || M.team);
+    $('#modehelp').textContent = M.blurb + (M.team ? ' Teams are made automatically if you choose "Everyone for themselves".' : '');
+    $('#timebox').innerHTML = race ? '<label class="f">' + (M.team ? 'Time limit' : 'Game length') + '</label><div class="seg" id="tm">' + [3, 5, 8, 10, 15].map(function (m) { return '<button data-v="' + m + '" class="' + (+CFG.race === m ? 'on' : '') + '">' + m + ' min</button>'; }).join('') + '</div>'
       : '<label class="f">Time per question</label><div class="seg" id="tm">' + [10, 20, 30, 60].map(function (s) { return '<button data-v="' + s + '" class="' + (+CFG.time === s ? 'on' : '') + '">' + s + ' s</button>'; }).join('') + '</div>';
     $('#tm').querySelectorAll('button').forEach(function (b) { b.onclick = function () { $('#tm').querySelectorAll('button').forEach(function (x) { x.classList.toggle('on', x === b); }); CFG[race ? 'race' : 'time'] = +b.dataset.v; }; });
   }
   function count() {
     var el = $('#qcount');
     if (useAI()) { if (el) el.textContent = '✨ AI will write ' + (CFG.count === 'all' ? 30 : CFG.count) + ' new questions (takes a few seconds)'; }
-    else { var n = L.build(CFG, BANKS).length; if (el) el.textContent = n ? n + ' questions ready' + (CFG.mode === 'race' ? ' (race mode repeats them)' : '') : 'No questions yet'; }
+    else { var n = L.build(CFG, BANKS).length; if (el) el.textContent = n ? n + ' questions ready' + (L.mode(CFG.mode).self || L.mode(CFG.mode).team ? ' (they repeat until time is up)' : '') : 'No questions yet'; }
     var t = $('#title'); if (t && !t.dataset.touched) t.placeholder = defaultTitle();
     if (t) t.oninput = function () { t.dataset.touched = 1; };
   }
@@ -149,7 +149,7 @@
     try {
       var r = L.local ? { room: { pin: String(100000 + Math.floor(Math.random() * 899999)), created: Date.now() }, token: null } : await L.api('host', { title: title, mode: CFG.mode });
       H = { pin: r.room.pin, created: r.room.created, title: title, mode: CFG.mode, time: +CFG.time, race: +CFG.race, teamsN: +CFG.teams, source: CFG.source === 'custom' ? 'My questions' : defaultTitle(),
-        qs: qs, i: -1, phase: 'lobby', players: {}, order: [], ans: {}, qStart: 0, raceEnd: 0, raceId: 0, salt: Math.floor(Math.random() * 1000) };
+        qs: qs, i: -1, phase: 'lobby', players: {}, order: [], ans: {}, qStart: 0, raceEnd: 0, raceId: 0, salt: Math.floor(Math.random() * 1000), feed: [], evn: 0, fzAt: 0, fzEnd: 0 };
       await connect(r.token);
       save(); lobby();
     } catch (e) { $('#go').disabled = false; err.textContent = e.code === 'not-configured' ? 'Live games are not switched on yet (see the note above).' : 'Could not open the game room. Try again.'; }
@@ -160,7 +160,7 @@
     catch (e) { L.ls.set('live.host', null); return vSetup(); }
     if (H.phase === 'q') { H.i--; return next(); }
     render(); push(true);
-    if (H.phase === 'race') raceLoop();
+    if (H.phase === 'race' || H.phase === 'match') raceLoop();
   }
   async function connect(first) {
     var pin = H.pin;
@@ -174,6 +174,7 @@
   function teamSizes() { var s = []; for (var t = 0; t < H.teamsN; t++) s.push(0); list().forEach(function (p) { if (p.team >= 0) s[p.team]++; }); return s; }
   function teamBoard() {
     if (!H.teamsN) return [];
+    if (H.mode === 'match' && H.tm) return H.tm.map(function (T, t) { return [L.TEAMS[t], T.prog, t, members(t).length, T.best]; }).sort(function (a, b) { return b[1] - a[1] || b[4] - a[4]; });
     var tot = [], n = [];
     for (var t = 0; t < H.teamsN; t++) { tot.push(0); n.push(0); }
     list().forEach(function (p) { if (p.team >= 0 && p.team < H.teamsN) { tot[p.team] += p.score; n[p.team]++; } });
@@ -194,6 +195,7 @@
       } else if (p.kicked) return;
       else p.name = String(d.name || p.name).slice(0, 24);
       if (H.phase === 'race') sendQs();
+      if (H.phase === 'match' && H.players[pid].team >= 0 && H.tm[H.players[pid].team]) round(H.players[pid].team);
       render(); push(); return;
     }
     if (!p || p.kicked) return;
@@ -208,7 +210,90 @@
       p.correct = Math.max(p.correct, +d.ok || 0); p.answered = Math.max(p.answered, +d.n || 0); scheduleRender(); return;
     }
     if (name === 'need' && H.phase === 'race') sendQs();
+    if (H.phase === 'race' && L.mode(H.mode).power) return power(name, d, pid, p);
+    if (name === 'pick' && H.phase === 'match') return matchPick(d, pid, p);
   }
+
+  /* ---------- power modes: Treasure Hunt, Cyber Heist, Fishing Frenzy ---------- */
+  var M_UNIT = function () { return L.mode(H.mode).cur || ''; };
+  function feed(text, a, b, k, extra) {
+    var e = Object.assign({ id: ++H.evn, t: text, a: a || null, b: b || null, k: k || '' }, extra || {});
+    H.feed.push(e); if (H.feed.length > 12) H.feed.shift();
+    BUS.pub('h', 'ev', e);
+  }
+  function pwOptions(pw) {
+    var pool = L.PASSWORDS.filter(function (x) { return x !== pw; });
+    return L.shuffle([pw].concat(L.shuffle(pool).slice(0, 2)));
+  }
+  function power(name, d, pid, p) {
+    var cur = M_UNIT(), T = d.to && H.players[d.to], live = T && !T.kicked && d.to !== pid;
+    if (name === 'res') { p.answered++; if (d.ok) { p.correct++; p.streak++; } else p.streak = 0; scheduleRender(); return; }
+    if (name === 'pw') { var pw = String(d.pw || '').toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 14); if (pw.length >= 3) { p.pw = pw; p.pwo = pwOptions(pw); } scheduleRender(); return; }
+    if (name === 'gain') {
+      var v = +d.v || 0, before = p.score;
+      if (d.k === 'add') p.score += Math.max(0, Math.min(v, H.mode === 'fish' ? 400 : 1000));
+      else if (d.k === 'mul' && (v === 2 || v === 3)) p.score *= v;
+      else if (d.k === 'lose' && v > 0 && v <= .5) p.score = Math.round(p.score * (1 - v));
+      p.score = Math.max(0, Math.min(Math.round(p.score), 9999999));
+      if (d.k === 'mul' && v === 3 && p.score > 0) feed(p.name + ' tripled to ' + L.fmtN(p.score) + ' ' + cur + '!', pid, null, 'big');
+      if (d.k === 'lose' && before > 0) feed(p.name + ' lost ' + L.fmtN(before - p.score) + ' ' + cur, pid, null, 'bad');
+      if (H.mode === 'fish' && d.fish && v >= 25) feed(p.name + ' caught ' + String(d.fish).slice(0, 30) + ' (' + Math.round(v) + ' kg)!', pid, null, 'big');
+      scheduleRender(); return;
+    }
+    if (name === 'steal' && live) {
+      var pct = Math.max(.1, Math.min(+d.pct || .1, .5)), amt = Math.round(T.score * pct);
+      T.score -= amt; p.score += amt;
+      feed(p.name + ' took ' + L.fmtN(amt) + ' ' + cur + ' from ' + T.name + '!', pid, d.to, 'steal', { v: amt });
+      scheduleRender(); return;
+    }
+    if (name === 'swap' && live) {
+      var a = p.score; p.score = T.score; T.score = a;
+      feed(p.name + ' swapped totals with ' + T.name + '!', pid, d.to, 'swap', { v: p.score });
+      scheduleRender(); return;
+    }
+    if (name === 'hack' && live) {
+      var ok = !!T.pw && String(d.guess || '') === T.pw;
+      if (!T.pw) ok = Math.random() < .5;
+      var amt2 = ok ? Math.round(T.score * (.15 + Math.random() * .25)) : 0;
+      if (ok) { T.score -= amt2; p.score += amt2; feed(p.name + ' hacked ' + T.name + ' and took ' + L.fmtN(amt2) + ' ₿!', pid, d.to, 'hack', { v: amt2, ok: 1 }); }
+      else BUS.pub('h', 'ev', { id: ++H.evn, t: '', a: pid, b: d.to, k: 'hack', ok: 0, v: 0, quiet: 1 });
+      scheduleRender(); return;
+    }
+  }
+
+  /* ---------- Team Match (answers split across teammates' phones) ---------- */
+  function members(t) { return H.order.filter(function (pid) { var P = H.players[pid]; return !P.kicked && P.team === t; }); }
+  function startMatch() {
+    var act = H.order.filter(function (pid) { return !H.players[pid].kicked; });
+    if (!H.teamsN) {
+      H.teamsN = act.length < 4 ? 1 : Math.min(4, Math.max(2, Math.round(act.length / 3)));
+      L.shuffle(act).forEach(function (pid, i) { H.players[pid].team = i % H.teamsN; });
+    }
+    H.goal = Math.min(10, Math.max(4, H.qs.length));
+    H.tm = []; for (var t = 0; t < H.teamsN; t++) { H.tm.push({ order: L.shuffle(H.qs.map(function (_, i) { return i; })), k: 0, prog: 0, best: 0, seq: 0, last: null }); round(t); }
+    H.phase = 'match'; H.raceEnd = Date.now() + H.race * 60000; save(); render(); push(true); raceLoop();
+  }
+  function round(t) {
+    var T = H.tm[t], m = L.shuffle(members(t)), q = H.qs[T.order[T.k % T.order.length]];
+    T.seq++; T.p = q.p; T.right = q.o[q.a]; T.a = {};
+    if (!m.length) return;
+    var per = m.length === 1 ? 4 : 3, others = q.o.filter(function (_, i) { return i !== q.a; });
+    var decoys = L.shuffle(H.qs.map(function (x) { return x.o[x.a]; }).filter(function (x, i, arr) { return arr.indexOf(x) === i && q.o.indexOf(x) < 0; }));
+    m.forEach(function (pid) { T.a[pid] = []; });
+    T.a[m[0]].push(T.right);
+    others.forEach(function (o, i) { T.a[m[(i + 1) % m.length]].push(o); });
+    m.forEach(function (pid) { while (T.a[pid].length < per && decoys.length) T.a[pid].push(decoys.shift()); T.a[pid] = L.shuffle(T.a[pid]).slice(0, Math.max(per, T.a[pid].length)); });
+  }
+  function matchPick(d, pid, p) {
+    var t = p.team, T = H.tm && H.tm[t]; if (!T || d.seq !== T.seq) return;
+    var ok = String(d.v) === T.right; p.answered++;
+    if (ok) { T.prog++; T.best = Math.max(T.best, T.prog); p.correct++; p.score += 100; T.last = { ok: 1, by: p.name, w: T.right, seq: T.seq }; }
+    else { T.last = { ok: 0, by: p.name, w: String(d.v).slice(0, 80), r: T.right, seq: T.seq, lost: T.prog }; T.prog = 0; }
+    T.k++;
+    if (T.prog >= H.goal) { T.won = true; save(); return finish(); }
+    round(t); save(); render(); push(true);
+  }
+  function reround() { if (H && H.phase === 'match') { H.tm.forEach(function (_, t) { round(t); }); save(); render(); push(true); } }
   function activeCount() { return list().filter(function (p) { return !p.kicked; }).length; }
   var rt = null; function scheduleRender() { if (rt) return; rt = setTimeout(function () { rt = null; save(); render(); push(); }, 700); }
 
@@ -224,7 +309,13 @@
       var counts = q.o.map(function () { return 0; }); Object.values(H.ans).forEach(function (a) { if (counts[a.c] != null) counts[a.c]++; });
       s.q = { p: q.p, o: q.o }; s.reveal = { a: q.a, counts: counts, x: q.x || '' }; s.answered = Object.keys(H.ans).length;
     }
-    if (H.phase === 'race') { s.left = Math.max(0, H.raceEnd - Date.now()); s.dur = H.race * 60000; }
+    if (H.phase === 'race' || H.phase === 'match') { s.left = Math.max(0, H.raceEnd - Date.now()); s.dur = H.race * 60000; }
+    if (L.mode(H.mode).power) {
+      s.all = rk.map(function (p) { return [p.pid, p.name, p.score, p.team, H.mode === 'hack' ? (p.pwo || pwOptions(L.PASSWORDS[p.name.length % L.PASSWORDS.length])) : 0]; });
+      s.feed = H.feed.slice(-6); if (H.mode === 'hack') s.haspw = rk.filter(function (p) { return p.pw; }).map(function (p) { return p.pid; });
+      if (H.mode === 'fish') s.fz = Math.max(0, H.fzEnd - Date.now());
+    }
+    if (H.tm) { s.goal = H.goal; s.tm = H.tm.map(function (T) { return { prog: T.prog, best: T.best, seq: T.seq, p: T.p, a: T.a, last: T.last, won: !!T.won }; }); }
     return s;
   }
   var pt = null;
@@ -240,7 +331,8 @@
   function begin() {
     if (!activeCount()) return;
     if (!L.local) L.api('state', { pin: H.pin, status: 'playing', players: H.order.length }).catch(function () {});
-    if (H.mode === 'race') { H.phase = 'race'; H.raceId = Date.now(); H.raceEnd = Date.now() + H.race * 60000; save(); sendQs(); render(); push(true); raceLoop(); }
+    if (H.mode === 'match') return startMatch();
+    if (L.mode(H.mode).self) { H.phase = 'race'; H.raceId = Date.now(); H.raceEnd = Date.now() + H.race * 60000; save(); sendQs(); render(); push(true); raceLoop(); }
     else next();
   }
   function next() {
@@ -273,19 +365,25 @@
   function raceLoop() {
     clearInterval(timers.race);
     timers.race = setInterval(function () {
-      if (H.phase !== 'race') return clearInterval(timers.race);
-      var left = H.raceEnd - Date.now(), el = $('#rtime'); if (el) el.textContent = fmt(left);
+      if (H.phase !== 'race' && H.phase !== 'match') return clearInterval(timers.race);
+      var now = Date.now(), left = H.raceEnd - now, el = $('#rtime'); if (el) el.textContent = fmt(left);
+      if (H.mode === 'fish') {   // a 20-second Frenzy about every 75 seconds
+        if (!H.fzAt) H.fzAt = now + 45000;
+        if (now >= H.fzAt && now > H.fzEnd) { H.fzEnd = now + 20000; H.fzAt = now + 75000; feed('🌊 FRENZY! Every catch is doubled for 20 seconds!', null, null, 'fz'); push(true); render(); }
+        var fz = $('#fzbar'); if (fz) fz.hidden = now > H.fzEnd;
+      }
       if (left <= 0) finish();
     }, 500);
-    clearInterval(timers.racepush); timers.racepush = setInterval(function () { if (H.phase === 'race') push(); else clearInterval(timers.racepush); }, 2000);
+    clearInterval(timers.racepush); timers.racepush = setInterval(function () { if (H.phase === 'race' || H.phase === 'match') push(); else clearInterval(timers.racepush); }, 2000);
   }
   function fmt(ms) { var s = Math.max(0, Math.ceil(ms / 1000)); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); }
   async function finish() {
     clearInterval(timers.q); clearInterval(timers.race);
-    H.phase = 'end'; save(); render(); push(true);
+    if (H.phase === 'end') return;
+    H.phase = 'end'; L.sfx('win'); save(); render(); push(true);
     if (L.local || H.saved) return;
     try {
-      await L.api('end', { pin: H.pin, mode: H.mode, source: H.source, questions: H.mode === 'race' ? 0 : H.qs.length,
+      await L.api('end', { pin: H.pin, mode: H.mode, source: H.source, questions: H.mode === 'classic' ? H.qs.length : 0,
         players: ranked().filter(function (p) { return !p.kicked; }).map(function (p) { return { name: p.name, uid: p.uid, team: p.team >= 0 ? L.TEAMS[p.team] : null, score: p.score, correct: p.correct, answered: p.answered }; }),
         teams: teamBoard().map(function (t) { return { name: t[0], score: t[1], size: t[3] }; }) });
       H.saved = true; save();
@@ -314,7 +412,7 @@
       if (s.teams.length) {
         h += '<div class="teams">' + s.teams.map(function (tn, t) { var mem = rost.filter(function (e) { return e[1][1] === t; }); return '<div class="team" style="box-shadow:inset 0 4px 0 ' + L.HEX[t] + '"><h3><span>' + esc(tn) + '</span><span>' + mem.length + '</span></h3><div class="chips">' + mem.map(function (e) { return chip(e, host); }).join('') + '</div></div>'; }).join('') + '</div>';
       } else h += '<div class="chips">' + rost.map(function (e) { return chip(e, host); }).join('') + '</div>';
-      if (host) h += '<div class="ctrl" style="margin-top:24px"><button class="btn big" id="begin"' + (s.count ? '' : ' disabled') + '>Start game</button><button class="btn ghost sm" id="cancel">Close room</button><span style="opacity:.7;font-size:14px">' + (s.teams.length ? 'Tap a name to move them to another team. ' : 'Tap a name to remove it. ') + (H.mode === 'race' ? 'Race · ' + H.race + ' min' : H.qs.length + ' questions · ' + H.time + ' s each') + '</span></div>';
+      if (host) h += '<div class="ctrl" style="margin-top:24px"><button class="btn big" id="begin"' + (s.count ? '' : ' disabled') + '>Start game</button><button class="btn ghost sm" id="cancel">Close room</button><span style="opacity:.7;font-size:14px">' + (s.teams.length ? 'Tap a name to move them to another team. ' : 'Tap a name to remove it. ') + (L.mode(H.mode).self || L.mode(H.mode).team ? L.mode(H.mode).icon + ' ' + L.mode(H.mode).name + ' · ' + H.race + ' min' : H.qs.length + ' questions · ' + H.time + ' s each') + '</span></div>';
       h += '</div></div>';
     } else if (s.phase === 'q' || s.phase === 'reveal') {
       var rv = s.reveal, tot = Math.max(1, s.answered || 0);
@@ -328,15 +426,27 @@
         '<div class="expl">' + (rv && rv.x ? esc(rv.x) : '') + '</div>';
       if (host) h += '<div class="ctrl" style="justify-content:flex-end">' + (s.phase === 'q' ? '<button class="btn ghost sm" id="skip">Show answer now</button>' : '<button class="btn big" id="toboard">Scores →</button>') + '</div>';
     } else if (s.phase === 'board' || s.phase === 'race') {
-      var race = s.phase === 'race', top = s.board.slice(0, race ? 12 : 6), max = Math.max(1, s.board.length ? s.board[0][1] : 1);
-      h += '<div class="board"><h2>' + (race ? esc(s.title) : 'Scoreboard') + '</h2>' + (race ? '<div style="text-align:center;margin-bottom:6px"><span class="pill" style="font-size:22px">⏱ <span id="rtime">' + fmt(s.left) + '</span></span></div>' : '');
+      var race = s.phase === 'race', MM = L.mode(s.mode), cur = MM.power ? ' ' + MM.cur : '', top = s.board.slice(0, race ? (MM.power ? 10 : 12) : 6), max = Math.max(1, s.board.length ? s.board[0][1] : 1);
+      if (MM.power) h += '<div class="pgrid">';
+      h += '<div class="board"><h2>' + (race ? (MM.power ? MM.icon + ' ' : '') + esc(s.title) : 'Scoreboard') + '</h2>' + (race ? '<div style="text-align:center;margin-bottom:6px"><span class="pill" style="font-size:22px">⏱ <span id="rtime">' + fmt(s.left) + '</span></span>' + (s.mode === 'fish' ? ' <span class="pill fz" id="fzbar"' + (s.fz ? '' : ' hidden') + '>🌊 FRENZY ×2</span>' : '') + '</div>' : '');
       if (s.tboard.length) { var tm = Math.max(1, s.tboard[0][1]); h += s.tboard.map(function (t, i) { return '<div class="brow t" style="--c:' + L.HEX[t[2]] + '"><span class="fill" style="width:' + (t[1] / tm * 100) + '%;background:' + L.HEX[t[2]] + '40"></span><span class="r">' + (i + 1) + '</span><span class="n">' + esc(t[0]) + ' <small style="opacity:.6">· ' + t[3] + ' players · average</small></span><span class="s">' + t[1] + '</span></div>'; }).join('') + '<div style="height:8px"></div>'; }
-      h += top.map(function (p, i) { return '<div class="brow"><span class="fill" style="width:' + (p[1] / max * 100) + '%"></span><span class="r">' + (i + 1) + '</span><span class="n">' + esc(p[0]) + (p[2] >= 0 && s.teams.length ? ' <small style="color:' + teamColor(p[2]) + '">●</small>' : '') + '</span><span class="s">' + p[1] + '</span></div>'; }).join('') + '</div>';
+      h += top.map(function (p, i) { return '<div class="brow"><span class="fill" style="width:' + (p[1] / max * 100) + '%"></span><span class="r">' + (i + 1) + '</span><span class="n">' + esc(p[0]) + (p[2] >= 0 && s.teams.length ? ' <small style="color:' + teamColor(p[2]) + '">●</small>' : '') + '</span><span class="s">' + (MM.power ? L.fmtN(p[1]) + cur : p[1]) + '</span></div>'; }).join('') + '</div>';
+      if (MM.power) h += '<div class="feed"><h3>Live feed</h3>' + ((s.feed || []).slice().reverse().map(function (e) { return '<div class="fe ' + esc(e.k) + '">' + esc(e.t) + '</div>'; }).join('') || '<p class="mini" style="color:rgba(255,255,255,.6)">' + (s.mode === 'gold' ? 'Steals and swaps appear here…' : s.mode === 'hack' ? 'Hacks appear here…' : 'Big catches appear here…') + '</p>') + '</div></div>';
       if (host) h += '<div class="ctrl" style="justify-content:flex-end">' + (race ? '<button class="btn ghost sm" id="endnow">End race now</button>' : '<button class="btn big" id="nextq">' + (s.i + 1 >= s.n ? 'Final results →' : 'Next question →') + '</button><button class="btn ghost sm" id="endnow">End game</button>') + '</div>';
+    } else if (s.phase === 'match') {
+      h += '<div class="board" style="max-width:1000px"><h2>🤝 ' + esc(s.title) + '</h2><div style="text-align:center;margin-bottom:8px"><span class="pill" style="font-size:22px">⏱ <span id="rtime">' + fmt(s.left) + '</span></span> <span class="pill">First team to ' + s.goal + ' right in a row wins</span></div>';
+      h += s.tm.map(function (T, t) {
+        var mem = Object.entries(s.roster).filter(function (e) { return e[1][1] === t; }).map(function (e) { return e[1][0]; });
+        var lt = T.last, msg = lt ? (lt.ok ? '✓ ' + esc(lt.by) + ' found “' + esc(lt.w) + '”' : '✗ ' + esc(lt.by) + ' chose “' + esc(lt.w) + '” — back to zero!') : 'Talk to your team!';
+        return '<div class="lane" style="--c:' + L.HEX[t] + '"><div class="lh"><b>' + esc(s.teams[t]) + '</b><span class="mini" style="color:rgba(255,255,255,.65)">' + mem.map(esc).join(', ') + '</span><span class="spacer"></span><span class="lp">' + T.prog + ' / ' + s.goal + '</span></div>' +
+          '<div class="track">' + Array.from({ length: s.goal }, function (_, i) { return '<span class="' + (i < T.prog ? 'on' : '') + '"></span>'; }).join('') + '<i style="left:calc(' + (T.prog / s.goal * 100) + '% - 18px)">' + ['🦊', '🐬', '🦉', '🐢'][t] + '</i></div>' +
+          '<div class="lm ' + (lt ? lt.ok ? 'ok' : 'no' : '') + '">' + msg + '</div></div>';
+      }).join('') + '</div>';
+      if (host) h += '<div class="ctrl" style="justify-content:flex-end"><button class="btn ghost sm" id="reround" title="Use this if a team is stuck, e.g. a student left">New question for every team</button><button class="btn ghost sm" id="endnow">End game</button></div>';
     } else if (s.phase === 'end') {
       var b = s.board, order = [1, 0, 2], hts = [150, 200, 115];
-      h += '<div class="board"><h2>' + (s.tboard.length ? esc(s.tboard[0][0]) + ' wins!' : 'Winners') + '</h2><div class="podium">' + order.map(function (k) { var p = b[k]; return p ? '<div class="p"><b>' + esc(p[0]) + '</b><small>' + p[1] + ' points</small><div class="blk" style="height:' + hts[k] + 'px">' + (k + 1) + '</div></div>' : ''; }).join('') + '</div>';
-      if (s.tboard.length) h += s.tboard.map(function (t, i) { return '<div class="brow t" style="--c:' + L.HEX[t[2]] + '"><span class="r">' + (i + 1) + '</span><span class="n">' + esc(t[0]) + '</span><span class="s">' + t[1] + ' avg</span></div>'; }).join('');
+      h += '<div class="board"><h2>' + (s.tboard.length ? esc(s.tboard[0][0]) + ' wins!' : 'Winners') + '</h2><div class="podium">' + order.map(function (k) { var p = b[k]; return p ? '<div class="p"><b>' + esc(p[0]) + '</b><small>' + (L.mode(s.mode).power ? L.fmtN(p[1]) + ' ' + L.mode(s.mode).unit : p[1] + ' points') + '</small><div class="blk" style="height:' + hts[k] + 'px">' + (k + 1) + '</div></div>' : ''; }).join('') + '</div>';
+      if (s.tboard.length) h += s.tboard.map(function (t, i) { return '<div class="brow t" style="--c:' + L.HEX[t[2]] + '"><span class="r">' + (i + 1) + '</span><span class="n">' + esc(t[0]) + '</span><span class="s">' + t[1] + (s.mode === 'match' ? ' in a row' : ' avg') + '</span></div>'; }).join('');
       h += '<table class="tbl" style="margin-top:14px"><thead><tr><th>#</th><th>Player</th><th>Points</th><th>Correct</th></tr></thead><tbody>' + b.map(function (p, i) { return '<tr><td>' + (i + 1) + '</td><td>' + esc(p[0]) + (p[2] >= 0 && s.teams.length ? ' <small style="color:' + teamColor(p[2]) + '">' + esc(s.teams[p[2]]) + '</small>' : '') + '</td><td>' + p[1] + '</td><td>' + p[3] + ' / ' + p[4] + '</td></tr>'; }).join('') + '</tbody></table></div>';
       if (host) h += '<div class="ctrl" style="justify-content:center"><span id="savedmsg" style="opacity:.75">' + (L.local ? '' : H.saved ? 'Scores saved to Recent results.' : 'Saving scores…') + '</span><button class="btn big" id="again">New game</button></div>';
       else h += '<div class="ctrl" style="justify-content:center"><a class="btn" href="/live/host/">Back to IF Live</a></div>';
@@ -346,7 +456,7 @@
     if (!host) return;
     var on = function (id, fn) { var el = $('#' + id); if (el) el.onclick = fn; };
     on('begin', begin); on('cancel', function () { if (!L.local) L.api('state', { pin: H.pin, status: 'ended' }).catch(function () {}); H.phase = 'end'; push(true); closeGame(); });
-    on('skip', reveal); on('toboard', board); on('nextq', next); on('endnow', finish); on('again', closeGame);
+    on('reround', reround); on('skip', reveal); on('toboard', board); on('nextq', next); on('endnow', finish); on('again', closeGame);
     view.querySelectorAll('[data-pid]').forEach(function (b) {
       b.onclick = function () {
         var P = H.players[b.dataset.pid]; if (!P) return;
@@ -368,7 +478,7 @@
       var first = r.token;
       BUS = await L.connect({ pin: pin, token: async function () { if (first) { var t = first; first = null; return t; } return (await L.api('token', { pin: pin, as: 'watch' })).token; } });
       BUS.sub('h', function (name, d) { if (name === 'st') { ST = d; render(); } });
-      setInterval(function () { if (ST && (ST.phase === 'race' || ST.phase === 'q')) { var el = $('#rtime'); if (el) { ST.left = Math.max(0, ST.left - 1000); el.textContent = fmt(ST.left); } } }, 1000);
+      setInterval(function () { if (ST && (ST.phase === 'race' || ST.phase === 'match' || ST.phase === 'q')) { var el = $('#rtime'); if (el) { ST.left = Math.max(0, ST.left - 1000); el.textContent = fmt(ST.left); } } }, 1000);
     } catch (e) { view.innerHTML = '<div class="stage"><p>' + (e.code === 'room' ? 'This game has finished.' : e.status === 401 ? 'Please sign in with your teacher account.' : 'Could not open this game.') + '</p><p><a class="btn" href="/live/host/">Back</a></p></div>'; }
   }
 
