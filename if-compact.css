@@ -42,8 +42,11 @@ section, main section { padding-block: 60px !important; }
 @media (prefers-reduced-motion: reduce) { #gallery .g-track { animation: none !important; flex-wrap: wrap; width: auto; justify-content: center; } }
 
 /* ---------- staff: one row you can swipe ---------- */
-#teachers .eco-grid { display: flex !important; overflow-x: auto; gap: 16px !important; scroll-snap-type: x mandatory; padding-bottom: 10px; background: none !important; border: 0 !important; scrollbar-width: thin; }
-#teachers .eco-card { flex: 0 0 clamp(250px, 24vw, 290px); scroll-snap-align: start; border: 1px solid var(--border-c, #e4dccd); border-radius: 18px; padding: 18px !important; grid-column: auto !important; }
+/* staff: a 3 × 3 grid, everyone visible without sideways scrolling */
+#teachers .eco-grid { display: grid !important; grid-template-columns: repeat(3, minmax(0, 1fr)) !important; overflow: visible; gap: 18px !important; background: none !important; border: 0 !important; align-items: stretch; }
+#teachers .eco-grid .teacher-portrait { width: 100% !important; max-width: none !important; aspect-ratio: 1 / 1 !important; height: auto !important; object-fit: cover; object-position: 50% 18%; border-radius: 12px; display: block; }
+@media (max-width: 560px) { #teachers .eco-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 10px !important; } #teachers .eco-card { padding: 12px !important; } #teachers .eco-card h3 { font-size: 16px !important; } }
+#teachers .eco-card { min-width: 0; border: 1px solid var(--border-c, #e4dccd); border-radius: 18px; padding: 18px !important; grid-column: auto !important; }
 #teachers .teacher-portrait { aspect-ratio: 4/5 !important; margin-bottom: 12px !important; }
 #teachers .eco-card p { font-size: 13.5px !important; }
 #teachers .eco-card:first-child { padding: 18px !important; }
