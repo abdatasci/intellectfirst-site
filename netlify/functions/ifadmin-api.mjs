@@ -76,7 +76,9 @@ export default async (req) => {
     const msgs = (Array.isArray(b.messages) ? b.messages : []).filter(m => m && typeof m.content === 'string').slice(-12);
     if (!msgs.length || msgs.at(-1).role !== 'user') return fail(400, 'message');
     const D = await loadAll();
-    let r; try { r = await chat(D, msgs); } catch (e) { console.error('ifadmin ai', e?.status, e?.message); return fail(502, 'ai'); }
+    const files = (Array.isArray(b.files) ? b.files : []).filter(f => f && typeof f.data === 'string' && /^(image\/(jpeg|png|webp|gif)|application\/pdf)$/.test(f.type || '')).slice(0, 4);
+    if (files.reduce((n, f) => n + f.data.length, 0) > 5.5e6) return fail(413, 'too big');
+    let r; try { r = await chat(D, msgs, files); } catch (e) { console.error('ifadmin ai', e?.status, e?.message); return fail(502, 'ai'); }
     if (r.ops && r.ops.length) { const pv = run(JSON.parse(JSON.stringify(D)), r.ops); r.lines = pv.lines; r.errors = pv.errors; }
     return json(r);
   }

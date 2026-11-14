@@ -16,6 +16,41 @@ const isMonth = s => /^\d{4}-(0[1-9]|1[0-2])$/.test(s || '');
 const num = v => { if (v === '' || v == null) return null; const n = Math.round(+String(v).replace(/[^\d.-]/g, '')); return isFinite(n) ? n : null; };
 const today = () => new Date(Date.now() + 5 * 3600e3).toISOString().slice(0, 10);   // Kostanay time
 
+/* ---------------- lesson packages and payment alerts (same rules as the IF Admin app) ----------------
+   A group's package starts at groups[g].ps (pkg lessons, default 8; IELTS and Starters 12). Late joiners count their own
+   lessons from students[id].xps[g] (only P and UA count). Individual groups ('ind', 'indn') use students[id].ps / pkg (default 12).
+   An alert shows one lesson before a package ends and stays until a new package is started. Recording a payment does NOT clear it. */
+const INDG = ['ind', 'indn'], PKG_DEF = { ielts: 12, st: 12 };
+const nextDay = d => { const x = new Date(d + 'T12:00:00Z'); x.setUTCDate(x.getUTCDate() + 1); return x.toISOString().slice(0, 10); };
+const pkgOf = (D, g) => +((D.groups[g] || {}).pkg) || PKG_DEF[g] || 8;
+const psOf = (D, g) => { const G = D.groups[g] || {}; return G.ps || ((G.dates || []).slice().sort()[0]) || ''; };
+function cyc(dates, ps, size) { const t = today(), inC = dates.filter(d => d >= ps).sort(), done = inC.filter(d => d <= t).length; return { size, ps, done, last: inC[size - 1] || '', next: inC.find(d => d > t) || '', after: inC[size] || '' }; }
+const gCycle = (D, g) => cyc(((D.groups[g] || {}).dates || []).slice(), psOf(D, g), pkgOf(D, g));
+function sCycle(D, id, g) { const S = D.students[id] || {}, mk = ((D.attendance?.[g] || {})[id]) || {}, ds = Object.keys(mk).filter(d => mk[d] && mk[d] !== 'FZ').sort(); return cyc(ds, S.ps || ds[0] || '', +S.pkg || 12); }
+const stuGroups = S => (S.gs && S.gs.length ? S.gs : [S.g]).filter(Boolean);
+function xCycle(D, id, g) {
+  if (INDG.includes(g)) return null;
+  const S = D.students[id] || {}, G = D.groups[g] || {}, mk = ((D.attendance?.[g] || {})[id]) || {}, gps = psOf(D, g), own = (S.xps || {})[g] || '';
+  const ps = own || Object.keys(mk).filter(d => d >= gps && mk[d]).sort()[0] || '';
+  if (!ps || !(own || ps > gps)) return null;
+  const t = today(), cnt = Object.keys(mk).filter(d => d >= ps && d <= t && (mk[d] === 'P' || mk[d] === 'UA')).sort();
+  return { size: pkgOf(D, g), ps, done: cnt.length, lastDone: cnt[cnt.length - 1] || '', next: (G.dates || []).filter(d => d > t).sort()[0] || '' };
+}
+const remState = c => c.done >= c.size ? 'due' : c.done === c.size - 1 ? 'remind' : 'ok';
+export function payAlerts(D) {
+  const out = [], act = id => D.students[id].st === 'active' && !D.students[id].nofee;
+  for (const g of Object.keys(D.groups || {}).filter(g => !INDG.includes(g) && (D.groups[g].dates || []).length)) {
+    const ids = Object.keys(D.students).filter(id => act(id) && stuGroups(D.students[id]).includes(g));
+    const xs = ids.map(id => [id, xCycle(D, id, g)]).filter(x => x[1]), xids = new Set(xs.map(x => x[0])), reg = ids.filter(id => !xids.has(id)), c = gCycle(D, g), st = remState(c);
+    if (st !== 'ok' && reg.length) out.push({ kind: 'group', group: g, groupName: D.groups[g].n, state: st, lessons: `${Math.min(c.done, c.size)}/${c.size}`, packageStart: c.ps, students: reg.map(id => D.students[id].n) });
+    for (const [id, x] of xs) { const s2 = remState(x); if (s2 !== 'ok') out.push({ kind: 'own package (late joiner)', group: g, groupName: D.groups[g].n, student: id, studentName: D.students[id].n, state: s2, lessons: `${x.done}/${x.size}`, packageStart: x.ps }); }
+  }
+  for (const g of INDG) for (const id of Object.keys(D.students).filter(id => act(id) && stuGroups(D.students[id]).includes(g))) {
+    const c = sCycle(D, id, g), st = remState(c); if (st !== 'ok') out.push({ kind: 'individual', group: g, student: id, studentName: D.students[id].n, state: st, lessons: `${Math.min(c.done, c.size)}/${c.size}`, packageStart: c.ps });
+  }
+  return out;
+}
+
 /* ---------------- context for the model ---------------- */
 function studentLine(id, s, G) {
   const gs = (s.gs && s.gs.length ? s.gs : [s.g]).filter(Boolean).map(g => `${g}=${G[g]?.n || g}`).join(', ');
@@ -47,6 +82,10 @@ RULES
 - Before proposing a payment, look up that month's payments. If the student already has a row: when it is fully paid, ask whether this is an extra payment or a correction; when it is part-paid, add to it (add_paid).
 - Use the lookup tool when you need existing records (who has paid, past attendance, an expense list) or to answer a question.
 - Questions ("who hasn't paid for November?") get a plain answer, no changes.
+- ATTENDANCE GRID (Attendance tab): one row per lesson date, one column per student. Use op attendance to mark (it also adds a new lesson date), lesson_move to change a lesson's date (all marks move with it), lesson_remove to delete a lesson date and its marks, group_member to add a student to a group (keeping other groups) or remove them from it.
+- PAYMENT ALERTS / REMINDERS on the IF Admin Payments page come from LESSON PACKAGES, not from payment rows. A package is 8 lessons (IELTS and Starters 12; individual students 12). The alert shows one lesson before the package ends and stays until a NEW PACKAGE IS STARTED. Recording a payment does not remove it. When he says someone has paid, or asks to remove someone/a group from the alerts or reminders, propose op "package" (start the next package) for that group or student, plus the payment row if it is not recorded yet. Use lookup kind "alerts" to see the current alerts first.
+- For a whole group, use op "package" with the group id. For one student who has their own package (late joiner or individual), use op "package" with student (and group).
+- If he attaches a photo or PDF (a receipt, an attendance sheet, a list), read it carefully and turn it into changes; say what you could not read.
 - Keep replies short. Never invent students, groups or amounts.
 
 GROUPS (id | name | schedule | recent lesson dates)
@@ -62,8 +101,8 @@ ${c.staff}`;
 const TOOLS = [
   {
     name: 'lookup',
-    description: 'Read existing IF Admin records. kind=payments (month), attendance (group, optional month), expenses (month), student (student id: everything about one student).',
-    input_schema: { type: 'object', properties: { kind: { type: 'string', enum: ['payments', 'attendance', 'expenses', 'student'] }, month: { type: 'string', description: 'YYYY-MM' }, group: { type: 'string' }, student: { type: 'string' } }, required: ['kind'] }
+    description: 'Read existing IF Admin records. kind=payments (month), attendance (group, optional month), expenses (month), student (student id: everything about one student), alerts (the current payment alerts from lesson packages).',
+    input_schema: { type: 'object', properties: { kind: { type: 'string', enum: ['payments', 'attendance', 'expenses', 'student', 'alerts'] }, month: { type: 'string', description: 'YYYY-MM' }, group: { type: 'string' }, student: { type: 'string' } }, required: ['kind'] }
   },
   {
     name: 'propose_changes',
@@ -76,7 +115,9 @@ const TOOLS = [
           type: 'array', items: {
             type: 'object', required: ['op'],
             properties: {
-              op: { type: 'string', enum: ['attendance', 'payment', 'expense', 'student', 'student_add'] },
+              op: { type: 'string', enum: ['attendance', 'lesson_move', 'lesson_remove', 'group_member', 'payment', 'expense', 'student', 'student_add', 'package'] },
+              to: { type: 'string', description: 'lesson_move: the new date YYYY-MM-DD (date = the old one)' },
+              action: { type: 'string', description: 'group_member: add | remove' },
               group: { type: 'string', description: 'attendance: group id; student_add: group id' },
               date: { type: 'string', description: 'YYYY-MM-DD (lesson date, payment date or expense date)' },
               marks: { type: 'object', description: 'attendance: {studentId: "P"|"UA"|"EA"|"FZ"|""}', additionalProperties: { type: 'string' } },
@@ -116,6 +157,7 @@ function lookup(D, i) {
     const m = isMonth(i.month) ? i.month : today().slice(0, 7);
     return { month: m, items: Object.values(D.expenses?.[m]?.items || {}) };
   }
+  if (i.kind === 'alerts') return { today: today(), alerts: payAlerts(D) };
   if (i.kind === 'student') {
     const s = S[i.student]; if (!s) return { error: 'no such student' };
     const pays = Object.entries(D.payments || {}).filter(([, p]) => p.rows?.[i.student]).map(([m, p]) => ({ month: m, ...p.rows[i.student] }));
@@ -126,9 +168,13 @@ function lookup(D, i) {
 }
 
 /** One chat turn. history: [{role:'user'|'assistant', content:string}]. Returns {reply, ops?, summary?}. */
-export async function chat(D, history) {
+export async function chat(D, history, files = []) {
   const ai = new Anthropic();
   const msgs = history.slice(-12).map(m => ({ role: m.role === 'assistant' ? 'assistant' : 'user', content: str(m.content, 4000) || '…' }));
+  // photos / PDFs attached to the last message (receipts, attendance sheets, lists)
+  const blocks = (files || []).slice(0, 4).map(f => f.type === 'application/pdf' ? { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: f.data } }
+    : /^image\/(jpeg|png|webp|gif)$/.test(f.type) ? { type: 'image', source: { type: 'base64', media_type: f.type, data: f.data } } : null).filter(Boolean);
+  if (blocks.length && msgs.at(-1)?.role === 'user') msgs[msgs.length - 1] = { role: 'user', content: [...blocks, { type: 'text', text: msgs.at(-1).content }] };
   for (let step = 0; step < 5; step++) {
     const r = await ai.messages.create({ model: AI_MODEL, max_tokens: 4000, system: system(D), tools: TOOLS, messages: msgs });
     const text = r.content.filter(c => c.type === 'text').map(c => c.text).join('\n').trim();
@@ -234,6 +280,58 @@ export function run(D, ops) {
         if (set.note != null) { ch.push(`note “${str(set.note, 300)}”`); s.note = str(set.note, 500); }
         touched.add('students');
         out.push({ ok: true, text: `Student · ${s.n}: ${ch.join(', ') || 'no change'}` });
+      } else if (o.op === 'lesson_move' || o.op === 'lesson_remove') {
+        const g = G[o.group]; if (!g) { bad(`Lesson date: unknown group “${str(o.group, 40)}”`); continue; }
+        if (!isDate(o.date) || !(g.dates || []).includes(o.date)) { bad(`${g.n}: there is no lesson on ${str(o.date, 12) || '(no date)'}`); continue; }
+        const A = (D.attendance ||= {})[o.group] ||= {};
+        if (o.op === 'lesson_move') {
+          if (!isDate(o.to)) { bad(`${g.n}: new date missing`); continue; }
+          if (g.dates.includes(o.to)) { bad(`${g.n}: there is already a lesson on ${o.to}`); continue; }
+          g.dates = g.dates.map(d => d === o.date ? o.to : d).sort();
+          for (const m of Object.values(A)) if (m[o.date] !== undefined) { m[o.to] = m[o.date]; delete m[o.date]; }
+          out.push({ ok: true, text: `Lesson moved · ${g.n}: ${o.date} → ${o.to} (marks moved too)` });
+        } else {
+          const n = Object.values(A).filter(m => m[o.date]).length;
+          g.dates = g.dates.filter(d => d !== o.date);
+          for (const m of Object.values(A)) delete m[o.date];
+          out.push({ ok: true, text: `Lesson deleted · ${g.n}: ${o.date}${n ? ` (${n} mark${n > 1 ? 's' : ''} removed)` : ''}` });
+        }
+        touched.add('groups'); touched.add('attendance');
+      } else if (o.op === 'group_member') {
+        const st = S[o.student], g = G[o.group];
+        if (!st) { bad(`Group: unknown student ${str(o.student, 30)}`); continue; }
+        if (!g) { bad(`Group: unknown group “${str(o.group, 30)}”`); continue; }
+        const gs = stuGroups(st);
+        if (o.action === 'remove') {
+          if (!gs.includes(o.group)) { bad(`${st.n} is not in ${g.n}`); continue; }
+          st.gs = gs.filter(x => x !== o.group); st.g = st.gs[0] || ''; st.bg = G[st.g]?.n || '';
+          out.push({ ok: true, text: `Group · ${st.n}: removed from ${g.n}${st.gs.length ? '' : ' (no group now)'}` });
+        } else {
+          if (gs.includes(o.group)) { bad(`${st.n} is already in ${g.n}`); continue; }
+          st.gs = [...gs, o.group]; if (!st.g) { st.g = o.group; st.bg = g.n; }
+          out.push({ ok: true, text: `Group · ${st.n}: added to ${g.n}${gs.length ? ' (also stays in ' + gs.map(x => G[x]?.n || x).join(', ') + ')' : ''}` });
+        }
+        touched.add('students');
+      } else if (o.op === 'package') {
+        // start the next lesson package (what IF Admin's "Start new package" button does)
+        const sid = o.student && S[o.student] ? o.student : null;
+        const g = o.group && G[o.group] ? o.group : sid ? stuGroups(S[sid]).find(x => INDG.includes(x) || xCycle(D, sid, x)) || stuGroups(S[sid])[0] : null;
+        if (!g) { bad(`New package: unknown group or student`); continue; }
+        D.attendance ||= {};
+        if (sid && INDG.includes(g)) {
+          const c = sCycle(D, sid, g); S[sid].ps = c.after || nextDay(c.last || today()); touched.add('students');
+          out.push({ ok: true, text: `New package · ${S[sid].n} (individual): starts ${S[sid].ps}` });
+        } else if (sid && xCycle(D, sid, g)) {
+          const x = xCycle(D, sid, g); S[sid].xps = { ...(S[sid].xps || {}), [g]: nextDay(x.lastDone || today()) }; touched.add('students');
+          out.push({ ok: true, text: `New package · ${S[sid].n} (${G[g].n}, own package): starts after ${x.lastDone || today()}, alert removed` });
+        } else {
+          const c = gCycle(D, g);
+          for (const id of Object.keys(S).filter(id => S[id].st === 'active' && !S[id].nofee && stuGroups(S[id]).includes(g))) {
+            const x = xCycle(D, id, g); if (x && !(S[id].xps || {})[g]) { S[id].xps = { ...(S[id].xps || {}), [g]: x.ps }; touched.add('students'); }
+          }
+          G[g].ps = c.after || nextDay(c.last || today()); touched.add('groups');
+          out.push({ ok: true, text: `New package · ${G[g].n}: starts ${G[g].ps} (${c.done}/${c.size} lessons done), alert removed${sid ? ' (for the whole group)' : ''}` });
+        }
       } else if (o.op === 'student_add') {
         const n = str(o.n, 80); if (!n) { bad('New student: name missing'); continue; }
         if (o.group && !G[o.group]) { bad(`New student ${n}: unknown group “${str(o.group, 30)}”`); continue; }
