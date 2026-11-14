@@ -90,6 +90,7 @@
       $('#out').onclick = async function () { try { await ID.logout(); } catch (e) {} USER = null; ME = null; header(); go('#/login'); toast('Signed out'); };
     } else who.innerHTML = '';
     $('[data-nav=classes]').hidden = !staff();
+    var cn = $('[data-nav=calendar]'); if (cn) cn.hidden = !staff();
     var rn = $('[data-nav=results]'); if (rn) rn.hidden = !staff();
     $('[data-nav=admin]').hidden = role() !== 'admin';
     if (role() === 'admin' && !window.__ifaAIload) { window.__ifaAIload = true; var sc = document.createElement('script'); sc.src = '/me/ifadmin/ai-chat.js'; document.body.appendChild(sc); }
@@ -464,6 +465,61 @@
     $('#ph').onclick = photoDialog; wireDetails(); tgBand(); wirePro(); wireGoal();
     if (staff()) todayBox($('#todaybox'));
   }
+
+  /* ---------- calendar: a week of lessons; cancel, move, restore or add a lesson (students are told; the bot follows) ---------- */
+  var CAL = { from: null, teacher: '' };
+  function mondayOf(d) { var x = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate())); x.setUTCDate(x.getUTCDate() - ((x.getUTCDay() + 6) % 7)); return x.toISOString().slice(0, 10); }
+  function addDays(s, n) { var x = new Date(s + 'T00:00:00Z'); x.setUTCDate(x.getUTCDate() + n); return x.toISOString().slice(0, 10); }
+  async function vCalendar(start) {
+    setNav('calendar'); if (!staff()) return go('#/');
+    var today = new Date(Date.now() + 5 * 3600e3).toISOString().slice(0, 10);
+    CAL.from = /^\d{4}-\d{2}-\d{2}$/.test(start || '') ? mondayOf(new Date(start + 'T00:00:00Z')) : CAL.from || mondayOf(new Date(today + 'T00:00:00Z'));
+    view.innerHTML = '<p style="margin-top:30px"><span class="spin"></span></p>';
+    var d; try { d = await api('teach/calendar?from=' + CAL.from + '&days=7' + (CAL.teacher ? '&teacher=' + encodeURIComponent(CAL.teacher) : '')); } catch (e) { view.innerHTML = '<div class="empty" style="margin-top:30px">The calendar could not be loaded.</div>'; return; }
+    var days = []; for (var i = 0; i < 7; i++) days.push(addDays(CAL.from, i));
+    var DN = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    var fmtD = function (s) { return s.slice(8) + '.' + s.slice(5, 7); };
+    var stCls = function (l) { return l.movedTo ? 'moved' : l.state === 'cancelled' ? 'cancelled' : l.kind === 'extra' ? 'extra' : l.kind === 'moved' ? 'movedin' : l.state === 'in' || l.state === 'in-late' ? 'done' : l.state === 'missed' ? 'missed' : ''; };
+    var tag = function (l) { return l.movedTo ? '→ moved to ' + fmtD(l.movedTo.date) + ' ' + l.movedTo.start : l.state === 'cancelled' ? 'Cancelled' : l.kind === 'extra' ? 'Extra lesson' : l.kind === 'moved' ? 'Moved from ' + fmtD(l.movedFrom.date) + ' ' + l.movedFrom.start : l.state === 'in' ? '✓ Checked in' : l.state === 'in-late' ? '⏱ Late check-in' : l.state === 'missed' ? 'No check-in' : ''; };
+    view.innerHTML = '<section class="hero" style="padding:16px 0 6px"><div class="eyebrow">' + (role() === 'admin' ? 'All teachers' : 'My timetable') + '</div><h1>Calendar</h1><p class="lead">Your lessons this week. Tap a lesson to cancel it, move it or bring it back. Students are told on Telegram, WhatsApp and the website, and the bot\'s timetable and reminders change too.</p></section>' +
+      '<div class="calbar"><button class="btn ghost sm" id="cprev">← Previous</button><b>' + fmtD(days[0]) + ' – ' + fmtD(days[6]) + '.' + days[6].slice(0, 4) + '</b><button class="btn ghost sm" id="cnext">Next →</button><button class="btn ghost sm" id="ctoday">This week</button><span class="spacer"></span>' +
+      (d.teachers.length ? '<select class="inp sm" id="cteach"><option value="">My lessons</option><option value="all"' + (CAL.teacher === 'all' ? ' selected' : '') + '>All teachers</option>' + d.teachers.map(function (t) { return '<option value="' + esc(t.id) + '"' + (CAL.teacher === t.id ? ' selected' : '') + '>' + esc(t.name) + '</option>'; }).join('') + '</select>' : '') +
+      '<button class="btn sm" id="cadd">＋ Extra lesson</button></div><div id="cform"></div>' +
+      '<div class="calgrid">' + days.map(function (day, i) {
+        var L = d.lessons.filter(function (l) { return l.date === day; });
+        return '<div class="calday' + (day === today ? ' today' : '') + '"><div class="cdh"><b>' + DN[i] + '</b> ' + fmtD(day) + '</div>' + (L.length ? L.map(function (l) {
+          var k = d.lessons.indexOf(l);
+          return '<button class="cl ' + stCls(l) + '" data-k="' + k + '"><span class="ct">' + esc(l.start) + (l.end ? '–' + esc(l.end) : '') + '</span><span class="cn">' + esc(l.label) + '</span>' + (l.teacher && CAL.teacher === 'all' ? '<span class="cx">' + esc(l.teacher) + '</span>' : '') + (l.room ? '<span class="cx">' + esc(l.room) + '</span>' : '') + (tag(l) ? '<span class="cs">' + esc(tag(l)) + '</span>' : '') + '</button>';
+        }).join('') : '<p class="small cnone">No lessons</p>') + '</div>';
+      }).join('') + '</div><div id="cpanel"></div>';
+    $('#cprev').onclick = function () { CAL.from = addDays(CAL.from, -7); vCalendar(CAL.from); };
+    $('#cnext').onclick = function () { CAL.from = addDays(CAL.from, 7); vCalendar(CAL.from); };
+    $('#ctoday').onclick = function () { CAL.from = null; vCalendar(); };
+    if ($('#cteach')) $('#cteach').onchange = function () { CAL.teacher = this.value; vCalendar(CAL.from); };
+    $('#cadd').onclick = function () {
+      $('#cform').innerHTML = '<div class="panel wide calform"><h3>Add an extra lesson</h3><div class="row" style="gap:10px;flex-wrap:wrap"><select class="inp" id="xc">' + d.classes.map(function (c) { return '<option value="' + esc(c.id) + '">' + esc(c.label) + '</option>'; }).join('') + '</select><input class="inp" type="date" id="xd" value="' + today + '"><input class="inp" type="time" id="xs" value="16:00"><input class="inp" type="time" id="xe" value="17:00"></div><input class="inp" id="xn" placeholder="Note for students (optional)" maxlength="160" style="margin-top:8px"><label class="small" style="display:block;margin:8px 0"><input type="checkbox" id="xt" checked> Tell the students</label><button class="btn" id="xsave">Add lesson</button> <button class="btn ghost" id="xcancel">Close</button></div>';
+      $('#xcancel').onclick = function () { $('#cform').innerHTML = ''; };
+      $('#xsave').onclick = async function () { this.disabled = true; try { var r = await api('teach/lesson-change', { method: 'POST', body: { action: 'extra', classId: $('#xc').value, date: $('#xd').value, start: $('#xs').value, end: $('#xe').value, note: $('#xn').value, notify: $('#xt').checked } }); toast(told(r)); vCalendar(CAL.from); } catch (e) { this.disabled = false; toast('Could not add the lesson.'); } };
+    };
+    view.querySelectorAll('.cl').forEach(function (b) {
+      b.onclick = function () {
+        var l = d.lessons[+b.dataset.k], off = l.movedTo || l.state === 'cancelled';
+        view.querySelectorAll('.cl.sel').forEach(function (x) { x.classList.remove('sel'); }); b.classList.add('sel');
+        $('#cpanel').innerHTML = '<div class="panel wide calform"><h3>' + esc(l.label) + ' · ' + DN[(new Date(l.date + 'T00:00:00Z').getUTCDay() + 6) % 7] + ' ' + fmtD(l.date) + ' ' + esc(l.start) + (l.end ? '–' + esc(l.end) : '') + '</h3>' + (tag(l) ? '<p class="small">' + esc(tag(l)) + (l.note ? ' · ' + esc(l.note) : '') + '</p>' : '') +
+          (off ? '<button class="btn" id="crest">↩ Bring the lesson back</button>' :
+            '<div class="calacts"><div><b>Move to</b><div class="row" style="gap:8px;flex-wrap:wrap;margin-top:6px"><input class="inp" type="date" id="md" value="' + l.date + '"><input class="inp" type="time" id="ms" value="' + l.start + '"><input class="inp" type="time" id="me" value="' + (l.end || '') + '"><button class="btn" id="cmove">🔁 Move</button></div></div>' +
+            '<div><b>Cancel</b><div class="row" style="gap:8px;margin-top:6px"><button class="btn ghost" id="ccan" style="color:#b0372f">❌ Cancel this lesson</button></div></div></div>') +
+          '<input class="inp" id="cnote" placeholder="Note for students (optional), e.g. the teacher is ill" maxlength="160" style="margin-top:10px"><label class="small" style="display:block;margin:8px 0"><input type="checkbox" id="ctell" checked> Tell the students (Telegram, WhatsApp, website)</label>' +
+          '<p class="small"><a href="#/class/' + esc(l.classId) + '">Open the class page</a>' + (l.date === today ? ' · check in and take the register on <a href="#/">Today</a>' : '') + '</p></div>';
+        var send = async function (body, okMsg) { body.key = l.key; body.note = $('#cnote').value; body.notify = $('#ctell').checked; try { var r = await api('teach/lesson-change', { method: 'POST', body: body }); toast(okMsg + ' ' + told(r)); vCalendar(CAL.from); } catch (e) { toast(e.message === 'time' ? 'Choose a date and a start time.' : 'Could not save.'); } };
+        if ($('#crest')) $('#crest').onclick = function () { send({ action: 'restore' }, 'Lesson back on.'); };
+        if ($('#cmove')) $('#cmove').onclick = function () { send({ action: 'move', date: $('#md').value, start: $('#ms').value, end: $('#me').value }, 'Lesson moved.'); };
+        if ($('#ccan')) $('#ccan').onclick = function () { if (confirm('Cancel ' + l.label + ' on ' + fmtD(l.date) + ' at ' + l.start + '?')) send({ action: 'cancel' }, 'Lesson cancelled.'); };
+        $('#cpanel').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      };
+    });
+  }
+  function told(r) { return r && r.told ? r.told.students + ' student' + (r.told.students === 1 ? '' : 's') + ' told.' : ''; }
 
   /* ---------- lessons: teacher check-in and the register ---------- */
   var LSTATE = { upcoming: ['mute', 'Later today'], open: ['mute', 'Check in now'], overdue: ['bad', 'Not checked in'], missed: ['bad', 'Missed: no check-in'], 'in': ['ok', 'Checked in on time'], 'in-late': ['bad', 'Checked in late'], cancelled: ['mute', 'Cancelled'] };
@@ -1619,6 +1675,7 @@
         case 'forgot': return vForgot();
         case 'reset': return vReset();
         case 'classes': return vClasses();
+        case 'calendar': return vCalendar(parts[1]);
         case 'class': return vClass(parts[1]);
         case 'student': return vStudent(parts[1]);
         case 'admin': return vAdmin(parts[1]);

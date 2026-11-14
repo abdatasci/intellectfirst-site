@@ -7,7 +7,7 @@
 //   entry: { classId, label, date, start, end, teacherId, checkIn, lateMin, by:{uid,name}, marks:{sid:'on'|'late'|'abs'|'exc'},
 //            lateBy:{sid:min}, takenAt, takenBy, cancelled, note, alerted }
 import { getStore } from '@netlify/blobs';
-import { parseSchedule, fromLocal, ymd, local } from './bot-core.mjs';
+import { ymd, local, dayLessons, NO_CHANGES, loadChanges } from './bot-core.mjs';
 import { run } from './ifadmin-ai.mjs';
 
 const S = () => getStore({ name: 'school', consistency: 'strong' });
@@ -16,25 +16,16 @@ export const EARLY_MIN = 30, GRACE_MIN = 2, LESSON_MIN = 90;
 const err = code => { const e = new Error(code); e.code = code; return e; };
 export const today = () => ymd(new Date());
 
-/** Lessons of these classes on a local date (YYYY-MM-DD), from the timetable. */
-export function lessonsOn(classes, date) {
-  const [y, m, d] = date.split('-').map(Number), dow = new Date(Date.UTC(y, m - 1, d)).getUTCDay(), out = [];
-  for (const c of classes) for (const s of parseSchedule(c.schedule)) {
-    if (s.dow !== dow || !s.start) continue;
-    const [hh, mm] = s.start.split(':').map(Number), at = fromLocal(y, m - 1, d, hh, mm);
-    let endAt = new Date(at.getTime() + LESSON_MIN * 60000);
-    if (s.end) { const [eh, em] = s.end.split(':').map(Number); const e = fromLocal(y, m - 1, d, eh, em); if (e > at) endAt = e; }
-    out.push({ key: `${c.id}|${date}|${s.start}`, classId: c.id, group: c.group || '', label: c.label, room: c.room || '', teacherId: c.teacherId || '', date, start: s.start, end: s.end || '', at: at.toISOString(), endAt: endAt.toISOString() });
-  }
-  return out.sort((a, b) => a.at.localeCompare(b.at));
-}
+/** Lessons of these classes on a local date (YYYY-MM-DD): timetable + cancellations, moves and extra lessons. */
+export const lessonsOn = (classes, date, CH) => dayLessons(classes, date, CH || NO_CHANGES);
 export const loadLog = async month => (await S().get('lessonlog/' + month, { type: 'json' })) || {};
 const saveLog = (month, L) => S().setJSON('lessonlog/' + month, L);
 
 /** What a lesson looks like now: upcoming / open (check-in possible) / late (started, no check-in) / missed / done. */
 export function status(lesson, e, now = new Date(), cutoff = null) {
   const at = new Date(lesson.at), end = new Date(lesson.endAt);
-  if (e?.cancelled) return 'cancelled';
+  if (lesson.movedTo) return 'moved';
+  if (e?.cancelled || lesson.cancelled) return 'cancelled';
   if (e?.checkIn) return e.lateMin > GRACE_MIN ? 'in-late' : 'in';
   if (e?.noShow) return 'missed';
   if (cutoff && at < new Date(cutoff)) return 'in';   // before check-in existed: counted as on time
@@ -113,11 +104,11 @@ export async function correct(lesson, b, who) {
 }
 /** All timetabled lessons from the first of `month` (or the start of check-in) up to now, with their log entries. */
 export async function monthLessons(classes, month, now = new Date()) {
-  const L = await loadLog(month), [y, m] = month.split('-').map(Number), out = [], cutoff = await since();
+  const L = await loadLog(month), [y, m] = month.split('-').map(Number), out = [], cutoff = await since(), CH = await loadChanges();
   const last = new Date(Date.UTC(y, m, 0)).getUTCDate(), todayStr = today();
   for (let d = 1; d <= last; d++) {
     const date = `${month}-${String(d).padStart(2, '0')}`; if (date > todayStr) break;
-    out.push(...withEntry(lessonsOn(classes, date), L, now, cutoff));
+    out.push(...withEntry(lessonsOn(classes, date, CH), L, now, cutoff));
   }
   return out;
 }
@@ -125,7 +116,7 @@ export async function monthLessons(classes, month, now = new Date()) {
 export function punctuality(lessons, teachers) {
   const by = {};
   for (const l of lessons) {
-    if (l.state === 'upcoming' || l.state === 'open' || l.state === 'overdue') continue;
+    if (l.state === 'upcoming' || l.state === 'open' || l.state === 'overdue' || l.state === 'moved') continue;
     const t = by[l.teacherId] || (by[l.teacherId] = { teacherId: l.teacherId, name: (teachers.find(x => x.id === l.teacherId) || {}).name || 'No teacher assigned', lessons: 0, onTime: 0, late: 0, lateMin: 0, missed: 0, cancelled: 0, registers: 0 });
     if (l.state === 'cancelled') { t.cancelled++; continue; }
     t.lessons++;

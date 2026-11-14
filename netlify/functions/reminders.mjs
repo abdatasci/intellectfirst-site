@@ -2,7 +2,7 @@
 // (evening before and that morning) and tuition reminders (3 days before, due day, 3 days overdue; paused while a
 // receipt waits for confirmation). Saved as website notifications for students with an account, sent on Telegram to students who
 // connected the bot, and on WhatsApp to the student's (and parent's) phone number from IF Admin.
-import { S, doc, getLinks, uidsByStudent, dueReminders, reminderText, tgSend, tgToken, tg, tgSecret, addNote, ymd } from '../lib/bot-core.mjs';
+import { S, doc, getLinks, uidsByStudent, loadChanges, dueReminders, reminderText, tgSend, tgToken, tg, tgSecret, addNote, ymd } from '../lib/bot-core.mjs';
 import { waReady, waSend, waNumber } from '../lib/whatsapp.mjs';
 import { loadHomework } from '../lib/homework.mjs';
 import { migrate } from '../lib/migrate.mjs';
@@ -23,7 +23,7 @@ async function upgradeWebhook() {
     10 minutes ago and nobody checked in. Each sent once per lesson (flags in the lesson log). */
 async function lessonWatch(classes, links) {
   if (!tgToken()) return 0;
-  const date = todayStr(), now = Date.now(), lessons = lessonsOn(classes, date);
+  const date = todayStr(), now = Date.now(), lessons = lessonsOn(classes, date, await loadChanges()).filter(l => !l.cancelled && !l.movedTo);
   const soon = lessons.filter(l => { const t = Date.parse(l.at) - now; return t <= 20 * 60000 && t > -5 * 60000; });
   const late = lessons.filter(l => { const t = now - Date.parse(l.at); return t >= 10 * 60000 && now < Date.parse(l.endAt); });
   if (!soon.length && !late.length) return 0;
@@ -60,7 +60,8 @@ export default async () => {
   const now = new Date();
   const [students, classes, links, homework, receipts] = await Promise.all([doc('students'), doc('classes'), getLinks(), loadHomework(), S().get('receipts/pending', { type: 'json' }).then(x => x || {})]);
   const bySid = await uidsByStudent(links);
-  const due = dueReminders({ students: students.map(s => s.uid || !bySid[s.id] ? s : { ...s, uid: bySid[s.id] }), classes, homework, receipts, now });
+  const changes = await loadChanges();
+  const due = dueReminders({ changes, students: students.map(s => s.uid || !bySid[s.id] ? s : { ...s, uid: bySid[s.id] }), classes, homework, receipts, now });
   if (!due.length) return new Response('nothing due');
   const sentKey = `bot/sent/${ymd(now).slice(0, 7)}`;
   const sent = (await S().get(sentKey, { type: 'json' })) || {};

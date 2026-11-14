@@ -10,7 +10,7 @@ import { getUser, refreshSession, admin as idAdmin } from '@netlify/identity';
 import { roleForCode, isStaff, lockKeysFromCode, verifyLockKeys, isPrivateCode } from '../lib/codes.mjs';
 import { listReceipts, decideReceipt, receiptFile } from '../lib/receipts.mjs';
 import { loadHomework, addHomework, removeHomework, forClasses, clean as cleanHw, hwText } from '../lib/homework.mjs';
-import { getLinks, tgSend, tgToken, addNote, uidsByStudent, inClass } from '../lib/bot-core.mjs';
+import { getLinks, tgSend, tgToken, addNote, uidsByStudent, inClass, loadChanges, saveChanges } from '../lib/bot-core.mjs';
 import { waReady, waSend, waNumber } from '../lib/whatsapp.mjs';
 import { tier, isMember, TRACKS, paidActive, accessUntil, TRIAL_DAYS, ensureTrial } from '../lib/access.mjs';
 import seed from '../lib/school-seed.json';
@@ -120,6 +120,28 @@ async function linkByPhone(uid, profile) {
     if (hit && (!hit.uid || hit.uid === uid)) { hit.uid = uid; profile.teacherId = hit.id; await save('teachers', list); }
   }
   return profile;
+}
+/** A lesson was cancelled, moved or added: tell every active student of the class (website, Telegram, WhatsApp). */
+const LDAY = { en: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'], ru: ['вс', 'пн', 'вт', 'ср', 'чт', 'пт', 'сб'], kk: ['жс', 'дс', 'сс', 'ср', 'бс', 'жм', 'сб'] };
+const ldate = (d, lang) => { const x = new Date(d + 'T00:00:00Z'); return (LDAY[lang] || LDAY.en)[x.getUTCDay()] + ' ' + d.slice(8) + '.' + d.slice(5, 7); };
+const LCH = {
+  en: { cancel: (c, l, n) => `❌ Lesson cancelled: ${c.label}, ${ldate(l.date, 'en')} at ${l.start}.${n ? ' ' + n : ''}`, move: (c, l, t, n) => `🔁 Lesson moved: ${c.label} from ${ldate(l.date, 'en')} ${l.start} to ${ldate(t.date, 'en')} ${t.start}${t.end ? '–' + t.end : ''}.${n ? ' ' + n : ''}`, extra: (c, t, n) => `➕ Extra lesson: ${c.label} on ${ldate(t.date, 'en')} at ${t.start}${t.end ? '–' + t.end : ''}.${n ? ' ' + n : ''}`, back: (c, l) => `✅ The lesson is back on: ${c.label}, ${ldate(l.date, 'en')} at ${l.start}.` },
+  ru: { cancel: (c, l, n) => `❌ Урок отменён: ${c.label}, ${ldate(l.date, 'ru')} в ${l.start}.${n ? ' ' + n : ''}`, move: (c, l, t, n) => `🔁 Урок перенесён: ${c.label} с ${ldate(l.date, 'ru')} ${l.start} на ${ldate(t.date, 'ru')} ${t.start}${t.end ? '–' + t.end : ''}.${n ? ' ' + n : ''}`, extra: (c, t, n) => `➕ Дополнительный урок: ${c.label}, ${ldate(t.date, 'ru')} в ${t.start}${t.end ? '–' + t.end : ''}.${n ? ' ' + n : ''}`, back: (c, l) => `✅ Урок состоится: ${c.label}, ${ldate(l.date, 'ru')} в ${l.start}.` },
+  kk: { cancel: (c, l, n) => `❌ Сабақ болмайды: ${c.label}, ${ldate(l.date, 'kk')} ${l.start}.${n ? ' ' + n : ''}`, move: (c, l, t, n) => `🔁 Сабақ ауыстырылды: ${c.label}, ${ldate(l.date, 'kk')} ${l.start} → ${ldate(t.date, 'kk')} ${t.start}${t.end ? '–' + t.end : ''}.${n ? ' ' + n : ''}`, extra: (c, t, n) => `➕ Қосымша сабақ: ${c.label}, ${ldate(t.date, 'kk')} ${t.start}${t.end ? '–' + t.end : ''}.${n ? ' ' + n : ''}`, back: (c, l) => `✅ Сабақ болады: ${c.label}, ${ldate(l.date, 'kk')} ${l.start}.` }
+};
+async function tellLesson(c, textFor) {
+  const students = (await doc('students')).filter(s => inClass(c, s) && !/withdrawn|finished|frozen/i.test(s.status || ''));
+  const links = await getLinks(), prefs = (await S().get('waPrefs', { type: 'json' })) || {}, wa = waReady(), bySid = await uidsByStudent(links);
+  let n = 0;
+  for (const s0 of students) {
+    const s = { ...s0, uid: s0.uid || bySid[s0.id] || null }, l = s.uid && links[s.uid], lang = l?.lang || prefs[s.id]?.lang || 'ru';
+    try {
+      if (s.uid) await addNote(s.uid, { kind: 'lessonChange', text: textFor(l ? lang : 'en') });
+      if (l && tgToken()) { await tgSend(l.chatId, textFor(lang)); n++; }
+      else if (wa && !prefs[s.id]?.off) for (const num of [...new Set([s.phone, s.parentPhone].map(waNumber).filter(Boolean))]) { await waSend(num, 'IF Academy\n' + textFor(lang)); n++; }
+    } catch (e) { console.error('lesson change notify', s.id, e.message); }
+  }
+  return { students: students.length, sent: n };
 }
 /** New homework or test: tell every active student of the class (website note, Telegram, WhatsApp). */
 async function tellClass(c, item) {
@@ -485,8 +507,8 @@ export default async (req) => {
     const date = /^\d{4}-\d{2}-\d{2}$/.test(url.searchParams.get('date') || '') ? url.searchParams.get('date') : todayStr();
     const [mine, students, teachers] = await Promise.all([classesForTeacher(profile), doc('students'), doc('teachers')]);
     const own = profile.role === 'admin' && url.searchParams.get('all') !== '1' ? mine.filter(c => c.teacherId === profile.teacherId) : mine;
-    const L = await loadLog(date.slice(0, 7)), now = new Date(), cutoff = await checkSince();
-    const lessons = withEntry(lessonsOn(own, date), L, now, cutoff).map(l => ({ ...l, teacher: (teachers.find(t => t.id === l.teacherId) || {}).name || '',
+    const L = await loadLog(date.slice(0, 7)), now = new Date(), cutoff = await checkSince(), CH = await loadChanges();
+    const lessons = withEntry(lessonsOn(own, date, CH), L, now, cutoff).map(l => ({ ...l, teacher: (teachers.find(t => t.id === l.teacherId) || {}).name || '',
       students: students.filter(s => inClass(own.find(c => c.id === l.classId), s) && !/withdrawn|finished/i.test(s.status || '')).map(s => ({ sid: s.id, name: `${s.first} ${s.last}`.trim(), frozen: s.status === 'frozen' })).sort((a, b) => a.name.localeCompare(b.name)) }));
     const month = await monthLessons(profile.role === 'admin' ? mine.filter(c => c.teacherId === profile.teacherId) : mine, date.slice(0, 7), now);
     return json({ date, now: now.toISOString(), grace: GRACE_MIN, early: EARLY_MIN, lessons, me: punctuality(month, teachers)[0] || null });
@@ -496,7 +518,7 @@ export default async (req) => {
     const b = await req.json().catch(() => ({}));
     const [cid, date] = String(b.key || '').split('|');
     const c = (await classesForTeacher(profile)).find(x => x.id === cid); if (!c || !/^\d{4}-\d{2}-\d{2}$/.test(date || '')) return fail(404, 'lesson');
-    const lesson = lessonsOn([c], date).find(l => l.key === b.key); if (!lesson) return fail(404, 'lesson');
+    const lesson = lessonsOn([c], date, await loadChanges()).find(l => l.key === b.key); if (!lesson) return fail(404, 'lesson');
     const who = { uid, name: profile.name || '', role: profile.role };
     try {
       if (path === 'teach/checkin') return json({ entry: await checkIn(lesson, who) });
@@ -510,15 +532,70 @@ export default async (req) => {
     const students = (await doc('students')).filter(s => inClass(c, s));
     return json(await classAttendance(c, students));
   }
+  /* ---- calendar: a week of lessons; teachers (and the director) cancel, move, restore or add lessons ---- */
+  if (path === 'teach/calendar' && method === 'GET') {
+    if (!isStaff(profile.role)) return fail(403, 'staff');
+    const from = /^\d{4}-\d{2}-\d{2}$/.test(url.searchParams.get('from') || '') ? url.searchParams.get('from') : todayStr();
+    const days = Math.max(1, Math.min(31, +url.searchParams.get('days') || 7));
+    const [mine, teachers] = await Promise.all([classesForTeacher(profile), doc('teachers')]);
+    const who = url.searchParams.get('teacher') || '';
+    let list = profile.role === 'admin' ? (who === 'all' ? mine : mine.filter(c => c.teacherId === (who || profile.teacherId))) : mine;
+    const CH = await loadChanges(), now = new Date(), cutoff = await checkSince(), out = [];
+    const d0 = new Date(from + 'T00:00:00Z');
+    for (let i = 0; i < days; i++) {
+      const date = new Date(d0.getTime() + i * 864e5).toISOString().slice(0, 10);
+      out.push(...withEntry(lessonsOn(list, date, CH), await loadLog(date.slice(0, 7)), now, cutoff));
+    }
+    return json({ from, days, lessons: out.map(l => ({ ...l, teacher: (teachers.find(t => t.id === l.teacherId) || {}).name || '' })), classes: list.map(c => ({ id: c.id, label: c.label, schedule: c.schedule || '', room: c.room || '' })),
+      teachers: profile.role === 'admin' ? teachers.filter(t => mine.some(c => c.teacherId === t.id)).map(t => ({ id: t.id, name: t.name })) : [] });
+  }
+  if (path === 'teach/lesson-change' && method === 'POST') {
+    if (!isStaff(profile.role)) return fail(403, 'staff');
+    const b = await req.json().catch(() => ({}));
+    const okD = d => /^\d{4}-\d{2}-\d{2}$/.test(d || ''), okT = t => /^\d{1,2}:\d{2}$/.test(t || ''), pad = t => t ? t.padStart(5, '0') : '';
+    const note = String(b.note || '').replace(/\s+/g, ' ').trim().slice(0, 160), by = profile.name || '';
+    const CH = await loadChanges();
+    if (b.action === 'extra') {
+      const c = (await classesForTeacher(profile)).find(x => x.id === b.classId); if (!c) return fail(404, 'class');
+      if (!okD(b.date) || !okT(b.start)) return fail(400, 'time');
+      const x = { id: Date.now().toString(36) + Math.random().toString(36).slice(2, 5), classId: c.id, date: b.date, start: pad(b.start), end: okT(b.end) ? pad(b.end) : '', note, by, at: new Date().toISOString() };
+      CH.extra.push(x); await saveChanges(CH);
+      const told = b.notify === false ? null : await tellLesson(c, lang => LCH[lang].extra(c, x, note));
+      return json({ ok: true, told });
+    }
+    const [cid, date] = String(b.key || '').split('|');
+    const c = (await classesForTeacher(profile)).find(x => x.id === cid); if (!c || !okD(date)) return fail(404, 'lesson');
+    const l = lessonsOn([c], date, CH).find(x => x.key === b.key); if (!l) return fail(404, 'lesson');
+    const orig = l.kind === 'moved' ? l.from : l.key, [, od, os] = orig.split('|'), origL = { date: od, start: os };
+    let told = null;
+    if (b.action === 'cancel') {
+      if (l.kind === 'extra') CH.extra = CH.extra.filter(x => x.id !== l.extraId);
+      else { delete CH.moves[orig]; CH.cancel[orig] = { note, by, at: new Date().toISOString() }; }
+      await saveChanges(CH);
+      if (b.notify !== false) told = await tellLesson(c, lang => LCH[lang].cancel(c, { date: l.date, start: l.start }, note));
+    } else if (b.action === 'move') {
+      if (!okD(b.date) || !okT(b.start)) return fail(400, 'time');
+      const to = { date: b.date, start: pad(b.start), end: okT(b.end) ? pad(b.end) : (l.end || ''), note, by, at: new Date().toISOString() };
+      if (l.kind === 'extra') { const x = CH.extra.find(y => y.id === l.extraId); Object.assign(x, { date: to.date, start: to.start, end: to.end }); }
+      else if (to.date === od && to.start === os) { delete CH.moves[orig]; delete CH.cancel[orig]; }
+      else { delete CH.cancel[orig]; CH.moves[orig] = to; }
+      await saveChanges(CH);
+      if (b.notify !== false) told = await tellLesson(c, lang => LCH[lang].move(c, { date: l.date, start: l.start }, to, note));
+    } else if (b.action === 'restore') {
+      delete CH.cancel[orig]; delete CH.moves[orig]; await saveChanges(CH);
+      if (b.notify !== false) told = await tellLesson(c, lang => LCH[lang].back(c, origL));
+    } else return fail(400, 'action');
+    return json({ ok: true, told });
+  }
   /* the director/manager: every lesson of a day, who checked in and when, registers taken; teachers' punctuality this month */
   if (path === 'admin/lessons' && method === 'GET') {
     if (profile.role !== 'admin') return fail(403, 'admin');
     const date = /^\d{4}-\d{2}-\d{2}$/.test(url.searchParams.get('date') || '') ? url.searchParams.get('date') : todayStr();
     const [classes, teachers, students] = await Promise.all([doc('classes'), doc('teachers'), doc('students')]);
-    const now = new Date(), L = await loadLog(date.slice(0, 7)), cutoff = await checkSince();
+    const now = new Date(), L = await loadLog(date.slice(0, 7)), cutoff = await checkSince(), CH = await loadChanges();
     const count = cid => students.filter(s => inClass(classes.find(c => c.id === cid), s) && s.status === 'active').length;
     const roster = cid => students.filter(s => inClass(classes.find(c => c.id === cid), s) && !/withdrawn|finished/i.test(s.status || '')).map(s => ({ sid: s.id, name: `${s.first} ${s.last}`.trim(), frozen: s.status === 'frozen' })).sort((a, b) => a.name.localeCompare(b.name));
-    const lessons = withEntry(lessonsOn(classes, date), L, now, cutoff).map(l => ({ ...l, teacher: (teachers.find(t => t.id === l.teacherId) || {}).name || '', size: count(l.classId), students: roster(l.classId) }));
+    const lessons = withEntry(lessonsOn(classes, date, CH), L, now, cutoff).map(l => ({ ...l, teacher: (teachers.find(t => t.id === l.teacherId) || {}).name || '', size: count(l.classId), students: roster(l.classId) }));
     const month = await monthLessons(classes, date.slice(0, 7), now);
     return json({ date, now: now.toISOString(), grace: GRACE_MIN, since: cutoff, lessons, teachers: punctuality(month, teachers), missedList: month.filter(l => l.state === 'missed').map(l => ({ key: l.key, date: l.date, start: l.start, label: l.label, teacher: (teachers.find(t => t.id === l.teacherId) || {}).name || '' })).slice(-40).reverse() });
   }
@@ -527,7 +604,7 @@ export default async (req) => {
     const b = await req.json().catch(() => ({}));
     const [cid, date] = String(b.key || '').split('|');
     const c = (await doc('classes')).find(x => x.id === cid); if (!c || !/^\d{4}-\d{2}-\d{2}$/.test(date || '')) return fail(404, 'lesson');
-    const lesson = lessonsOn([c], date).find(l => l.key === b.key); if (!lesson) return fail(404, 'lesson');
+    const lesson = lessonsOn([c], date, await loadChanges()).find(l => l.key === b.key); if (!lesson) return fail(404, 'lesson');
     if (b.set) return json({ entry: await correct(lesson, b, { uid, name: profile.name || '' }) });
     return json({ entry: await setCancelled(lesson, !!b.cancelled, b.note) });
   }

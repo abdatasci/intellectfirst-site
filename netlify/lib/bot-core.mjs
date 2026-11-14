@@ -89,16 +89,55 @@ export function parseSchedule(text) {
 }
 export const scheduleText = slots => slots.map(s => DAY_NAMES[s.dow] + (s.start ? ' ' + s.start + (s.end ? '–' + s.end : '') : '')).join(', ');
 
-/** Upcoming lessons (with a start time) for the given classes, from `from` for `days` days. */
-export function upcomingLessons(classes, from = new Date(), days = 8) {
+/* ---------- lesson changes: cancelled, moved and extra lessons ----------
+   store "school" → lessonchanges: { cancel: {key: {note, by, at}}, moves: {key: {date, start, end, note, by, at}},
+   extra: [{ id, classId, date, start, end, note, by, at }] }. A lesson key is "<classId>|<date>|<HH:MM>"; a moved lesson
+   shows on its new day as "<classId>|<newDate>|<newStart>|m~<oldDate>~<oldStart>", an extra one as "…|x<id>". The website
+   calendar, check-in, registers, the bot's answers and every reminder read the same changes. */
+export const NO_CHANGES = { cancel: {}, moves: {}, extra: [] };
+export async function loadChanges() { const c = (await S().get('lessonchanges', { type: 'json' })) || {}; return { cancel: c.cancel || {}, moves: c.moves || {}, extra: c.extra || [] }; }
+export async function saveChanges(CH) {
+  const cut = ymd(new Date(Date.now() - 120 * 864e5));   // keep four months
+  for (const k of Object.keys(CH.cancel)) if (k.split('|')[1] < cut) delete CH.cancel[k];
+  for (const k of Object.keys(CH.moves)) if (k.split('|')[1] < cut && CH.moves[k].date < cut) delete CH.moves[k];
+  CH.extra = CH.extra.filter(x => x.date >= cut);
+  await S().setJSON('lessonchanges', CH);
+}
+const mkLesson = (c, date, start, end, key, extra) => {
+  const [y, m, d] = date.split('-').map(Number), [hh, mm] = start.split(':').map(Number), at = fromLocal(y, m - 1, d, hh, mm);
+  let endAt = new Date(at.getTime() + 90 * 60000);
+  if (end) { const [eh, em] = end.split(':').map(Number); const e = fromLocal(y, m - 1, d, eh, em); if (e > at) endAt = e; }
+  return { key, classId: c.id, group: c.group || '', label: c.label, room: c.room || '', teacherId: c.teacherId || '', date, start, end: end || '', at: at.toISOString(), endAt: endAt.toISOString(), ...(extra || {}) };
+};
+/** Every lesson of these classes on a local date (YYYY-MM-DD): the timetable with cancellations and moves, plus lessons
+    moved to this day and extra lessons. Cancelled lessons stay in the list with cancelled: true; a lesson moved away
+    stays with movedTo: {date, start, end} (the calendar shows both; reminders skip them). */
+export function dayLessons(classes, date, CH = NO_CHANGES) {
+  const [y, m, d] = date.split('-').map(Number), dow = new Date(Date.UTC(y, m - 1, d)).getUTCDay(), out = [];
+  for (const c of classes) {
+    for (const s of parseSchedule(c.schedule)) {
+      if (s.dow !== dow || !s.start) continue;
+      const key = `${c.id}|${date}|${s.start}`, mv = CH.moves[key], cn = CH.cancel[key];
+      out.push(mkLesson(c, date, s.start, s.end, key, { kind: 'timetable', ...(cn ? { cancelled: true, note: cn.note || '' } : {}), ...(mv && !cn ? { movedTo: { date: mv.date, start: mv.start, end: mv.end || '' }, note: mv.note || '' } : {}) }));
+    }
+    for (const [k, mv] of Object.entries(CH.moves)) {
+      const [cid, od, os] = k.split('|');
+      if (cid !== c.id || mv.date !== date || CH.cancel[k]) continue;
+      out.push(mkLesson(c, date, mv.start, mv.end, `${c.id}|${date}|${mv.start}|m~${od}~${os}`, { kind: 'moved', movedFrom: { date: od, start: os }, from: k, note: mv.note || '' }));
+    }
+    for (const x of CH.extra) if (x.classId === c.id && x.date === date) out.push(mkLesson(c, date, x.start, x.end, `${c.id}|${date}|${x.start}|x${x.id}`, { kind: 'extra', extraId: x.id, note: x.note || '' }));
+  }
+  return out.sort((a, b) => a.at.localeCompare(b.at));
+}
+/** Upcoming lessons that will take place (cancelled and moved-away ones left out), from `from` for `days` days. */
+export function upcomingLessons(classes, from = new Date(), days = 8, CH = NO_CHANGES) {
   const res = [], l0 = local(from);
   for (let i = 0; i <= days; i++) {
-    const day = new Date(Date.UTC(l0.getUTCFullYear(), l0.getUTCMonth(), l0.getUTCDate() + i));
-    for (const c of classes) for (const s of parseSchedule(c.schedule)) {
-      if (s.dow !== day.getUTCDay() || !s.start) continue;
-      const [hh, mm] = s.start.split(':').map(Number);
-      const at = fromLocal(day.getUTCFullYear(), day.getUTCMonth(), day.getUTCDate(), hh, mm);
-      if (at > from) res.push({ classId: c.id, label: c.label, room: c.room || '', at, start: s.start, end: s.end, date: ymd(at) });
+    const day = new Date(Date.UTC(l0.getUTCFullYear(), l0.getUTCMonth(), l0.getUTCDate() + i)).toISOString().slice(0, 10);
+    for (const x of dayLessons(classes, day, CH)) {
+      if (x.cancelled || x.movedTo) continue;
+      const at = new Date(x.at);
+      if (at > from) res.push({ ...x, at });
     }
   }
   return res.sort((a, b) => a.at - b.at);
@@ -140,7 +179,7 @@ export async function contextFor(uid) {
     const t = teachers.find(x => x.id === profile.teacherId);
     ctx.classes = profile.role === 'admin' ? classes : classes.filter(c => t && c.teacherId === t.id);
   }
-  ctx.lessons = upcomingLessons(ctx.classes, new Date(), 7).slice(0, 6);
+  ctx.lessons = upcomingLessons(ctx.classes, new Date(), 7, await loadChanges()).slice(0, 6);
   const now = local();
   const lines = [
     `Today: ${DAY_NAMES[now.getUTCDay()]} ${ymd(new Date())}, ${String(now.getUTCHours()).padStart(2, '0')}:${String(now.getUTCMinutes()).padStart(2, '0')} Kostanay time.`,
@@ -301,13 +340,13 @@ export const langOf = code => /^ru/i.test(code || '') ? 'ru' : /^kk/i.test(code 
 /* ---------- which reminders are due now ----------
    Run every 15 minutes. Lessons: 2 hours before (sent 60–125 min ahead) and the evening before (19:00–21:00 local).
    Payments (10:00–13:00 local): 3 days before, on the due day, 3 days after if still unpaid. Each reminder is sent once. */
-export function dueReminders({ students, classes, homework = [], receipts = {}, now = new Date() }) {
+export function dueReminders({ students, classes, homework = [], receipts = {}, changes = NO_CHANGES, now = new Date() }) {
   const out = [], l = local(now), hour = l.getUTCHours();
   for (const s of students) {
     if (/withdrawn|finished|frozen/i.test(s.status || '')) continue;
     if (!s.uid && !s.phone && !s.parentPhone) continue;   // no account and no phone: nobody to tell
     const mine = classes.filter(c => inClass(c, s));
-    for (const x of upcomingLessons(mine, now, 2)) {
+    for (const x of upcomingLessons(mine, now, 2, changes)) {
       const mins = (x.at - now) / 60000;
       if (mins > 60 && mins <= 125) out.push({ uid: s.uid || null, studentId: s.id, phones: [s.phone, s.parentPhone].filter(Boolean), kind: 'lesson2h', key: `l2:${x.classId}:${x.date}:${x.start}`, lesson: x });
       if (hour >= 19 && hour < 21 && x.date === ymd(new Date(now.getTime() + 86400000)))

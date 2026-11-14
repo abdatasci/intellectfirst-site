@@ -221,3 +221,25 @@ table.lessons tr.cancelled td{opacity:.55}
 .lfix{white-space:nowrap}
 .inp.sm{padding:5px 8px;font-size:13px;width:auto}
 tr.regrow-admin td{background:#fbf8f1}
+
+/* calendar */
+.calbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:10px 0 14px}
+.calbar .spacer{flex:1}
+.calgrid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px}
+@media(max-width:900px){.calgrid{grid-template-columns:1fr}}
+.calday{background:#fff;border:1px solid var(--line);border-radius:14px;padding:8px;min-height:120px;display:flex;flex-direction:column;gap:6px}
+.calday.today{border-color:var(--gold);box-shadow:0 0 0 2px rgba(201,152,58,.25)}
+.cdh{font-size:13px;color:var(--muted);padding:2px 4px}.cdh b{color:var(--navy)}
+.cnone{margin:4px}
+.cl{display:flex;flex-direction:column;align-items:flex-start;gap:1px;text-align:left;border:0;border-left:4px solid var(--navy);background:#eef2f8;border-radius:10px;padding:7px 9px;cursor:pointer;width:100%}
+.cl .ct{font-weight:800;font-size:13px}.cl .cn{font-weight:700;font-size:13.5px;color:var(--navy);line-height:1.2}
+.cl .cx{font-size:11.5px;color:var(--muted)}.cl .cs{font-size:11.5px;font-weight:700;margin-top:2px}
+.cl.done{border-color:#1d7a4c;background:#e7f4ec}.cl.missed{border-color:#b0372f;background:#fbecea}
+.cl.cancelled{border-color:#9aa3b5;background:#f1f1f1;opacity:.75}.cl.cancelled .cn{text-decoration:line-through}
+.cl.moved{border-color:#9aa3b5;background:#f6f6f6;opacity:.7}.cl.moved .cn{text-decoration:line-through}
+.cl.movedin{border-color:#3f7fd0;background:#e8f0fb}.cl.extra{border-color:#c98a1d;background:#fdf3e1}
+.cl.sel{outline:2px solid var(--gold)}
+.calform{margin:12px 0}
+.calacts{display:grid;grid-template-columns:1fr auto;gap:18px;align-items:end}
+@media(max-width:700px){.calacts{grid-template-columns:1fr}}
+.calform .row .inp{width:auto;flex:0 0 auto}
