@@ -81,7 +81,7 @@
     if (mine != null) return show('<div class="wait"><div class="pulse"></div><h2>Answer sent</h2><p>Wait for the others…</p></div>');
     var long = L.isLong(q.o);
     show('<div class="pq"><div class="meta"><span>Question ' + (d.i + 1) + ' / ' + d.n + '</span><span id="tl"></span></div>' +
-      '<div class="prompt">' + esc(q.p) + '</div>' +
+      '<div class="prompt">' + L.qhtml(q.p, esc) + '</div>' +
       '<div class="opts' + (long ? ' long' : '') + '">' + q.o.map(function (o, k) { return '<button class="opt o' + k + '" data-k="' + k + '"><span class="sh">' + L.SHAPES[k] + '</span>' + esc(o) + '</button>'; }).join('') + '</div></div>');
     view.querySelectorAll('.opt').forEach(function (b) {
       b.onclick = function () {
@@ -126,7 +126,7 @@
     if (R.i >= R.order.length) { R.order = L.shuffle(R.order); R.i = 0; }
     var q = R.qs[R.order[R.i]], long = L.isLong(q.o);
     show('<div class="pq"><div class="meta"><span id="rk"></span><span class="score-chip" id="rs">' + (power ? L.fmtN(myScore()) + ' ' + L.mode(S.st.mode).cur : R.s) + '</span></div>' + (S.st.mode === 'fish' && S.st.fz ? '<div class="fzline">🌊 FRENZY — catches ×2</div>' : '') +
-      '<div class="prompt">' + esc(q.p) + '</div><div class="lock" id="lk"></div>' +
+      '<div class="prompt">' + L.qhtml(q.p, esc) + '</div><div class="lock" id="lk"></div>' +
       '<div class="opts' + (long ? ' long' : '') + '">' + q.o.map(function (o, k) { return '<button class="opt o' + k + '" data-k="' + k + '"><span class="sh">' + L.SHAPES[k] + '</span>' + esc(o) + '</button>'; }).join('') + '</div></div>');
     raceTop();
     view.querySelectorAll('.opt').forEach(function (b) {
@@ -157,7 +157,43 @@
   function pick(a) { return a[Math.floor(Math.random() * a.length)]; }
   function others() { return ((S.st && S.st.all) || []).filter(function (e) { return e[0] !== S.pid; }); }
   function cont(ms) { setTimeout(function () { if (S.st && S.st.phase === 'race') vPlay(); }, ms); }
-  function reward() { var m = S.st.mode; if (m === 'gold') chests('gold'); else if (m === 'hack') chests('hack'); else if (m === 'fish') cast(); else vPlay(); }
+  function reward() {
+    var m = S.st.mode;
+    if (m === 'gold') chests('gold'); else if (m === 'hack') chests('hack'); else if (m === 'fish') cast(); else if (m === 'cash') cashEarn();
+    else if (m === 'tug' || m === 'boss' || m === 'balloon') quickHit(m);
+    else vPlay();
+  }
+  function quickHit(m) {
+    var streak = S.race ? S.race.streak : 0;
+    var t = m === 'tug' ? ['💪', 'Pull!', 'Your team pulls the rope'] : m === 'boss' ? ['⚔️', streak >= 6 ? 'Triple hit!' : streak >= 3 ? 'Double hit!' : 'Hit!', 'Mumbleclaw says ouch'] : ['🎈', streak >= 3 ? 'Up, up, up! +2 m' : 'Up you go! +1 m', 'Your balloon rises'];
+    show('<div class="res good"><div class="fishbig">' + t[0] + '</div><div class="big">' + t[1] + '</div><p>' + t[2] + (streak >= 3 ? ' · 🔥 ' + streak + ' in a row' : '') + '</p></div>');
+    L.sfx(m === 'boss' ? 'hack' : 'coin'); if (navigator.vibrate) navigator.vibrate(30);
+    setTimeout(vPlay, 650);
+  }
+  /* Cash Climb: coins per answer with upgrades bought in the shop */
+  var CASH = {
+    per: { name: 'Coins per answer', lv: [10, 25, 50, 100, 250, 500, 1000, 2500], cost: [0, 60, 250, 800, 2500, 7000, 20000, 60000] },
+    streak: { name: 'Streak bonus', lv: [0, 5, 15, 40, 100, 300], cost: [0, 100, 500, 1500, 5000, 15000] },
+    mult: { name: 'Multiplier', lv: [1, 1.5, 2, 3, 5], cost: [0, 300, 1500, 5000, 15000] }
+  };
+  function cashState() { return S.cash || (S.cash = { per: 0, streak: 0, mult: 0, bal: 0 }); }
+  function cashEarn() {
+    var C = cashState(), streak = S.race ? S.race.streak : 0;
+    var earn = Math.round((CASH.per.lv[C.per] + CASH.streak.lv[C.streak] * Math.min(streak, 10)) * CASH.mult.lv[C.mult]);
+    C.bal = Math.max(C.bal, myScore()) + earn;
+    S.bus.pub('p', 'gain', { pid: S.pid, k: 'add', v: earn }); L.sfx('coin');
+    cashShop('+' + L.fmtN(earn) + ' 💰');
+  }
+  function cashShop(msg) {
+    var C = cashState(), bal = Math.max(C.bal, myScore());
+    show('<div class="pw"><h2>' + (msg || '💰 Shop') + '</h2><p style="color:rgba(255,255,255,.75)">You have <b style="color:var(--gold)">' + L.fmtN(bal) + ' coins</b></p><div class="cashshop">' +
+      Object.keys(CASH).map(function (k) { var U = CASH[k], lv = C[k], nx = lv + 1 < U.lv.length ? lv + 1 : null; return '<button data-k="' + k + '"' + (nx == null || U.cost[nx] > bal ? ' disabled' : '') + '><div><b>' + U.name + '</b><br><small>Now: ' + (k === 'mult' ? '×' + U.lv[lv] : k === 'streak' ? '+' + U.lv[lv] + ' per streak' : U.lv[lv] + ' per answer') + (nx != null ? ' → ' + (k === 'mult' ? '×' + U.lv[nx] : U.lv[nx]) : '') + '</small></div><span>' + (nx == null ? 'MAX' : L.fmtN(U.cost[nx]) + ' 💰') + '</span></button>'; }).join('') +
+      '</div><p style="margin-top:16px"><button class="btn" id="nx">Next question →</button></p></div>');
+    view.querySelectorAll('.cashshop button').forEach(function (b) {
+      b.onclick = function () { var k = b.dataset.k, U = CASH[k], nx = C[k] + 1, cost = U.cost[nx]; if (cost == null || cost > Math.max(C.bal, myScore())) return; C[k] = nx; C.bal = Math.max(C.bal, myScore()) - cost; S.bus.pub('p', 'spend', { pid: S.pid, v: cost, item: U.name }); L.sfx('win'); cashShop('Upgraded! ✨'); };
+    });
+    $('#nx').onclick = vPlay;
+  }
   function outcome(m) {
     var r = Math.random(), cnt = S.race ? S.race.ok : 0, lvl = 1 + Math.floor(cnt / 6);
     if (m === 'hack') {
@@ -259,7 +295,7 @@
     var mine = (T.a || {})[S.pid] || [], col = L.HEX[S.team];
     show('<div class="pq mt"><div class="meta"><span class="teamtag" style="margin:0;padding:4px 12px;background:' + col + '">' + esc(d.teams[S.team]) + '</span><span id="mprog">' + dots(T.prog, d.goal) + '</span></div>' +
       (lt ? '<div class="mlast ' + (lt.ok ? 'ok' : 'no') + '">' + (lt.ok ? '✓ ' + esc(lt.by) + ' got it: “' + esc(lt.w) + '”' : '✗ Back to zero! The answer was “' + esc(lt.r) + '”') + '</div>' : '<div class="mlast">Only one teammate has the right answer. Talk!</div>') +
-      '<div class="prompt">' + esc(T.p || '') + '</div>' +
+      '<div class="prompt">' + L.qhtml(T.p || '', esc) + '</div>' +
       (mine.length ? '<div class="opts long">' + mine.map(function (o, k) { return '<button class="opt o' + (k % 4) + '" data-v="' + esc(o) + '"><span class="sh">' + L.SHAPES[k % 4] + '</span>' + esc(o) + '</button>'; }).join('') + '</div>' : '<p style="color:rgba(255,255,255,.75)">Your teammates hold the answers this time. Help them choose!</p>') + '</div>');
     view.querySelectorAll('.opt').forEach(function (b) {
       b.onclick = function () {
@@ -309,7 +345,7 @@
     document.body.classList.remove('light');
     show('<div class="pq"><div class="meta"><span>' + esc(L.genTitle(P)) + ' · ' + (R.i + 1) + ' / ' + R.qs.length + '</span><span class="score-chip">' + R.score + '</span></div>' +
       (R.note && R.i === 0 ? '<p style="font-size:14px;color:var(--gold)">' + esc(R.note) + '</p>' : '') +
-      '<div class="prompt">' + esc(q.p) + '</div>' +
+      '<div class="prompt">' + L.qhtml(q.p, esc) + '</div>' +
       '<div class="opts' + (long ? ' long' : '') + '">' + q.o.map(function (o, k) { return '<button class="opt o' + k + '" data-k="' + k + '"><span class="sh">' + L.SHAPES[k] + '</span>' + esc(o) + '</button>'; }).join('') + '</div><div id="fb"></div></div>');
     view.querySelectorAll('.opt').forEach(function (b) {
       b.onclick = function () {

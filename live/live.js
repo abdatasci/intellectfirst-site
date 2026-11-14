@@ -66,7 +66,7 @@
     }
     var bank = banks.filter(function (b) { return b.id === cfg.bank; })[0]; if (!bank) return [];
     var units = bank.units.filter(function (u) { return cfg.units.indexOf(u.id) >= 0; });
-    if (bank.kind === 'g') {
+    if (bank.kind === 'g' || bank.kind === 'y') {
       units.forEach(function (u) { u.q.forEach(function (q) { var right = q[1][q[2]], o = LIVE.shuffle(q[1]); qs.push({ p: q[0], o: o, a: o.indexOf(right), x: q[3] || '', k: 'g' }); }); });
     } else {
       var words = [], seen = {};
@@ -136,7 +136,16 @@
     gold: { name: 'Treasure Hunt', icon: '🪙', tag: 'Self-paced · chests', self: true, power: true, unit: 'gold', cur: '🪙', blurb: 'Every right answer opens a treasure chest: gold, double, triple… or steal from a classmate, or swap totals! Most gold wins.' },
     hack: { name: 'Cyber Heist', icon: '💻', tag: 'Self-paced · hacking', self: true, power: true, unit: 'crypto', cur: '₿', blurb: 'Students pick a secret password. Right answers mine crypto; hack classmates by guessing their password and steal their coins.' },
     fish: { name: 'Fishing Frenzy', icon: '🎣', tag: 'Self-paced · catches', self: true, power: true, unit: 'kg', cur: 'kg', blurb: 'Every right answer casts a line. Catch heavier and rarer fish; Frenzy time doubles every catch. The heaviest haul wins.' },
+    tug: { name: 'Tug of War', icon: '🪢', tag: '2 teams · great for kids', self: true, power: true, unit: 'pulls', cur: '💪', blurb: 'Two teams pull a rope on the big screen. Every right answer is a pull for your team. The first team to pull the rope over its line wins!' },
+    boss: { name: 'Boss Battle', icon: '👾', tag: 'Whole class together', self: true, power: true, unit: 'hits', cur: '⚔️', blurb: 'The whole class fights Mumbleclaw the Word Monster. Every right answer is a hit; streaks hit harder. Beat the monster before time runs out!' },
+    balloon: { name: 'Balloon Race', icon: '🎈', tag: 'Self-paced · great for kids', self: true, power: true, unit: 'm', cur: 'm', blurb: 'Every right answer lifts your hot-air balloon higher. The screen shows everyone floating up. Highest balloon wins!' },
+    cash: { name: 'Cash Climb', icon: '💰', tag: 'Self-paced · shop & upgrades', self: true, power: true, unit: 'coins', cur: '💰', blurb: 'Right answers earn coins. Spend them in the shop on upgrades: more coins per answer, streak bonuses and multipliers. Richest player wins!' },
     match: { name: 'Team Match', icon: '🤝', tag: 'Teams · talk together', team: true, unit: 'points', blurb: 'Played in teams. The answers are split across teammates\' phones, so they must talk to find the right one. A wrong answer sends the team back to zero!' }
+  };
+  /* a question that starts with a picture (emoji) shows the picture big: Young Learners questions */
+  LIVE.qhtml = function (p, esc) {
+    var t = String(p || ''), m = t.match(/^((?:\p{Extended_Pictographic}|\p{Emoji_Presentation}|\u200d|\ufe0f)+)\s*(.*)$/u);
+    return m ? '<span class="qpic">' + esc(m[1]) + '</span>' + esc(m[2]) : esc(t);
   };
   LIVE.mode = function (m) { return LIVE.MODES[m] || LIVE.MODES.classic; };
   LIVE.PASSWORDS = ['pancake', 'dragon42', 'lemonade', 'galaxy', 'tiger7', 'banana', 'rocket', 'snowball', 'pizza99', 'thunder', 'unicorn', 'cactus'];

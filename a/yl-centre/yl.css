@@ -1,0 +1,97 @@
+:root{--navy:#0B2250;--gold:#D4AE5A;--ink:#13203A;--muted:#56627D;--line:#DCE3EE;--bg:#FFF9EE;--lv:#2f9a68;--good:#1d7a4c;--bad:#b0372f}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.5 "Nunito","Segoe UI",system-ui,-apple-system,sans-serif}
+button{font:inherit;cursor:pointer}
+a{color:var(--navy)}
+#app{max-width:980px;margin:0 auto;padding:16px 16px 110px}
+.hero{display:flex;gap:18px;align-items:center;background:var(--lv);color:#fff;border-radius:26px;padding:26px 26px 22px;margin:8px 0 16px;position:relative;overflow:hidden;box-shadow:0 8px 0 rgba(0,0,0,.12)}
+.hero::after{content:"";position:absolute;right:-60px;top:-60px;width:220px;height:220px;border-radius:50%;background:rgba(255,255,255,.12)}
+.hero h1{font:800 clamp(30px,6vw,46px)/1.05 "Baloo 2","Nunito",system-ui,sans-serif;margin:4px 0 8px}
+.hero p{margin:0 0 6px;max-width:58ch;opacity:.95}
+.hero .other a{color:#fff;font-weight:800}
+.hero .mascot{font-size:88px;margin-left:auto;animation:bob 2.4s ease-in-out infinite;position:relative;z-index:1}
+.part{font-size:12.5px;letter-spacing:.14em;text-transform:uppercase;font-weight:800;opacity:.85}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.tabs button{border:0;border-radius:999px;padding:10px 18px;background:#fff;font-weight:800;color:var(--navy);box-shadow:0 3px 0 var(--line)}
+.tabs button.on{background:var(--navy);color:#fff;box-shadow:0 3px 0 #000}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
+.card{border:0;text-align:left;background:#fff;border-radius:22px;padding:18px;display:flex;flex-direction:column;gap:6px;box-shadow:0 5px 0 var(--line);transition:transform .12s}
+.card:hover{transform:translateY(-3px)}
+.card h3{font:800 22px "Baloo 2","Nunito",sans-serif;margin:0;color:var(--navy)}
+.card p{margin:0;color:var(--muted);font-size:15px}
+.card .tag{font-size:12px;font-weight:800;color:var(--lv);text-transform:uppercase;letter-spacing:.08em}
+.card .go{margin-top:auto;font-weight:800;color:var(--lv)}
+.card .gi{font-size:46px}
+.card.live .btn{align-self:flex-start;margin-top:8px}
+.hint{color:var(--muted);font-size:14.5px}
+.btn{border:0;border-radius:14px;padding:12px 20px;background:var(--lv);color:#fff;font-weight:800;box-shadow:0 4px 0 rgba(0,0,0,.2);text-decoration:none;display:inline-block}
+.btn.ghost{background:#fff;color:var(--navy);box-shadow:0 4px 0 var(--line)}
+.btn:disabled{opacity:.4}
+.linkbtn{border:0;background:none;color:var(--navy);text-decoration:underline;font-weight:700;padding:0}
+.testbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:6px 0 14px;font-weight:800;color:var(--navy)}
+.testbar .prog{margin-left:auto;display:flex;gap:5px}
+.testbar .prog i{width:22px;height:8px;border-radius:9px;background:var(--line)}
+.testbar .prog i.done{background:var(--lv)}.testbar .prog i.on{background:var(--gold)}
+.gscore{margin-left:auto;font-size:20px}
+.task,.result{background:#fff;border-radius:26px;padding:22px;box-shadow:0 6px 0 var(--line)}
+.task h2,.result h2{font:800 28px "Baloo 2","Nunito",sans-serif;margin:4px 0 2px;color:var(--navy)}
+.task .part,.result .part{color:var(--lv)}
+.how{color:var(--muted);margin:0 0 14px}
+.item{display:flex;gap:12px;padding:14px 0;border-top:2px dashed var(--line)}
+.item .no{flex:0 0 34px;height:34px;border-radius:50%;background:var(--lv);color:#fff;display:grid;place-items:center;font-weight:800}
+.item .ib{flex:1;min-width:0;display:flex;flex-direction:column;gap:10px;align-items:flex-start}
+.q{margin:0;font-size:19px;font-weight:700}
+.q .gap{color:var(--lv)}
+.bubble{background:#eef4ff;border-radius:16px;padding:10px 14px}
+.play{border:0;border-radius:999px;background:var(--gold);color:var(--navy);font-weight:800;padding:10px 18px;box-shadow:0 4px 0 #b08b37}
+.play.played{background:#f1e2b8}
+.em{font-size:44px;line-height:1}
+.big.em{font-size:88px}
+.picks{display:flex;gap:10px;flex-wrap:wrap}
+.pk{border:3px solid var(--line);background:#fff;border-radius:20px;padding:10px 16px;min-width:96px;display:flex;flex-direction:column;align-items:center;gap:4px}
+.pk small{font-weight:700;color:var(--muted)}
+.pk.sel,.w.sel,.col.sel{border-color:var(--lv);box-shadow:0 0 0 4px rgba(0,0,0,.08);transform:scale(1.04)}
+.words{display:flex;gap:10px;flex-wrap:wrap}.words.col1{flex-direction:column;align-items:stretch;width:100%}
+.w{border:3px solid var(--line);background:#fff;border-radius:16px;padding:10px 18px;font-weight:800;color:var(--navy);text-align:left}
+.yn{display:flex;gap:10px}
+.cols{display:flex;gap:8px;flex-wrap:wrap}
+.col{width:46px;height:46px;border-radius:50%;border:4px solid #fff;box-shadow:0 0 0 2px var(--line)}
+.col.sel{box-shadow:0 0 0 4px var(--lv)}
+.ans{border:3px solid var(--line);border-radius:14px;padding:10px 14px;font-size:20px;font-weight:700;width:min(320px,100%);background:#fffdf7}
+.ans.num{width:110px;text-align:center}
+.ans:focus{outline:none;border-color:var(--lv)}
+.slots{display:flex;gap:6px}
+.slots span{width:44px;height:52px;border-bottom:4px solid var(--navy);display:grid;place-items:center;font-size:28px;font-weight:800;text-transform:lowercase}
+.slots.good span{color:var(--good);border-color:var(--good)}.slots.bad span{color:var(--bad);border-color:var(--bad)}.slots.show span{color:var(--good)}
+.tiles{display:flex;gap:8px;flex-wrap:wrap}
+.tile{width:48px;height:52px;border:0;border-radius:12px;background:var(--gold);color:var(--navy);font-size:26px;font-weight:800;box-shadow:0 4px 0 #b08b37}
+.tile:disabled{opacity:.25}
+.nav{display:flex;justify-content:space-between;gap:10px;margin-top:18px}
+.result{text-align:center}
+.result .score{font:800 64px "Baloo 2","Nunito",sans-serif;color:var(--lv)}
+.shieldrow{display:flex;gap:12px;justify-content:center;align-items:center;margin:6px 0;font-size:24px}
+.shieldrow b{font-size:16px;min-width:150px;text-align:right}.shieldrow small{font-size:15px;color:var(--muted)}
+.shieldrow .off{opacity:.18}
+.rev{text-align:left;margin-top:16px;background:#fbf6ea;border-radius:16px;padding:12px 16px}
+.rev summary{font-weight:800;cursor:pointer}
+.rv{padding:8px 0;border-top:1px solid var(--line);font-size:15px}
+.bad{color:var(--bad)}.good{color:var(--good)}
+.mem{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.mc{aspect-ratio:1;border:0;border-radius:18px;background:var(--navy);color:transparent;font-size:16px;font-weight:800;box-shadow:0 4px 0 #000}
+.mc span{font-size:clamp(16px,4vw,36px)}
+.mc.up{background:#fff;color:var(--navy);box-shadow:0 4px 0 var(--line)}
+.mc.ok{background:#dff2e7}
+.sky{position:relative;height:420px;border-radius:20px;background:linear-gradient(#bfe3ff,#eaf6ff);overflow:hidden}
+.bal{position:absolute;bottom:-140px;width:22%;max-width:130px;aspect-ratio:.8;border:0;border-radius:50% 50% 46% 46%;background:hsl(var(--h),80%,62%);box-shadow:inset -10px -10px 0 rgba(0,0,0,.08);animation:rise 6s linear infinite}
+.bal::after{content:"";position:absolute;left:50%;bottom:-30px;width:2px;height:30px;background:#777}
+.bal span{font-size:44px}
+.bal.pop{animation:pop .3s forwards}.bal.shake{animation:shake .4s}
+.done{font:800 54px "Baloo 2","Nunito",sans-serif;text-align:center;color:var(--lv);padding:40px 0}
+.done small{font-size:20px;color:var(--muted)}
+.timer{font:800 40px "Baloo 2","Nunito",sans-serif;color:var(--bad)}
+.pinf{display:flex;gap:8px;margin-top:8px}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes rise{from{bottom:-140px}to{bottom:110%}}
+@keyframes pop{to{transform:scale(1.6);opacity:0}}
+@keyframes shake{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+@media(max-width:600px){.hero .mascot{display:none}.big.em{font-size:72px}.mem{grid-template-columns:repeat(4,1fr);gap:6px}.shieldrow b{min-width:0}}

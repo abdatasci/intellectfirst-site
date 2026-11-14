@@ -6,6 +6,7 @@
   var BANKS = null, ROOMS = null, H = null, BUS = null, ST = null, WATCH = null, timers = {};
   var CFG = Object.assign({ source: 'gen', level: 'B1', focus: 'mix', topic: '', ai: true, bank: 'v-A2', units: [], qtype: 'def', count: '15', mode: 'classic', time: 20, race: 5, teams: 0, custom: '', title: '' }, L.ls.get('live.cfg') || {});
 
+  if (qsp.get('bank')) { var pb = qsp.get('bank'); CFG.bank = pb; CFG.source = /^y-/.test(pb) ? 'y' : /^g-/.test(pb) ? 'g' : 'v'; CFG.units = []; if (CFG.source === 'y' && ['classic', 'race', 'tug', 'boss', 'balloon'].indexOf(CFG.mode) < 0) CFG.mode = 'tug'; }
   function stage(on) { document.body.classList.toggle('light', !on); $('#fs').hidden = !on; $('#back').hidden = !!on; }
   $('#fs').onclick = function () { if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen().catch(function () {}); };
   function joinUrl(pin) { return location.origin + '/live/?pin=' + pin + (L.local ? '&bus=local' : ''); }
@@ -27,7 +28,7 @@
     if (!ROOMS.ready) h += '<div class="note"><b>Live games need one setting before the first game.</b> Create a free account at ably.com, copy the API key from your app\'s <i>API Keys</i> tab (it looks like <code>xVLyHw.A-pwh7w:…</code>) and add it in Netlify → Project configuration → Environment variables as <code>ABLY_API_KEY</code>. Then redeploy the site.</div>';
     if (resume) h += '<div class="note">Your game <b>' + esc(resume.title) + '</b> (PIN ' + resume.pin + ') is still open. <button class="linkbtn" id="resume">Resume it</button> · <button class="linkbtn" id="drop">Close it</button></div>';
     h += '<div class="grid2"><div class="panel"><h2>Start a live game</h2><p class="sub">Students join on their phones with the QR code or the PIN. You run the game from this screen; project it in class.</p>' +
-      '<label class="f">Questions from</label><div class="seg" id="src">' + [['gen', 'General English ✨'], ['v', 'Book vocabulary'], ['g', 'Grammar'], ['custom', 'My own questions']].map(function (s) { return '<button data-v="' + s[0] + '" class="' + (CFG.source === s[0] ? 'on' : '') + '">' + s[1] + '</button>'; }).join('') + '</div>' +
+      '<label class="f">Questions from</label><div class="seg" id="src">' + [['gen', 'General English ✨'], ['v', 'Book vocabulary'], ['g', 'Grammar'], ['y', 'Young Learners 🧸'], ['custom', 'My own questions']].map(function (s) { return '<button data-v="' + s[0] + '" class="' + (CFG.source === s[0] ? 'on' : '') + '">' + s[1] + '</button>'; }).join('') + '</div>' +
       '<div id="srcbox"></div>' +
       '<label class="f">Game mode</label><div class="modes" id="mode">' + Object.keys(L.MODES).map(function (k) { var m = L.MODES[k]; return '<button data-v="' + k + '" class="' + (CFG.mode === k ? 'on' : '') + '"><span class="mi">' + m.icon + '</span><b>' + esc(m.name) + '</b><small>' + esc(m.tag) + '</small></button>'; }).join('') + '</div>' +
       '<p class="mini" id="modehelp" style="margin-top:6px"></p>' +
@@ -76,7 +77,7 @@
     if (!bankOf(CFG.bank) || bankOf(CFG.bank).kind !== CFG.source) CFG.bank = list[0].id;
     var b = bankOf(CFG.bank);
     if (!CFG.units.length || !CFG.units.every(function (u) { return b.units.some(function (x) { return x.id === u; }); })) CFG.units = [b.units[0].id];
-    box.innerHTML = '<label class="f">' + (CFG.source === 'g' ? 'Grammar set' : 'Book') + '</label><select class="inp" id="bank">' + list.map(function (x) { return '<option value="' + x.id + '"' + (x.id === CFG.bank ? ' selected' : '') + '>' + esc(x.name) + '</option>'; }).join('') + '</select>' +
+    box.innerHTML = '<label class="f">' + (CFG.source === 'g' ? 'Grammar set' : CFG.source === 'y' ? 'Level' : 'Book') + '</label><select class="inp" id="bank">' + list.map(function (x) { return '<option value="' + x.id + '"' + (x.id === CFG.bank ? ' selected' : '') + '>' + esc(x.name) + '</option>'; }).join('') + '</select>' +
       '<label class="f">Units <button class="linkbtn" id="allu" style="text-transform:none;letter-spacing:0;margin-left:8px">select all</button></label><div class="units">' + b.units.map(function (u) { return '<label><input type="checkbox" value="' + esc(u.id) + '"' + (CFG.units.indexOf(u.id) >= 0 ? ' checked' : '') + '> <b>' + esc(u.id === 'all' ? '' : u.id) + '</b> ' + esc(u.t) + '<small>' + (u.w || u.q).length + '</small></label>'; }).join('') + '</div>' +
       (CFG.source === 'v' ? '<label class="f">Question type</label><div class="seg" id="qtype">' + [['def', 'Definition → word'], ['word', 'Word → meaning'], ['ru', 'Russian → English'], ['mix', 'Mixed']].map(function (s) { return '<button data-v="' + s[0] + '" class="' + (CFG.qtype === s[0] ? 'on' : '') + '">' + s[1] + '</button>'; }).join('') + '</div>' : '') +
       '<label class="units" style="display:flex;gap:10px;align-items:flex-start;margin-top:14px;max-height:none;cursor:pointer"><input type="checkbox" id="aitog"' + (CFG.ai ? ' checked' : '') + ' style="margin-top:4px"> <span><b>✨ AI writes fresh questions from these units</b><br><span class="mini">New sentences and question types every game (gap-fills, synonyms, collocations, dialogues) with a short explanation after each answer. Untick to use the plain word list.</span></span></label>' +
@@ -174,6 +175,7 @@
   function teamSizes() { var s = []; for (var t = 0; t < H.teamsN; t++) s.push(0); list().forEach(function (p) { if (p.team >= 0) s[p.team]++; }); return s; }
   function teamBoard() {
     if (!H.teamsN) return [];
+    if (H.mode === 'tug' && H.tug) return [0, 1].map(function (t) { return [L.TEAMS[t], H.tug[t], t, members(t).length, 0]; }).sort(function (a, b) { return b[1] - a[1]; });
     if (H.mode === 'match' && H.tm) return H.tm.map(function (T, t) { return [L.TEAMS[t], T.prog, t, members(t).length, T.best]; }).sort(function (a, b) { return b[1] - a[1] || b[4] - a[4]; });
     var tot = [], n = [];
     for (var t = 0; t < H.teamsN; t++) { tot.push(0); n.push(0); }
@@ -227,11 +229,26 @@
   }
   function power(name, d, pid, p) {
     var cur = M_UNIT(), T = d.to && H.players[d.to], live = T && !T.kicked && d.to !== pid;
-    if (name === 'res') { p.answered++; if (d.ok) { p.correct++; p.streak++; } else p.streak = 0; scheduleRender(); return; }
+    if (name === 'res') {
+      p.answered++; if (d.ok) { p.correct++; p.streak++; } else p.streak = 0;
+      if (d.ok && H.mode === 'tug' && p.team >= 0 && H.tug) {
+        H.tug[p.team]++; p.score++;
+        if (Math.abs(H.tug[0] - H.tug[1]) >= H.tugGoal) { H.tugWin = H.tug[0] > H.tug[1] ? 0 : 1; feed('🪢 ' + L.TEAMS[H.tugWin] + ' pulled the rope over the line!', null, null, 'big'); save(); return finish(); }
+      }
+      if (d.ok && H.mode === 'boss' && H.boss && H.boss.hp > 0) {
+        var dmg = 1 + (p.streak >= 3 ? 1 : 0) + (p.streak >= 6 ? 1 : 0);
+        H.boss.hp = Math.max(0, H.boss.hp - dmg); p.score += dmg;
+        if (dmg >= 3 && p.streak % 3 === 0) feed('⚡ ' + p.name + ' hit Mumbleclaw for ' + dmg + '!', pid, null, 'big');
+        if (H.boss.hp <= 0) { H.bossWin = true; feed('🏆 The class beat Mumbleclaw!', null, null, 'big'); save(); return finish(); }
+      }
+      if (d.ok && H.mode === 'balloon') { p.score += p.streak >= 3 ? 2 : 1; }
+      scheduleRender(); return;
+    }
+    if (name === 'spend' && H.mode === 'cash') { var c = Math.round(+d.v || 0); if (c > 0 && c <= p.score) { p.score -= c; if (d.item) feed(p.name + ' bought ' + String(d.item).slice(0, 30) + '!', pid, null, ''); } scheduleRender(); return; }
     if (name === 'pw') { var pw = String(d.pw || '').toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 14); if (pw.length >= 3) { p.pw = pw; p.pwo = pwOptions(pw); } scheduleRender(); return; }
     if (name === 'gain') {
       var v = +d.v || 0, before = p.score;
-      if (d.k === 'add') p.score += Math.max(0, Math.min(v, H.mode === 'fish' ? 400 : 1000));
+      if (d.k === 'add') p.score += Math.max(0, Math.min(v, H.mode === 'fish' ? 400 : H.mode === 'cash' ? 50000 : 1000));
       else if (d.k === 'mul' && (v === 2 || v === 3)) p.score *= v;
       else if (d.k === 'lose' && v > 0 && v <= .5) p.score = Math.round(p.score * (1 - v));
       p.score = Math.max(0, Math.min(Math.round(p.score), 9999999));
@@ -315,6 +332,8 @@
       s.feed = H.feed.slice(-6); if (H.mode === 'hack') s.haspw = rk.filter(function (p) { return p.pw; }).map(function (p) { return p.pid; });
       if (H.mode === 'fish') s.fz = Math.max(0, H.fzEnd - Date.now());
     }
+    if (H.tug) { s.tug = H.tug; s.tugGoal = H.tugGoal; s.tugWin = H.tugWin; }
+    if (H.boss) { s.boss = H.boss; s.bossWin = !!H.bossWin; }
     if (H.tm) { s.goal = H.goal; s.tm = H.tm.map(function (T) { return { prog: T.prog, best: T.best, seq: T.seq, p: T.p, a: T.a, last: T.last, won: !!T.won }; }); }
     return s;
   }
@@ -332,6 +351,12 @@
     if (!activeCount()) return;
     if (!L.local) L.api('state', { pin: H.pin, status: 'playing', players: H.order.length }).catch(function () {});
     if (H.mode === 'match') return startMatch();
+    var act0 = H.order.filter(function (pid) { return !H.players[pid].kicked; });
+    if (H.mode === 'tug') {
+      if (H.teamsN !== 2) { H.teamsN = 2; L.shuffle(act0).forEach(function (pid, i) { H.players[pid].team = i % 2; }); }
+      H.tug = [0, 0]; H.tugGoal = Math.max(12, Math.min(40, act0.length * 3));
+    }
+    if (H.mode === 'boss') { var hp = Math.max(30, act0.length * 14); H.boss = { hp: hp, max: hp }; }
     if (L.mode(H.mode).self) { H.phase = 'race'; H.raceId = Date.now(); H.raceEnd = Date.now() + H.race * 60000; save(); sendQs(); render(); push(true); raceLoop(); }
     else next();
   }
@@ -420,13 +445,30 @@
       var rv = s.reveal, tot = Math.max(1, s.answered || 0);
       h += '<div class="qhead"><span class="num">Question ' + (s.i + 1) + ' of ' + s.n + '</span><span class="spacer"></span>' +
         (s.phase === 'q' ? '<span class="pill">' + s.answered + ' / ' + s.count + ' answered</span><div class="timer" id="timer" style="--p:' + (s.left / s.dur * 100) + '%"><span>' + Math.ceil(s.left / 1000) + '</span></div>' : '<span class="pill">' + s.answered + ' answered</span>') + '</div>' +
-        '<div class="qtext">' + esc(s.q.p) + '</div>' +
+        '<div class="qtext">' + L.qhtml(s.q.p, esc) + '</div>' +
         '<div class="answers">' + s.q.o.map(function (o, k) {
           var cls = rv ? (k === rv.a ? ' right' : ' dim') : '';
           return '<div class="opt o' + k + cls + '"><span class="sh">' + L.SHAPES[k] + '</span>' + esc(o) + (rv ? '<span class="cnt">' + (k === rv.a ? '✓ ' : '') + rv.counts[k] + '</span><span class="bar" style="width:' + (rv.counts[k] / tot * 100) + '%"></span>' : '') + '</div>';
         }).join('') + '</div>' +
         '<div class="expl">' + (rv && rv.x ? esc(rv.x) : '') + '</div>';
       if (host) h += '<div class="ctrl" style="justify-content:flex-end">' + (s.phase === 'q' ? '<button class="btn ghost sm" id="skip">Show answer now</button>' : '<button class="btn big" id="toboard">Scores →</button>') + '</div>';
+    } else if (s.phase === 'race' && (s.mode === 'tug' || s.mode === 'boss' || s.mode === 'balloon')) {
+      var M2 = L.mode(s.mode);
+      h += '<div class="board kid"><h2>' + M2.icon + ' ' + esc(s.title) + '</h2><div style="text-align:center;margin-bottom:10px"><span class="pill" style="font-size:22px">⏱ <span id="rtime">' + fmt(s.left) + '</span></span></div>';
+      if (s.mode === 'tug' && s.tug) {
+        var diff = s.tug[0] - s.tug[1], pos = Math.max(-1, Math.min(1, diff / s.tugGoal)) * 40;   // % from the centre
+        h += '<div class="tugwrap"><div class="tugteam" style="--c:' + L.HEX[0] + '"><b>' + esc(s.teams[0] || 'Team 1') + '</b><span>' + s.tug[0] + ' pulls</span></div><div class="tugfield"><div class="tugline l"></div><div class="tugline r"></div><div class="tugrope" style="transform:translateX(' + (-pos) + '%)"><span class="pl l">🧒🧒🧒</span><span class="knot">🎀</span><span class="pl r">🧒🧒🧒</span></div></div><div class="tugteam" style="--c:' + L.HEX[1] + '"><b>' + esc(s.teams[1] || 'Team 2') + '</b><span>' + s.tug[1] + ' pulls</span></div></div><p class="mini" style="text-align:center;color:rgba(255,255,255,.7)">Pull the knot ' + s.tugGoal + ' pulls past the other team to win.</p>';
+      } else if (s.mode === 'boss' && s.boss) {
+        var pc = Math.round(s.boss.hp / s.boss.max * 100);
+        h += '<div class="bosswrap"><div class="monster' + (pc < 35 ? ' weak' : '') + '">👾</div><div class="bossname">Mumbleclaw the Word Monster</div><div class="hpbar"><i style="width:' + pc + '%"></i><span>' + s.boss.hp + ' / ' + s.boss.max + ' HP</span></div></div>';
+        h += '<div class="hitters">' + s.board.slice(0, 8).map(function (p, i) { return '<span>' + (i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '⚔️') + ' ' + esc(p[0]) + ' <b>' + p[1] + '</b></span>'; }).join('') + '</div>';
+      } else {
+        var top2 = s.board.slice(0, 10), mx = Math.max(10, top2.length ? top2[0][1] : 10);
+        h += '<div class="sky2">' + top2.map(function (p, i) { return '<div class="bl" style="left:' + (4 + i * 9.5) + '%;bottom:' + (4 + p[1] / mx * 72) + '%;--h:' + (i * 37) + 'deg"><span class="bb">🎈</span><b>' + esc(p[0]) + '</b><small>' + p[1] + ' m</small></div>'; }).join('') + '<div class="clouds">☁️ ☁️ ☁️</div></div>';
+      }
+      if (s.feed && s.feed.length) h += '<div class="kidfeed">' + s.feed.slice(-3).reverse().map(function (e) { return '<span>' + esc(e.t) + '</span>'; }).join('') + '</div>';
+      h += '</div>';
+      if (host) h += '<div class="ctrl" style="justify-content:flex-end"><button class="btn ghost sm" id="endnow">End game</button></div>';
     } else if (s.phase === 'board' || s.phase === 'race') {
       var race = s.phase === 'race', MM = L.mode(s.mode), cur = MM.power ? ' ' + MM.cur : '', top = s.board.slice(0, race ? (MM.power ? 10 : 12) : 6), max = Math.max(1, s.board.length ? s.board[0][1] : 1);
       if (MM.power) h += '<div class="pgrid">';
@@ -446,8 +488,8 @@
       }).join('') + '</div>';
       if (host) h += '<div class="ctrl" style="justify-content:flex-end"><button class="btn ghost sm" id="reround" title="Use this if a team is stuck, e.g. a student left">New question for every team</button><button class="btn ghost sm" id="endnow">End game</button></div>';
     } else if (s.phase === 'end') {
-      var b = s.board, order = [1, 0, 2], hts = [150, 200, 115];
-      h += '<div class="board"><h2>' + (s.tboard.length ? esc(s.tboard[0][0]) + ' wins!' : 'Winners') + '</h2><div class="podium">' + order.map(function (k) { var p = b[k]; return p ? '<div class="p"><b>' + esc(p[0]) + '</b><small>' + (L.mode(s.mode).power ? L.fmtN(p[1]) + ' ' + L.mode(s.mode).unit : p[1] + ' points') + '</small><div class="blk" style="height:' + hts[k] + 'px">' + (k + 1) + '</div></div>' : ''; }).join('') + '</div>';
+      var b = s.board, order = [1, 0, 2], hts = [210, 150, 110];
+      h += '<div class="board"><h2>' + (s.mode === 'boss' ? (s.bossWin ? '🏆 The class beat Mumbleclaw!' : '👾 Mumbleclaw got away… next time!') : s.tboard.length ? esc(s.tboard[0][0]) + ' wins!' : 'Winners') + '</h2><div class="podium">' + order.map(function (k) { var p = b[k]; return p ? '<div class="p"><b>' + esc(p[0]) + '</b><small>' + (L.mode(s.mode).power ? L.fmtN(p[1]) + ' ' + L.mode(s.mode).unit : p[1] + ' points') + '</small><div class="blk" style="height:' + hts[k] + 'px">' + (k + 1) + '</div></div>' : ''; }).join('') + '</div>';
       if (s.tboard.length) h += s.tboard.map(function (t, i) { return '<div class="brow t" style="--c:' + L.HEX[t[2]] + '"><span class="r">' + (i + 1) + '</span><span class="n">' + esc(t[0]) + '</span><span class="s">' + t[1] + (s.mode === 'match' ? ' in a row' : ' avg') + '</span></div>'; }).join('');
       h += '<table class="tbl" style="margin-top:14px"><thead><tr><th>#</th><th>Player</th><th>Points</th><th>Correct</th></tr></thead><tbody>' + b.map(function (p, i) { return '<tr><td>' + (i + 1) + '</td><td>' + esc(p[0]) + (p[2] >= 0 && s.teams.length ? ' <small style="color:' + teamColor(p[2]) + '">' + esc(s.teams[p[2]]) + '</small>' : '') + '</td><td>' + p[1] + '</td><td>' + p[3] + ' / ' + p[4] + '</td></tr>'; }).join('') + '</tbody></table></div>';
       if (host) h += '<div class="ctrl" style="justify-content:center"><span id="savedmsg" style="opacity:.75">' + (L.local ? '' : H.saved ? 'Scores saved to Recent results.' : 'Saving scores…') + '</span><button class="btn big" id="again">New game</button></div>';

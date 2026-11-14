@@ -49,7 +49,8 @@
     ['Start here', [['IF Placement Test', 'Adaptive, free: grammar, vocabulary, reading, listening, writing and speaking, all marked by AI', '/a/placement-test/', 0]]],
     ['English File', [['Elementary · A1', 'Entry, file, progress and end-of-course tests', '/a/ef-a1-tests/', 1], ['Pre-intermediate · A2', 'Entry, file, progress and end-of-course tests', '/a/ef-a2-tests/', 1], ['Intermediate · B1', 'Entry, file, progress and end-of-course tests', '/a/ef-b1-tests/', 1], ['Upper-intermediate · B2', 'Entry, file, progress and end-of-course tests', '/a/ef-b2-tests/', 1], ['Advanced · C1', 'Entry, file, progress and end-of-course tests', '/a/ef-c1-tests/', 1]]],
     ['English for Teenagers', [['B1–B2', '46 tests: entry, unit, part, progress and end-of-course', '/a/teens-b1-tests/', 1], ['B2–C1', 'Entry, unit, part, progress and end-of-course tests', '/a/teens-b2-tests/', 1]]],
-    ['Cambridge exams', [['Young Learners · Starters, Movers, Flyers', 'Practice tests for ages 6–12', '/a/yl-tests/', 1], ['PET · B1 Preliminary', 'Exam-style tests with every part', '/a/pet-tests/', 1]]],
+    ['Young Learners', [['Pre A1 Starters', 'Ages 6–8 · 3 practice tests with listening, picture games and live games', '/a/starters-tests/', 0], ['A1 Movers', 'Ages 7–10 · 3 practice tests, games and live games', '/a/movers-tests/', 0], ['A2 Flyers', 'Ages 9–12 · 3 practice tests, games and live games', '/a/flyers-tests/', 0], ['Young Learners Test Centre', 'More practice tests for all three levels', '/a/yl-tests/', 1]]],
+    ['Cambridge exams', [['PET · B1 Preliminary', 'Exam-style tests with every part', '/a/pet-tests/', 1]]],
     ['IELTS', [['IELTS Centre', 'Mock tests, Writing and Speaking with live AI band scores', '/a/ielts/', 0]]]
   ];
   function centres() {
