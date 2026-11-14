@@ -218,3 +218,6 @@ a.btn.tgbtn{text-decoration:none}
 .attgrid td.m.UA{color:#b0372f;font-weight:700;background:#f9e2df}.attgrid td.m.EA{color:#56627d}
 table.lessons tr.missed td,table.lessons tr.overdue td{background:#fdf0ee}
 table.lessons tr.cancelled td{opacity:.55}
+.lfix{white-space:nowrap}
+.inp.sm{padding:5px 8px;font-size:13px;width:auto}
+tr.regrow-admin td{background:#fbf8f1}

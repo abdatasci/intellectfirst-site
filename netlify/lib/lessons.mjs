@@ -32,16 +32,18 @@ export const loadLog = async month => (await S().get('lessonlog/' + month, { typ
 const saveLog = (month, L) => S().setJSON('lessonlog/' + month, L);
 
 /** What a lesson looks like now: upcoming / open (check-in possible) / late (started, no check-in) / missed / done. */
-export function status(lesson, e, now = new Date()) {
+export function status(lesson, e, now = new Date(), cutoff = null) {
   const at = new Date(lesson.at), end = new Date(lesson.endAt);
   if (e?.cancelled) return 'cancelled';
   if (e?.checkIn) return e.lateMin > GRACE_MIN ? 'in-late' : 'in';
+  if (e?.noShow) return 'missed';
+  if (cutoff && at < new Date(cutoff)) return 'in';   // before check-in existed: counted as on time
   if (now < at.getTime() - EARLY_MIN * 60000) return 'upcoming';
   if (now < at) return 'open';
   if (now <= end) return 'overdue';
   return 'missed';
 }
-export const withEntry = (lessons, L, now) => lessons.map(l => { const e = L[l.key] || null; return { ...l, entry: e, state: status(l, e, now) }; });
+export const withEntry = (lessons, L, now, cutoff) => lessons.map(l => { const e = L[l.key] || null; const st = status(l, e, now, cutoff); return { ...l, entry: e, state: st, auto: st === 'in' && !e?.checkIn }; });
 
 export async function checkIn(lesson, who, now = new Date()) {
   const at = new Date(lesson.at), end = new Date(lesson.endAt);
@@ -88,18 +90,34 @@ export async function setCancelled(lesson, cancelled, note) {
   await saveLog(month, L); return e;
 }
 
-/** The day check-in started (set the first time it is used): earlier lessons are not counted as missed. */
+/** When check-in started (set the first time it is used): every lesson that started earlier counts as on time. */
 export async function since() {
-  let d = await S().get('lessons/since'); if (d) return String(d);
-  d = today(); await S().set('lessons/since', d); return d;
+  let d = await S().get('lessons/since');
+  if (d && String(d).length > 10) return String(d);
+  d = new Date().toISOString(); await S().set('lessons/since', d); return d;
+}
+/** The director corrects a lesson: set = on | late (lateMin) | missed | cancelled | clear. */
+export async function correct(lesson, b, who) {
+  const month = lesson.date.slice(0, 7), L = await loadLog(month);
+  const e = L[lesson.key] || (L[lesson.key] = { classId: lesson.classId, label: lesson.label, date: lesson.date, start: lesson.start, end: lesson.end, teacherId: lesson.teacherId });
+  const at = new Date(lesson.at), by = { uid: who.uid, name: (who.name || 'Admin') + ' (corrected)' };
+  delete e.noShow; e.cancelled = false;
+  if (b.set === 'on') { e.checkIn = at.toISOString(); e.lateMin = 0; e.by = by; }
+  else if (b.set === 'late') { const m = Math.max(GRACE_MIN + 1, Math.min(240, Math.round(+b.lateMin || 0))) || GRACE_MIN + 1; e.checkIn = new Date(at.getTime() + m * 60000).toISOString(); e.lateMin = m; e.by = by; }
+  else if (b.set === 'missed') { delete e.checkIn; delete e.lateMin; delete e.by; e.noShow = true; }
+  else if (b.set === 'cancelled') { e.cancelled = true; }
+  else if (b.set === 'clear') { delete e.checkIn; delete e.lateMin; delete e.by; }
+  if (b.note != null) e.note = String(b.note || '').slice(0, 200);
+  e.correctedAt = new Date().toISOString(); e.correctedBy = who.name || '';
+  await saveLog(month, L); return e;
 }
 /** All timetabled lessons from the first of `month` (or the start of check-in) up to now, with their log entries. */
 export async function monthLessons(classes, month, now = new Date()) {
-  const L = await loadLog(month), [y, m] = month.split('-').map(Number), out = [], from = await since();
+  const L = await loadLog(month), [y, m] = month.split('-').map(Number), out = [], cutoff = await since();
   const last = new Date(Date.UTC(y, m, 0)).getUTCDate(), todayStr = today();
   for (let d = 1; d <= last; d++) {
-    const date = `${month}-${String(d).padStart(2, '0')}`; if (date > todayStr) break; if (date < from) continue;
-    out.push(...withEntry(lessonsOn(classes, date), L, now));
+    const date = `${month}-${String(d).padStart(2, '0')}`; if (date > todayStr) break;
+    out.push(...withEntry(lessonsOn(classes, date), L, now, cutoff));
   }
   return out;
 }
