@@ -9,6 +9,7 @@
 
   var css = document.createElement('style');
   css.textContent =
+    '@media (max-width:980px){body{padding-bottom:calc(84px + env(safe-area-inset-bottom,0px))!important}}' +
     '.shield3d{transform:perspective(600px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));transition:transform .6s cubic-bezier(.2,.8,.2,1),filter .3s;filter:drop-shadow(0 6px 10px rgba(0,0,0,.35));will-change:transform;object-fit:contain}' +
     'a:hover>.shield3d,.shield3d:hover{filter:drop-shadow(0 10px 16px rgba(0,0,0,.4))}' +
     '@keyframes ifShieldIn{0%{transform:perspective(600px) rotateY(-28deg) rotateX(8deg)}60%{transform:perspective(600px) rotateY(10deg)}100%{transform:perspective(600px) rotateY(0)}}' +
