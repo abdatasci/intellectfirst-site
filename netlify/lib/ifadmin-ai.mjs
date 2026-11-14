@@ -130,7 +130,7 @@ export async function chat(D, history) {
   const ai = new Anthropic();
   const msgs = history.slice(-12).map(m => ({ role: m.role === 'assistant' ? 'assistant' : 'user', content: str(m.content, 4000) || '…' }));
   for (let step = 0; step < 5; step++) {
-    const r = await ai.messages.create({ model: AI_MODEL, max_tokens: 4000, temperature: 0.1, system: system(D), tools: TOOLS, messages: msgs });
+    const r = await ai.messages.create({ model: AI_MODEL, max_tokens: 4000, system: system(D), tools: TOOLS, messages: msgs });
     const text = r.content.filter(c => c.type === 'text').map(c => c.text).join('\n').trim();
     const uses = r.content.filter(c => c.type === 'tool_use');
     const prop = uses.find(u => u.name === 'propose_changes');

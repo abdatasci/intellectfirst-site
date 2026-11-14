@@ -61,7 +61,7 @@ async function publicRoute(req, path, context) {
     if (!(await publicAllow(context?.ip))) return fail(429, 'quota');
     try {
       const ai = new Anthropic();
-      const r = await ai.messages.create({ model: process.env.ASSISTANT_MODEL || 'claude-sonnet-5-5', max_tokens: 600, temperature: 0.3, system: PUBLIC_SYSTEM, messages: msgs });
+      const r = await ai.messages.create({ model: process.env.ASSISTANT_MODEL || 'claude-sonnet-5-5', max_tokens: 600, system: PUBLIC_SYSTEM, messages: msgs });
       return json({ reply: r.content.map(c => c.text || '').join('').trim() });
     } catch (e) { console.error('public assistant failed', e?.status, e?.message); return fail(502, 'ai'); }
   }

@@ -166,7 +166,7 @@ export async function reply(ctx, history) {
   if (!msgs.length) return '';
   const ai = new Anthropic();
   const res = await ai.messages.create({
-    model: MODEL, max_tokens: 700, temperature: 0.4,
+    model: MODEL, max_tokens: 700,
     system: `${SYSTEM}\n\n<school_information>\n${KB.text}\n</school_information>\n\n<student_context>\n${ctx.text}\n</student_context>`,
     messages: msgs
   });
@@ -207,7 +207,7 @@ export async function publicReply(history) {
   const msgs = history.filter(m => m && m.content).slice(-10).map(m => ({ role: m.role === 'assistant' ? 'assistant' : 'user', content: String(m.content).slice(0, 2000) }));
   while (msgs.length && msgs[0].role !== 'user') msgs.shift();
   if (!msgs.length) return '';
-  const r = await new Anthropic().messages.create({ model: MODEL, max_tokens: 500, temperature: 0.3, messages: msgs,
+  const r = await new Anthropic().messages.create({ model: MODEL, max_tokens: 500, messages: msgs,
     system: `You are "IF Assistant", the Telegram assistant of ${SCHOOL.name}, ${SCHOOL.address}. You talk with people interested in the school (parents, students, adults).
 Answer ONLY from <school_information>. Reply in the user's language (English, Russian or Kazakh), short (under 110 words), chat formatting (short lines, simple dashes, no tables, no markdown headings).
 Prices: give only the "from" prices listed for each course group; for an exact price or to book, send them to ${SCHOOL.telegram} or WhatsApp ${SCHOOL.whatsapp}. Recommend the free online placement test: ${SCHOOL.site}/a/placement-test/

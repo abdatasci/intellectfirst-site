@@ -14,9 +14,9 @@
     if (!r.ok) { var e = new Error(d.error || r.status); e.code = d.error; throw e; }
     return d;
   }
-  var css = '#ifa-ai-b{position:fixed;right:18px;bottom:18px;z-index:2147483000;border:0;border-radius:999px;padding:12px 18px;font:700 15px/1 system-ui,-apple-system,Segoe UI,sans-serif;background:#14213D;color:#fff;box-shadow:0 12px 28px -10px rgba(10,24,47,.6);cursor:pointer;display:flex;gap:8px;align-items:center}' +
+  var css = '#ifa-ai-b{position:fixed;right:18px;bottom:84px;z-index:2147483000;border:0;border-radius:999px;padding:12px 18px;font:700 15px/1 system-ui,-apple-system,Segoe UI,sans-serif;background:#14213D;color:#fff;box-shadow:0 12px 28px -10px rgba(10,24,47,.6);cursor:pointer;display:flex;gap:8px;align-items:center}' +
     '#ifa-ai-b i{font-style:normal;color:#E9C46A}' +
-    '#ifa-ai{position:fixed;right:18px;bottom:18px;z-index:2147483001;width:min(440px,calc(100vw - 24px));height:min(680px,calc(100vh - 36px));background:#fff;border:1px solid #D8E1EE;border-radius:20px;box-shadow:0 30px 60px -20px rgba(10,24,47,.45);display:none;flex-direction:column;overflow:hidden;font:15px/1.45 system-ui,-apple-system,Segoe UI,sans-serif;color:#1F2937}' +
+    '#ifa-ai{position:fixed;right:18px;bottom:84px;z-index:2147483001;width:min(440px,calc(100vw - 24px));height:min(680px,calc(100vh - 110px));background:#fff;border:1px solid #D8E1EE;border-radius:20px;box-shadow:0 30px 60px -20px rgba(10,24,47,.45);display:none;flex-direction:column;overflow:hidden;font:15px/1.45 system-ui,-apple-system,Segoe UI,sans-serif;color:#1F2937}' +
     '#ifa-ai.on{display:flex}#ifa-ai header{display:flex;align-items:center;gap:10px;padding:14px 16px;background:#14213D;color:#fff}#ifa-ai header b{flex:1;font-size:16px}#ifa-ai header small{display:block;font-weight:400;opacity:.75;font-size:12px}' +
     '#ifa-ai header button{background:transparent;border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:10px;padding:5px 10px;font:inherit;font-size:13px;cursor:pointer}' +
     '#ifa-ai .ms{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;background:#F7F9FC}' +

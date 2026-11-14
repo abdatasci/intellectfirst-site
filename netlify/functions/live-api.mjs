@@ -172,7 +172,7 @@ async function generate(b) {
   const count = Math.min(30, Math.max(5, +b.count || 10));
   const nb = Math.ceil(count / 8), batches = Array.from({ length: nb }, (_, i) => Math.floor(count / nb) + (i < count % nb ? 1 : 0)); // small parallel batches: fast enough for the function time limit
   const ask = (n, part) => ai.messages.create({
-    model: process.env.LIVE_MODEL || 'claude-haiku-5-5', max_tokens: 220 * n + 300, temperature: 0.9, system: SYS,
+    model: process.env.LIVE_MODEL || 'claude-haiku-5-5', max_tokens: 220 * n + 300, system: SYS,
     messages: [{ role: 'user', content:
 `Write ${n} questions.
 Level: ${level} (CEFR).

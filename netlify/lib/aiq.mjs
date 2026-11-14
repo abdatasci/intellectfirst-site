@@ -8,7 +8,7 @@ export const str = (v, n = 80) => (v == null ? '' : String(v)).replace(/\s+/g, '
 
 export async function aiJSON({ system, prompt, maxTokens = 1500, model = MODEL_FAST, temperature = 0.8 }) {
   const ai = new Anthropic();
-  const m = await ai.messages.create({ model, max_tokens: maxTokens, temperature, system, messages: [{ role: 'user', content: prompt }] });
+  const m = await ai.messages.create({ model, max_tokens: maxTokens, system, messages: [{ role: 'user', content: prompt }] });
   const t = m.content.map(c => c.text || '').join('');
   const s = t.indexOf('{'), e = t.lastIndexOf('}');
   if (s < 0 || e < s) throw new Error('no json');

@@ -48,7 +48,7 @@ async function rate(writing, speaking) {
   }
   const shape = `{${writing ? `"writing":{"level":3.5,"task":3,"organisation":3,"range":3.5,"accuracy":3,"evidence":"enough|limited","feedback":"2 sentences for the student, kind and specific","next":"one concrete next step"},` : ''}${speaking && speaking.length ? `"speaking":{"level":3.5,"range":3.5,"accuracy":3,"fluency":3,"coherence":3,"interaction":3,"evidence":"enough|limited","feedback":"2 sentences for the student","next":"one concrete next step"}` : ''}}`;
   const msg = await ai.messages.create({
-    model: MODEL, max_tokens: 900, temperature: 0, system: RULES,
+    model: MODEL, max_tokens: 900, system: RULES,
     messages: [{ role: 'user', content: `${parts.join('\n\n')}\n\nRate each skill on the 0–6 scale (sub-scores on the same scale). Reply with JSON only, exactly this shape:\n${shape}` }]
   });
   const out = extractJSON(msg.content.map(c => c.text || '').join(''));
