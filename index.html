@@ -508,6 +508,20 @@
   #gallery #g-grid[hidden]{display:none!important}
   @media (max-width:640px){#gallery .cf-btn{width:40px;height:40px;font-size:26px}#gallery .cf-prev{left:4px}#gallery .cf-next{right:4px}#gallery .cf-th{width:54px;height:54px}}
   @media (prefers-reduced-motion:reduce){#gallery .cf-card{transition:none}}
+  /* ---------- Spaces: 2 × 2 cards, each with its own photo slider ---------- */
+  #ecosystem .sp-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  @media (max-width:700px){#ecosystem .sp-grid{grid-template-columns:1fr!important}}
+  #ecosystem .sp-grid .eco-card{padding:28px 28px 30px!important;overflow:hidden}
+  #ecosystem .sp-ph{position:relative;margin:-28px -28px 22px;aspect-ratio:3/2;overflow:hidden;background:#0a182f;touch-action:pan-y}
+  #ecosystem .sp-ph img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transform:scale(1.04);transition:opacity .7s,transform 6s ease-out}
+  #ecosystem .sp-ph img.on{opacity:1;transform:scale(1)}
+  #ecosystem .sp-ar{position:absolute;top:50%;transform:translateY(-50%);z-index:2;width:38px;height:38px;border-radius:50%;border:0;background:rgba(255,255,255,.9);color:#0a182f;font-size:22px;line-height:1;cursor:pointer;opacity:0;transition:opacity .2s}
+  #ecosystem .sp-ph:hover .sp-ar,#ecosystem .sp-ar:focus-visible{opacity:1}
+  @media (hover:none){#ecosystem .sp-ar{opacity:.85}}
+  #ecosystem .sp-ar.l{left:10px}#ecosystem .sp-ar.r{right:10px}
+  #ecosystem .sp-dots{position:absolute;left:0;right:0;bottom:10px;display:flex;justify-content:center;gap:6px;z-index:2}
+  #ecosystem .sp-dots button{width:8px;height:8px;padding:0;border-radius:50%;border:0;background:rgba(255,255,255,.55);cursor:pointer}
+  #ecosystem .sp-dots button.on{background:#fff;width:20px;border-radius:6px}
 </style>
 <link rel="stylesheet" href="academy.css">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1197,25 +1211,30 @@
       <div class="section-head">
         <div>
           <p class="section-num" data-i18n="sec02_num">05 — Ecosystem</p>
-          <h2 class="section-title" data-i18n="sec02_title">Three spaces, one standard</h2>
+          <h2 class="section-title" data-i18n="sec02_title">Four spaces, one standard</h2>
         </div>
         <p class="section-desc" data-i18n="sec02_desc">Beyond the classroom, Intellect First runs a small ecosystem of spaces built for practice, immersion and production.</p>
       </div>
-      <div class="eco-grid">
-        <div class="eco-card">
+      <div class="eco-grid sp-grid">
+        <div class="eco-card" data-space="hub">
           <svg class="mark" viewBox="0 0 34 34" fill="none"><circle cx="17" cy="17" r="15.5" stroke="var(--accent)" stroke-width="1.4"/><path d="M11 17h12M17 11v12" stroke="var(--accent)" stroke-width="1.4"/></svg>
           <h3>IF Hub</h3>
           <p data-i18n="eco1_desc">Speaking clubs, debates, public speaking practice and current-affairs discussion — where fluency meets confidence.</p>
         </div>
-        <div class="eco-card">
+        <div class="eco-card" data-space="lab">
           <svg class="mark" viewBox="0 0 34 34" fill="none"><rect x="4" y="4" width="26" height="26" stroke="var(--accent)" stroke-width="1.4"/><path d="M4 13h26M13 13v17" stroke="var(--accent)" stroke-width="1.4"/></svg>
           <h3>IF Lab</h3>
           <p data-i18n="eco2_desc">Intensive small-group work, IELTS-focused sessions and workshops for professional development.</p>
         </div>
-        <div class="eco-card">
+        <div class="eco-card" data-space="studio">
           <svg class="mark" viewBox="0 0 34 34" fill="none"><path d="M6 6h22v22H6z" stroke="var(--accent)" stroke-width="1.4"/><path d="M13 12l9 5-9 5v-10z" stroke="var(--accent)" stroke-width="1.4" stroke-linejoin="round"/></svg>
           <h3>IF Studio</h3>
           <p data-i18n="eco3_desc">Individual and online lessons, video production and podcasts — content that extends learning beyond the room.</p>
+        </div>
+        <div class="eco-card" data-space="reading">
+          <svg class="mark" viewBox="0 0 34 34" fill="none"><path d="M17 9c-3-2.2-7.5-3-12-2.5v19c4.5-.5 9 .3 12 2.5 3-2.2 7.5-3 12-2.5v-19c-4.5-.5-9 .3-12 2.5z" stroke="var(--accent)" stroke-width="1.4" stroke-linejoin="round"/><path d="M17 9v19" stroke="var(--accent)" stroke-width="1.4"/></svg>
+          <h3>IF Reading Zone</h3>
+          <p data-i18n="eco4_desc">A calm corner for graded readers, our library and quiet independent study — where reading becomes a habit.</p>
         </div>
       </div>
     </div>
@@ -1232,7 +1251,7 @@
       <div class="faq-list">
         <details><summary class="serif" data-i18n="faq_q1">How do I get started?</summary><p class="prog-desc" data-i18n="faq_a1">Book a free placement test through Telegram or email — we'll assess your level and recommend the right class.</p></details>
         <details><summary class="serif" data-i18n="faq_q2">What levels do you teach?</summary><p class="prog-desc" data-i18n="faq_a2">Beginner (A1) through Upper-Intermediate (C1) for General English, plus Cambridge exam tracks (Starters, Movers, Flyers, KET, PET) for young learners.</p></details>
-        <details><summary class="serif" data-i18n="faq_q3">Are classes online or in person?</summary><p class="prog-desc" data-i18n="faq_a3">Both — General English for the Russian market runs online; classes in Kazakhstan run in person across our three spaces (IF Business Lab, IF Hub, IF Studio).</p></details>
+        <details><summary class="serif" data-i18n="faq_q3">Are classes online or in person?</summary><p class="prog-desc" data-i18n="faq_a3">Both — General English for the Russian market runs online; classes in Kazakhstan run in person across our four spaces (IF Lab, IF Hub, IF Studio and the IF Reading Zone).</p></details>
         <details><summary class="serif" data-i18n="faq_q4">Do you offer corporate or group training?</summary><p class="prog-desc" data-i18n="faq_a4">Yes — Corporate Training is quote-based and customised to your organisation, available online and offline.</p></details>
         <details><summary class="serif" data-i18n="faq_q5">Need to change a class time or teacher?</summary><p class="prog-desc" data-i18n="faq_a5">Contact the academy directly and we'll arrange it.</p></details>
       </div>
@@ -1527,7 +1546,7 @@
       sec_faqs_num: "07 — FAQs", sec_faqs_title: "Questions, answered",
       faq_q1: "How do I get started?", faq_a1: "Book a free placement test through Telegram or email — we'll assess your level and recommend the right class.",
       faq_q2: "What levels do you teach?", faq_a2: "Beginner (A1) through Upper-Intermediate (C1) for General English, plus Cambridge exam tracks (Starters, Movers, Flyers, KET, PET) for young learners.",
-      faq_q3: "Are classes online or in person?", faq_a3: "Both — General English for the Russian market runs online; classes in Kazakhstan run in person across our three spaces (IF Business Lab, IF Hub, IF Studio).",
+      faq_q3: "Are classes online or in person?", faq_a3: "Both — General English for the Russian market runs online; classes in Kazakhstan run in person across our four spaces (IF Lab, IF Hub, IF Studio and the IF Reading Zone).",
       faq_q4: "Do you offer corporate or group training?", faq_a4: "Yes — Corporate Training is quote-based and customised to your organisation, available online and offline.",
       faq_q5: "Need to change a class time or teacher?", faq_a5: "Contact the academy directly and we'll arrange it.",
       nav_about: "About", nav_contact: "Contact", nav_cta: "Book a free placement test",
@@ -1576,11 +1595,11 @@
       pricenote_rub: "Prices start from the figures shown. Ask us for a personal offer. All programs begin with a free placement test.",
       catalog_link: "Browse the full class catalog",
       catalog_link_tail: " — see exact days and times for every group class currently running.",
-      sec02_num: "05 — Ecosystem", sec02_title: "Three spaces, one standard",
+      sec02_num: "05 — Ecosystem", sec02_title: "Four spaces, one standard",
       sec02_desc: "Beyond the classroom, Intellect First runs a small ecosystem of spaces built for practice, immersion and production.",
       eco1_desc: "Speaking clubs, debates, public speaking practice and current-affairs discussion — where fluency meets confidence.",
       eco2_desc: "Intensive small-group work, IELTS-focused sessions and workshops for professional development.",
-      eco3_desc: "Individual and online lessons, video production and podcasts — content that extends learning beyond the room.",
+      eco4_desc: "A calm corner for graded readers, our library and quiet independent study — where reading becomes a habit.", eco3_desc: "Individual and online lessons, video production and podcasts — content that extends learning beyond the room.",
       sec03_num: "06 — Gallery", sec03_title: "Life at the academy",
       g_n_hand: "Certificates handed out at the end-of-year party", g_n_cert: "End-of-year certificate", g_n_book: "A gift for a great year", g_n_group: "Proud certificate holders", g_n_rope: "The rope challenge", g_n_chat: "Catching up between games", g_n_friends: "Friends from every group", g_kicker: "End-of-year BBQ party · Glamping park, Kostanay", g_all: "All", g_awards: "Awards & certificates", g_games: "Team games & activities", g_moments: "Moments", g_c_speech: "The director presenting end-of-year awards", g_c_ielts: "IELTS Achievement Award", g_c_annual: "Annual Achievement Certificate", g_c_commit: "Commitment Certificate", g_c_media: "Media & Marketing Excellence Award", g_c_teach: "Teaching Excellence Award", g_c_journey: "Learning Journey Award", g_c_teams: "Teams getting ready for the games", g_c_badges: "Handing out team badges", g_c_wolves: "Team Wolves", g_c_eagles: "Team Eagles planning their strategy", g_c_hoop: "The hoop relay", g_c_brief: "Briefing before the next round", g_c_host: "The host announcing the next challenge", g_c_lineup: "Teams lined up for the challenge", g_c_group: "All smiles with our team badges", g_c_fist: "Fist bump — well played!", g_c_hand: "Congratulations all round", g_c_sun: "Sunshine and good company", g_c_tee: "Students and teachers, off the clock",
       sec03_desc: "Real moments from our classes and events — students, teachers and the IF community.",
@@ -1725,7 +1744,7 @@
       sec_faqs_num: "07 — Вопросы", sec_faqs_title: "Ответы на вопросы",
       faq_q1: "Как начать?", faq_a1: "Запишитесь на бесплатное тестирование через Telegram или email — мы определим ваш уровень и подберём группу.",
       faq_q2: "Какие уровни вы преподаёте?", faq_a2: "От начального (A1) до продвинутого (C1) по общему английскому, а также подготовка к Cambridge-экзаменам (Starters, Movers, Flyers, KET, PET) для детей.",
-      faq_q3: "Занятия онлайн или очно?", faq_a3: "И то, и другое — общий английский для российского рынка идёт онлайн; занятия в Казахстане проходят очно в наших трёх пространствах (IF Business Lab, IF Hub, IF Studio).",
+      faq_q3: "Занятия онлайн или очно?", faq_a3: "И то, и другое — общий английский для российского рынка идёт онлайн; занятия в Казахстане проходят очно в наших четырёх пространствах (IF Lab, IF Hub, IF Studio и IF Reading Zone).",
       faq_q4: "Есть ли корпоративное или групповое обучение?", faq_a4: "Да — корпоративное обучение оформляется по запросу и настраивается под вашу организацию, доступно онлайн и очно.",
       faq_q5: "Нужно изменить время занятия или преподавателя?", faq_a5: "Свяжитесь с академией напрямую, и мы всё организуем.",
       nav_about: "О нас", nav_contact: "Контакты", nav_cta: "Бесплатный тест",
@@ -1774,11 +1793,11 @@
       pricenote_rub: "Цены указаны «от». Запросите персональное предложение. Каждая программа начинается с бесплатного тестирования уровня.",
       catalog_link: "Смотреть полный каталог занятий",
       catalog_link_tail: " — точные дни и время всех текущих групповых занятий.",
-      sec02_num: "05 — Экосистема", sec02_title: "Три пространства, один стандарт",
+      sec02_num: "05 — Экосистема", sec02_title: "Четыре пространства, один стандарт",
       sec02_desc: "Помимо занятий, Intellect First создаёт пространства для практики, погружения в язык и творчества.",
       eco1_desc: "Speaking-клубы, дебаты, практика публичных выступлений и обсуждение новостей — где свобода речи становится уверенностью.",
       eco2_desc: "Интенсивная работа в малых группах, занятия по подготовке к IELTS и мастер-классы для профессионального роста.",
-      eco3_desc: "Индивидуальные и онлайн-занятия, видеопродакшн и подкасты — контент, который продолжает обучение за пределами класса.",
+      eco4_desc: "Тихий уголок с адаптированными книгами, нашей библиотекой и местом для самостоятельной работы — здесь чтение становится привычкой.", eco3_desc: "Индивидуальные и онлайн-занятия, видеопродакшн и подкасты — контент, который продолжает обучение за пределами класса.",
       sec03_num: "06 — Галерея", sec03_title: "Жизнь академии",
       g_n_hand: "Вручение сертификатов на празднике в конце года", g_n_cert: "Сертификат по итогам года", g_n_book: "Подарок за отличный год", g_n_group: "Гордые обладатели сертификатов", g_n_rope: "Испытание с канатом", g_n_chat: "Разговоры между играми", g_n_friends: "Друзья из всех групп", g_kicker: "Барбекю в конце учебного года · Глэмпинг, Костанай", g_all: "Все", g_awards: "Награды и сертификаты", g_games: "Командные игры", g_moments: "Моменты", g_c_speech: "Директор вручает награды по итогам года", g_c_ielts: "Награда за результаты IELTS", g_c_annual: "Сертификат за достижения года", g_c_commit: "Сертификат за целеустремлённость", g_c_media: "Награда за медиа и маркетинг", g_c_teach: "Награда за преподавание", g_c_journey: "Награда «Путь обучения»", g_c_teams: "Команды готовятся к играм", g_c_badges: "Вручаем командные значки", g_c_wolves: "Команда «Волки»", g_c_eagles: "Команда «Орлы» обсуждает стратегию", g_c_hoop: "Эстафета с обручем", g_c_brief: "Инструктаж перед следующим раундом", g_c_host: "Ведущий объявляет новое задание", g_c_lineup: "Команды на старте", g_c_group: "Улыбки и командные значки", g_c_fist: "Отличная игра!", g_c_hand: "Поздравления", g_c_sun: "Солнце и хорошая компания", g_c_tee: "Студенты и преподаватели в неформальной обстановке",
       sec03_desc: "Настоящие моменты наших занятий и событий — студенты, преподаватели и сообщество IF.",
@@ -1924,7 +1943,7 @@
       sec_faqs_num: "07 — Жиі қойылатын сұрақтар", sec_faqs_title: "Сұрақтарға жауап",
       faq_q1: "Қалай бастаймын?", faq_a1: "Telegram немесе электрондық пошта арқылы тегін деңгей анықтау тестіне жазылыңыз — біз деңгейіңізді бағалап, лайықты сыныпты ұсынамыз.",
       faq_q2: "Қандай деңгейлерді оқытасыздар?", faq_a2: "General English бойынша бастапқы деңгейден (A1) жоғары-орташаға (C1) дейін, сондай-ақ кішкентай оқушыларға арналған Cambridge емтихан бағыттары (Starters, Movers, Flyers, KET, PET).",
-      faq_q3: "Сабақтар онлайн ба, әлде кездесіп өте ме?", faq_a3: "Екеуі де — Ресей нарығына арналған General English онлайн өтеді; Қазақстандағы сабақтар үш кеңістігімізде (IF Business Lab, IF Hub, IF Studio) жүзбе-жүз өтеді.",
+      faq_q3: "Сабақтар онлайн ба, әлде кездесіп өте ме?", faq_a3: "Екеуі де — Ресей нарығына арналған General English онлайн өтеді; Қазақстандағы сабақтар төрт кеңістігімізде (IF Lab, IF Hub, IF Studio және IF Reading Zone) жүзбе-жүз өтеді.",
       faq_q4: "Корпоративтік немесе топтық оқыту бар ма?", faq_a4: "Иә — корпоративтік оқыту ұйымыңызға бейімделіп, жеке баға ұсыныспен жасалады, онлайн және офлайн қолжетімді.",
       faq_q5: "Сабақ уақытын немесе мұғалімді ауыстыру керек пе?", faq_a5: "Академияға тікелей хабарласыңыз, біз барлығын реттейміз.",
       nav_about: "Біз туралы", nav_contact: "Байланыс", nav_cta: "Тегін деңгей тесті",
@@ -1973,11 +1992,11 @@
       pricenote_rub: "Бағалар «бастап» көрсетілген. Жеке ұсыныс сұраңыз. Барлық бағдарламалар тегін деңгей анықтау тестінен басталады.",
       catalog_link: "Сыныптардың толық каталогын қараңыз",
       catalog_link_tail: " — қазір жұмыс істеп тұрған әр топтық сабақтың нақты күндері мен уақытын көріңіз.",
-      sec02_num: "05 — Экожүйе", sec02_title: "Үш кеңістік, бір стандарт",
+      sec02_num: "05 — Экожүйе", sec02_title: "Төрт кеңістік, бір стандарт",
       sec02_desc: "Сыныптан тыс Intellect First жаттығуға, тілге еніп кетуге және шығармашылыққа арналған шағын кеңістіктер экожүйесін жүргізеді.",
       eco1_desc: "Сөйлесу клубтары, пікірсайыстар, шешендік өнер жаттығулары және өзекті жаңалықтарды талқылау — еркін сөйлеу сенімділікпен кездесетін жер.",
       eco2_desc: "Қарқынды шағын топтық жұмыс, IELTS-ке бағытталған сабақтар және кәсіби дамуға арналған шеберханалар.",
-      eco3_desc: "Жеке және онлайн сабақтар, бейне түсіру және подкасттар — оқуды сынып қабырғасынан тыс жалғастыратын контент.",
+      eco4_desc: "Бейімделген кітаптар, кітапхана және өз бетімен оқуға арналған тыныш бұрыш — мұнда оқу әдетке айналады.", eco3_desc: "Жеке және онлайн сабақтар, бейне түсіру және подкасттар — оқуды сынып қабырғасынан тыс жалғастыратын контент.",
       sec03_num: "06 — Галерея", sec03_title: "Академиядағы өмір",
       g_n_hand: "Жыл соңындағы мерекеде сертификаттар табыстау", g_n_cert: "Жыл қорытындысы бойынша сертификат", g_n_book: "Тамаша жыл үшін сыйлық", g_n_group: "Сертификат иегерлері", g_n_rope: "Арқан сынағы", g_n_chat: "Ойындар арасындағы әңгіме", g_n_friends: "Барлық топтардан достар", g_kicker: "Оқу жылының соңындағы барбекю · Глэмпинг, Қостанай", g_all: "Барлығы", g_awards: "Марапаттар мен сертификаттар", g_games: "Командалық ойындар", g_moments: "Сәттер", g_c_speech: "Директор жыл қорытындысы бойынша марапаттарды табыстауда", g_c_ielts: "IELTS жетістік марапаты", g_c_annual: "Жылдық жетістік сертификаты", g_c_commit: "Табандылық сертификаты", g_c_media: "Медиа және маркетинг марапаты", g_c_teach: "Үздік оқытушы марапаты", g_c_journey: "«Оқу жолы» марапаты", g_c_teams: "Командалар ойынға дайындалуда", g_c_badges: "Командалық белгілерді таратамыз", g_c_wolves: "«Қасқырлар» командасы", g_c_eagles: "«Бүркіттер» командасы стратегия құруда", g_c_hoop: "Шеңбер эстафетасы", g_c_brief: "Келесі раунд алдындағы нұсқаулық", g_c_host: "Жүргізуші жаңа тапсырманы жариялауда", g_c_lineup: "Командалар сапта", g_c_group: "Командалық белгілермен күлкі", g_c_fist: "Керемет ойын!", g_c_hand: "Құттықтаулар", g_c_sun: "Күн нұры мен жақсы көңіл", g_c_tee: "Оқушылар мен мұғалімдер, сабақтан тыс",
       sec03_desc: "Сабақтарымыз бен іс-шараларымыздан нақты сәттер — оқушылар, мұғалімдер және IF қауымдастығы.",
@@ -2214,6 +2233,17 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')box.hidden=true});
 if(/[?&#]ask\b/.test(location.href))open();
 fetch('/api/assistant/public/info').then(r=>r.ok?r.json():null).then(d=>{if(d&&d.bot){const a=document.getElementById('botLink');a.href='https://t.me/'+d.bot;document.getElementById('botUser').textContent='@'+d.bot+' · Telegram';a.hidden=false}}).catch(()=>{});
 })();
+</script>
+<script>/* spaces: each card's photos (.sp-ph img) become a small slider: arrows, dots, swipe, slow auto-advance */
+(function(){document.querySelectorAll('#ecosystem .sp-ph').forEach(function(box){var im=[].slice.call(box.querySelectorAll('img'));if(!im.length)return;var i=0,last=Date.now();
+var show=function(n){i=(n+im.length)%im.length;last=Date.now();im.forEach(function(x,k){x.classList.toggle('on',k===i);if(Math.abs(k-i)<=1&&x.dataset.src&&!x.src)x.src=x.dataset.src});[].forEach.call(dots.children,function(d,k){d.classList.toggle('on',k===i)})};
+var dots=document.createElement('div');dots.className='sp-dots';
+if(im.length>1){im.forEach(function(_,k){var d=document.createElement('button');d.type='button';d.setAttribute('aria-label','Photo '+(k+1));d.onclick=function(){show(k)};dots.appendChild(d)});
+['l','r'].forEach(function(c){var b=document.createElement('button');b.type='button';b.className='sp-ar '+c;b.textContent=c==='l'?'‹':'›';b.setAttribute('aria-label',c==='l'?'Previous photo':'Next photo');b.onclick=function(){show(i+(c==='l'?-1:1))};box.appendChild(b)});box.appendChild(dots);
+var sx=0,sy=0;box.addEventListener('pointerdown',function(e){sx=e.clientX;sy=e.clientY});box.addEventListener('pointerup',function(e){var dx=e.clientX-sx;if(Math.abs(dx)>40&&Math.abs(dx)>Math.abs(e.clientY-sy))show(i+(dx<0?1:-1))});
+var hov=false;box.addEventListener('mouseenter',function(){hov=true});box.addEventListener('mouseleave',function(){hov=false});
+if(!matchMedia('(prefers-reduced-motion: reduce)').matches)setInterval(function(){if(!hov&&!document.hidden&&Date.now()-last>5000){var r=box.getBoundingClientRect();if(r.bottom>0&&r.top<innerHeight)show(i+1)}},1000);}
+show(0)})})();
 </script>
 <script>/* robot greeting: "Hi!" then "How are you?" in 10 languages, flipping in 3D */
 (function(){var W=[['Hi!','How are you?','English'],['Сәлем!','Қалың қалай?','Қазақша'],['Привет!','Как дела?','Русский'],['¡Hola!','¿Cómo estás?','Español'],['Bonjour !','Comment ça va ?','Français'],['Hallo!','Wie geht’s?','Deutsch'],['Merhaba!','Nasılsın?','Türkçe'],['你好！','你好吗？','中文'],['مرحبا!','كيف حالك؟','العربية'],['こんにちは！','お元気ですか？','日本語']],k=0,el=document.getElementById('hi3d'),lg=document.getElementById('hilang'),bot=document.querySelector('.x-bot');
