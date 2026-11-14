@@ -21,7 +21,8 @@
     'if': ['An IF Academy student', 'I study in a class or group at IF Academy'],
     'private': ['An individual student of Abdoulie Manneh', 'I have private lessons with Abdoulie'],
     'alumni': ['IF Alumni', 'I finished my course at IF Academy'],
-    'outside': ['Learning on my own', 'Free account. Full access is paid']
+    'outside': ['Learning on my own', 'Free account. Full access is paid'],
+    'tutor': ['A teacher', 'I teach English and want IF English for my classes (Teacher plan)']
   };
   function whoPicker(sel) {
     return '<label class="f">I am…</label><div class="who4" role="radiogroup">' + Object.keys(TRACKS).map(function (k) {
@@ -141,12 +142,12 @@
       catch (e) { err(f, authMsg(e)); b.disabled = false; }
     };
   }
-  function vRegister(isStaff) {
+  function vRegister(isStaff, as) {
     setNav('');
     view.innerHTML = panel(isStaff ? 'Staff registration' : 'Create your account', isStaff ? 'For IF Academy teachers and staff. Your classes are linked to your account automatically by your name; if not, the administrator links them for you.' : 'For IF Academy students, Abdoulie\'s individual students, IF Alumni and anyone learning English. Use the phone number you gave the school, so we can find your record.',
       '<form id="f" novalidate><div class="grid2"><div><label class="f">First name</label><input class="inp" id="fn" autocomplete="given-name"></div><div><label class="f">Surname</label><input class="inp" id="ln" autocomplete="family-name"></div></div>' +
       '<label class="f">Phone number</label><input class="inp" id="ph" type="tel" autocomplete="tel" placeholder="+7 7__ ___ __ __">' + (isStaff ? '' : '<p class="hint">Students: your own number or your parent\'s, as given to the school.</p>') +
-      (isStaff ? '' : whoPicker('if') + '<div class="grid2"><div><label class="f">Your level</label><select class="inp" id="lv"><option value="">Choose…</option>' + ['Starters','Movers','Flyers','A1 Beginner','A2 Elementary / KET','B1 Intermediate / PET','B2 Upper-intermediate','C1 Advanced','IELTS','Not sure (I will take the placement test)'].map(function (l) { return '<option>' + esc(l) + '</option>'; }).join('') + '</select></div>' +
+      (isStaff ? '' : whoPicker(as === 'teacher' ? 'tutor' : 'if') + '<div class="grid2"><div><label class="f">Your level</label><select class="inp" id="lv"><option value="">Choose…</option>' + ['Starters','Movers','Flyers','A1 Beginner','A2 Elementary / KET','B1 Intermediate / PET','B2 Upper-intermediate','C1 Advanced','IELTS','Not sure (I will take the placement test)'].map(function (l) { return '<option>' + esc(l) + '</option>'; }).join('') + '</select></div>' +
         '<div><label class="f">Main goal</label>' + goalSelect('gl') + '</div>' +
         '<div id="clw"><label class="f">Your class</label><select class="inp" id="cl"><option value="">Loading…</option></select></div></div><p class="hint" id="clh">Not in a class yet? Choose “New student”.</p>') +
       '<div id="ccw"><label class="f">' + (isStaff ? 'Staff code' : 'Code <span style="font-weight:400;color:var(--muted)">(optional)</span>') + '</label><input class="inp" id="cc" name="school-code" type="text" autocomplete="off" autocapitalize="characters" autocorrect="off" spellcheck="false" data-1p-ignore data-lpignore="true"><p class="hint">' + (isStaff ? 'Given to you by the school director.' : 'From your teacher: it gives full access straight away. No code? Abdoulie confirms you after you register.') + '</p></div>' +
@@ -156,8 +157,9 @@
     function syncWho() {
       if (isStaff) return; var t = track();
       $('#clw').style.display = t === 'if' ? '' : 'none'; $('#clh').style.display = t === 'if' ? '' : 'none';
-      $('#ccw').style.display = t === 'outside' ? 'none' : '';
-      $('#lv').closest('div').style.display = t === 'alumni' ? 'none' : '';
+      $('#ccw').style.display = t === 'outside' || t === 'tutor' ? 'none' : '';
+      $('#lv').closest('div').style.display = t === 'alumni' || t === 'tutor' ? 'none' : '';
+      $('#gl').closest('div').style.display = t === 'tutor' ? 'none' : '';
     }
     view.querySelectorAll('input[name=trk]').forEach(function (r) { r.onchange = syncWho; }); syncWho();
     if ($('#cl')) fetch('/api/school/classes').then(function (r) { return r.json(); }).then(function (d) {
@@ -169,9 +171,9 @@
       var trk = isStaff ? '' : track();
       if (cc && cc === pw) cc = '';   // iPhone's password AutoFill can paste the new password into the code box
       if (!name || !ph || (isStaff && !cc)) return err(f, isStaff ? 'Please fill in your name, phone number and staff code.' : 'Please fill in your name and phone number.');
-      if (trk === 'outside') cc = '';
+      if (trk === 'outside' || trk === 'tutor') cc = '';
       var lv = $('#lv') ? $('#lv').value : '', cl = $('#cl') ? $('#cl').value : '';
-      if (trk === 'alumni') cl = 'IF Alumni'; else if (trk === 'private') cl = 'Individual (Abdoulie Manneh)'; else if (trk === 'outside') cl = '';
+      if (trk === 'alumni') cl = 'IF Alumni'; else if (trk === 'private') cl = 'Individual (Abdoulie Manneh)'; else if (trk === 'outside' || trk === 'tutor') cl = '';
       if (!isStaff && trk !== 'alumni' && !lv) return err(f, 'Please choose your level.');
       if (trk === 'if' && !cl) return err(f, 'Please choose your class, or “New student”.');
       if (!isStaff && !$('#gl').value) return err(f, 'Please choose your main goal.');
@@ -394,10 +396,12 @@
     setNav('home');
     if (!USER) return go('#/login');
     if (!role()) return go('#/activate');
-    var p = ME.profile, m = ME.membership || {}, r = role(), student = r !== 'guest', paid = paidActive(p), trial = trialOn(p);
+    var p = ME.profile, m0 = ME.membership || {}, r = role(), student = r !== 'guest', paid = paidActive(p), trial = trialOn(p), tutor = p.track === 'tutor';
+    var m = tutor ? Object.assign({}, m0, { plans: m0.teacherPlans || {} }) : m0;
     var tick = function (a) { return '<ul class="plist">' + a.map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ul>'; };
     var free = ['Games and quests for every level (Flyers Arcade, KET and PET Quest, Skill Games, Grammar Game Centre…)', 'Free placement test', 'Join IF Live games with a PIN', '2 AI practice tests a day', '6 rounds of AI practice a day', 'Notifications on Telegram'];
     var full = ['Everything in the free account', 'All Test Centres: A1–C1, KET, PET, Young Learners, Teens', 'IF English: 12 vocabulary courses with audio and games', 'IELTS Centre: AI marking of Writing and Speaking', 'Unlimited AI tests and AI practice', 'AI study assistant', 'Results saved on your profile'];
+    if (tutor) full = ['Every IF English course and lesson, for you and in class', 'Teach mode: big text for the projector, answers shown when you choose', 'IF Live: host class games with a PIN or QR code, with AI questions', 'All Test Centres and the IELTS lessons, Studio and Speaking Lab', 'Vocabulary, grammar and game banks for every level'];
     var L = plansOf(m), base = L.length ? L[0].per : 0, fp = fromPrice(m);
     var lead = student ? 'As ' + (p.track === 'private' ? 'Abdoulie\'s individual student' : 'an IF Academy student') + ', full access is included free with your lessons.' :
       paid ? 'Your access runs until ' + when(p.paidUntil) + '. You can extend it below.' :
@@ -409,8 +413,8 @@
         (i === L.length - 1 ? '<span class="tag">Best value</span>' : '') + '<b>' + x.months + ' month' + (x.months > 1 ? 's' : '') + '</b><span class="pm">' + kzt(x.per) + '<small> / month</small></span>' +
         '<span class="tot">' + (x.months > 1 ? kzt(x.total) + ' in total' + (save > 0 ? ' · save ' + save + '%' : '') : 'Pay monthly') + '</span></label>';
     }).join('');
-    view.innerHTML = '<section class="hero" style="padding-bottom:4px"><div class="eyebrow">IF Academy online</div><h1>' + (student || paid ? 'You have full access' : trial ? 'Keep full access' : 'Get full access') + '</h1><p class="lead">' + lead + '</p></section>' +
-      '<section class="section plans"><div class="box"><h3>Free account</h3>' + tick(free) + '</div><div class="box hl"><h3>Full access</h3>' + (student ? '<p class="price">Included with your lessons</p>' : fp ? '<p class="price">from ' + kzt(fp) + ' <small>a month</small></p>' : '') + tick(full) + '</div></section>' +
+    view.innerHTML = '<section class="hero" style="padding-bottom:4px"><div class="eyebrow">' + (tutor ? 'Teacher plan' : 'IF Academy online') + '</div><h1>' + (student || paid ? 'You have full access' : trial ? 'Keep full access' : tutor ? 'Teach with IF English' : 'Get full access') + '</h1><p class="lead">' + lead + '</p></section>' +
+      '<section class="section plans"><div class="box"><h3>Free account</h3>' + tick(free) + '</div><div class="box hl"><h3>' + (tutor ? 'Teacher plan' : 'Full access') + '</h3>' + (student ? '<p class="price">Included with your lessons</p>' : fp ? '<p class="price">from ' + kzt(fp) + ' <small>a month</small></p>' : '') + tick(full) + '</div></section>' +
       (student ? '' :
       '<section class="section"><div class="panel wide"><h2>Choose your plan</h2>' + (m.offer ? '<p class="offer">' + esc(m.offer) + '</p>' : '') +
         '<form id="pf" class="payrow"><div class="plancards">' + cards + '</div>' +
@@ -1733,7 +1737,7 @@
       switch (parts[0]) {
         case '': return vProfile();
         case 'login': return USER && role() ? go('#/') : vLogin();
-        case 'register': return USER && role() ? go('#/') : vRegister(false);
+        case 'register': return USER && role() ? go(parts[1] === 'teacher' ? '#/upgrade' : '#/') : vRegister(false, parts[1]);
         case 'staff': return USER && role() ? go('#/') : vRegister(true);
         case 'activate': return vActivate();
         case 'forgot': return vForgot();

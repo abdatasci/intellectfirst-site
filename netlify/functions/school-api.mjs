@@ -82,13 +82,14 @@ async function putProfile(uid, p) {
 // so self-study online access sits at about a fifth of it (6 months ≈ one month of group lessons).
 const MEMBERSHIP = {
   plans: { 1: 9900, 3: 24900, 6: 44900 },
+  teacherPlans: { 1: 14900, 3: 39900, 6: 69900 },   // Teacher plan: Teach mode, class games, all lessons for use in class
   trialDays: TRIAL_DAYS,
   offer: '',
   price: '',
   how: 'Pay by Kaspi transfer or in cash at IF Academy (Al-Farabi 19, Kostanay), then press "I have paid". Your full access is switched on as soon as the school confirms the payment.',
   free: ''
 };
-async function membership() { const m = { ...MEMBERSHIP, ...((await S().get('membership', { type: 'json' })) || {}) }; m.plans = { ...MEMBERSHIP.plans, ...(m.plans || {}) }; return m; }
+async function membership() { const m = { ...MEMBERSHIP, ...((await S().get('membership', { type: 'json' })) || {}) }; m.plans = { ...MEMBERSHIP.plans, ...(m.plans || {}) }; m.teacherPlans = { ...MEMBERSHIP.teacherPlans, ...(m.teacherPlans || {}) }; return m; }
 async function ieltsSummary(uid) {
   const idx = (await U().get(`u/${uid}/index`, { type: 'json' })) || [];
   const scored = idx.filter(a => typeof a.band === 'number');
@@ -375,7 +376,7 @@ export default async (req) => {
       level: str(b.level, 30) || profile?.level || '', classChoice: str(b.classChoice, 80) || profile?.classChoice || '',
       goals: str(b.goals, 600) || profile?.goals || '',
       alumni: track === 'alumni' || b.classChoice === 'IF Alumni' ? true : !!profile?.alumni, since: profile?.since || new Date().toISOString(), attempts: profile?.attempts || 0 };
-    if (finalRole === 'guest' && track !== 'outside') profile.request = { track, at: new Date().toISOString() };
+    if (finalRole === 'guest' && track !== 'outside' && track !== 'tutor') profile.request = { track, at: new Date().toISOString() };
     else if (finalRole !== 'guest') delete profile.request;
     profile = await linkByPhone(uid, profile);
     await ensureTrial(uid, profile);
@@ -391,7 +392,7 @@ export default async (req) => {
     if (isMember(profile)) return json({ profile, access: tier(profile) });
     const b = await req.json().catch(() => ({}));
     const track = TRACKS.includes(b.track) ? b.track : (profile.track || 'outside');
-    profile.request = { track, paid: track === 'outside', months: Math.max(1, Math.min(12, +b.months || 1)), note: str(b.note, 300), at: new Date().toISOString() };
+    profile.request = { track, paid: track === 'outside' || track === 'tutor', months: Math.max(1, Math.min(12, +b.months || 1)), note: str(b.note, 300), at: new Date().toISOString() };
     profile.track = track;
     await putProfile(uid, profile);
     return json({ profile, access: tier(profile) });
@@ -427,6 +428,20 @@ export default async (req) => {
     } catch (e) { return fail(400, e.code || 'bad'); }
   }
   if (path === 'feedback' && method === 'DELETE') { await removeFeedback(uid); return json({ ok: true }); }
+
+  /* ---------- IF English app progress (courses, XP, streak): kept with the account so it follows the student ---------- */
+  if (path === 'app/progress' && method === 'GET') return json({ progress: (await U().get(`u/${uid}/ifx`, { type: 'json' })) || null });
+  if (path === 'app/progress' && method === 'PUT') {
+    const raw = await req.text(); if (raw.length > 300000) return fail(413, 'big');
+    let p; try { p = JSON.parse(raw); } catch { return fail(400, 'bad'); }
+    const old = (await U().get(`u/${uid}/ifx`, { type: 'json' })) || { done: {} };
+    const done = { ...(old.done || {}) };
+    for (const [k, v] of Object.entries(p.done || {})) if (/^[\w-]+\/[\w-]+\/[\w-]+$/.test(k) && v && (!done[k] || (+v.at || 0) > (+done[k].at || 0))) done[k] = { score: Math.max(0, Math.min(100, Math.round(+v.score || 0))), at: +v.at || Date.now() };
+    const out = { done, xp: Math.max(+old.xp || 0, Math.min(1e7, Math.round(+p.xp || 0))), streak: Math.min(5000, Math.round(+p.streak || 0)), last: String(p.last || '').slice(0, 10),
+      goal: String(p.goal || '').slice(0, 20), level: String(p.level || '').slice(0, 4), at: Date.now() };
+    await U().setJSON(`u/${uid}/ifx`, out);
+    return json({ ok: true });
+  }
 
   // study PDFs (IELTS Studio vocabulary and writing language banks): students and teachers only
   if (path.startsWith('download/') && method === 'GET') {
@@ -788,10 +803,10 @@ export default async (req) => {
         const from = paidActive(p) ? new Date(p.paidUntil) : new Date();
         from.setMonth(from.getMonth() + months);
         p.paidUntil = from.toISOString(); p.track = p.track || 'outside'; delete p.request;
-        const amount = Math.round(+String(b.amount || '').replace(/[^\d.]/g, '') || 0) || (b.amount === '' || b.amount == null ? +((await membership()).plans[months] || 0) : 0);
+        const amount = Math.round(+String(b.amount || '').replace(/[^\d.]/g, '') || 0) || (b.amount === '' || b.amount == null ? +((await membership())[p.track === 'tutor' ? 'teacherPlans' : 'plans'][months] || 0) : 0);
         if (amount > 0) {
           const fin = await finDoc(), today = new Date().toISOString().slice(0, 10);
-          fin.push({ id: newId('f'), month: today.slice(0, 7), date: today, type: 'income', category: 'Online membership', amount, note: `${p.name} · ${months} month${months > 1 ? 's' : ''}`, source: `member:${b.uid}:${Date.now()}` });
+          fin.push({ id: newId('f'), month: today.slice(0, 7), date: today, type: 'income', category: p.track === 'tutor' ? 'Teacher plan' : 'Online membership', amount, note: `${p.name} · ${months} month${months > 1 ? 's' : ''}`, source: `member:${b.uid}:${Date.now()}` });
           await S().setJSON('finance', fin);
         }
       } else if (b.action === 'stop') { p.paidUntil = null; p.trialUntil = new Date(0).toISOString(); if (p.role === 'student') { p.role = 'guest'; p.track = p.track === 'private' || p.track === 'if' ? p.track : 'outside'; } }

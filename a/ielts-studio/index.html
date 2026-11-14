@@ -293,6 +293,7 @@ table.lang td:first-child{font-weight:700}
     </button>
     <nav class="nav" aria-label="Skills">
       <button data-v="home">Home</button>
+      <button data-v="lessons">📘 Lessons</button>
       <button data-v="vocabulary">Vocabulary</button>
       <button data-v="reading">Reading</button>
       <button data-v="writing">Writing</button>
@@ -303,6 +304,7 @@ table.lang td:first-child{font-weight:700}
 
 <main class="wrap">
   <section id="v-home"></section>
+  <section id="v-lessons" hidden></section>
   <section id="v-vocabulary" hidden></section>
   <section id="v-reading" hidden></section>
   <section id="v-writing" hidden></section>
@@ -334,7 +336,7 @@ const canSpeak=(()=>{try{return "speechSynthesis" in window&&typeof SpeechSynthe
 function say(t){try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang="en-GB";u.rate=.9;speechSynthesis.speak(u);}catch(e){}}
 
 /* ---------- AI (only inside Claude) ---------- */
-const VIEWS=["home","vocabulary","reading","writing","speaking"];
+const VIEWS=["home","lessons","vocabulary","reading","writing","speaking"];
 let cur="home";
 let AI=null;
 $("#modeNote").textContent="Offline mode · self-marking with checklists";
@@ -346,13 +348,18 @@ $("#modeNote").textContent="Offline mode · self-marking with checklists";
   if(cur==="home")renderHome();
 })();
 
+/* ---------- lessons: the IF English IELTS course, self-paced or in class (Teach mode for teachers) ---------- */
+function renderLessons(){
+  const el=$("#v-lessons"); if(el.dataset.on)return; el.dataset.on="1";
+  el.innerHTML='<div class="panel" style="padding:0;overflow:hidden"><iframe src="/app/?embed=1#/course/ielts" title="IELTS lessons" style="width:100%;height:calc(100vh - 150px);min-height:620px;border:0;display:block" allow="autoplay"></iframe></div><p class="note">Lessons first, then practise the same part here in the Studio. Teachers: open a lesson and press <b>Teach mode</b> for the projector.</p>';
+}
 /* ---------- router ---------- */
 function go(v){
   if(!VIEWS.includes(v))v="home";cur=v;
   VIEWS.forEach(x=>$("#v-"+x).hidden=x!==v);
   $$(".nav button").forEach(b=>b.setAttribute("aria-current",b.dataset.v===v?"page":"false"));
   try{history.replaceState(null,"","#"+v);}catch(e){}
-  const R={home:renderHome,vocabulary:renderVocab,reading:renderReading,writing:renderWriting,speaking:renderSpeaking}[v];
+  const R={home:renderHome,lessons:renderLessons,vocabulary:renderVocab,reading:renderReading,writing:renderWriting,speaking:renderSpeaking}[v];
   try{R();}catch(err){
     // progress saved by an older version of the Studio can break a page: keep a backup, start fresh, and draw again
     console.error("IELTS Studio",err);

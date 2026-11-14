@@ -2,10 +2,11 @@
 //   staff   teachers and the administrator
 //   member  IF Academy students, Abdoulie's individual students, IF Alumni, and outside learners who have paid
 //   free    outside learners (and anyone still waiting for approval): open games, placement test, small daily AI allowance
-// profile.role: 'admin' | 'teacher' | 'student' | 'guest'; profile.track: 'if' | 'private' | 'alumni' | 'outside';
+// profile.role: 'admin' | 'teacher' | 'student' | 'guest'; profile.track: 'if' | 'private' | 'alumni' | 'outside' | 'tutor'
+// ('tutor' = a teacher from outside IF Academy on the Teacher plan: a guest account that pays, with Teach mode in IF English);
 // profile.paidUntil: ISO date for paid outside learners.
-export const TRACKS = ['if', 'private', 'alumni', 'outside'];
-export const TRACK_LABEL = { if: 'IF Academy student', private: 'Individual student', alumni: 'IF Alumni', outside: 'Outside learner' };
+export const TRACKS = ['if', 'private', 'alumni', 'outside', 'tutor'];
+export const TRACK_LABEL = { if: 'IF Academy student', private: 'Individual student', alumni: 'IF Alumni', outside: 'Outside learner', tutor: 'Teacher (Teacher plan)' };
 export function paidActive(p) { return !!(p?.paidUntil && Date.parse(p.paidUntil) > Date.now()); }
 export function trialActive(p) { return !!(p?.trialUntil && Date.parse(p.trialUntil) > Date.now()); }
 /** When full access ends for a free/online account (paid or trial), as an ISO date; null for students and staff. */
