@@ -17,7 +17,7 @@ let lesson = DATA[hashLesson] ? hashLesson : load('lesson', Object.keys(DATA)[0]
 if (!DATA[lesson]) lesson = Object.keys(DATA)[0];
 const isG = () => DATA[lesson].kind === 'g';
 const MODES = () => isG() ? GMODES : VMODES;
-let modeV = load('modeV', 'alias'), modeG = load('modeG', 'showdown');
+let modeV = 'cards', modeG = load('modeG', 'showdown');
 if (!VMODES.some(m => m[0] === modeV)) modeV = 'alias';
 if (!GMODES.some(m => m[0] === modeG)) modeG = 'showdown';
 const getMode = () => isG() ? modeG : modeV;

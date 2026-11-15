@@ -11,7 +11,7 @@ function esc(s){ return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt
 const findKey = h => Object.keys(DATA).find(k => k.toLowerCase() === h.toLowerCase());
 let lesson = findKey((location.hash || '').replace('#','')) || load('lesson', Object.keys(DATA)[0]);
 if (!DATA[lesson]) lesson = Object.keys(DATA)[0];
-let mode = load('mode', 'alias');
+let mode = 'cards';   // coursebook vocabulary always opens on Flashcards
 if (!MODES.some(m => m[0] === mode)) mode = 'alias';
 const st = { teams:[{name:'Team A',pts:0},{name:'Team B',pts:0}], turn:0, time:60, timer:null, deck:[], cur:null, running:false, hint:false };
 let fc = { i:0, list:[], known:0, lesson:null }, qz = null, bk = null, mt = null, gv = null;

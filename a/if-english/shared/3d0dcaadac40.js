@@ -11,7 +11,7 @@ function load(k, d){ try{ const v = localStorage.getItem('ifarenaTB2:'+k); retur
 const hashLesson = (location.hash || '').replace('#','').toUpperCase();
 let lesson = DATA[hashLesson] ? hashLesson : load('lesson', Object.keys(DATA)[0]);
 if (!DATA[lesson]) lesson = Object.keys(DATA)[0];
-let mode = load('mode', 'alias');
+let mode = 'cards';   // coursebook vocabulary always opens on Flashcards
 if (!MODES.some(m => m[0] === mode)) mode = 'alias';
 const st = { teams:[{name:'Team A',pts:0},{name:'Team B',pts:0}], turn:0, time:60, timer:null, deck:[], cur:null, running:false, hint:false };
 let fc = { i:0, list:[], known:0, lesson:null }, qz = null, mt = null, sp = null, bk = null;
