@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>IF Skill Games</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&family=Baloo+2:wght@600;700;800&display=swap">
 <style>
 /* Layout: one column; a sticky bar with section tabs and level; the play area is a single large card. */
 :root {
@@ -84,6 +84,46 @@ th { font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: v
 @keyframes shake { 0%,100% { transform: none; } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
 .shake { animation: shake .25s; }
 @media (prefers-reduced-motion: reduce) { .shake { animation: none; } .bar i { transition: none; } }
+
+/* ===== Game look: chunky 3D cards, bright colours, a playful font ===== */
+:root { --game: 'Baloo 2', 'Arial Rounded MT Bold', system-ui, sans-serif; }
+body { background: radial-gradient(circle at 15% 0%, #efe6ff 0, transparent 45%), radial-gradient(circle at 100% 30%, #ffe3f1 0, transparent 40%), #f7f5ff; }
+h1, h2, h3, .prompt, .hud .name, .stat b { font-family: var(--game); font-weight: 800; letter-spacing: 0; }
+.top h1 { font-size: 26px; color: #2a1660; }
+.tabs a { font-family: var(--game); font-weight: 700; font-size: 16px; }
+.lv button { font-family: var(--game); font-weight: 700; }
+.lv button[aria-pressed="true"] { background: #6d3df2; border-color: #6d3df2; box-shadow: 0 3px 0 #3a1d9a; }
+.cards { gap: 16px; perspective: 900px; }
+.card { --c1: #ff4fa3; --c2: #ff8a3d; border: 0; border-radius: 22px; padding: 18px 18px 16px; color: #fff; position: relative; overflow: hidden;
+  background: linear-gradient(145deg, var(--c1), var(--c2)); box-shadow: 0 8px 0 color-mix(in srgb, var(--c2) 60%, #000), 0 16px 26px rgba(42,22,96,.22), inset 0 2px 0 rgba(255,255,255,.35);
+  transition: transform .18s cubic-bezier(.2,.8,.2,1), box-shadow .18s; transform-style: preserve-3d; }
+.card:hover { transform: translateY(-4px) rotateX(6deg); border: 0; }
+.card:active { transform: translateY(5px); box-shadow: 0 3px 0 color-mix(in srgb, var(--c2) 60%, #000), 0 6px 12px rgba(42,22,96,.2); }
+.card::after { content: ""; position: absolute; right: -30px; top: -30px; width: 120px; height: 120px; border-radius: 50%; background: rgba(255,255,255,.16); }
+.card .k { color: rgba(255,255,255,.9); }
+.card h3 { font-size: 26px; line-height: 1.05; text-shadow: 0 2px 0 rgba(0,0,0,.18); }
+.card p, .card .best { color: rgba(255,255,255,.92); }
+.card .best { display: inline-block; align-self: flex-start; background: rgba(0,0,0,.18); padding: 2px 10px; border-radius: 999px; font-weight: 700; }
+.cards > :nth-child(6n+2) { --c1: #3d8bfd; --c2: #6d3df2; }
+.cards > :nth-child(6n+3) { --c1: #22c55e; --c2: #0e9f8e; }
+.cards > :nth-child(6n+4) { --c1: #ffb020; --c2: #ff6a2b; }
+.cards > :nth-child(6n+5) { --c1: #a855f7; --c2: #ec4899; }
+.cards > :nth-child(6n+6) { --c1: #06b6d4; --c2: #3b82f6; }
+.btn { font-family: var(--game); font-weight: 800; font-size: 17px; border-radius: 14px; border: 0; background: #efeaff; color: #4b2bbf; box-shadow: 0 4px 0 #cfc3ff; }
+.btn.primary { background: linear-gradient(90deg, #ff4fa3, #6d3df2); color: #fff; box-shadow: 0 5px 0 #3a1d9a; }
+.btn:active { transform: translateY(3px); box-shadow: none; }
+.stage { border: 0; border-radius: 26px; background: #fff; box-shadow: 0 10px 0 #e2d8ff, 0 20px 40px rgba(42,22,96,.14); padding: 22px; }
+.bar { height: 12px; border-radius: 999px; background: #efeaff; }
+.bar i { background: linear-gradient(90deg, #22c55e, #ffc83d, #ff4fa3); border-radius: 999px; }
+.prompt { color: #2a1660; }
+.opt { font-family: var(--game); font-weight: 700; font-size: 20px; border: 0; border-radius: 16px; color: #fff; text-align: center; box-shadow: 0 5px 0 rgba(0,0,0,.22); transition: transform .1s; }
+.opts > .opt:nth-child(4n+1) { background: #ff4fa3; } .opts > .opt:nth-child(4n+2) { background: #3d8bfd; } .opts > .opt:nth-child(4n+3) { background: #22c55e; } .opts > .opt:nth-child(4n+4) { background: #ff9a3c; }
+.opt:hover { transform: translateY(-2px); } .opt:active { transform: translateY(3px); box-shadow: 0 2px 0 rgba(0,0,0,.22); }
+.opt.right { background: #16a34a !important; outline: 4px solid #bbf7d0; } .opt.wrong { background: #ef4444 !important; opacity: .85; }
+.w { font-family: var(--game); font-weight: 700; border: 0; border-radius: 12px; background: #efeaff; color: #2a1660; box-shadow: 0 3px 0 #cfc3ff; padding: 7px 12px; }
+.w.right { background: #bbf7d0; } .w.wrong { background: #fecaca; }
+.stat { border: 0; border-radius: 18px; padding: 12px; background: linear-gradient(145deg, #6d3df2, #ff4fa3); color: #fff; box-shadow: 0 6px 0 #3a1d9a; }
+.stat span { color: rgba(255,255,255,.9); }
 </style>
 </head>
 <body>
