@@ -221,8 +221,17 @@
     var el = $('#qpanel'); if (!el) return;
     if (!g) { el.style.display = 'none'; return; }
     if (el.dataset.g === String(G.gates.indexOf(g))) return; el.dataset.g = G.gates.indexOf(g);
-    el.innerHTML = '<div class="qq">' + (G.gates.indexOf(g) + 1) + '. ' + escH(g.q.q) + '</div><div class="qa">' + g.q.opts.map(function (o, k) { return '<span style="background:' + ANS_CSS[k % 3] + '"><b>' + ANS_L[k] + '</b> ' + escH(o) + '</span>'; }).join('') + '</div><div class="qh">Jump onto the platform with the same colour and letter</div>';
+    el.innerHTML = '<div class="qq">' + (G.gates.indexOf(g) + 1) + '. ' + escH(g.q.q) + '</div><div class="qa">' + g.q.opts.map(function (o, k) { return '<button type="button" data-k="' + k + '" style="background:' + ANS_CSS[k % 3] + '"><b>' + ANS_L[k] + '</b> ' + escH(o) + '</button>'; }).join('') + '</div><div class="qh">Tap an answer (or press 1, 2, 3) — or jump onto the platform with the same colour</div>';
     el.style.display = 'block';
+    [].forEach.call(el.querySelectorAll('button'), function (b) { b.onclick = function (e) { e.stopPropagation(); pickAnswer(g, +b.dataset.k); }; b.onpointerdown = function (e) { e.stopPropagation(); }; });
+  }
+  /** Tapping an answer: the player jumps onto that answer's platform (right → it stays; wrong → it falls). */
+  addEventListener('keydown', function (e) { if (!G || G.mode !== 'obby' || paused) return; var k = '123'.indexOf(e.key); if (k < 0) return; var g = G.gates.filter(function (x) { return !x.passed; })[0]; if (g) pickAnswer(g, k); });
+  function pickAnswer(g, k) {
+    if (!G || G.mode !== 'obby' || g.passed) return;
+    var A = g.answers[k]; if (!A || A.gone) return;
+    var p = G.p; p.cp = { x: g.cp.x, y: g.cp.y, z: g.cp.z }; g.announced = true;
+    p.x = A.x; p.z = A.z; p.y = A.y + 2.2; p.vy = 2; p.ground = false; p.on = null; beep('jump');
   }
   function escH(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
   function startObby(level) {
