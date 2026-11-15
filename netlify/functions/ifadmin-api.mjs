@@ -22,6 +22,33 @@ const U = () => getStore({ name: 'ielts', consistency: 'strong' });
 const json = (data, status = 200) => Response.json(data, { status, headers: { 'Cache-Control': 'no-store' } });
 const fail = (status, error) => json({ error }, status);
 const ID = /^[A-Za-z0-9_.:@+~-]{1,200}$/;
+/* Daily payment alerts: packages that have finished or have one lesson left, and late joiners who reached
+   their own package size. Each student carries this month's payment line so unpaid ones can be picked out. */
+function paymentAlerts(G, S, Att, P, today) {
+  const dm = x => x.slice(8, 10) + '.' + x.slice(5, 7);
+  const rows = (P[today.slice(0, 7)] || {}).rows || {};
+  const pay = id => { const r = rows[id]; if (!r) return { status: 'no payment line', balance: null }; const bal = (+r.due || 0) - (+r.disc || 0) - (+r.paid || 0); return { status: r.s || '', due: +r.due || 0, disc: +r.disc || 0, paid: +r.paid || 0, balance: bal, method: r.m || '', date: r.d || '', unpaid: bal > 0 }; };
+  const out = [];
+  for (const [g, gr] of Object.entries(G).sort()) {
+    if (g === 'ind' || g === 'indn' || !(gr.dates || []).length) continue;
+    const size = +gr.pkg || (g === 'ielts' || g === 'st' ? 12 : 8), dates = [...gr.dates].sort(), ps = gr.ps || dates[0];
+    const done = dates.filter(d => d >= ps && d <= today), att = Att[g] || {};
+    const reg = [], exc = [];
+    for (const [id, s] of Object.entries(S)) {
+      if (s.st !== 'active' || s.nofee || !(s.gs && s.gs.length ? s.gs : [s.g]).includes(g)) continue;
+      const marks = att[id] && typeof att[id] === 'object' ? att[id] : {};
+      const xps = (s.xps || {})[g], fm = Object.keys(marks).filter(d => marks[d] && d >= ps).sort()[0], own = xps || fm;
+      const who = { id, name: s.n, phone: s.ph || '', ...pay(id) };
+      if (xps || (fm && fm > ps)) { const c = Object.entries(marks).filter(([d, v]) => d >= own && d <= today && (v === 'P' || v === 'UA')).length; if (c >= size - 1) exc.push({ ...who, own: c, size }); }
+      else reg.push(who);
+    }
+    const pi = Math.max(0, dates.indexOf(ps)); let status = null, when = '';
+    if (done.length >= size) { status = 'finished'; when = dates[pi + size - 1] ? dm(dates[pi + size - 1]) : '?'; }
+    else if (done.length === size - 1) { status = 'one-left'; const nx = dates.find(d => d > today && d >= ps); when = nx ? dm(nx) : '?'; }
+    if ((status && reg.length) || exc.length) out.push({ group: g, name: gr.n, schedule: gr.sch || '', done: done.length, size, status, when, students: status ? reg.sort((a, b) => a.name.localeCompare(b.name)) : [], lateJoiners: exc });
+  }
+  return { date: today, month: today.slice(0, 7), groups: out };
+}
 function syncKeyOk(k) {
   const want = (globalThis.Netlify?.env?.get('IFADMIN_SYNC_KEY')) || process.env.IFADMIN_SYNC_KEY || '';
   if (want.length < 32 || typeof k !== 'string' || k.length !== want.length) return false;
@@ -68,6 +95,11 @@ export default async (req) => {
         map[id] = body; await putColl(c, map); return json({ ok: true });
       }
       if (method === 'DELETE') { delete map[id]; await putColl(c, map); return json({ ok: true }); }
+    }
+    if (path === 'alerts' && method === 'GET') {
+      const today = /^\d{4}-\d{2}-\d{2}$/.test(url.searchParams.get('date') || '') ? url.searchParams.get('date') : new Date(Date.now() + 5 * 3600e3).toISOString().slice(0, 10);
+      const [G, S, Att, P] = await Promise.all(['groups', 'students', 'attendance', 'payments'].map(getColl));
+      return json(paymentAlerts(G, S, Att, P, today));
     }
     if (path === 'backup' && method === 'POST') {
       const prev = {}; for (const c of COLLS) prev[c] = await getColl(c);
