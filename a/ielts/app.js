@@ -102,13 +102,8 @@
     }
     view.innerHTML =
       '<section class="hero"><div class="eyebrow">IF Academy · Academic IELTS</div><h1>IELTS Centre</h1>' +
-      '<p class="lead">Everything for IELTS in one place: AI-marked Writing with a live band score as you write, full mock tests, Speaking, Reading and vocabulary, and your progress over time.</p></section>' + snap +
-      '<section class="section"><div class="sec-head"><div><h2>Skills</h2><p>Start with Writing: every answer is marked against the four official criteria.</p></div></div><div class="grid">' +
-      '<a class="card" href="#/writing"><span class="tag">Writing · Task 1 & 2</span><h3>Writing practice <span class="badge ai">AI marked</span></h3><p>16 Task 1 charts and 24 Task 2 essays. A live band estimate updates while you write; submit for a full examiner-style report.</p><span class="go">Practise →</span></a>' +
-      '<a class="card" href="#/mock"><span class="tag">Writing · 60 minutes</span><h3>Writing mock test <span class="badge ai">AI marked</span></h3><p>A full timed Writing paper: Task 1 and Task 2 together, scored with the real weighting (Task 2 counts double).</p><span class="go">Start a mock →</span></a>' +
-      '<a class="card" href="#/speaking"><span class="tag">Speaking · Parts 1–3</span><h3>AI Speaking <span class="badge ai">AI marked</span></h3><p>An examiner voice asks the questions; you answer out loud and get bands for all four criteria, corrections and Band 8 versions of your answers.</p><span class="go">Start speaking →</span></a>' +
-      '<div class="card dim"><span class="tag">Listening · 4 parts</span><h3>Listening tests <span class="badge soon">Coming soon</span></h3><p>Full 40-question tests in the IELTS format, with British voices and instant band scores.</p></div>' +
-      '</div></section>' +
+      '<p class="lead">Everything for IELTS in one place: Listening, Reading, Writing and Speaking, each with practice and a full mock test, plus vocabulary apps and your progress over time.</p></section>' + snap +
+      (window.IFRL ? IFRL.skillsHTML() : '') +
       '<section class="section"><div class="sec-head"><div><h2>Practice apps</h2><p>Your existing IF IELTS tools, now in one place.</p></div></div><div class="grid">' +
       APPS.map(function (a) { return '<a class="card" href="#/app/' + a.slug + '"><span class="tag">' + esc(a.tag) + '</span><h3>' + esc(a.name) + '</h3><p>' + esc(a.desc) + '</p><span class="go">Open →</span></a>'; }).join('') +
       '</div></section>' +
@@ -754,6 +749,7 @@
     document.title = 'IELTS Centre · IF Academy';
     window.scrollTo(0, 0);
     try {
+      if (window.IFRL && IFRL.route(parts)) return;
       switch (parts[0]) {
         case '': return vHome();
         case 'login': return USER && role() ? go('#/') : vLogin();
