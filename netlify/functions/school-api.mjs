@@ -13,6 +13,7 @@ import { publicFeedback, mine as myFeedback, submit as submitFeedback, removeMin
 import { loadHomework, addHomework, removeHomework, forClasses, clean as cleanHw, hwText } from '../lib/homework.mjs';
 import { getLinks, tgSend, tgToken, addNote, uidsByStudent, inClass, loadChanges, saveChanges } from '../lib/bot-core.mjs';
 import { waReady, waSend, waNumber } from '../lib/whatsapp.mjs';
+import { tellClass } from '../lib/hwsend.mjs';
 import { tier, isMember, TRACKS, paidActive, accessUntil, TRIAL_DAYS, ensureTrial } from '../lib/access.mjs';
 import seed from '../lib/school-seed.json';
 import ckey from '../lib/content-key.json';
@@ -150,22 +151,6 @@ async function tellLesson(c, textFor) {
     } catch (e) { console.error('lesson change notify', s.id, e.message); }
   }
   return { students: students.length, sent: n };
-}
-/** New homework or test: tell every active student of the class (website note, Telegram, WhatsApp). */
-async function tellClass(c, item) {
-  const students = (await doc('students')).filter(s => inClass(c, s) && !/withdrawn|finished|frozen/i.test(s.status || ''));
-  const links = await getLinks(), prefs = (await S().get('waPrefs', { type: 'json' })) || {}, wa = waReady(), bySid = await uidsByStudent(links);
-  let n = 0;
-  for (const s0 of students) {
-    const s = { ...s0, uid: s0.uid || bySid[s0.id] || null };
-    const kind = item.kind === 'test' ? 'testNew' : 'hwNew', l = s.uid && links[s.uid], lang = l?.lang || prefs[s.id]?.lang || 'ru';
-    try {
-      if (s.uid) await addNote(s.uid, { kind, text: hwText(kind, item, l ? lang : 'en') });
-      if (l && tgToken()) { await tgSend(l.chatId, hwText(kind, item, lang)); n++; }
-      else if (wa && !prefs[s.id]?.off) for (const num of [...new Set([s.phone, s.parentPhone].map(waNumber).filter(Boolean))]) { await waSend(num, 'IF Academy\n' + hwText(kind, item, lang)); n++; }
-    } catch (e) { console.error('homework notify', s.id, e.message); }
-  }
-  return n;
 }
 async function classesForTeacher(profile) {
   const [classes, teachers] = await Promise.all([doc('classes'), doc('teachers')]);

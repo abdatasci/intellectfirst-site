@@ -4,10 +4,12 @@ import { S, getProfile, contextFor, reply, publicReply, allow, tgSecret, tgSend,
 import { handleReceipt, decideReceipt } from '../lib/receipts.mjs';
 import { loadHomework, forClasses, isUpcoming } from '../lib/homework.mjs';
 import { isStaff, STAFF_KB, STAFF_HELP, staffHello, sendToday, staffCallback } from '../lib/teachbot.mjs';
+import { startHomework, hwCallback, hwMessage } from '../lib/teachhw.mjs';
+import { U } from '../lib/bot-core.mjs';
 
 const SITE = 'https://intellectfirst.com/me/#/assistant';
 const PHONE_KB = lang => ({ keyboard: [[{ text: { en: '📱 Connect with my phone number', ru: '📱 Подключиться по номеру телефона', kk: '📱 Телефон нөмірі арқылы қосылу' }[lang] || '📱 Connect with my phone number', request_contact: true }]], resize_keyboard: true, one_time_keyboard: true });
-const KB = { keyboard: [[{ text: '📅 Next lessons' }, { text: '📝 Homework & tests' }], [{ text: '💳 Payment' }, { text: '📎 Send receipt' }], [{ text: '❓ Help' }]], resize_keyboard: true, is_persistent: true };
+const KB = { keyboard: [[{ text: '📅 Next lessons' }, { text: '📝 Homework & tests' }], [{ text: '📊 My results' }, { text: '💳 Payment' }], [{ text: '📎 Send receipt' }, { text: '❓ Help' }]], resize_keyboard: true, is_persistent: true };
 const L = {
   en: {
     hello: n => `Hi ${n}! 👋 Your IF Academy account is connected.\nI'll remind you about lessons (the evening before and 2 hours before), homework, tests and tuition payments. After paying, send the receipt here.\nAsk me anything about your classes, or practise English with me.`,
@@ -19,7 +21,7 @@ const L = {
     stopped: 'Disconnected. You will not get reminders here any more. You can reconnect from the website at any time.',
     busy: 'You have reached today\'s message limit. Please try again tomorrow.',
     error: 'Sorry, I could not answer just now. Please try again in a minute.',
-    help: 'I can:\n- show your next lessons (📅)\n- show your homework and tests (📝)\n- show your tuition status (💳) and take your payment receipt (📎: just send the photo or PDF)\n- answer questions about your classes, results and the school\n- help with English: grammar, words, corrections, speaking practice\n/stop disconnects this chat.',
+    help: 'I can:\n- show your next lessons (📅)\n- show your homework and tests (📝)\n- show your test results (📊)\n- show your tuition status (💳) and take your payment receipt (📎: just send the photo or PDF)\n- answer questions about your classes, results and the school\n- help with English: grammar, words, corrections, speaking practice\n/stop disconnects this chat.',
     hwNone: 'No homework or tests set for the next days. 🎉', receiptHow: '📎 Send the payment receipt here as a photo or PDF (Kaspi or bank). AI reads it and the school confirms it.',
     none: 'No lessons with a set time in the next 7 days.', nopay: 'No payment plan is recorded for you on the website. Please ask the administrator.',
     unlinkedRecord: 'Your account is not linked to a school record yet. Add the phone number the school has for you in your website profile.'
@@ -34,7 +36,7 @@ const L = {
     stopped: 'Чат отключён, напоминания сюда больше не придут. Подключиться снова можно на сайте.',
     busy: 'Дневной лимит сообщений исчерпан. Попробуйте завтра.',
     error: 'Не получилось ответить. Попробуйте ещё раз через минуту.',
-    help: 'Я умею:\n- показывать ближайшие занятия (📅)\n- показывать домашние задания и тесты (📝)\n- показывать статус оплаты (💳) и принимать чек (📎: просто отправьте фото или PDF)\n- отвечать на вопросы о занятиях, результатах и школе\n- помогать с английским: грамматика, слова, исправления, разговорная практика\n/stop — отключить этот чат.',
+    help: 'Я умею:\n- показывать ближайшие занятия (📅)\n- показывать домашние задания и тесты (📝)\n- показывать результаты тестов (📊)\n- показывать статус оплаты (💳) и принимать чек (📎: просто отправьте фото или PDF)\n- отвечать на вопросы о занятиях, результатах и школе\n- помогать с английским: грамматика, слова, исправления, разговорная практика\n/stop — отключить этот чат.',
     hwNone: 'На ближайшие дни нет домашних заданий и тестов. 🎉', receiptHow: '📎 Отправьте сюда чек об оплате фото или PDF (Kaspi или банк). ИИ прочитает его, а школа подтвердит.',
     none: 'В ближайшие 7 дней нет занятий с указанным временем.', nopay: 'План оплаты на сайте не указан. Уточните у администратора.',
     unlinkedRecord: 'Ваш аккаунт ещё не связан с записью в школе. Укажите в профиле на сайте номер телефона, который есть у школы.'
@@ -58,6 +60,28 @@ function hwListText(items, lang) {
   if (!items.length) return L[lang].hwNone;
   return items.slice(0, 8).map(h => `${h.kind === 'test' ? '🧪' : '📝'} ${h.due.slice(8)}.${h.due.slice(5, 7)}${h.time ? ' ' + h.time : ''} · ${h.classLabel}: ${h.text}`).join('\n');
 }
+/** "📊 My results": school tests from IF Admin (English File, Cambridge, placement…) and IELTS Centre results. */
+const RES = {
+  en: { title: '📊 Your results', school: 'School tests', ielts: 'IELTS Centre', none: 'No test results yet. They appear here after your teacher records a test, or when you do a test in the IELTS Centre.', more: 'All results: intellectfirst.com/me (Results) and intellectfirst.com/a/ielts (Progress)', band: 'band', practice: 'practice', mock: 'mock' },
+  ru: { title: '📊 Ваши результаты', school: 'Тесты в школе', ielts: 'IELTS Centre', none: 'Результатов пока нет. Они появятся здесь, когда учитель внесёт тест или когда вы пройдёте тест в IELTS Centre.', more: 'Все результаты: intellectfirst.com/me (Results) и intellectfirst.com/a/ielts (Progress)', band: 'балл', practice: 'практика', mock: 'пробный тест' },
+  kk: { title: '📊 Нәтижелеріңіз', school: 'Мектептегі тесттер', ielts: 'IELTS Centre', none: 'Әзірге нәтиже жоқ. Мұғалім тестті енгізгенде немесе IELTS Centre-де тест тапсырғанда осында шығады.', more: 'Барлық нәтиже: intellectfirst.com/me (Results) және intellectfirst.com/a/ielts (Progress)', band: 'балл', practice: 'жаттығу', mock: 'сынақ тест' }
+};
+async function resultsText(ctx, uid, lang) {
+  const t = RES[lang] || RES.en, out = [t.title];
+  const d = iso => iso ? String(iso).slice(8, 10) + '.' + String(iso).slice(5, 7) : '';
+  const school = ((ctx.student && ctx.student.tests) || []).slice(-8).reverse();
+  if (school.length) out.push('', '🏫 ' + t.school + ':', ...school.map(x => `• ${d(x.date)} ${x.test}: ${x.score !== '' && x.score != null ? x.score + (x.max ? '/' + x.max : '') : x.band || '–'}${x.note ? '\n   ' + x.note : ''}`));
+  let ie = [];
+  if (uid && !String(uid).startsWith('sid:')) ie = ((await U().get(`u/${uid}/index`, { type: 'json' }).catch(() => null)) || []).slice(-8).reverse();
+  if (ie.length) {
+    const SK = { writing: '✍️', speaking: '🗣', reading: '📖', listening: '🎧' };
+    out.push('', '🎓 ' + t.ielts + ':', ...ie.map(a => `• ${d(a.at)} ${SK[a.skill || 'writing'] || '•'} ${a.title || ''}${a.total ? ` — ${a.score}/${a.total}` : ''}${typeof a.band === 'number' ? ` — ${t.band} ${a.band % 1 ? a.band.toFixed(1) : a.band + '.0'}` : ''}`));
+  }
+  if (!school.length && !ie.length) return t.none;
+  out.push('', t.more);
+  return out.join('\n');
+}
+
 function payText(ctx, lang) {
   if (!ctx.pay) return L[lang].nopay;
   const p = localise(ctx.pay, lang);
@@ -85,6 +109,11 @@ export default async (req) => {
         await tg('answerCallbackQuery', { callback_query_id: q.id, text: '✓' });
         const sp = isStaff(await getProfile(c.key)), f = c.name.split(' ')[0]; await tgSend(chatId, sp ? staffHello(f) : L[lang].hello(f), { reply_markup: sp ? STAFF_KB : KB });
       } catch (e) { console.error('phone pick', e.message); }
+      return new Response('ok');
+    }
+    if (/^hw:/.test(String(q.data || ''))) {
+      try { const uid = await S().get(`bot/chat/${q.message?.chat?.id || q.from?.id}`), p = uid && await getProfile(uid); if (!isStaff(p)) await tg('answerCallbackQuery', { callback_query_id: q.id, text: 'Only teachers can do this.' }); else await hwCallback(q, p); }
+      catch (e) { console.error('homework button', e.message); await tg('answerCallbackQuery', { callback_query_id: q.id, text: 'Something went wrong. Try again.' }).catch(() => {}); }
       return new Response('ok');
     }
     if (/^(ci:|ro:|rt:\d|ra$|rs$)/.test(String(q.data || ''))) {
@@ -153,17 +182,20 @@ export default async (req) => {
       delete links[uid]; await saveLinks(links); await S().delete(`bot/chat/${chatId}`);
       await tgSend(chatId, L[lang].stopped, { reply_markup: { remove_keyboard: true } }); return new Response('ok');
     }
-    if (m.photo || m.document) { tg('sendChatAction', { chat_id: chatId, action: 'typing' }).catch(() => {}); await handleReceipt({ chatId, uid, msg: m, lang }); return new Response('ok'); }
     const me = await getProfile(uid).catch(() => null);
+    if (isStaff(me) && /^📝 Send homework|^\/sendhw\b|^\/sethw\b/i.test(text)) { await startHomework(chatId, me); return new Response('ok'); }
+    if (isStaff(me) && await hwMessage(chatId, me, m)) return new Response('ok');
+    if (m.photo || m.document) { tg('sendChatAction', { chat_id: chatId, action: 'typing' }).catch(() => {}); await handleReceipt({ chatId, uid, msg: m, lang }); return new Response('ok'); }
     if (isStaff(me) && /^\/today\b|^🕑|^\/clock/i.test(text)) { await sendToday(chatId, uid, me); return new Response('ok'); }
     if (isStaff(me) && /^\/start\b|^\/help\b|^❓/i.test(text)) { await tgSend(chatId, STAFF_HELP, { reply_markup: STAFF_KB }); return new Response('ok'); }
     if (/^\/receipt\b|^📎/i.test(text)) { await tgSend(chatId, L[lang].receiptHow, { reply_markup: KB }); return new Response('ok'); }
     if (/^\/start\b|^\/help\b|^❓/i.test(text)) { await tgSend(chatId, L[lang].help, { reply_markup: KB }); return new Response('ok'); }
     const ctx = await contextFor(uid);
     if (!ctx) { await tgSend(chatId, L[lang].unlinked, { reply_markup: PHONE_KB(lang) }); return new Response('ok'); }
-    if (/^\/next\b|^📅/i.test(text)) { await tgSend(chatId, ctx.student || ctx.classes.length ? nextText(ctx, lang) : L[lang].unlinkedRecord); return new Response('ok'); }
-    if (/^\/hw\b|^\/homework\b|^📝/i.test(text)) { await tgSend(chatId, ctx.classes.length ? hwListText(forClasses(await loadHomework(), ctx.classes.map(c => c.id), { past: 0 }).filter(isUpcoming), lang) : L[lang].unlinkedRecord); return new Response('ok'); }
-    if (/^\/pay\b|^💳/i.test(text)) { await tgSend(chatId, ctx.student ? payText(ctx, lang) : L[lang].unlinkedRecord); return new Response('ok'); }
+    if (/^\/next\b|^📅/i.test(text)) { await tgSend(chatId, ctx.student || ctx.classes.length ? nextText(ctx, lang) : L[lang].unlinkedRecord, { reply_markup: isStaff(ctx.profile) ? STAFF_KB : KB }); return new Response('ok'); }
+    if (/^\/hw\b|^\/homework\b|^📝/i.test(text)) { await tgSend(chatId, ctx.classes.length ? hwListText(forClasses(await loadHomework(), ctx.classes.map(c => c.id), { past: 0 }).filter(isUpcoming), lang) : L[lang].unlinkedRecord, { reply_markup: isStaff(ctx.profile) ? STAFF_KB : KB }); return new Response('ok'); }
+    if (/^\/results\b|^📊/i.test(text)) { await tgSend(chatId, await resultsText(ctx, uid, lang), { reply_markup: KB }); return new Response('ok'); }
+    if (/^\/pay\b|^💳/i.test(text)) { await tgSend(chatId, ctx.student ? payText(ctx, lang) : L[lang].unlinkedRecord, { reply_markup: isStaff(ctx.profile) ? STAFF_KB : KB }); return new Response('ok'); }
     if (!text) { await tgSend(chatId, L[lang].help); return new Response('ok'); }
 
     if (!(await allow(uid, ctx.role !== 'student'))) { await tgSend(chatId, L[lang].busy); return new Response('ok'); }

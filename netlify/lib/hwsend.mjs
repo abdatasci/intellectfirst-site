@@ -1,0 +1,30 @@
+// Tell a class about new homework or a test: website note, Telegram (with the teacher's photo or file, if any)
+// or WhatsApp for students not on Telegram. Used by the website (My classes) and by teachers in the Telegram bot.
+import { getStore } from '@netlify/blobs';
+import { hwText } from './homework.mjs';
+import { doc, getLinks, tg, tgSend, tgToken, addNote, uidsByStudent, inClass } from './bot-core.mjs';
+import { waReady, waSend, waNumber } from './whatsapp.mjs';
+
+const S = () => getStore({ name: 'school', consistency: 'strong' });
+
+/** Returns how many messages went out. attach: { photo | document: Telegram file_id } sent after the text on Telegram. */
+export async function tellClass(c, item, attach) {
+  const students = (await doc('students')).filter(s => inClass(c, s) && !/withdrawn|finished|frozen/i.test(s.status || ''));
+  const links = await getLinks(), prefs = (await S().get('waPrefs', { type: 'json' })) || {}, wa = waReady(), bySid = await uidsByStudent(links);
+  let n = 0;
+  for (const s0 of students) {
+    // students connected to Telegram by phone only are linked as 'sid:<id>'
+    const s = { ...s0, uid: s0.uid || bySid[s0.id] || (links['sid:' + s0.id] ? 'sid:' + s0.id : null) };
+    const kind = item.kind === 'test' ? 'testNew' : 'hwNew', l = s.uid && links[s.uid], lang = l?.lang || prefs[s.id]?.lang || 'ru';
+    try {
+      if (s.uid && !String(s.uid).startsWith('sid:')) await addNote(s.uid, { kind, text: hwText(kind, item, l ? lang : 'en') });
+      if (l && tgToken()) {
+        await tgSend(l.chatId, hwText(kind, item, lang)); n++;
+        if (attach?.photo) await tg('sendPhoto', { chat_id: l.chatId, photo: attach.photo }).catch(() => {});
+        else if (attach?.document) await tg('sendDocument', { chat_id: l.chatId, document: attach.document }).catch(() => {});
+      }
+      else if (wa && !prefs[s.id]?.off) for (const num of [...new Set([s.phone, s.parentPhone].map(waNumber).filter(Boolean))]) { await waSend(num, 'IF Academy\n' + hwText(kind, item, lang)); n++; }
+    } catch (e) { console.error('homework notify', s.id, e.message); }
+  }
+  return n;
+}
