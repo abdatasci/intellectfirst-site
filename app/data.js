@@ -15,12 +15,10 @@ window.IFX_DIR = [
   { id: 'band9', s: 'vocab', t: 'Band 9 Lexis', d: 'High-scoring IELTS words and collocations by topic', lv: ['B2', 'C1'], tr: 'exam', tags: ['exam', 'ielts'], href: '/a/band9-lexis/index.html', icon: '💎' },
   { id: 'voc-movers', s: 'vocab', t: 'Movers vocabulary', d: 'Cambridge A1 Movers words for children', lv: ['A1'], tr: 'kids', tags: ['kids', 'cambridge'], href: '/a/if-english/courses/Movers/index.html', icon: '🐯' },
   { id: 'voc-flyers', s: 'vocab', t: 'Flyers vocabulary', d: 'Cambridge A2 Flyers words for children', lv: ['A2'], tr: 'kids', tags: ['kids', 'cambridge'], href: '/a/if-english/courses/Flyers/index.html', icon: '🦅' },
-  { id: 'pet-party', s: 'vocab', t: 'PET Word Party', d: 'Fast word games on the B1 Preliminary list', lv: ['B1'], tr: 'exam', tags: ['exam', 'pet', 'game'], href: '/a/pet-word-party/index.html', icon: '🎉' },
 
   /* ---------- grammar ---------- */
   { id: 'gram-centre', s: 'grammar', t: 'IF Grammar Game Centre', d: 'Grammar in Use units as games, from tenses to reported speech', lv: ['B1', 'B2', 'C1'], tr: 'general', tags: ['book', 'game'], href: '/a/grammar-game-centre/index.html', icon: '🧩' },
   { id: 'giu-quest', s: 'grammar', t: 'Grammar in Use Quest', d: 'A quest through the intermediate grammar units', lv: ['B1', 'B2'], tr: 'general', tags: ['book', 'game'], href: '/a/grammar-in-use-quest/index.html', icon: '🗺️' },
-  { id: 'cond-lab', s: 'grammar', t: 'Conditionals Lab', d: 'Zero, first, second, third and mixed conditionals', lv: ['B1', 'B2'], tr: 'general', tags: ['practice'], href: '/a/conditionals-lab/index.html', icon: '🔬' },
   { id: 'skill-games', s: 'grammar', t: 'IF Skill Games', d: 'Spot the error, build the sentence, choose the precise word', lv: ['A2', 'B1', 'B2', 'C1'], tr: 'general', tags: ['game', 'daily'], href: '/a/skill-games/index.html', icon: '⚡' },
 
   /* ---------- games ---------- */
@@ -33,7 +31,6 @@ window.IFX_DIR = [
   { id: 'ket-quest', s: 'games', t: 'KET Quest Arena', d: '48 lesson games for A2 Key', lv: ['A2'], tr: 'exam', tags: ['ket', 'vocabulary', 'grammar'], href: '/a/ket-quest/index.html', icon: '🏆' },
   { id: 'pet-arcade', s: 'games', t: 'PET Arcade', d: 'B1 Preliminary arcade games', lv: ['B1'], tr: 'exam', tags: ['pet', 'vocabulary', 'grammar'], href: '/a/pet-arcade/index.html', icon: '👾' },
   { id: 'pet-quest', s: 'games', t: 'PET Quest', d: 'Team game for B1 Preliminary classes', lv: ['B1'], tr: 'exam', tags: ['pet', 'class'], href: '/a/pet-quest/index.html', icon: '⚔️' },
-  { id: 'g-petparty', s: 'games', t: 'PET Word Party', d: 'Word games on the PET list', lv: ['B1'], tr: 'exam', tags: ['pet', 'vocabulary'], href: '/a/pet-word-party/index.html', icon: '🎉' },
   { id: 'flyers-arcade', s: 'games', t: 'Flyers Arcade', d: 'Games for Cambridge A2 Flyers', lv: ['A2'], tr: 'kids', tags: ['kids', 'vocabulary'], href: '/a/flyers-arcade/index.html', icon: '🦅' },
   { id: 'yl-games', s: 'games', t: 'Young Learners games', d: 'Memory, balloons, spelling and speed games for Starters, Movers and Flyers', lv: ['A1', 'A2'], tr: 'kids', tags: ['kids', 'vocabulary'], href: '/a/young-learners/', icon: '🎈' },
   { id: 'kids-english', s: 'games', t: 'IF Kids English', d: 'Playful English for young children', lv: ['A1'], tr: 'kids', tags: ['kids', 'vocabulary'], href: '/a/kids-english/index.html', icon: '🧸' },

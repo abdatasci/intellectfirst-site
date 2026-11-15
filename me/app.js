@@ -22,6 +22,7 @@
     'private': ['An individual student of Abdoulie Manneh', 'I have private lessons with Abdoulie'],
     'alumni': ['IF Alumni', 'I finished my course at IF Academy'],
     'outside': ['Learning on my own', 'Free account. Full access is paid'],
+    'parent': ['A parent', 'My child (6–12) learns English: Young Learners and Maths in English'],
     'tutor': ['A teacher', 'I teach English and want IF English for my classes (Teacher plan)']
   };
   function whoPicker(sel) {
@@ -33,19 +34,34 @@
   var GOALS = [
     ['General English', [['IF English vocabulary', '/a/if-english/', 1], ['IF Skill Games', '/a/skill-games/'], ['Grammar Game Centre', '/a/grammar-game-centre/'], ['Grammar in Use Quest', '/a/grammar-in-use-quest/'], ['Test Centres A1–C1', '/a/ef-b1-tests/', 1], ['AI practice', '/live/'], ['AI tests', '/tests/']]],
     ['IELTS', [['IELTS Centre (AI marking)', '/a/ielts/', 1], ['IELTS Speaking Lab', '/a/ielts-speaking/'], ['IF IELTS Studio', '/a/ielts-studio/'], ['Band 9 Lexis', '/a/band9-lexis/'], ['AI tests', '/tests/']]],
-    ['Cambridge exams (KET, PET, Flyers)', [['KET Quest', '/a/ket-quest/'], ['KET Booster Arcade', '/a/ket-booster/'], ['PET Quest', '/a/pet-quest/'], ['PET Arcade', '/a/pet-arcade/'], ['PET Word Party', '/a/pet-word-party/'], ['Flyers Arcade', '/a/flyers-arcade/'], ['PET Test Centre', '/a/pet-tests/', 1], ['Young Learners tests', '/a/yl-tests/', 1]]],
+    ['Cambridge exams (KET, PET, Flyers)', [['KET Quest', '/a/ket-quest/'], ['KET Booster Arcade', '/a/ket-booster/'], ['PET Quest', '/a/pet-quest/'], ['PET Arcade', '/a/pet-arcade/'], ['Flyers Arcade', '/a/flyers-arcade/'], ['PET Test Centre', '/a/pet-tests/', 1], ['Young Learners tests', '/a/yl-tests/', 1]]],
     ['English for children', [['IF Kids English', '/a/kids-english/'], ['Young Learners Centre', '/a/young-learners/'], ['Flyers Arcade', '/a/flyers-arcade/'], ['Young Learners tests', '/a/yl-tests/', 1]]],
-    ['Business English', [['IF English vocabulary', '/a/if-english/', 1], ['Conditionals Practice Lab', '/a/conditionals-lab/'], ['IF Skill Games', '/a/skill-games/'], ['AI tests', '/tests/'], ['AI practice', '/live/']]],
+    ['Business English', [['IF English vocabulary', '/a/if-english/', 1], ['IF Skill Games', '/a/skill-games/'], ['AI tests', '/tests/'], ['AI practice', '/live/']]],
     ['Kazakh or Russian', [['Kazakh A1–B1', '/a/kazakh-a1-b1/'], ['Russian A1–B1', '/a/russian-a1-b1/']]]
   ];
   function goalOf(p) { var g = String((p && p.goals) || ''); for (var i = 0; i < GOALS.length; i++) if (g.indexOf(GOALS[i][0]) === 0) return GOALS[i]; return null; }
   function goalSelect(id, val) { return '<select class="inp" id="' + id + '"><option value="">Choose…</option>' + GOALS.map(function (g) { return '<option' + (String(val || '').indexOf(g[0]) === 0 ? ' selected' : '') + '>' + esc(g[0]) + '</option>'; }).join('') + '</select>'; }
-  function goalBox(p) {
-    var g = goalOf(p), lock = freeAcct();
-    return '<div class="box"><h3>My goal and apps</h3><label class="f" style="margin-top:0">Main goal</label>' + goalSelect('gsel', p.goals) +
-      (g ? '<div class="gapps">' + g[1].map(function (a) { return '<a class="gapp" href="' + (a[2] && lock ? '#/upgrade' : a[1]) + '">' + esc(a[0]) + (a[2] && lock ? ' <small>🔒 full access</small>' : '') + '</a>'; }).join('') + '</div>' : '<p class="small" style="margin-top:10px">Choose your goal to see the apps for it.</p>') + '</div>';
+  /* what to study: one or more courses and levels (changeable later in My account and in IF English) */
+  var STUDY = [
+    ['General English', [['ge:A1', 'A1 Beginner'], ['ge:A2', 'A2 Elementary'], ['ge:B1', 'B1 Intermediate'], ['ge:B2', 'B2 Upper-intermediate'], ['ge:C1', 'C1 Advanced']]],
+    ['Business English', [['be:B1', 'Business B1'], ['be:B2', 'Business B2']]],
+    ['Exams', [['ielts', 'IELTS'], ['ket', 'KET (A2 Key)'], ['pet', 'PET (B1 Preliminary)']]],
+    ['Young learners (6–12)', [['yl:starters', 'Starters'], ['yl:movers', 'Movers'], ['yl:flyers', 'Flyers'], ['maths', 'Maths in English']]]
+  ];
+  var STUDY_NAME = {}; STUDY.forEach(function (g) { g[1].forEach(function (x) { STUDY_NAME[x[0]] = (g[0] === 'General English' ? 'General English ' : g[0] === 'Young learners (6–12)' && x[0] !== 'maths' ? 'Young Learners ' : '') + x[1]; }); });
+  function studyPicker(sel, kidsFirst) {
+    sel = sel || []; var gs = kidsFirst ? [STUDY[3]].concat(STUDY.slice(0, 3)) : STUDY;
+    return '<div class="study" id="study">' + gs.map(function (g) { return '<div class="sg"><b>' + esc(g[0]) + '</b><div>' + g[1].map(function (x) { return '<label class="schip"><input type="checkbox" value="' + x[0] + '"' + (sel.indexOf(x[0]) >= 0 ? ' checked' : '') + '><span>' + esc(x[1]) + '</span></label>'; }).join('') + '</div></div>'; }).join('') +
+      '<label class="schip ns"><input type="checkbox" value="placement"><span>🧭 Not sure of my level: I\'ll take the placement test</span></label></div>';
   }
-  function wireGoal() { var g = $('#gsel'); if (g) g.onchange = async function () { try { var r = await api('profile', { method: 'PUT', body: { goals: g.value } }); ME.profile = r.profile; toast('Goal saved'); vProfile(); } catch (e) { toast('Could not save'); } }; }
+  function studyValue() { return [].slice.call(document.querySelectorAll('#study input:checked')).map(function (i) { return i.value; }).filter(function (v) { return v !== 'placement'; }); }
+  function studySummary(a) { return (a || []).map(function (k) { return STUDY_NAME[k] || k; }).join(', '); }
+  function goalBox(p) {
+    var st = p.study || [];
+    return '<div class="box"><h3>' + (p.track === 'parent' ? 'My child\'s courses' + (p.child ? ': ' + esc(p.child) : '') : 'My courses and levels') + '</h3><p class="small" style="margin:0 0 8px">Choose one or more. Change them any time — IF English shows lessons, words, games and tests for what you choose.</p>' +
+      studyPicker(st, p.track === 'parent') + '<div class="row" style="margin-top:10px"><button class="btn" id="stsave" style="width:auto">Save</button><a class="btn ghost" style="width:auto" href="/app/">Open IF English →</a></div></div>';
+  }
+  function wireGoal() { var b = $('#stsave'); if (b) b.onclick = async function () { var s = studyValue(); if (!s.length) return toast('Choose at least one course or level.'); b.disabled = true; try { var r = await api('profile', { method: 'PUT', body: { study: s, goals: studySummary(s) } }); ME.profile = r.profile; toast('Saved. IF English is updated.'); } catch (e) { toast('Could not save.'); } b.disabled = false; }; }
   function track() { var r = $('input[name=trk]:checked'); return r ? r.value : 'if'; }
   function welcomeMsg(res) {
     if (res && res.access && res.access !== 'free') return 'Welcome to IF Academy';
@@ -144,11 +160,13 @@
   }
   function vRegister(isStaff, as) {
     setNav('');
-    view.innerHTML = panel(isStaff ? 'Staff registration' : 'Create your account', isStaff ? 'For IF Academy teachers and staff. Your classes are linked to your account automatically by your name; if not, the administrator links them for you.' : 'For IF Academy students, Abdoulie\'s individual students, IF Alumni and anyone learning English. Use the phone number you gave the school, so we can find your record.',
+    view.innerHTML = panel(isStaff ? 'Staff registration' : 'Create your account', isStaff ? 'For IF Academy teachers and staff. Your classes are linked to your account automatically by your name; if not, the administrator links them for you.' : 'For IF Academy students, Abdoulie\'s individual students, IF Alumni, parents, teachers and anyone learning English. Use the phone number you gave the school, so we can find your record.',
       '<form id="f" novalidate><div class="grid2"><div><label class="f">First name</label><input class="inp" id="fn" autocomplete="given-name"></div><div><label class="f">Surname</label><input class="inp" id="ln" autocomplete="family-name"></div></div>' +
       '<label class="f">Phone number</label><input class="inp" id="ph" type="tel" autocomplete="tel" placeholder="+7 7__ ___ __ __">' + (isStaff ? '' : '<p class="hint">Students: your own number or your parent\'s, as given to the school.</p>') +
-      (isStaff ? '' : whoPicker(as === 'teacher' ? 'tutor' : 'if') + '<div class="grid2"><div><label class="f">Your level</label><select class="inp" id="lv"><option value="">Choose…</option>' + ['Starters','Movers','Flyers','A1 Beginner','A2 Elementary / KET','B1 Intermediate / PET','B2 Upper-intermediate','C1 Advanced','IELTS','Not sure (I will take the placement test)'].map(function (l) { return '<option>' + esc(l) + '</option>'; }).join('') + '</select></div>' +
-        '<div><label class="f">Main goal</label>' + goalSelect('gl') + '</div>' +
+      (isStaff ? '' : whoPicker(as === 'teacher' ? 'tutor' : as === 'parent' ? 'parent' : 'if') +
+        '<div id="chw"><label class="f">Your child\'s name</label><input class="inp" id="ch" autocomplete="off" placeholder="e.g. Amina"></div>' +
+        '<div id="stw"><label class="f" id="stl">What do you want to study? <span style="font-weight:400;color:var(--muted)">Choose one or more</span></label>' + studyPicker([], as === 'parent') + '<p class="hint">You can change your courses and levels any time.</p></div>' +
+        '<div class="grid2">' +
         '<div id="clw"><label class="f">Your class</label><select class="inp" id="cl"><option value="">Loading…</option></select></div></div><p class="hint" id="clh">Not in a class yet? Choose “New student”.</p>') +
       '<div id="ccw"><label class="f">' + (isStaff ? 'Staff code' : 'Code <span style="font-weight:400;color:var(--muted)">(optional)</span>') + '</label><input class="inp" id="cc" name="school-code" type="text" autocomplete="off" autocapitalize="characters" autocorrect="off" spellcheck="false" data-1p-ignore data-lpignore="true"><p class="hint">' + (isStaff ? 'Given to you by the school director.' : 'From your teacher: it gives full access straight away. No code? Abdoulie confirms you after you register.') + '</p></div>' +
       '<label class="f">Email <span style="font-weight:400;color:var(--muted)">(optional)</span></label><input class="inp" id="em" type="email" autocomplete="email"><p class="hint">No email? Leave it empty: you will sign in with your phone number.</p>' +
@@ -157,9 +175,11 @@
     function syncWho() {
       if (isStaff) return; var t = track();
       $('#clw').style.display = t === 'if' ? '' : 'none'; $('#clh').style.display = t === 'if' ? '' : 'none';
-      $('#ccw').style.display = t === 'outside' || t === 'tutor' ? 'none' : '';
-      $('#lv').closest('div').style.display = t === 'alumni' || t === 'tutor' ? 'none' : '';
-      $('#gl').closest('div').style.display = t === 'tutor' ? 'none' : '';
+      $('#ccw').style.display = t === 'outside' || t === 'tutor' || t === 'parent' ? 'none' : '';
+      $('#stw').style.display = t === 'tutor' ? 'none' : '';
+      $('#chw').style.display = t === 'parent' ? '' : 'none';
+      $('#stl').firstChild.textContent = t === 'parent' ? 'What should your child study? ' : 'What do you want to study? ';
+      $('#clw').closest('.grid2').style.display = t === 'if' ? '' : 'none';
     }
     view.querySelectorAll('input[name=trk]').forEach(function (r) { r.onchange = syncWho; }); syncWho();
     if ($('#cl')) fetch('/api/school/classes').then(function (r) { return r.json(); }).then(function (d) {
@@ -171,12 +191,12 @@
       var trk = isStaff ? '' : track();
       if (cc && cc === pw) cc = '';   // iPhone's password AutoFill can paste the new password into the code box
       if (!name || !ph || (isStaff && !cc)) return err(f, isStaff ? 'Please fill in your name, phone number and staff code.' : 'Please fill in your name and phone number.');
-      if (trk === 'outside' || trk === 'tutor') cc = '';
-      var lv = $('#lv') ? $('#lv').value : '', cl = $('#cl') ? $('#cl').value : '';
-      if (trk === 'alumni') cl = 'IF Alumni'; else if (trk === 'private') cl = 'Individual (Abdoulie Manneh)'; else if (trk === 'outside' || trk === 'tutor') cl = '';
-      if (!isStaff && trk !== 'alumni' && !lv) return err(f, 'Please choose your level.');
+      if (trk === 'outside' || trk === 'tutor' || trk === 'parent') cc = '';
+      var study = isStaff ? [] : studyValue(), notSure = !!document.querySelector('#study input[value=placement]:checked');
+      var lv = (study.filter(function (k) { return /^(ge|be):|^yl:/.test(k); })[0] || '').replace(/^ge:|^be:/, '').replace(/^yl:(\w)/, function (_, c) { return c.toUpperCase(); }) || (notSure ? 'Not sure' : ''), cl = $('#cl') ? $('#cl').value : '';
+      if (trk === 'alumni') cl = 'IF Alumni'; else if (trk === 'private') cl = 'Individual (Abdoulie Manneh)'; else if (trk === 'outside' || trk === 'tutor' || trk === 'parent') cl = '';
+      if (!isStaff && trk !== 'tutor' && !study.length && !notSure) return err(f, trk === 'parent' ? 'Please choose what your child should study.' : 'Please choose at least one course or level.');
       if (trk === 'if' && !cl) return err(f, 'Please choose your class, or “New student”.');
-      if (!isStaff && !$('#gl').value) return err(f, 'Please choose your main goal.');
       if (ph.replace(/\D/g, '').length < 10) return err(f, 'Please type the full phone number, for example +7 701 234 56 78.');
       if (em && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)) return err(f, 'That email does not look right. Check it, or leave it empty.');
       var byPhone = !em;
@@ -192,7 +212,7 @@
           }
           if (!u) throw new Error('This phone number already has accounts. Sign in instead, or add an email.');
         } else u = await ID.signup(em, pw, { full_name: name });
-        var actBody = { code: cc, name: name, phone: ph, level: lv, classChoice: cl, track: trk || undefined, goals: $('#gl') ? $('#gl').value : '' };
+        var actBody = { code: cc, name: name, phone: ph, level: lv, classChoice: cl, track: trk || undefined, study: study, child: $('#ch') ? $('#ch').value.trim() : '', goals: studySummary(study) || (notSure ? 'Placement test first' : '') };
         lsSet('if.pending', actBody);
         if (u && !u.confirmedAt && u.id) {   // confirm straight away so the student can sign in now
           try { var cr = await fetch('/api/school/confirm', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: u.id, email: em }) }); if (cr.ok) u.confirmedAt = new Date().toISOString(); } catch (e3) {}
@@ -373,7 +393,7 @@
   function trialOn(p) { return !!(p && p.trialUntil && Date.parse(p.trialUntil) > Date.now()); }
   function daysLeft(iso) { return Math.max(1, Math.ceil((Date.parse(iso) - Date.now()) / 864e5)); }
   function kzt(n) { return Math.round(n).toLocaleString('ru-RU').replace(/ /g, ' ') + ' ₸'; }
-  function plansOf(m) { var P = (m && m.plans) || {}; return [1, 3, 6].filter(function (k) { return +P[k] > 0; }).map(function (k) { return { months: k, total: +P[k], per: +P[k] / k }; }); }
+  function plansOf(m) { var P = (m && m.plans) || {}; return [1, 3, 6, 12].filter(function (k) { return +P[k] > 0; }).map(function (k) { return { months: k, total: +P[k], per: +P[k] / k }; }); }
   function fromPrice(m) { var L = plansOf(m); return L.length ? Math.min.apply(null, L.map(function (x) { return x.per; })) : 0; }
   function hwBox(list) {
     var t = new Date(Date.now() + 5 * 3600e3).toISOString().slice(0, 10);
@@ -410,7 +430,7 @@
     var cards = L.map(function (x, i) {
       var save = base && x.months > 1 ? Math.round((1 - x.per / base) * 100) : 0;
       return '<label class="plan' + (i === L.length - 1 ? ' best' : '') + '"><input type="radio" name="pl" value="' + x.months + '"' + (i === L.length - 1 ? ' checked' : '') + '>' +
-        (i === L.length - 1 ? '<span class="tag">Best value</span>' : '') + '<b>' + x.months + ' month' + (x.months > 1 ? 's' : '') + '</b><span class="pm">' + kzt(x.per) + '<small> / month</small></span>' +
+        (i === L.length - 1 ? '<span class="tag">Best value</span>' : '') + '<b>' + (x.months === 12 ? '1 year' : x.months + ' month' + (x.months > 1 ? 's' : '')) + '</b><span class="pm">' + kzt(x.per) + '<small> / month</small></span>' +
         '<span class="tot">' + (x.months > 1 ? kzt(x.total) + ' in total' + (save > 0 ? ' · save ' + save + '%' : '') : 'Pay monthly') + '</span></label>';
     }).join('');
     view.innerHTML = '<section class="hero" style="padding-bottom:4px"><div class="eyebrow">' + (tutor ? 'Teacher plan' : 'IF Academy online') + '</div><h1>' + (student || paid ? 'You have full access' : trial ? 'Keep full access' : tutor ? 'Teach with IF English' : 'Get full access') + '</h1><p class="lead">' + lead + '</p></section>' +
@@ -1163,7 +1183,7 @@
       (asked.length ? '<h3 style="margin:10px 0 6px">Waiting for you</h3><div class="tscroll"><table class="t"><tbody>' + asked.map(row).join('') + '</tbody></table></div>' : '<p class="small">Nobody is waiting right now.</p>') +
       (rest.length ? '<details style="margin-top:12px"><summary><b>Free and paid online accounts (' + rest.length + ')</b></summary><div class="tscroll"><table class="t"><tbody>' + rest.map(row).join('') + '</tbody></table></div></details>' : '') +
       '<details style="margin-top:12px"><summary><b>Online plans, trial and how to pay</b> (seen only by signed-in learners)</summary><form id="msf" style="margin-top:10px"><div class="grid3">' +
-        [1, 3, 6].map(function (k) { return '<div><label class="f">' + k + ' month' + (k > 1 ? 's' : '') + ' (₸ total)</label><input class="inp" data-plan="' + k + '" inputmode="numeric" value="' + esc((M.plans || {})[k] || '') + '"></div>'; }).join('') +
+        [1, 3, 6, 12].map(function (k) { return '<div><label class="f">' + (k === 12 ? '1 year' : k + ' month' + (k > 1 ? 's' : '')) + ' (₸ total)</label><input class="inp" data-plan="' + k + '" inputmode="numeric" value="' + esc((M.plans || {})[k] || '') + '"></div>'; }).join('') +
         '</div><label class="f">Free trial for new accounts (days, 0 = no trial)</label><input class="inp" id="mst" inputmode="numeric" value="' + esc(M.trialDays == null ? 7 : M.trialDays) + '" style="max-width:120px">' +
         '<label class="f">Offer line <span style="font-weight:400;color:var(--muted)">(optional, e.g. “First month 50% off until 31 December”)</span></label><input class="inp" id="mso" value="' + esc(M.offer || '') + '">' +
         '<label class="f">How to pay</label><textarea class="inp" id="msh" rows="3">' + esc(M.how || '') + '</textarea><button class="btn sm" style="margin-top:10px" type="submit">Save</button></form></details></div>';

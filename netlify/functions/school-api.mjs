@@ -82,7 +82,7 @@ async function putProfile(uid, p) {
 // so self-study online access sits at about a fifth of it (6 months ≈ one month of group lessons).
 const MEMBERSHIP = {
   plans: { 1: 9900, 3: 24900, 6: 44900 },
-  teacherPlans: { 1: 14900, 3: 39900, 6: 69900 },   // Teacher plan: Teach mode, class games, all lessons for use in class
+  teacherPlans: { 1: 4000, 3: 8000, 6: 10000, 12: 20000 },   // Teacher plan: Teach mode, class games, all lessons for use in class
   trialDays: TRIAL_DAYS,
   offer: '',
   price: '',
@@ -96,6 +96,9 @@ async function ieltsSummary(uid) {
   const pick = skill => { const l = scored.filter(a => (a.skill || 'writing') === skill); return l.length ? { count: l.length, latest: l.at(-1).band, best: Math.max(...l.map(a => a.band)), lastAt: l.at(-1).at } : null; };
   return { writing: pick('writing'), speaking: pick('speaking'), recent: idx.slice(-8).reverse() };
 }
+/** What a person studies, chosen at registration and changeable any time: 'ge:B1', 'be:B1', 'ielts', 'ket', 'pet', 'yl:starters', 'yl:movers', 'yl:flyers', 'maths'. */
+const STUDY = /^(ge:(A1|A2|B1|B2|C1)|be:(B1|B2)|ielts|ket|pet|yl:(starters|movers|flyers)|maths)$/;
+function cleanStudy(a) { return [...new Set(a.map(x => String(x || '').trim()).filter(x => STUDY.test(x)))].slice(0, 12); }
 function publicStudent(s) { return s && { id: s.id, first: s.first, last: s.last, classes: s.classes || [], status: s.status, level: s.level || '', tests: s.tests || [], uid: s.uid || null }; }
 
 /** Link an account to its school record by phone (students) or name/phone (teachers). */
@@ -375,8 +378,10 @@ export default async (req) => {
       track: finalRole === 'guest' || finalRole === 'student' ? (role || !profile?.track || profile.role === 'guest' ? track : profile.track) : (profile?.track || ''),
       level: str(b.level, 30) || profile?.level || '', classChoice: str(b.classChoice, 80) || profile?.classChoice || '',
       goals: str(b.goals, 600) || profile?.goals || '',
+      study: Array.isArray(b.study) ? cleanStudy(b.study) : (profile?.study || []),
+      ...(b.child || profile?.child ? { child: str(b.child, 80) || profile?.child } : {}),
       alumni: track === 'alumni' || b.classChoice === 'IF Alumni' ? true : !!profile?.alumni, since: profile?.since || new Date().toISOString(), attempts: profile?.attempts || 0 };
-    if (finalRole === 'guest' && track !== 'outside' && track !== 'tutor') profile.request = { track, at: new Date().toISOString() };
+    if (finalRole === 'guest' && !['outside', 'tutor', 'parent'].includes(track)) profile.request = { track, at: new Date().toISOString() };
     else if (finalRole !== 'guest') delete profile.request;
     profile = await linkByPhone(uid, profile);
     await ensureTrial(uid, profile);
@@ -392,7 +397,7 @@ export default async (req) => {
     if (isMember(profile)) return json({ profile, access: tier(profile) });
     const b = await req.json().catch(() => ({}));
     const track = TRACKS.includes(b.track) ? b.track : (profile.track || 'outside');
-    profile.request = { track, paid: track === 'outside' || track === 'tutor', months: Math.max(1, Math.min(12, +b.months || 1)), note: str(b.note, 300), at: new Date().toISOString() };
+    profile.request = { track, paid: ['outside', 'tutor', 'parent'].includes(track), months: Math.max(1, Math.min(12, +b.months || 1)), note: str(b.note, 300), at: new Date().toISOString() };
     profile.track = track;
     await putProfile(uid, profile);
     return json({ profile, access: tier(profile) });
@@ -469,6 +474,7 @@ export default async (req) => {
   if (path === 'profile' && method === 'PUT') {
     const b = await req.json().catch(() => ({}));
     for (const k of ['name', 'phone', 'about', 'goals', 'birth', 'parent', 'parentPhone', 'city']) if (k in b) profile[k] = str(b[k], k === 'about' || k === 'goals' ? 600 : 120);
+    if (Array.isArray(b.study)) profile.study = cleanStudy(b.study);
     // teachers' professional profile
     if (isStaff(profile.role)) for (const k of ['education', 'experience', 'skillsHard', 'skillsSoft', 'hobbies']) if (k in b) profile[k] = String(b[k] == null ? '' : b[k]).slice(0, 3000);
     profile = await linkByPhone(uid, profile);
@@ -825,8 +831,10 @@ export default async (req) => {
     const rf = path.match(/^admin\/receipt-file\/([a-z0-9]+)$/);
     if (rf && method === 'GET') { const f = await receiptFile(rf[1]); if (!f) return fail(404, 'missing'); return new Response(f.data, { headers: { 'Content-Type': f.metadata?.type || 'application/octet-stream', 'Cache-Control': 'private, max-age=3600' } }); }
     if (path === 'admin/membership' && method === 'PUT') {
-      const plans = {}; for (const k of [1, 3, 6]) { const v = Math.round(+String(b.plans?.[k] ?? '').replace(/[^\d]/g, '')); if (v > 0) plans[k] = v; }
-      const m = { plans, trialDays: Math.max(0, Math.min(30, Math.round(+b.trialDays || 0))), offer: str(b.offer, 200), price: str(b.price, 120), how: str(b.how, 800), free: str(b.free, 600), at: new Date().toISOString() };
+      const plans = {}; for (const k of [1, 3, 6, 12]) { const v = Math.round(+String(b.plans?.[k] ?? '').replace(/[^\d]/g, '')); if (v > 0) plans[k] = v; }
+      const old = (await S().get('membership', { type: 'json' })) || {};
+      let teacherPlans = old.teacherPlans; if (b.teacherPlans) { teacherPlans = {}; for (const k of [1, 3, 6, 12]) { const v = Math.round(+String(b.teacherPlans[k] ?? '').replace(/[^\d]/g, '')); if (v > 0) teacherPlans[k] = v; } }
+      const m = { plans, ...(teacherPlans ? { teacherPlans } : {}), trialDays: Math.max(0, Math.min(30, Math.round(+b.trialDays || 0))), offer: str(b.offer, 200), price: str(b.price, 120), how: str(b.how, 800), free: str(b.free, 600), at: new Date().toISOString() };
       await S().setJSON('membership', m);
       return json({ membership: await membership() });
     }

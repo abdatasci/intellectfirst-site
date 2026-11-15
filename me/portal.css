@@ -254,3 +254,11 @@ tr.regrow-admin td{background:#fbf8f1}
 .fb-r{color:#C9A227;letter-spacing:1px}.fb-r i{color:#d9d2c4;font-style:normal}
 .fb-text{margin:10px 0;white-space:pre-wrap;line-height:1.55}
 .fb-admin .row{display:flex;gap:8px;flex-wrap:wrap}.fb-admin .btn{width:auto;margin:0}
+
+/* study picker: courses and levels, more than one */
+.study{display:grid;gap:12px;margin:6px 0 4px}.study .sg b{display:block;font-size:13px;color:var(--muted,#6b7280);margin-bottom:6px;letter-spacing:.02em}
+.study .sg>div{display:flex;flex-wrap:wrap;gap:8px}
+.schip{position:relative;cursor:pointer}.schip input{position:absolute;opacity:0;pointer-events:none}
+.schip span{display:inline-block;border:1.5px solid var(--line,#e6dfd2);border-radius:999px;padding:7px 13px;font-size:14px;font-weight:600;background:#fff;transition:.15s}
+.schip input:checked+span{background:#0B2545;color:#fff;border-color:#0B2545}.schip input:checked+span::before{content:"✓ "}
+.schip input:focus-visible+span{outline:2px solid #C9A227;outline-offset:2px}.schip.ns span{border-style:dashed}

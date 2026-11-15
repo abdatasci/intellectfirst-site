@@ -38,7 +38,7 @@
   function nextLesson(c) { for (var i = 0; i < c.units.length; i++) for (var j = 0; j < c.units[i].lessons.length; j++) { var u = c.units[i], l = u.lessons[j]; if (!isDone(c.id, u.id, l.id)) return { u: u, l: l, ui: i, li: j }; } return null; }
 
   /* ---------- account (optional) ---------- */
-  var ME = null;
+  var ME = null, meLoaded = false;
   function access() {   // what this person may open
     var p = ME && ME.profile, tier = ME && ME.access;
     var staff = tier === 'staff', member = staff || tier === 'member';
@@ -48,6 +48,12 @@
   var unlocked = function (ui) { return ui < FREE_UNITS || access().member; };
   async function loadMe() {
     try { var r = await fetch('/api/school/me', { credentials: 'same-origin' }); if (r.ok) ME = await r.json(); } catch (e) {}
+    var pf = ME && ME.profile;
+    if (pf) {   // the account decides: courses chosen at registration or in My account
+      if (pf.study && pf.study.length) S.study = pf.study.slice();
+      if (pf.track === 'parent') S.who = 'child'; if (pf.track === 'tutor' || ME.access === 'staff') { S.teacher = true; S.who = S.who || 'teach'; }
+      try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {}
+    }
     if (ME && ME.profile) {
       try {   // merge progress from the account
         var r2 = await fetch('/api/school/app/progress', { credentials: 'same-origin' });
@@ -59,7 +65,7 @@
     Object.keys(srv.done || {}).forEach(function (k) { if (!S.done[k] || (srv.done[k].at || 0) > (S.done[k].at || 0)) S.done[k] = srv.done[k]; });
     if ((srv.xp || 0) > S.xp) { S.xp = srv.xp; }
     if ((srv.streak || 0) > S.streak && srv.last >= S.last) { S.streak = srv.streak; S.last = srv.last; }
-    if (!S.goal && srv.goal) S.goal = srv.goal; if (!S.level && srv.level) S.level = srv.level;
+    if ((!S.study || !S.study.length) && srv.study && srv.study.length) S.study = srv.study;
     try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {}
   }
   var pushT;
@@ -74,9 +80,16 @@
     var local = id.charAt(0) === '/', src = local ? id : 'https://unsplash.com/photos/' + id + '/download?w=1200';
     return '<figure><img src="' + esc(src) + '" alt="' + esc(alt || '') + '" loading="lazy" referrerpolicy="no-referrer" onerror="this.parentNode.remove()">' + (local ? '' : '<figcaption>Photo: Unsplash</figcaption>') + '</figure>';
   }
-  var COLORS = { vocab: 'var(--c-vocab)', grammar: 'var(--c-grammar)', skill: 'var(--c-skill)', reading: 'var(--c-reading)', check: 'var(--c-check)' };
-  var ICONS = { vocab: '🔤', grammar: '🧠', skill: '🛠️', reading: '📖', check: '🏁' };
-  var TYPE = { vocab: 'Vocabulary', grammar: 'Grammar', skill: 'Skills', reading: 'Reading', check: 'Unit check' };
+  var COLORS = { vocab: 'var(--c-vocab)', grammar: 'var(--c-grammar)', skill: 'var(--c-skill)', reading: 'var(--c-reading)', check: 'var(--c-check)', look: '#0ea5e9', maths: '#f59e0b' };
+  var ICONS = { vocab: '🔤', grammar: '🧠', skill: '🛠️', reading: '📖', check: '🏁', look: '👀', maths: '🔢' };
+  var TYPE = { vocab: 'Vocabulary', grammar: 'Grammar', skill: 'Skills', reading: 'Reading', check: 'Unit check', look: 'Look and choose', maths: 'Maths' };
+  var PIC = function (n, c) { return window.IFX_PIC ? IFX_PIC(n, c) : ''; };
+  function scene(sc) {   // pictures to count: n things, or n + m / n − m
+    var row = function (k, gone) { var h = ''; for (var i = 0; i < k; i++) h += '<span class="sc-i' + (gone ? ' gone' : '') + '">' + PIC(sc.pic, 'pic') + '</span>'; return '<span class="sc-g">' + h + '</span>'; };
+    if (!sc.op) return '<div class="scene">' + row(sc.n) + '</div>';
+    if (sc.op === '+') return '<div class="scene">' + row(sc.n) + '<b class="sc-op">+</b>' + row(sc.m) + '<b class="sc-op">= ?</b></div>';
+    return '<div class="scene"><span class="sc-g">' + row(sc.n - sc.m).replace(/^<span class="sc-g">|<\/span>$/g, '') + row(sc.m, true).replace(/^<span class="sc-g">|<\/span>$/g, '') + '</span><b class="sc-op">= ?</b></div>';
+  }
   var tagFor = function (tr) { return tr === 'exam' ? 'ex' : tr === 'business' ? 'bz' : tr === 'kids' ? 'kd' : 'lv'; };
 
   /* ---------- frame ---------- */
@@ -100,76 +113,97 @@
   function setNav(k) { $$('.nav a').forEach(function (a) { a.classList.toggle('on', a.dataset.k === k); }); var x = $('#stS'); if (x) { x.textContent = S.streak; $('#stX').textContent = S.xp; } }
   var view = function () { return $('#view'); };
 
-  /* ---------- onboarding: what do you need? ---------- */
-  var GOALS = [
-    ['general', '🌍', 'General English', 'Everyday English: speak, read and understand more'],
-    ['business', '💼', 'Business English', 'Meetings, emails and English for your job'],
-    ['ielts', '🎓', 'IELTS', 'Lessons and practice for your band score'],
-    ['cambridge', '🎯', 'KET / PET exams', 'Cambridge A2 Key and B1 Preliminary'],
-    ['kids', '🧸', 'English for my child', 'Starters, Movers and Flyers (ages 6–12)'],
-    ['teach', '👩‍🏫', 'I am a teacher', 'Use IF English lessons and games in my classes']
+  /* ---------- what each person studies: one or more courses and levels (from registration, changeable here) ---------- */
+  var STUDY = [
+    ['General English', '🌍', [['ge:A1', 'A1'], ['ge:A2', 'A2'], ['ge:B1', 'B1'], ['ge:B2', 'B2'], ['ge:C1', 'C1']]],
+    ['Business English', '💼', [['be:B1', 'B1'], ['be:B2', 'B2']]],
+    ['Exams', '🎯', [['ielts', 'IELTS'], ['ket', 'KET (A2 Key)'], ['pet', 'PET (B1 Preliminary)']]],
+    ['Young learners (6–12)', '🧸', [['yl:starters', 'Starters'], ['yl:movers', 'Movers'], ['yl:flyers', 'Flyers'], ['maths', 'Maths in English']]]
   ];
+  var SNAME = {}, SICON = {};
+  STUDY.forEach(function (g) { g[2].forEach(function (x) { SNAME[x[0]] = /^ge:/.test(x[0]) ? 'General English ' + x[1] : /^be:/.test(x[0]) ? 'Business English ' + x[1] : /^yl:/.test(x[0]) ? x[1] : x[1]; SICON[x[0]] = g[1]; }); });
+  SNAME.maths = 'Maths in English'; SICON.maths = '🔢';
+  var mine = function () { return (S.study || []).filter(function (k) { return SNAME[k]; }); };
+  /* what a study choice opens: its course (if written), its vocabulary, games and tests */
+  function planOf(k) {
+    var lv = (k.split(':')[1] || '').toUpperCase(), P = { key: k, name: SNAME[k], icon: SICON[k] };
+    if (/^ge:/.test(k)) { P.course = BY['ge-' + lv.toLowerCase()]; P.level = lv; P.voc = byId('voc-' + lv.toLowerCase()); P.test = IFX_DIR.filter(function (x) { return x.s === 'tests' && (x.tags || []).indexOf('book') >= 0 && (x.lv || []).indexOf(lv) >= 0; })[0]; }
+    else if (/^be:/.test(k)) { P.course = BY['be-' + lv.toLowerCase()]; P.level = lv; P.voc = byId('voc-' + lv.toLowerCase()); }
+    else if (k === 'ielts') { P.course = BY.ielts; P.voc = byId('band9'); P.test = byId('ielts-tests'); P.level = 'IELTS'; }
+    else if (k === 'ket') { P.voc = byId('voc-ket'); P.game = byId('ket-quest'); P.test = byId('test-centre'); P.level = 'A2'; }
+    else if (k === 'pet') { P.voc = byId('voc-pet'); P.game = byId('pet-arcade'); P.test = byId('pet-tests'); P.level = 'B1'; }
+    else if (/^yl:/.test(k)) { var y = k.split(':')[1]; P.course = BY['yl-' + y]; P.voc = byId('voc-' + y) || byId('yl'); P.game = byId('yl-games'); P.test = byId(y + '-t'); P.kids = true; }
+    else if (k === 'maths') { P.course = BY.maths; P.game = byId('yl-games'); P.kids = true; }
+    if (!P.game) P.game = IFX_DIR.filter(function (x) { return x.s === 'games' && fitsKey(x, k); })[0];
+    return P;
+  }
+  var byId = function (id) { return IFX_DIR.filter(function (x) { return x.id === id; })[0]; };
+  function fitsKey(it, k) {
+    var lv = (k.split(':')[1] || '').toUpperCase(), tags = (it.tags || []).join(' ');
+    if (/^ge:/.test(k)) return it.tr === 'general' && (!it.lv || !it.lv.length || it.lv.indexOf(lv) >= 0);
+    if (/^be:/.test(k)) return it.tr === 'business' || (it.tr === 'general' && (it.lv || []).indexOf(lv) >= 0);
+    if (k === 'ielts') return /ielts/.test(tags);
+    if (k === 'ket') return /ket/.test(tags) || (it.tr === 'general' && (it.lv || []).indexOf('A2') >= 0 && it.s === 'grammar');
+    if (k === 'pet') return /pet/.test(tags) || (it.tr === 'general' && (it.lv || []).indexOf('B1') >= 0 && it.s === 'grammar');
+    if (/^yl:|^maths$/.test(k)) return it.tr === 'kids';
+    return false;
+  }
+  function fits(it) { var m = mine(); return !m.length || S.teacher || m.some(function (k) { return fitsKey(it, k); }); }
+  function myCourses() {
+    var out = []; mine().forEach(function (k) { var c = planOf(k).course; if (c && out.indexOf(c) < 0) out.push(c); });
+    if (S.teacher || !out.length) COURSES.forEach(function (c) { if (out.indexOf(c) < 0) out.push(c); });
+    return out;
+  }
+  function pickerHTML(sel, kidsFirst) {
+    var gs = kidsFirst ? [STUDY[3]].concat(STUDY.slice(0, 3)) : STUDY;
+    return gs.map(function (g) { return '<div class="sg"><h3>' + g[1] + ' ' + esc(g[0]) + '</h3><div class="chips">' + g[2].map(function (x) { return '<button class="chip' + (sel.indexOf(x[0]) >= 0 ? ' on' : '') + '" data-s="' + x[0] + '">' + esc(x[1]) + '</button>'; }).join('') + '</div></div>'; }).join('');
+  }
   function vOnboard(step) {
     setNav('home');
-    if (step !== 'level') {
-      view().innerHTML = '<div class="onb"><p class="h-eyebrow">IF English</p><h1>What do you need English for?</h1><p class="lead">We\'ll show you what fits — and keep the rest out of your way. You can change this any time.</p><div class="pick">' +
-        GOALS.map(function (g) { return '<button data-g="' + g[0] + '"><i>' + g[1] + '</i><span><b>' + g[2] + '</b><span>' + g[3] + '</span></span></button>'; }).join('') + '</div></div>';
-      $$('[data-g]').forEach(function (b) { b.onclick = function () { S.goal = b.dataset.g; save(); if (S.goal === 'kids') { S.level = 'A1'; save(); return go('#/'); } vOnboard('level'); }; });
+    if (step !== 'pick') {
+      view().innerHTML = '<div class="onb"><p class="h-eyebrow">IF English</p><h1>Who is learning?</h1><p class="lead">We\'ll show what fits — and keep the rest out of the way.</p><div class="pick">' +
+        [['me', '🙋', 'Me', 'Teens and adults: General, Business, IELTS, KET, PET'], ['child', '🧸', 'My child', 'Young Learners (6–12) and Maths in English'], ['teach', '👩‍🏫', 'I am a teacher', 'Use every course in class with Teach mode']].map(function (g) { return '<button data-w="' + g[0] + '"><i>' + g[1] + '</i><span><b>' + g[2] + '</b><span>' + g[3] + '</span></span></button>'; }).join('') + '</div></div>';
+      $$('[data-w]').forEach(function (b) { b.onclick = function () { S.who = b.dataset.w; S.teacher = S.who === 'teach'; save(); if (S.teacher) { S.study = S.study && S.study.length ? S.study : []; save(); return go('#/'); } vOnboard('pick'); }; });
       return;
     }
-    view().innerHTML = '<div class="onb"><p class="h-eyebrow">Step 2 of 2</p><h1>What is your level?</h1><p class="lead">Not sure? Take the free placement test — about 20 minutes.</p><div class="pick lv">' +
-      [['A1', 'Beginner'], ['A2', 'Elementary'], ['B1', 'Intermediate'], ['B2', 'Upper-intermediate'], ['C1', 'Advanced']].map(function (l) { return '<button data-l="' + l[0] + '"><i>' + l[0] + '</i><span><b>' + l[1] + '</b></span></button>'; }).join('') +
-      '</div><p style="margin-top:22px"><a class="btn gold" href="/a/placement-test/index.html">🧭 Take the placement test</a></p></div>';
-    $$('[data-l]').forEach(function (b) { b.onclick = function () { S.level = b.dataset.l; save(); go('#/'); }; });
+    var sel = (S.study || []).slice(), kid = S.who === 'child';
+    view().innerHTML = '<div class="onb" style="text-align:left"><p class="h-eyebrow" style="text-align:center">Step 2 of 2</p><h1 style="text-align:center">' + (kid ? 'What should your child study?' : 'What do you want to study?') + '</h1><p class="lead" style="text-align:center">Choose one or more courses and levels. You can change them any time.</p><div class="study-pick">' + pickerHTML(sel, kid) + '</div>' +
+      '<p style="text-align:center;margin-top:22px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap"><a class="btn ghost" href="/a/placement-test/index.html">🧭 Not sure? Placement test</a><button class="btn gold" id="ok">Save →</button></p></div>';
+    $$('[data-s]').forEach(function (b) { b.onclick = function () { var k = b.dataset.s, i = sel.indexOf(k); if (i >= 0) sel.splice(i, 1); else sel.push(k); b.classList.toggle('on', i < 0); }; });
+    $('#ok').onclick = function () { if (!sel.length) return toast('Choose at least one.'); S.study = sel; S.active = sel[0]; save(); saveStudy(sel); go('#/'); };
   }
-
-  /* what fits this person */
-  function myCourses() {
-    var g = S.goal, lv = S.level, list = COURSES.filter(function (c) {
-      if (g === 'business') return c.track === 'business' || (c.track === 'general' && c.level === lv);
-      if (g === 'ielts') return c.id === 'ielts' || (c.track === 'general' && c.level === lv);
-      if (g === 'teach') return true;
-      return c.track === 'general';
-    });
-    var near = function (c) { var i = LEVELS.indexOf(c.level), j = LEVELS.indexOf(lv); return i < 0 || j < 0 ? 1 : Math.abs(i - j); };
-    return list.sort(function (a, b) { var pa = (g === 'business' && a.track === 'business') || (g === 'ielts' && a.id === 'ielts') ? -1 : 0, pb = (g === 'business' && b.track === 'business') || (g === 'ielts' && b.id === 'ielts') ? -1 : 0; return pa - pb || near(a) - near(b); });
-  }
-  function fits(it) {
-    var g = S.goal, lv = S.level;
-    var lvOk = !lv || !it.lv || !it.lv.length || it.lv.indexOf(lv) >= 0;
-    if (g === 'kids') return it.tr === 'kids';
-    if (g === 'cambridge') return (it.tr === 'exam' && /ket|pet|cambridge/.test((it.tags || []).join(' '))) || (it.tr === 'general' && lvOk);
-    if (g === 'ielts') return (it.tags || []).indexOf('ielts') >= 0 || (it.tr === 'general' && lvOk);
-    if (g === 'teach') return true;
-    return it.tr !== 'kids' && (it.tr === 'general' || it.tr === 'business') && lvOk;
+  function saveStudy(sel) {   // keep the account in step (My account shows the same choices)
+    if (!ME || !ME.profile) return;
+    fetch('/api/school/profile', { method: 'PUT', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ study: sel, goals: sel.map(function (k) { return SNAME[k]; }).join(', ') }) }).catch(function () {});
   }
 
   /* ---------- home ---------- */
   function vHome() {
     setNav('home');
-    if (!S.goal) return vOnboard();
-    var a = access(), mine = myCourses(), main = mine[0], nx = main && nextLesson(main), st = main ? courseStats(main) : { p: 0 };
-    var lvPct = (function () { var cs = COURSES.filter(function (c) { return c.level === S.level; }); var n = 0, d = 0; cs.forEach(function (c) { var s = courseStats(c); n += s.n; d += s.d; }); return n ? Math.round(d / n * 100) : 0; })();
-    var nextLv = LEVELS[LEVELS.indexOf(S.level) + 1];
+    var a = access();
+    if (!mine().length && !S.teacher) return vOnboard();
+    var keys = mine(), act = keys.indexOf(S.active) >= 0 ? S.active : keys[0], P = act ? planOf(act) : {};
+    var main = P.course || (S.teacher ? COURSES[0] : null), nx = main && nextLesson(main), st = main ? courseStats(main) : { p: 0, d: 0 };
     var goalPct = Math.min(100, Math.round((S.today.d === day() ? S.today.xp : 0) / GOAL_XP * 100));
-    var voc = IFX_DIR.filter(function (x) { return x.s === 'vocab' && fits(x); })[0];
-    var gram = IFX_DIR.filter(function (x) { return x.s === 'grammar' && fits(x); })[0];
-    var game = IFX_DIR.filter(function (x) { return x.s === 'games' && fits(x); })[0];
-    var g = GOALS.filter(function (x) { return x[0] === S.goal; })[0] || GOALS[0];
-    var html = '<div class="page-h"><div><p class="h-eyebrow">' + esc(g[1] + ' ' + g[2]) + (S.level && S.goal !== 'kids' ? ' · ' + esc(S.level) : '') + '</p><h1>' + (a.name ? 'Hi, ' + esc(a.name.split(' ')[0]) + '!' : 'Welcome to IF English') + '</h1></div><a class="chip" href="#/onboard">Change goal or level</a></div>' +
+    var lvPct = P.level && LEVELS.indexOf(P.level) >= 0 ? (function () { var cs = COURSES.filter(function (c) { return c.level === P.level && (c.track === 'general' || c.track === 'business'); }); var n = 0, d = 0; cs.forEach(function (c) { var s2 = courseStats(c); n += s2.n; d += s2.d; }); return n ? Math.round(d / n * 100) : 0; })() : null;
+    var nextLv = P.level ? LEVELS[LEVELS.indexOf(P.level) + 1] : null;
+    var html = '<div class="page-h"><div><p class="h-eyebrow">' + (S.teacher ? '👩‍🏫 Teacher' : S.who === 'child' ? '🧸 Young learner' : 'IF English') + '</p><h1>' + (a.name ? 'Hi, ' + esc(a.name.split(' ')[0]) + '!' : 'Welcome to IF English') + '</h1></div><a class="chip" href="#/onboard">✎ My courses</a></div>' +
+      (keys.length ? '<div class="chips mycourses">' + keys.map(function (k) { return '<button class="chip' + (k === act ? ' on' : '') + '" data-a="' + k + '">' + SICON[k] + ' ' + esc(SNAME[k]) + '</button>'; }).join('') + '</div>' : '') +
       '<div class="hello"><div class="plan">' + (main ? '<p class="h-eyebrow" style="color:var(--gold2)">' + esc(t('yourPlan')) + '</p><h2>' + (nx ? esc(nx.l.title) : 'Course complete! 🎉') + '</h2><p>' + esc(main.title) + (nx ? ' · ' + esc(t('unit')) + ' ' + (nx.ui + 1) + ': ' + esc(nx.u.title) : '') + '</p>' +
-        (nx ? '<a class="btn gold" href="#/lesson/' + main.id + '/' + nx.u.id + '/' + nx.l.id + '">' + (st.d ? t('cont') : t('start')) + ' →</a>' : '<a class="btn gold" href="#/courses">Choose the next course →</a>') : '<h2>Choose a course</h2><a class="btn gold" href="#/courses">Courses →</a>') +
-        (S.level && S.goal !== 'kids' && S.goal !== 'teach' ? '<div class="lvbar"><div class="row"><span>' + esc(S.level) + (nextLv ? ' → ' + nextLv : '') + '</span><span>' + lvPct + '%</span></div><div class="bar"><i style="width:' + lvPct + '%"></i></div></div>' : '') + '</div>' +
+        (nx ? '<a class="btn gold" href="#/lesson/' + main.id + '/' + nx.u.id + '/' + nx.l.id + '">' + (st.d ? t('cont') : t('start')) + ' →</a>' : '<a class="btn gold" href="#/courses">Next course →</a>')
+        : '<p class="h-eyebrow" style="color:var(--gold2)">' + esc(t('yourPlan')) + '</p><h2>' + esc(P.name || '') + '</h2><p>' + (P.voc ? 'Start with the vocabulary course, then play and test yourself.' : 'Choose a course.') + '</p>' + (P.voc ? '<a class="btn gold" href="' + esc(P.voc.href) + '">' + esc(P.voc.t) + ' →</a>' : '<a class="btn gold" href="#/courses">Courses →</a>')) +
+        (lvPct != null ? '<div class="lvbar"><div class="row"><span>' + esc(P.level) + (nextLv ? ' → ' + nextLv : '') + '</span><span>' + lvPct + '%</span></div><div class="bar"><i style="width:' + lvPct + '%"></i></div></div>' : '') + '</div>' +
       '<div class="goal"><div class="ring" style="--p:' + goalPct + '"><b>' + (S.today.d === day() ? S.today.xp : 0) + '<small>/ ' + GOAL_XP + ' XP</small></b></div><div><h3>' + esc(t('dailyGoal')) + '</h3><p style="margin:4px 0 0;color:var(--soft)">🔥 ' + S.streak + ' ' + esc(t('streak')) + ' · ⚡ ' + S.xp + ' XP</p>' +
         '<p style="margin:8px 0 0;font-size:14px;color:var(--soft)">One lesson ≈ 12–15 XP. Two lessons a day keeps your streak alive.</p></div></div></div>' +
       '<div class="sec"><h2>Today\'s three steps</h2></div><div class="steps">' +
-        step(1, main && nx ? { href: '#/lesson/' + main.id + '/' + nx.u.id + '/' + nx.l.id, t: nx.l.title, d: main.title + ' · ' + TYPE[nx.l.type] } : null, 'Your next lesson') +
-        step(2, voc ? { href: voc.href, t: voc.t, d: 'Learn 10 new words' } : null, 'Words') +
-        step(3, game ? { href: game.href, t: game.t, d: 'Play a game to review' } : gram ? { href: gram.href, t: gram.t, d: 'Grammar practice' } : null, 'Practice') +
+        step(1, main && nx ? { href: '#/lesson/' + main.id + '/' + nx.u.id + '/' + nx.l.id, t: nx.l.title, d: main.title + ' · ' + TYPE[nx.l.type] } : P.voc ? { href: P.voc.href, t: P.voc.t, d: 'Next unit' } : null, 'Lesson') +
+        step(2, P.voc && main ? { href: P.voc.href, t: P.voc.t, d: 'Learn 10 new words' } : P.test ? { href: P.test.href, t: P.test.t, d: 'Check your progress' } : null, 'Words') +
+        step(3, P.game ? { href: P.game.href, t: P.game.t, d: 'Play to review' } : null, 'Game') +
       '</div>' +
-      (S.goal === 'teach' || a.teacher ? teacherBox(a) : '') +
-      '<div class="sec"><h2>' + esc(t('forYou')) + '</h2><a href="#/courses">' + esc(t('all')) + ' →</a></div><div class="grid">' + mine.slice(0, 4).map(courseCard).join('') + '</div>';
+      (S.teacher || a.teacher ? teacherBox(a) : '') +
+      '<div class="sec"><h2>' + esc(t('forYou')) + '</h2><a href="#/courses">' + esc(t('all')) + ' →</a></div><div class="grid">' + myCourses().slice(0, 6).map(courseCard).join('') + '</div>';
     view().innerHTML = html;
+    $$('[data-a]').forEach(function (b) { b.onclick = function () { S.active = b.dataset.a; save(); vHome(); }; });
   }
   function step(n, x, label) {
     if (!x) return '';
@@ -186,7 +220,7 @@
   }
 
   /* ---------- courses ---------- */
-  var CTRACK = [['all', 'All'], ['general', 'General English'], ['business', 'Business English'], ['exam', 'IELTS']];
+  var CTRACK = [['all', 'All'], ['general', 'General English'], ['business', 'Business English'], ['exam', 'IELTS'], ['kids', 'Young learners']];
   function vCourses(f) {
     setNav('courses'); f = f || 'all';
     var list = COURSES.filter(function (c) { return f === 'all' || c.track === f; });
@@ -201,7 +235,7 @@
     setNav('courses');
     var c = BY[id]; if (!c) return go('#/courses');
     var s = courseStats(c), nx = nextLesson(c), a = access();
-    var html = '<div class="course-head"><span class="ic">' + c.icon + '</span><div class="grow"><p class="h-eyebrow">' + esc(c.level) + ' · ' + esc(c.track === 'exam' ? 'Exam' : c.track === 'business' ? 'Business English' : 'General English') + '</p><h1 style="font-size:28px">' + esc(c.title) + '</h1><p style="margin:4px 0 8px;color:var(--soft)">' + esc(c.blurb) + '</p><div class="bar" style="height:12px"><i style="width:' + s.p + '%"></i></div><p style="margin:6px 0 0;font-size:13.5px;color:var(--soft)">' + s.d + ' / ' + s.n + ' lessons · ' + s.p + '%' + (c.next ? ' · then: ' + esc(c.next) : '') + '</p></div></div>';
+    var html = '<div class="course-head"><span class="ic">' + c.icon + '</span><div class="grow"><p class="h-eyebrow">' + esc(c.level) + ' · ' + esc(c.track === 'exam' ? 'Exam' : c.track === 'business' ? 'Business English' : c.track === 'kids' ? 'Young learners' : 'General English') + '</p><h1 style="font-size:28px">' + esc(c.title) + '</h1><p style="margin:4px 0 8px;color:var(--soft)">' + esc(c.blurb) + '</p><div class="bar" style="height:12px"><i style="width:' + s.p + '%"></i></div><p style="margin:6px 0 0;font-size:13.5px;color:var(--soft)">' + s.d + ' / ' + s.n + ' lessons · ' + s.p + '%' + (c.next ? ' · then: ' + esc(c.next) : '') + '</p></div></div>';
     c.units.forEach(function (u, ui) {
       var open = unlocked(ui);
       html += '<section class="unit"><div class="unit-h"><div><small>' + esc(t('unit')) + ' ' + (ui + 1) + ' · ' + esc(u.topic) + '</small><h3>' + esc(u.title) + '</h3></div>' + (open ? '' : '<a class="btn sm gold" href="/me/#/upgrade">🔒 ' + esc(t('locked')) + '</a>') + '</div><div class="path">' +
@@ -221,18 +255,29 @@
     var c = BY[cid]; if (!c) return go('#/courses');
     var ui = c.units.findIndex(function (u) { return u.id === uid; }); var u = c.units[ui]; if (!u) return go('#/course/' + cid);
     var l = u.lessons.filter(function (x) { return x.id === lid; })[0]; if (!l) return go('#/course/' + cid);
-    if (!unlocked(ui)) return go('#/course/' + cid);
+    if (!unlocked(ui)) { if (!meLoaded) { view().innerHTML = '<p style="text-align:center;margin-top:40px">Loading…</p>'; return; } return go('#/course/' + cid); }
     teach = !!teach && access().teacher;
     document.body.classList.toggle('teach', teach);
     var items = [];
     if (l.type === 'vocab') { items.push({ k: 'learn' }); items = items.concat(vocabEx(l.words)); }
-    else if (l.type === 'grammar' || l.type === 'skill') { items.push({ k: 'rule' }); items = items.concat(l.ex.map(function (e) { return { k: 'ex', e: e }; })); }
+    if (l.gen) l.ex = l.gen.map(function (f) { return f(); });   // fresh numbers every time
+    if (l.type === 'vocab') {}
+    else if (l.type === 'grammar' || l.type === 'skill' || l.type === 'maths') { items.push({ k: 'rule' }); items = items.concat(l.ex.map(function (e) { return { k: 'ex', e: e }; })); }
     else if (l.type === 'reading') { items.push({ k: 'read' }); items = items.concat(l.ex.map(function (e) { return { k: 'ex', e: e }; })); }
     else items = l.ex.map(function (e) { return { k: 'ex', e: e }; });
     L = { c: c, u: u, ui: ui, l: l, items: items, i: 0, total: items.filter(function (x) { return x.k === 'ex'; }).length, right: 0, tried: {}, card: 0, teach: teach };
     drawStep();
   }
+  function kidsEx(words) {   // picture words: find it, name it, listen and choose
+    var w = shuffle(words), out = [], three = function (x) { return shuffle([x].concat(shuffle(words.filter(function (y) { return y !== x; })).slice(0, 2))); };
+    w.slice(0, 3).forEach(function (x) { var o = three(x); out.push({ k: 'ex', e: { t: 'picmc', q: 'Find the ' + x.w + '.', say: x.w, o: o.map(function (y) { return y.pic; }), a: o.indexOf(x) } }); });
+    w.slice(3, 5).forEach(function (x) { var o = three(x); out.push({ k: 'ex', e: { t: 'mc', pic: x.pic, q: 'What is it?', o: o.map(function (y) { return y.w; }), a: o.indexOf(x), say: x.w } }); });
+    w.slice(5).concat(w.slice(0, 1)).slice(0, 2).forEach(function (x) { var o = three(x); out.push({ k: 'ex', e: { t: 'picmc', q: 'Listen and choose.', listen: x.w, o: o.map(function (y) { return y.pic; }), a: o.indexOf(x) } }); });
+    out.push({ k: 'ex', e: { t: 'match', p: shuffle(words).slice(0, 4).map(function (x) { return [x.w, x.ru || x.d]; }) } });
+    return out;
+  }
   function vocabEx(words) {
+    if (words[0] && words[0].pic) return kidsEx(words);
     var w = shuffle(words), out = [];
     w.slice(0, 4).forEach(function (x) { var o = shuffle([x].concat(shuffle(words.filter(function (y) { return y !== x; })).slice(0, 2))); out.push({ k: 'ex', e: { t: 'mc', q: 'What does “' + x.w + '” mean?', o: o.map(function (y) { return y.d; }), a: o.indexOf(x), say: x.w } }); });
     w.slice(4, 8).forEach(function (x) { var re = new RegExp(x.w.split(' ')[0].replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\w*', 'i'); var m = x.e.match(re); if (!m) return; var o = shuffle([x].concat(shuffle(words.filter(function (y) { return y !== x; })).slice(0, 2))); out.push({ k: 'ex', e: { t: 'mc', q: x.e.replace(x.w.split(' ').length > 1 ? new RegExp(x.w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\w*', 'i') : re, '_____'), o: o.map(function (y) { return y.w; }), a: o.indexOf(x), why: x.e } }); });
@@ -252,7 +297,7 @@
     var v = view();
     if (it.k === 'learn') {
       var w = L.l.words[L.card];
-      v.innerHTML = '<div class="player">' + pTop() + '<div class="learn-card"><button class="say" id="sy" aria-label="Listen">🔊</button><div class="w">' + esc(w.w) + '</div><div class="pos">' + esc(w.p) + '</div><div class="d">' + esc(w.d) + '</div><div class="e">“' + esc(w.e) + '”</div>' + (w.ru ? '<span class="ru">🇷🇺 ' + esc(w.ru) + '</span>' : '') + '</div>' +
+      v.innerHTML = '<div class="player">' + pTop() + '<div class="learn-card">' + (w.pic ? '<div class="qpic">' + PIC(w.pic, 'pic big') + '</div>' : '') + '<button class="say" id="sy" aria-label="Listen">🔊</button><div class="w">' + esc(w.w) + '</div><div class="pos">' + esc(w.p) + '</div><div class="d">' + esc(w.d) + '</div><div class="e">“' + esc(w.e) + '”</div>' + (w.ru ? '<span class="ru">🇷🇺 ' + esc(w.ru) + '</span>' : '') + '</div>' +
         '<div class="dots">' + L.l.words.map(function (_, k) { return '<i class="' + (k === L.card ? 'on' : '') + '"></i>'; }).join('') + '</div>' +
         '<div style="display:flex;gap:10px;justify-content:center"><button class="btn ghost" id="pv"' + (L.card ? '' : ' disabled') + '>‹</button><button class="btn" id="nx">' + (L.card < L.l.words.length - 1 ? t('next') + ' ›' : 'Practise →') + '</button></div></div>';
       bindTop(); say(w.w);
@@ -276,9 +321,13 @@
   function drawEx(e) {
     var v = view(), peek = L.l.type === 'reading' ? '<details class="peek"><summary>📖 Look at the text</summary><div class="txt">' + paras(L.l.text) + '</div></details>' : '';
     var body = '';
+    var vis = (e.pic ? '<div class="qpic">' + PIC(e.pic, 'pic big') + '</div>' : '') + (e.scene ? scene(e.scene) : '');
+    var sayBtn = e.say || e.listen ? ' <button class="say" style="width:38px;height:38px;font-size:16px;vertical-align:middle" id="sq" aria-label="Listen">🔊</button>' : '';
     if (e.t === 'mc' || e.t === 'tf') {
       var opts = e.t === 'tf' ? ['True', 'False'] : e.o;
-      body = '<h2 class="qh">' + esc(e.q) + (e.say ? ' <button class="say" style="width:38px;height:38px;font-size:16px;vertical-align:middle" id="sq">🔊</button>' : '') + '</h2><div class="opts">' + opts.map(function (o, k) { return '<button class="opt" data-k="' + k + '">' + esc(o) + '</button>'; }).join('') + '</div>';
+      body = vis + '<h2 class="qh">' + esc(e.q) + sayBtn + '</h2><div class="opts">' + opts.map(function (o, k) { return '<button class="opt" data-k="' + k + '">' + esc(o) + '</button>'; }).join('') + '</div>';
+    } else if (e.t === 'picmc') {
+      body = vis + '<h2 class="qh">' + esc(e.q) + sayBtn + '</h2><div class="opts pics">' + e.o.map(function (o, k) { return '<button class="opt" data-k="' + k + '" aria-label="Picture ' + (k + 1) + '">' + PIC(o, 'pic') + '</button>'; }).join('') + '</div>';
     } else if (e.t === 'gap') {
       body = '<h2 class="qh">Complete the sentence.</h2><p class="gapq">' + esc(e.q).replace('___', '<input id="gi" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Answer">') + '</p>';
     } else if (e.t === 'order') {
@@ -291,14 +340,14 @@
       body = '<h2 class="qh">Match the pairs.</h2><div class="match"><div class="opts" id="ml">' + L.mt.left.map(function (x) { return '<button class="opt" data-k="' + x.k + '">' + esc(x.s) + '</button>'; }).join('') + '</div><div class="opts" id="mr">' + L.mt.right.map(function (x) { return '<button class="opt" data-k="' + x.k + '">' + esc(x.s) + '</button>'; }).join('') + '</div></div>';
     }
     var teach = L.teach ? '<div class="teachbar"><button class="btn ghost sm" id="rv">👁 ' + esc(t('reveal')) + '</button><button class="btn sm" id="tn">' + esc(t('next')) + ' ›</button></div>' : '';
-    v.innerHTML = '<div class="player">' + pTop() + peek + body + teach + '</div>' + (e.t === 'mc' || e.t === 'tf' || e.t === 'match' || L.teach ? '' : '<div class="fb" id="fb"><div class="fb-in"><span class="msg"></span><button class="btn" id="ck" disabled>' + esc(t('check')) + '</button></div></div>');
+    v.innerHTML = '<div class="player">' + pTop() + peek + body + teach + '</div>' + (e.t === 'mc' || e.t === 'tf' || e.t === 'picmc' || e.t === 'match' || L.teach ? '' : '<div class="fb" id="fb"><div class="fb-in"><span class="msg"></span><button class="btn" id="ck" disabled>' + esc(t('check')) + '</button></div></div>');
     bindTop();
-    if (e.say) { $('#sq').onclick = function () { say(e.say); }; }
+    if (e.say || e.listen) { $('#sq').onclick = function () { say(e.listen || e.say); }; if (e.listen || e.t === 'picmc') setTimeout(function () { say(e.listen || e.say); }, 250); }
     if (L.teach) {
       $('#rv').onclick = function () { reveal(e); };
       $('#tn').onclick = function () { L.i++; drawStep(); };
     }
-    if (e.t === 'mc' || e.t === 'tf') {
+    if (e.t === 'mc' || e.t === 'tf' || e.t === 'picmc') {
       $$('.opts .opt').forEach(function (b) { b.onclick = function () { if (L.teach) { b.classList.add('sel'); return; } var k = +b.dataset.k, ok = e.t === 'tf' ? (k === 0) === e.a : k === e.a; $$('.opts .opt').forEach(function (x) { x.disabled = true; }); b.classList.add(ok ? 'ok' : 'bad'); if (!ok) $$('.opts .opt')[e.t === 'tf' ? (e.a ? 0 : 1) : e.a].classList.add('ok'); result(ok, e); }; });
     } else if (e.t === 'gap') {
       var gi = $('#gi'), ck = $('#ck'); if (!L.teach) { gi.oninput = function () { ck.disabled = !gi.value.trim(); }; gi.onkeydown = function (ev) { if (ev.key === 'Enter' && gi.value.trim()) ck.click(); }; setTimeout(function () { gi.focus(); }, 50);
@@ -311,7 +360,7 @@
   }
   var norm = function (s) { return String(s).toLowerCase().replace(/[’‘`]/g, "'").replace(/\s+/g, ' ').replace(/[.?!]$/, '').trim(); };
   function reveal(e) {
-    if (e.t === 'mc') $$('.opts .opt')[e.a].classList.add('ok');
+    if (e.t === 'mc' || e.t === 'picmc') $$('.opts .opt')[e.a].classList.add('ok');
     else if (e.t === 'tf') $$('.opts .opt')[e.a ? 0 : 1].classList.add('ok');
     else if (e.t === 'gap') { var gi = $('#gi'); gi.value = e.a[0]; gi.classList.add('ok'); }
     else if (e.t === 'order') { $('#ol').innerHTML = '<b style="font-size:22px">' + esc(e.a) + '</b>'; }
@@ -410,7 +459,7 @@
     return '<a class="card" href="' + (open ? '#/lesson/' + x.c.id + '/' + x.u.id + '/' + x.l.id : '/me/#/upgrade') + '">' + (open ? '' : '<span class="lock">🔒</span>') + '<span class="ic">' + ICONS[x.l.type] + '</span><h3>' + esc(x.l.title) + '</h3><p>' + esc(x.c.title) + ' · ' + esc(t('unit')) + ' ' + (x.ui + 1) + '</p><div class="meta"><span class="tag ' + tagFor(x.c.track) + '">' + esc(x.c.level) + '</span>' + (done ? '<span class="tag" style="background:var(--ok-bg);color:var(--ok)">✓ ' + S.done[key3(x.c.id, x.u.id, x.l.id)].score + '%</span>' : '') + '</div></a>';
   }
   function vSection(k, f) {
-    setNav(k); var sc = SEC[k]; f = f || (S.goal ? 'fit' : 'all');
+    setNav(k); var sc = SEC[k]; f = f || (mine().length ? 'fit' : 'all');
     var items = IFX_DIR.filter(function (x) { return x.s === k && match(x, f); });
     var extra = '';
     if (k === 'vocab') { var vl = lessonsOf(['vocab']).filter(function (x) { return f === 'all' || f === 'level' || (f === 'business' ? x.c.track === 'business' : f === 'exam' ? x.c.track === 'exam' : f === 'general' ? x.c.track === 'general' : f === 'fit' ? myCourses().indexOf(x.c) >= 0 : false); }); if (vl.length) extra = '<div class="sec"><h2>Vocabulary lessons</h2></div><div class="grid">' + vl.map(lessonCard).join('') + '</div>'; }
@@ -432,7 +481,7 @@
   function vMore() {
     setNav('more');
     view().innerHTML = '<div class="page-h"><div><h1>More</h1></div></div><div class="grid">' + IFX_DIR.filter(function (x) { return x.s === 'more' || x.s === 'kids'; }).map(itemCard).join('') +
-      '<a class="card" href="#/onboard"><span class="ic">🎯</span><h3>Change goal or level</h3><p>Now: ' + esc((GOALS.filter(function (g) { return g[0] === S.goal; })[0] || ['', '', 'not set'])[2]) + (S.level ? ' · ' + S.level : '') + '</p></a>' +
+      '<a class="card" href="#/onboard"><span class="ic">🎯</span><h3>My courses and levels</h3><p>' + esc(mine().map(function (k) { return SNAME[k]; }).join(', ') || 'Not chosen yet') + '</p></a>' +
       '<a class="card" href="/me/#/upgrade"><span class="ic">⭐</span><h3>Plans</h3><p>Full access for students — and the Teacher plan for classes.</p></a></div>';
   }
 
@@ -472,7 +521,7 @@
       case 'course': return vCourse(p[1]);
       case 'lesson': return vLesson(p[1], p[2], p[3], qs.get('teach') === '1');
       case 'vocabulary': return vSection('vocab');
-      case 'join': return S.goal ? vHome() : vOnboard();
+      case 'join': return mine().length ? vHome() : vOnboard();
       case 'vocab': case 'grammar': case 'games': case 'tests': return vSection(p[0]);
       case 'ielts': return vIelts();
       case 'more': return vMore();
@@ -485,6 +534,6 @@
     document.documentElement.lang = lang;
     if (/[?&]embed=1/.test(location.search)) { document.body.classList.add('embed'); document.addEventListener('click', function (e) { var a = e.target.closest('a[href]'); if (a && a.getAttribute('href').charAt(0) !== '#') a.target = '_top'; }); }
     frame(); route();
-    await loadMe(); frame(); route();
+    await loadMe(); meLoaded = true; frame(); route();
   });
 })();
