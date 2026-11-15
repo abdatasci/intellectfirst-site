@@ -39,6 +39,13 @@
   .q .opts button.ok{border-color:var(--ok);background:#e7f8ec}.q .opts button.no{border-color:var(--bad);background:#fdeaea}
   .toast{position:fixed;left:50%;bottom:110px;transform:translateX(-50%);background:rgba(11,31,58,.92);padding:10px 18px;border-radius:999px;font-weight:700;z-index:25;opacity:0;transition:opacity .25s;pointer-events:none;max-width:90vw;text-align:center}
   .toast.on{opacity:1}
+  #qpanel{position:fixed;left:50%;bottom:40px;transform:translateX(-50%);z-index:9;display:none;width:min(760px,calc(100vw - 24px));background:rgba(11,31,58,.92);border:2px solid var(--gold);border-radius:18px;padding:10px 14px 8px;text-align:center;pointer-events:none;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+  #qpanel .qq{font-weight:800;font-size:clamp(17px,2.6vw,22px);line-height:1.25;margin-bottom:8px}
+  #qpanel .qa{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+  #qpanel .qa span{border-radius:12px;padding:6px 12px;font-weight:800;font-size:clamp(15px,2.2vw,19px);box-shadow:0 3px 0 rgba(0,0,0,.3)}
+  #qpanel .qa b{display:inline-block;background:rgba(255,255,255,.95);color:#0b1f3a;border-radius:6px;padding:0 6px;margin-right:4px}
+  #qpanel .qh{font-size:12px;opacity:.75;margin-top:6px}
+  @media (pointer:coarse){#qpanel{bottom:auto;top:58px}}
   .act{position:fixed;right:22px;bottom:150px;z-index:8;display:none}
   .act button{width:84px;height:84px;border-radius:50%;font-size:30px;padding:0}
   .touch{display:none}
@@ -58,6 +65,7 @@
 <div class="act" id="act"><button class="btn" id="mine" aria-label="Mine">⛏</button></div>
 <div class="touch"><div class="joy" id="joy"><i></i></div><button class="jump" id="jump">Jump</button></div>
 <div class="toast" id="toast"></div>
+<div id="qpanel"></div>
 
 <div class="screen" id="start">
   <div class="card">
@@ -88,6 +96,6 @@
 <script src="/app/courses/be-b1.js?v=1"></script>
 <script src="/app/courses/be-b2.js?v=1"></script>
 <script src="/app/courses/be-c1.js?v=1"></script>
-<script src="game.js?v=2"></script>
+<script src="game.js?v=3"></script>
 </body>
 </html>

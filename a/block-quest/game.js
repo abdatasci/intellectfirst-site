@@ -216,6 +216,15 @@
 
   /* ================= GRAMMAR OBBY ================= */
   var PALETTE = [0xff7a59, 0x4cc76a, 0x3d8bfd, 0xb98cff, 0xffc23d, 0xff5ca8];
+  var ANS_COL = [0xff4f6d, 0x3d8bfd, 0x22c55e], ANS_L = ['A', 'B', 'C'], ANS_CSS = ['#ff4f6d', '#3d8bfd', '#22c55e'];
+  function qPanel(g) {
+    var el = $('#qpanel'); if (!el) return;
+    if (!g) { el.style.display = 'none'; return; }
+    if (el.dataset.g === String(G.gates.indexOf(g))) return; el.dataset.g = G.gates.indexOf(g);
+    el.innerHTML = '<div class="qq">' + (G.gates.indexOf(g) + 1) + '. ' + escH(g.q.q) + '</div><div class="qa">' + g.q.opts.map(function (o, k) { return '<span style="background:' + ANS_CSS[k % 3] + '"><b>' + ANS_L[k] + '</b> ' + escH(o) + '</span>'; }).join('') + '</div><div class="qh">Jump onto the platform with the same colour and letter</div>';
+    el.style.display = 'block';
+  }
+  function escH(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
   function startObby(level) {
     baseScene(0x7ec8ff, 120); cloudLayer();
     var plats = [], signs = [], Q = questions(level, 8, true), z = 0, x = 0, y = 0;
@@ -236,8 +245,9 @@
       var cloth = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.55, 0.05), mat(0xc9a24e)); cloth.position.set(-3.5, y + 2.1, cp.z); scene.add(cloth);
       z -= 5.5; var row = z;
       var sign = textPlane((qi + 1) + '. ' + q.q, 12, 2.4, { size: 46 }); sign.position.set(0, y + 5.4, row - 1.6); scene.add(sign); signs.push(sign);
-      var answers = q.opts.map(function (o, k) { var A = add((k - (q.opts.length - 1) / 2) * 4.2, y, row - 1.5, 3.2, 3, 0xfff3d6, 'answer'); A.correct = k === q.a; A.gate = qi;
-        var lab = textPlane(o, 3.4, 1.15, { size: 46 }); lab.position.set(A.x, y + 1.3, A.z + 1.6); scene.add(lab); A.label = lab; return A; });
+      // each answer has its own colour and letter (A red, B blue, C green), the same as the panel at the bottom of the screen
+      var answers = q.opts.map(function (o, k) { var A = add((k - (q.opts.length - 1) / 2) * 4.6, y, row - 1.5, 3.6, 3, ANS_COL[k % 3], 'answer'); A.correct = k === q.a; A.gate = qi;
+        var lab = textPlane(ANS_L[k] + '  ' + o, 4.4, 1.5, { size: 52 }); lab.position.set(A.x, y + 2.1, A.z + 1.2); scene.add(lab); A.label = lab; return A; });
       gates.push({ q: q, cp: cp, answers: answers, missed: false, passed: false });
       z = row - 3; x = 0;
     });
@@ -266,6 +276,7 @@
     if (landed) { p.y = landed.y; p.vy = 0; p.ground = true; if (p.on !== landed) onLand(landed); p.on = landed; } else p.on = null;
     if (p.y < -25) { G.falls++; beep('fall'); p.x = p.cp.x; p.y = p.cp.y + 0.5; p.z = p.cp.z; p.vy = 0; toast('Back to the last checkpoint!'); updateObbyHud(); }
     G.trophy.rotation.y += dt;
+    qPanel(G.gates.filter(function (g) { return !g.passed; })[0] || null);
     if (Math.random() < 0.05) updateObbyHud();
     wantJump = false; wantMine = false;
   }
@@ -331,7 +342,7 @@
   function begin(mode, level) {
     MODE = mode; LEVEL = level; SAVE.mode = mode; SAVE.level = level; persist();
     $('#start').style.display = 'none'; paused = false; yaw = 0; pitch = 0.32;
-    parts = []; (mode === 'mine' ? startMine : startObby)(level);
+    parts = []; var qp = $('#qpanel'); if (qp) { qp.style.display = 'none'; qp.dataset.g = ''; } (mode === 'mine' ? startMine : startObby)(level);
     camera.position.set(G.p.x, G.p.y + 6, G.p.z + 9);
   }
   $('#play').onclick = function () { begin(MODE, LEVEL); };
