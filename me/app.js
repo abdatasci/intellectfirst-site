@@ -32,11 +32,11 @@
   }
   // main goal → the apps that fit it (lock = part of full access)
   var GOALS = [
-    ['General English', [['IF English vocabulary', '/a/if-english/', 1], ['IF Skill Games', '/a/skill-games/'], ['Grammar Game Centre', '/a/grammar-game-centre/'], ['Grammar in Use Quest', '/a/grammar-in-use-quest/'], ['Test Centres A1–C1', '/a/ef-b1-tests/', 1], ['AI practice', '/live/'], ['AI tests', '/tests/']]],
+    ['General English', [['IF English vocabulary', '/app/#/vocab', 1], ['IF Skill Games', '/a/skill-games/'], ['Grammar Game Centre', '/a/grammar-game-centre/'], ['Grammar in Use Quest', '/a/grammar-in-use-quest/'], ['Test Centres A1–C1', '/a/ef-b1-tests/', 1], ['AI practice', '/live/'], ['AI tests', '/tests/']]],
     ['IELTS', [['IELTS Centre (AI marking)', '/a/ielts/', 1], ['IELTS Speaking Lab', '/a/ielts-speaking/'], ['IF IELTS Studio', '/a/ielts-studio/'], ['Band 9 Lexis', '/a/band9-lexis/'], ['AI tests', '/tests/']]],
     ['Cambridge exams (KET, PET, Flyers)', [['KET Quest', '/a/ket-quest/'], ['KET Booster Arcade', '/a/ket-booster/'], ['PET Quest', '/a/pet-quest/'], ['PET Arcade', '/a/pet-arcade/'], ['Flyers Arcade', '/a/flyers-arcade/'], ['PET Test Centre', '/a/pet-tests/', 1], ['Young Learners tests', '/a/yl-tests/', 1]]],
     ['English for children', [['IF Kids English', '/a/kids-english/'], ['Young Learners Centre', '/a/young-learners/'], ['Flyers Arcade', '/a/flyers-arcade/'], ['Young Learners tests', '/a/yl-tests/', 1]]],
-    ['Business English', [['IF English vocabulary', '/a/if-english/', 1], ['IF Skill Games', '/a/skill-games/'], ['AI tests', '/tests/'], ['AI practice', '/live/']]],
+    ['Business English', [['IF English vocabulary', '/app/#/vocab', 1], ['IF Skill Games', '/a/skill-games/'], ['AI tests', '/tests/'], ['AI practice', '/live/']]],
     ['Kazakh or Russian', [['Kazakh A1–B1', '/a/kazakh-a1-b1/'], ['Russian A1–B1', '/a/russian-a1-b1/']]]
   ];
   function goalOf(p) { var g = String((p && p.goals) || ''); for (var i = 0; i < GOALS.length; i++) if (g.indexOf(GOALS[i][0]) === 0) return GOALS[i]; return null; }
@@ -478,7 +478,7 @@
       h += attBox(ME.attendance);
       h += ieltsBox(ME.ielts, true);
       h += freeAcct() ? '<div class="box"><h3>Vocabulary</h3><p class="small" style="margin-bottom:12px">IF English: 12 vocabulary courses with flashcards, audio and games. Included in full access.</p><a class="btn sm" href="#/upgrade">See full access</a></div>'
-        : '<div class="box"><h3>Vocabulary</h3><p class="small" style="margin-bottom:12px">Practise the words for your course with flashcards, audio and games.</p><a class="btn sm" href="/a/if-english/">Open IF English</a></div>';
+        : '<div class="box"><h3>Vocabulary</h3><p class="small" style="margin-bottom:12px">Practise the words for your course with flashcards, audio and games.</p><a class="btn sm" href="/app/#/vocab">Open IF English</a></div>';
       h += '<div class="box"><h3>Games and practice</h3><p class="small" style="margin-bottom:12px">Games, quests and AI practice for every level' + (freeAcct() ? ' (free accounts: a few AI rounds a day)' : '') + '.</p><a class="btn sm" href="/#apps">Open the apps</a> <a class="btn ghost sm" href="/live/">AI practice</a> <a class="btn ghost sm" href="/tests/">AI tests</a></div>';
       if (r === 'student' || (ME.homework || []).length) h += hwBox(ME.homework || []);
     } else {

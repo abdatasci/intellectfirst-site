@@ -1,3 +1,7 @@
+# The old IF English hub now lives inside the IF English app (same layout and design for every student)
+/a/if-english /app/#/vocab 301!
+/a/if-english/ /app/#/vocab 301!
+/a/if-english/index.html /app/#/vocab 301!
 /a/vocab-a1 /a/if-english/courses/A1/ 301
 /a/vocab-a1/* /a/if-english/courses/A1/ 301
 /a/vocab-a2 /a/if-english/courses/A2/ 301
