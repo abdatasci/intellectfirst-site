@@ -21,6 +21,22 @@ for (const f of ['dist/index.html', 'dist/a/ielts/index.html', 'dist/a/ielts/app
 }
 console.log('Homepage, portal and IELTS Centre assets stamped with version', V);
 
+// One look for everyone: pages follow the light IF design even when the student's computer is in dark mode
+// (the dark colours only applied on devices set to dark mode, so students saw a different design from the director).
+let lightCount = 0;
+(function walk(dir) {
+  for (const n of readdirSync(dir)) {
+    const p = `${dir}/${n}`;
+    if (n === 'node_modules') continue;
+    if (statSync(p).isDirectory()) { walk(p); continue; }
+    if (!/\.(css|html|js)$/.test(n)) continue;
+    const s = readFileSync(p, 'utf8');
+    if (!/prefers-color-scheme\s*:\s*dark/.test(s)) continue;
+    writeFileSync(p, s.replace(/prefers-color-scheme\s*:\s*dark/g, 'prefers-color-scheme: no-dark')); lightCount++;
+  }
+})('dist');
+console.log('Light design forced on', lightCount, 'files');
+
 // Every page gets the shared Back / Home buttons and the 3D-shield tilt (if-nav.js decides what to show).
 let navCount = 0, voiceCount = 0;
 (function walk(dir) {

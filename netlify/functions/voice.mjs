@@ -59,7 +59,7 @@ export default async (req) => {
     const why = r ? (await r.text().catch(() => '')).slice(0, 300) : 'network';
     console.log('ElevenLabs error', r && r.status, why);
     await store.setJSON('last-error', { at: new Date().toISOString(), status: r ? r.status : 0, message: why.replace(/sk_[A-Za-z0-9]+/g, 'sk_…') }).catch(() => {});
-    return no(503, 'tts');
+    return no(r && r.status >= 400 && r.status < 500 ? r.status : 502, 'tts:' + (r ? r.status : 'network') + ':' + why.slice(0, 120));
   }
   const buf = await r.arrayBuffer();
   await Promise.all([

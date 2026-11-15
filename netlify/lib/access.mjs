@@ -21,6 +21,9 @@ export function tier(p) {
   if (p.role === 'teacher' || p.role === 'admin') return 'staff';
   if (p.role === 'student') return 'member';
   if (p.role === 'guest' && (paidActive(p) || trialActive(p))) return 'member';
+  // IF Academy students and the director's individual students: everything is free, straight away.
+  // (Their request stays in Admin → Accounts; declining it ends the access.)
+  if (p.role === 'guest' && (p.track === 'if' || p.track === 'private') && p.request) return 'member';
   return 'free';
 }
 export const isMember = p => { const t = tier(p); return t === 'staff' || t === 'member'; };
