@@ -199,7 +199,7 @@
     else if (/^book:/.test(k)) { var bk = k.slice(5), BL = { 'ef-a1': 'A1', 'ef-a2': 'A2', 'ef-b1': 'B1', 'ef-b2': 'B2', 'ef-c1': 'C1', 'ef-c2': 'C2', 'teens-b1': 'B1', 'teens-b2': 'B2', giu: 'B1' }; P.level = BL[bk]; P.book = true;
       if (/^ef-/.test(bk)) { P.test = byId(bk); P.voc = byId('voc-' + bk.slice(3)); P.game = byId('g-skill'); }
       else if (/^teens-/.test(bk)) { P.test = byId(bk); P.voc = byId(bk === 'teens-b1' ? 'voc-tb1' : 'voc-tb2'); P.game = byId('gameroom'); }
-      else { P.voc = byId('gram-centre'); P.game = byId('giu-quest'); P.test = byId('test-centre'); }
+      else { P.voc = byId('gram-centre'); P.game = byId('g-gram'); P.test = byId('test-centre'); }
       P.course = BY[bk] || BY['ge-' + (P.level || '').toLowerCase()]; }
     if (!P.game) P.game = IFX_DIR.filter(function (x) { return x.s === 'games' && fitsKey(x, k); })[0];
     return P;
@@ -546,15 +546,17 @@
 
   /* ---------- directory sections (vocabulary, grammar, games, tests, IELTS) ---------- */
   var SEC = {
-    vocab: { h: 'Vocabulary', p: 'Words by level, by coursebook and for exams — with audio, games and progress.', f: [['fit', 'For you'], ['level', 'By level'], ['general', 'General'], ['business', 'Business'], ['exam', 'Exams'], ['book', 'Coursebooks'], ['kids', 'Kids'], ['all', 'All']] },
+    vocab: { h: 'Vocabulary', p: 'Words by level, by coursebook and for exams — with audio, games and progress.', f: [['fit', 'For you'], ['level', 'By level'], ['general', 'General'], ['business', 'Business'], ['exam', 'Exams'], ['book', 'Coursebooks'], ['young', 'Young learners'], ['all', 'All']] },
     grammar: { h: 'Grammar', p: 'Grammar from A1 to C2: short explanations, then practice and games.', f: [['fit', 'For you'], ['A1', 'A1'], ['A2', 'A2'], ['B1', 'B1'], ['B2', 'B2'], ['C1', 'C1'], ['C2', 'C2'], ['all', 'All']] },
-    games: { h: 'Games', p: 'Learn by playing — alone, or with your class on the big screen.', f: [['fit', 'For you'], ['teens', 'Teens & adults'], ['general', 'General English'], ['business', 'Business English'], ['ielts', 'IELTS'], ['brain', '🧠 Brain training'], ['vocabulary', 'Vocabulary'], ['grammar', 'Grammar'], ['ket', 'KET'], ['pet', 'PET'], ['kids', 'Kids'], ['class', 'Class games'], ['all', 'All']] },
-    tests: { h: 'Tests', p: 'Find your level, check your progress and prepare for exams. Results are saved to your account.', f: [['fit', 'For you'], ['book', 'Coursebook tests'], ['cambridge', 'Cambridge'], ['ielts', 'IELTS'], ['kids', 'Kids'], ['all', 'All']] }
+    games: { h: 'Games', p: 'Learn by playing — alone, or with your class on the big screen.', f: [['all', 'All'], ['fit', 'For you'], ['teens', 'Teens & adults'], ['young', 'Young learners'], ['ielts', 'IELTS'], ['business', 'Business'], ['class', 'Class games']] },
+    tests: { h: 'Tests', p: 'Find your level, check your progress and prepare for exams. Results are saved to your account.', f: [['fit', 'For you'], ['book', 'Coursebook tests'], ['cambridge', 'Cambridge'], ['ielts', 'IELTS'], ['young', 'Young learners'], ['all', 'All']] }
   };
   function match(it, f) {
     if (f === 'all') return true; if (f === 'fit') return fits(it);
     if (LEVELS.indexOf(f) >= 0) return (it.lv || []).indexOf(f) >= 0;
-    if (f === 'teens') return (it.tags || []).indexOf('teens') >= 0 || (it.tags || []).indexOf('adults') >= 0;
+    var tg = it.tags || [];
+    if (f === 'teens') return tg.indexOf('teens') >= 0 || tg.indexOf('adults') >= 0 || tg.indexOf('pet') >= 0;   // PET (B1) suits teens too
+    if (f === 'young') return it.tr === 'kids' || tg.indexOf('kids') >= 0 || tg.indexOf('ket') >= 0 || tg.indexOf('pet') >= 0 || tg.indexOf('starters') >= 0;
     if (f === 'general' || f === 'business' || f === 'exam' || f === 'kids') return it.tr === f || (it.tags || []).indexOf(f) >= 0;
     return (it.tags || []).indexOf(f) >= 0;
   }
@@ -574,6 +576,21 @@
   function vSection(k, f) {
     setNav(k); var sc = SEC[k]; f = f || (mine().length ? 'fit' : 'all');
     var items = IFX_DIR.filter(function (x) { return x.s === k && match(x, f); });
+    var EDITION = /^(kart|bq|obby|kq)-(ket|pet|flyers)$/;   // KET / PET / Flyers editions of the young learners' games
+    if (k === 'games' && (f === 'all' || f === 'young')) {
+      var shown = {}, grp = function (title, list) { list = list.filter(function (x) { return x && !shown[x.id]; }); list.forEach(function (x) { shown[x.id] = 1; }); return list.length ? '<div class="sec"><h2>' + title + '</h2></div><div class="grid">' + list.map(itemCard).join('') + '</div>' : ''; };
+      var G = function (fn) { return IFX_DIR.filter(function (x) { return x.s === 'games' && !EDITION.test(x.id) && fn(x); }); };
+      var eds = IFX_DIR.filter(function (x) { return x.s === 'games' && EDITION.test(x.id); });
+      var edRow = '<div class="eds"><b>KET, PET and Flyers editions:</b> ' + eds.map(function (x) { return '<a class="chip" href="#/play/' + x.id + '">' + x.icon + ' ' + esc(x.t) + '</a>'; }).join('') + '</div>';
+      var body = f === 'young' ? grp('Young learners · Starters to PET', G(function (x) { return match(x, 'young'); })) + edRow
+        : grp('⭐ Start here', [byId('mind-lab'), byId('live')]) + grp('Class games', G(function (x) { return match(x, 'class'); })) + grp('Teens & adults', G(function (x) { return match(x, 'teens') && !match(x, 'young'); })) +
+          grp('Young learners · Starters to PET', G(function (x) { return match(x, 'young'); })) + edRow + grp('More', G(function () { return true; }));
+      view().innerHTML = '<div class="page-h"><div><p class="h-eyebrow">' + esc(t(k)) + '</p><h1>' + esc(sc.h) + '</h1><p>' + esc(sc.p) + '</p></div></div>' +
+        '<div class="chips">' + sc.f.map(function (x) { return '<button class="chip' + (x[0] === f ? ' on' : '') + '" data-f="' + x[0] + '">' + esc(x[1]) + '</button>'; }).join('') + '</div>' + gamesChip(k) + body;
+      $$('[data-f]').forEach(function (b) { b.onclick = function () { vSection(k, b.dataset.f); }; });
+      return;
+    }
+    if (k === 'games' && f !== 'fit') items = items.filter(function (x) { return !EDITION.test(x.id); });
     var extra = '';
     if (k === 'vocab') { var vl = lessonsOf(['vocab']).filter(function (x) { return f === 'all' || f === 'level' || (f === 'business' ? x.c.track === 'business' : f === 'exam' ? x.c.track === 'exam' : f === 'general' ? x.c.track === 'general' : f === 'fit' ? myCourses().indexOf(x.c) >= 0 : false); }); if (vl.length) extra = '<div class="sec"><h2>Vocabulary lessons</h2></div><div class="grid">' + vl.map(lessonCard).join('') + '</div>'; }
     if (k === 'grammar') { var gl = lessonsOf(['grammar']).filter(function (x) { return f === 'all' || f === 'fit' ? (f === 'all' || myCourses().indexOf(x.c) >= 0) : x.c.level === f; }); if (gl.length) extra = '<div class="sec"><h2>Grammar lessons</h2></div><div class="grid">' + gl.map(lessonCard).join('') + '</div>'; }

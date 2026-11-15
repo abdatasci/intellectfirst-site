@@ -168,7 +168,7 @@
   function ruUI() { return lsGet('ifen:lang', null) === 'ru'; }
 
   /* ---------- 6. navigation ---------- */
-  function home(view) { location.href = ROOT + 'index.html' + (view ? '#' + view : ''); }
+  function home(view) { var u = '/app/#/' + (NS === 'GR' ? 'games' : 'vocab'); try { if (window.top !== window) { window.top.location.href = u; return; } } catch (e) {} location.href = u; }
   if (App && App.addListener) {
     App.addListener('backButton', function () {
       if (document.querySelector('.ifen-dlg')) { document.querySelector('.ifen-dlg').remove(); return; }

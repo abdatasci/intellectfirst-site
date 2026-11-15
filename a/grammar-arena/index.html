@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>IF Grammar Arena</title>
+<meta name="description" content="IF Grammar Arena: all of Grammar in Use as games — follow the Quest unit by unit, or practise any unit with the game you like.">
+<link rel="icon" href="/brand/favicon-64.png">
+<link rel="stylesheet" href="/a/if-english/shared/fonts.css">
+<style>
+/* One home for the grammar games: Quest (the units in order, as an adventure) and Practice (any unit, any game). */
+:root{--navy:#14213D;--gold:#C9A227;--gold2:#E7CF7A;--bg:#F6F4EE;--card:#fff;--ink:#1F2937;--muted:#5B6B82;--line:#E4DCCD;
+  --display:"Fraunces",Cambria,Georgia,serif;--body:"Manrope",Calibri,Arial,sans-serif;color-scheme:light}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:var(--body)}
+body{display:flex;flex-direction:column}
+header{display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding:14px max(16px,3vw);background:var(--navy);color:#fff}
+header .t{margin-right:auto;min-width:0}
+header h1{margin:0;font-family:var(--display);font-size:clamp(20px,2.6vw,26px);font-weight:800}
+header p{margin:2px 0 0;color:var(--gold2);font-size:13.5px}
+.modes{display:flex;gap:8px;background:rgba(255,255,255,.08);padding:5px;border-radius:16px}
+.modes a{display:flex;align-items:center;gap:10px;padding:8px 14px;border-radius:12px;color:#fff;text-decoration:none;min-width:0}
+.modes a b{display:block;font-size:15px}
+.modes a small{display:block;font-size:12px;color:rgba(255,255,255,.7)}
+.modes a .i{font-size:22px}
+.modes a.on{background:var(--gold);color:var(--navy)}
+.modes a.on small{color:rgba(20,33,61,.75)}
+main{flex:1;min-height:0;display:flex}
+iframe{flex:1;width:100%;border:0;background:var(--bg)}
+@media (max-width:640px){header{padding:10px 12px;gap:10px}header p{display:none}.modes{width:100%}.modes a{flex:1;justify-content:center;padding:8px}.modes a small{display:none}}
+</style>
+</head>
+<body>
+<header>
+  <div class="t"><h1>IF Grammar Arena</h1><p>Grammar in Use as games · A1 to C1</p></div>
+  <nav class="modes" aria-label="Mode">
+    <a href="#quest" data-m="quest"><span class="i">🗺️</span><span><b>Quest</b><small>The units in order, as an adventure</small></span></a>
+    <a href="#practice" data-m="practice"><span class="i">🧩</span><span><b>Practice</b><small>Any unit · any game</small></span></a>
+  </nav>
+</header>
+<main><iframe id="f" title="Grammar games" allow="autoplay; fullscreen"></iframe></main>
+<script>
+(function () {
+  var SRC = { quest: '/a/grammar-in-use-quest/index.html', practice: '/a/grammar-game-centre/index.html' };
+  var f = document.getElementById('f');
+  function pick() {
+    var m = (location.hash || '').slice(1);
+    if (!SRC[m]) { try { m = localStorage.getItem('ifga.mode'); } catch (e) {} }
+    if (!SRC[m]) m = 'quest';
+    try { localStorage.setItem('ifga.mode', m); } catch (e) {}
+    document.querySelectorAll('.modes a').forEach(function (a) { a.classList.toggle('on', a.dataset.m === m); a.setAttribute('aria-current', a.dataset.m === m ? 'page' : 'false'); });
+    if (f.getAttribute('src') !== SRC[m]) f.setAttribute('src', SRC[m]);
+  }
+  addEventListener('hashchange', pick); pick();
+})();
+</script>
+</body>
+</html>

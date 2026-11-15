@@ -1,4 +1,4 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>IF English · Game Room</title><link rel="stylesheet" href="../shared/reset.css"><link rel="stylesheet" href="../shared/fonts.css"><script src="../shared/capacitor.js"></script><script src="../config.js"></script><script>window.IFEN_ROOT="../";window.IFEN_NS="GR";</script><script src="/if-lock.js"></script><script src="../shared/ifen.js"></script></head><body>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>IF English · Board & Mystery Games</title><link rel="stylesheet" href="../shared/reset.css"><link rel="stylesheet" href="../shared/fonts.css"><script src="../shared/capacitor.js"></script><script src="../config.js"></script><script>window.IFEN_ROOT="../";window.IFEN_NS="GR";</script><script src="/if-lock.js"></script><script src="../shared/ifen.js"></script></head><body>
 <meta name="claude:viewport-fit-sides" content="cover">
 <style>
 /* Layout: one dark "case room" — navy night, gold lamp light. Tabs across the top, one game at a time, big type for the classroom board */
@@ -288,7 +288,7 @@ details.ans summary{cursor:pointer;color:#8A6A1E;font-weight:700}
 
 <header class="gut"><div class="wrap">
   <img src="/a/if-english/img/image-4356ac33271a.png" alt="IF Academy logo">
-  <div><small>IF Academy · Classroom games · Игры для урока</small><h1>Game Room</h1></div>
+  <div><small>IF Academy · Classroom games · Игры для урока</small><h1>Board &amp; Mystery Games</h1></div>
 </div></header>
 <nav class="gut" aria-label="Games"><div class="wrap" id="nav"></div></nav>
 <main class="gut"><div class="wrap" id="guide"></div><div class="wrap" id="app"></div></main>
@@ -567,15 +567,15 @@ ART.agents=svg(`${[0,1,2,3,4,5,6,7,8].map(i=>`<rect x="${26+(i%3)*24}" y="${28+M
 ART.clues=ART.puzzles;
 
 /* =================== CATEGORIES, GAMES, ROUTING =================== */
-const CATS=[['role','Role & mystery','Ролевые и детективные'],['puzzle','Puzzles & riddles','Загадки и головоломки'],['word','Word games','Словесные игры'],['board','Board games','Настольные игры'],['card','Card games','Карточные игры'],['tools','Teacher tools','Для учителя']];
+const CATS=[['mystery','Mystery & role-play','Детективы и ролевые'],['board','Board & card games','Настольные и карточные'],['word','Word games','Словесные игры'],['tools','Teacher tools','Для учителя']];
 // key, category, English name, Russian name, description, level, players, time
 const GAMES=[
- ['mafia','role','Mafia','Мафия','Secret roles on one screen, Mafia partners shown to each other, narrator script, players out and the winner.','A2–C1','8–20','30–60 min'],
- ['cases','role','Murder mysteries','Детективные истории','Story, character cards one at a time, notes table, clues on a 10-minute timer, class vote and solution.','A2–B2','6–12','30–90 min'],
- ['alibi','role','Alibi','Алиби','Two suspects agree a story; the class checks if their answers match. Plus a couple-interview version.','A2–B2','6+','20–30 min'],
- ['clues','puzzle','Detective Clues','Улики на стенах','Running dictation: clues on the walls, then match five people with their names and ages.','A2–B1','Groups','15–25 min'],
- ['puzzles','puzzle','Detective puzzles','Детективные задачи','Short cases. Students choose an answer and get a score.','A2–B1','Any','10–20 min'],
- ['riddles','puzzle','Riddles','Загадки','Easy riddles for A1–A2 and tricky lateral-thinking riddles for B1+, with a 2-minute timer and team points.','A1–C1','Teams','10–20 min'],
+ ['mafia','mystery','Mafia','Мафия','Secret roles on one screen, Mafia partners shown to each other, narrator script, players out and the winner.','A2–C1','8–20','30–60 min'],
+ ['cases','mystery','Murder mysteries','Детективные истории','Story, character cards one at a time, notes table, clues on a 10-minute timer, class vote and solution.','A2–B2','6–12','30–90 min'],
+ ['alibi','mystery','Alibi','Алиби','Two suspects agree a story; the class checks if their answers match. Plus a couple-interview version.','A2–B2','6+','20–30 min'],
+ ['clues','mystery','Detective Clues','Улики на стенах','Running dictation: clues on the walls, then match five people with their names and ages.','A2–B1','Groups','15–25 min'],
+ ['puzzles','mystery','Detective puzzles','Детективные задачи','Short cases. Students choose an answer and get a score.','A2–B1','Any','10–20 min'],
+ ['riddles','mystery','Riddles','Загадки','Easy riddles for A1–A2 and tricky lateral-thinking riddles for B1+, with a 2-minute timer and team points.','A1–C1','Teams','10–20 min'],
  ['alias','word','Alias','Алиас','Explain the word to your team without saying it. Timed rounds and team scores.','A1–C1','Teams','15–30 min'],
  ['taboo','word','Taboo','Табу','Explain the word without the taboo words under it. The other team listens.','A2–C1','Teams','15–30 min'],
  ['hotseat','word','Hot Seat','Горячий стул','One student sits with their back to the board; the team explains.','A1–C1','Teams','10–20 min'],
@@ -585,10 +585,10 @@ const GAMES=[
  ['ships','board','Battleships','Морской бой','Make a correct sentence to earn a shot at the other team’s hidden fleet.','A2–C1','2 teams','15–25 min'],
  ['quiz','board','Quiz Board','Викторина','Five categories, five values. Say the word from its clue to win the points.','A1–C1','2–4 teams','15–30 min'],
  ['bingo','board','Word Bingo','Бинго','Students copy words into a grid. The board calls clues; the first full line wins.','A1–C1','Whole class','10–20 min'],
- ['memory','card','Memory Pairs','Найди пару','Turn over two cards to match a word with its definition or Russian translation.','A1–C1','2–4 teams','10–20 min'],
- ['snap','card','Word Snap','Снап','Two cards flip at once. If they match, the first team to shout “Snap!” scores.','A1–C1','2–4 teams','5–15 min'],
- ['agents','card','Secret Agents','Секретные агенты','Spymasters give one-word clues so their team can find its words in a 5×5 grid. Avoid the trap!','A1–C1','2 teams','15–25 min'],
- ['spy','card','Spyfall','Находка для шпиона','Everyone gets the same secret place card except the spy. Ask questions to find the spy.','A2–C1','3–12','10–20 min'],
+ ['memory','board','Memory Pairs','Найди пару','Turn over two cards to match a word with its definition or Russian translation.','A1–C1','2–4 teams','10–20 min'],
+ ['snap','board','Word Snap','Снап','Two cards flip at once. If they match, the first team to shout “Snap!” scores.','A1–C1','2–4 teams','5–15 min'],
+ ['agents','board','Secret Agents','Секретные агенты','Spymasters give one-word clues so their team can find its words in a 5×5 grid. Avoid the trap!','A1–C1','2 teams','15–25 min'],
+ ['spy','board','Spyfall','Находка для шпиона','Everyone gets the same secret place card except the spy. Ask questions to find the spy.','A2–C1','3–12','10–20 min'],
  ['bank','tools','Word bank','Банк слов','Browse and search every word by level, topic, English File unit or exam.','All','Teacher','—']
 ];
 const GBY=Object.fromEntries(GAMES.map(g=>[g[0],g]));
@@ -605,6 +605,7 @@ function route(){
   let cat=null;
   if(h.startsWith('c-')&&CATS.some(c=>'c-'+c[0]===h)){cat=h.slice(2);view='home'}
   else if(GBY[key]){cat=GBY[key][1]}
+  else if(/^c-(role|puzzle|card)$/.test(key)){cat=key==='c-card'?'board':'mystery';view='home'}
   else {view='home';key='home'}
   curCat=cat;
   $('#nav').innerHTML=`<div class="navrow"><a href="#home" class="${view==='home'&&!cat?'on':''}">All games</a>${CATS.map(([c,en])=>`<a href="#c-${c}" class="${cat===c?(view==='home'?'on':'half'):''}">${en}</a>`).join('')}</div>`+
