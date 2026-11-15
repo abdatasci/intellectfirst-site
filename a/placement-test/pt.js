@@ -343,7 +343,7 @@
   function course(x, age) {
     var f = Math.floor(x);
     if (age === 'child') return ['Starters', 'Movers', 'Flyers', 'A2 Key (KET) preparation', 'B1 Preliminary (PET) preparation', 'B1 Preliminary (PET) preparation', 'B1 Preliminary (PET) preparation'][f];
-    if (age === 'teen') return ['A2 Teen (starter group)', 'A2 Teen', 'A2 Teen or B1 Teen', 'B1 Teen (English for Teenagers B1–B2)', 'B2 Teen (English File Upper-intermediate)', 'C1 Teen (English for Teenagers B2–C1) or IELTS', 'C1 Teen or IELTS'][f];
+    if (age === 'teen') return ['English File Elementary (A1), teen group from the start', 'English File Elementary (A1), teen group', 'English File Pre-intermediate (A2), teen group', 'B1 Teen: English File Intermediate or English for Teenagers B1–B2', 'B2 Teen: English File Upper-intermediate or English for Teenagers B2–C1', 'C1 Teen: English File Advanced or IELTS', 'C1 Teen: English File Advanced or IELTS'][f];
     return ['English File Elementary (A1), from the start', 'English File Elementary (A1)', 'English File Pre-intermediate (A2)', 'English File Intermediate (B1)', 'English File Upper-intermediate (B2) or Work & Life B2–C1', 'English File Advanced (C1), Work & Life B2–C1 or IELTS', 'English File Advanced (C1) or IELTS'][f];
   }
   function bar(k, x) {

@@ -215,7 +215,7 @@
     if (k === 'ket') return /ket/.test(tags) || (it.tr === 'general' && (it.lv || []).indexOf('A2') >= 0 && it.s === 'grammar');
     if (k === 'pet') return /pet/.test(tags) || (it.tr === 'general' && (it.lv || []).indexOf('B1') >= 0 && it.s === 'grammar');
     if (/^yl:|^maths$/.test(k)) return it.tr === 'kids';
-    if (/^book:/.test(k)) { var bk = k.slice(5); return it.id === bk || (/^teens/.test(bk) && /teens/.test(tags)) || (bk === 'giu' && /gram|giu/.test(it.id)) || (/^ef-/.test(bk) && it.id === 'voc-' + bk.slice(3)); }
+    if (/^book:/.test(k)) { var bk = k.slice(5); return it.id === bk || (bk === 'teens-b1' && it.id === 'voc-tb1') || (bk === 'teens-b2' && it.id === 'voc-tb2') || (/^teens/.test(bk) && /teens/.test(tags) && it.s !== 'tests' && it.s !== 'vocab') || (bk === 'giu' && /gram|giu/.test(it.id)) || (/^ef-/.test(bk) && it.id === 'voc-' + bk.slice(3)); }
     return false;
   }
   /* full view: staff, teachers, or anyone who hasn't chosen goals yet. Everyone else sees only what fits their goals. */
@@ -241,7 +241,7 @@
     if (S.cls && it.id === 'placement') return false;   // already placed in a class
     if (S.cls && (it.s === 'tests' || it.s === 'vocab')) {   // class tests and vocabulary: exactly their book / Cambridge level
       var own = { 'book:teens-b1': ['teens-b1', 'voc-tb1'], 'book:teens-b2': ['teens-b2', 'voc-tb2'], 'yl:starters': ['starters-t', 'voc-starters'], 'yl:movers': ['movers-t', 'voc-movers'], 'yl:flyers': ['flyers-t', 'voc-flyers'] };
-      var ex = m.filter(function (k) { return own[k]; }); if (ex.length && (it.tr === 'kids' || /teens/.test((it.tags || []).join(' ')))) return ex.some(function (k) { return own[k].indexOf(it.id) >= 0; });
+      var ownIds = [].concat.apply([], Object.keys(own).map(function (k) { return own[k]; })), ex = m.filter(function (k) { return own[k]; }); if (ex.length && ownIds.indexOf(it.id) >= 0) return ex.some(function (k) { return own[k].indexOf(it.id) >= 0; });
     }
     if (S.cls && (it.tags || []).indexOf('book') >= 0 && (it.s === 'tests' || it.s === 'vocab')) {   // coursebook tests and vocabulary: their own coursebook only
       var bk = m.filter(function (k) { return /^book:/.test(k); }); if (bk.length) return bk.some(function (k) { return fitsKey(it, k); });
