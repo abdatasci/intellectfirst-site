@@ -383,16 +383,43 @@
       bindTop(); $('#nx').onclick = function () { L.i++; drawStep(); }; return;
     }
     if (it.k === 'listen') {
-      var sp = {}; L.l.script.forEach(function (x) { if (!sp[x.s]) sp[x.s] = x.g; });
-      v.innerHTML = '<div class="player">' + pTop() + '<article class="reading listen"><div class="lhead"><span class="lic">🎧</span><div><h3>' + esc(L.l.title) + '</h3><p>' + esc(L.l.intro || '') + '</p></div></div>' +
-        (window.IFBots ? '<div class="ifbots stage">' + Object.keys(sp).slice(0, 3).map(function (n) { return IFBots.html(sp[n], n, Object.keys(sp).length === 1); }).join('') + '</div>' :
-        '<div class="speakers">' + Object.keys(sp).map(function (n) { return '<span class="spk" data-s="' + esc(n) + '">' + (sp[n] === 'm' ? '👨' : '👩') + ' ' + esc(n) + '</span>'; }).join('') + '</div>') +
-        '<p style="text-align:center;margin:18px 0 8px"><button class="btn big" id="play">▶ Play</button></p><p class="small" style="text-align:center;color:var(--muted)">' + (L.l.task ? esc(L.l.task) : 'Listen, then answer the questions. You can listen again during the questions.') + '</p>' +
-        '<details class="peek"><summary>📄 Transcript (read it after you listen)</summary><div class="txt">' + L.l.script.map(function (x) { return '<p><b>' + esc(x.s) + ':</b> ' + esc(x.t) + '</p>'; }).join('') + '</div></details></article>' +
+      // Listening "video": a sci-fi studio where the humanoid presenters perform the script (real voices), with
+      // subtitles, a timeline, play/pause, replay and full screen. Each speaker gets a presenter (by voice).
+      var sp = {}, names = []; L.l.script.forEach(function (x) { if (!sp[x.s]) { sp[x.s] = x.g; names.push(x.s); } });
+      var cast = names.slice(0, 3), botOf = function (n) { var k = cast.indexOf(n); if (k >= 0) return k; var same = cast.filter(function (c) { return sp[c] === sp[n]; })[0]; return same ? cast.indexOf(same) : 0; };
+      var lines = L.l.script, V = L.v = { i: 0, on: false, cc: true, done: false, tok: 0 };
+      var skyline = '<svg class="vsky" viewBox="0 0 800 200" preserveAspectRatio="none" aria-hidden="true">' + [[0, 120, 60], [55, 70, 40], [100, 100, 70], [175, 40, 35], [215, 90, 60], [280, 60, 45], [330, 20, 30], [365, 80, 70], [440, 50, 40], [485, 110, 55], [545, 30, 45], [595, 85, 60], [660, 55, 40], [705, 100, 95]].map(function (b) { var w = '', x0 = b[0], top = b[1], wd = b[2]; for (var yy = top + 10; yy < 190; yy += 14) for (var xx = x0 + 6; xx < x0 + wd - 6; xx += 10) if ((xx * 7 + yy * 3) % 5 < 2) w += '<rect x="' + xx + '" y="' + yy + '" width="3" height="5" class="w' + ((xx + yy) % 3) + '"/>'; return '<rect x="' + x0 + '" y="' + top + '" width="' + wd + '" height="' + (200 - top) + '" class="b"/>' + w; }).join('') + '</svg>';
+      v.innerHTML = '<div class="player">' + pTop() + '<article class="listen-v"><div class="lv-head"><span class="lv-ep">🎬 IF ENGLISH · LISTENING</span><h3>' + esc(L.l.title) + '</h3><p>' + esc(L.l.intro || '') + '</p></div>' +
+        '<div class="vplayer" id="vp"><div class="vscene"><div class="vbg"></div>' + skyline + '<div class="vring"></div><div class="vgrid"></div>' +
+          (window.IFBots ? '<div class="ifbots vbots">' + cast.map(function (n) { return IFBots.html(sp[n], n, cast.length === 1); }).join('') + '</div>' : '') +
+          '<div class="vcap" id="vcap"></div><button class="vbig" id="vbig" aria-label="Play">▶</button><div class="vlive"><i></i>REC</div></div>' +
+          '<div class="vbar"><button id="vpp" aria-label="Play">▶</button><button id="vre" aria-label="Replay">↺</button><div class="vtl" id="vtl"><i id="vprog"></i></div><span id="vtime">0 / ' + lines.length + '</span><button id="vcc" class="on" aria-label="Subtitles">CC</button><button id="vfs" aria-label="Full screen">⛶</button></div></div>' +
+        '<p class="small" style="text-align:center;color:var(--muted);margin-top:10px">' + (L.l.task ? esc(L.l.task) : 'Watch and listen, then answer the questions. You can listen again during the questions.') + '</p>' +
+        '<details class="peek"><summary>📄 Transcript (read it after you listen)</summary><div class="txt">' + lines.map(function (x) { return '<p><b>' + esc(x.s) + ':</b> ' + esc(x.t) + '</p>'; }).join('') + '</div></details></article>' +
         '<p style="text-align:center;margin-top:18px"><button class="btn" id="nx">Questions →</button></p></div>';
       bindTop();
-      $('#play').onclick = function () { var b = this; b.textContent = '🔊 Playing…'; playScript(L.l.script, function (x) { $$('.spk').forEach(function (e) { e.classList.toggle('on', x && e.dataset.s === x.s); }); if (window.IFBots) IFBots.talk(x ? $$('.ifbot').filter(function (e) { return e.dataset.s === String(x.s).replace(/"/g, ''); })[0] || null : null); }, function () { b.textContent = '↻ Play again'; }); };
-      $('#nx').onclick = function () { try { speechSynthesis.cancel(); } catch (e) {} L.i++; drawStep(); }; return;
+      var bots = $$('.vbots .ifbot'), vp = $('#vp');
+      function ui() {
+        $('#vpp').textContent = V.on ? '❚❚' : '▶'; $('#vbig').hidden = V.on; vp.classList.toggle('playing', V.on);
+        $('#vprog').style.width = (V.i / lines.length * 100) + '%'; $('#vtime').textContent = Math.min(V.i + (V.on ? 1 : 0), lines.length) + ' / ' + lines.length;
+      }
+      function say(k) {
+        if (!V.on || L.v !== V) return;
+        if (k >= lines.length) { V.on = false; V.i = 0; V.done = true; $('#vcap').innerHTML = '<b>THE END</b> · Now answer the questions'; if (window.IFBots) IFBots.talk(null); ui(); return; }
+        V.i = k; var x = lines[k], b = bots[botOf(x.s)];
+        $('#vcap').innerHTML = V.cc ? '<b>' + esc(x.s) + '</b> ' + esc(x.t) : '';
+        bots.forEach(function (e) { e.classList.toggle('lead', e === b); });
+        if (window.IFBots) IFBots.talk(b || null);
+        ui();
+        var tok = ++V.tok; playScript([x], null, function () { if (tok !== V.tok) return; setTimeout(function () { if (tok === V.tok) say(k + 1); }, 250); });
+      }
+      function play() { if (V.on) { V.on = false; V.tok++; try { speechSynthesis.cancel(); } catch (e) {} ui(); return; } V.on = true; V.done = false; say(V.i); }
+      $('#vbig').onclick = $('#vpp').onclick = play;
+      $('#vre').onclick = function () { try { speechSynthesis.cancel(); } catch (e) {} V.on = true; say(0); };
+      $('#vcc').onclick = function () { V.cc = !V.cc; this.classList.toggle('on', V.cc); if (!V.cc) $('#vcap').innerHTML = ''; };
+      $('#vfs').onclick = function () { try { if (document.fullscreenElement) document.exitFullscreen(); else (vp.requestFullscreen || vp.webkitRequestFullscreen).call(vp); } catch (e) {} };
+      $('#vtl').onclick = function (ev) { var r = this.getBoundingClientRect(), k = Math.max(0, Math.min(lines.length - 1, Math.floor((ev.clientX - r.left) / r.width * lines.length))); try { speechSynthesis.cancel(); } catch (e) {} V.on = true; say(k); };
+      $('#nx').onclick = function () { V.on = false; try { speechSynthesis.cancel(); } catch (e) {} L.i++; drawStep(); }; ui(); return;
     }
     if (it.k === 'read') {
       v.innerHTML = '<div class="player">' + pTop() + '<article class="reading">' + (L.l.chart ? '<div class="chart">' + chartSVG() + '</div>' : photo(L.l.photo, L.l.alt)) + '<h3>' + esc(L.l.title) + '</h3><div class="txt">' + paras(L.l.text) + '</div></article>' +
