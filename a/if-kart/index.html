@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<title>IF Kart · IF Academy</title>
+<meta name="description" content="IF Kart: a 3D kart race for English learners. Drive through the gift boxes, answer in English and get a turbo. Starters, Movers, Flyers, A2 Key and B1 PET.">
+<meta name="theme-color" content="#2a1660">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&display=swap">
+<style>
+  :root{--pink:#ff4fa3;--purple:#6d3df2;--deep:#2a1660;--gold:#ffc83d;--ok:#22c55e;--bad:#ef4444}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;height:100%;overflow:hidden;background:var(--deep);font-family:"Baloo 2","Arial Rounded MT Bold",system-ui,sans-serif;color:#fff;-webkit-user-select:none;user-select:none;touch-action:none;overscroll-behavior:none}
+  #c{position:fixed;inset:0;width:100%;height:100%;display:block}
+  .hud{position:fixed;inset:0;pointer-events:none;z-index:5}
+  .pos{position:absolute;left:14px;top:10px;font-weight:800;line-height:.9;text-shadow:0 3px 0 #b3166a,0 0 10px rgba(0,0,0,.3)}
+  .pos b{font-size:64px;color:#ffe0f0;-webkit-text-stroke:3px #c2187a}.pos small{font-size:20px;margin-left:4px}
+  .gems{position:absolute;left:18px;top:86px;font-size:20px;font-weight:800;text-shadow:0 2px 0 rgba(0,0,0,.4)}
+  .lap{position:absolute;right:14px;top:10px;text-align:right;font-weight:800;font-size:22px;text-shadow:0 2px 0 rgba(0,0,0,.45)}
+  .lap .t{color:var(--gold);font-size:18px}
+  #mini{position:absolute;right:12px;top:72px;width:150px;height:150px;border-radius:18px;background:rgba(42,22,96,.35);border:2px solid rgba(255,255,255,.35)}
+  .lights{position:absolute;left:50%;top:70px;transform:translateX(-50%);display:flex;gap:10px;padding:8px 12px;border-radius:999px;background:#2a1660;border:3px solid var(--gold)}
+  .lights i{width:34px;height:34px;border-radius:50%;background:#5b2a2a;box-shadow:inset 0 -4px 0 rgba(0,0,0,.3)}.lights i.r{background:#ff3b3b}.lights i.g{background:#2bff7a}
+  .big{position:absolute;left:50%;top:38%;transform:translate(-50%,-50%);font-size:110px;font-weight:800;color:var(--gold);-webkit-text-stroke:5px #6d3df2;text-shadow:0 8px 0 #2a1660;opacity:0;transition:opacity .2s}
+  .big.on{opacity:1}
+  .toast{position:absolute;left:50%;top:22%;transform:translateX(-50%);padding:8px 18px;border-radius:999px;background:rgba(42,22,96,.85);font-weight:800;font-size:22px;opacity:0;transition:opacity .25s;white-space:nowrap}
+  .toast.on{opacity:1}
+  .ctl{position:fixed;z-index:6;display:none}
+  .ctl button{pointer-events:auto;border:0;border-radius:50%;font:800 18px "Baloo 2",sans-serif;color:#fff;background:rgba(109,61,242,.82);box-shadow:0 5px 0 #3a1d9a;width:86px;height:86px;touch-action:none}
+  .ctl button:active,.ctl button.on{transform:translateY(3px);box-shadow:0 2px 0 #3a1d9a;background:rgba(255,79,163,.9)}
+  #ctlL{left:16px;bottom:18px;gap:12px}#ctlR{right:16px;bottom:18px;gap:12px;align-items:flex-end}
+  #ctlL,#ctlR{display:none}
+  body.racing #ctlL,body.racing #ctlR{display:flex}
+  #brake{background:rgba(255,79,163,.85);box-shadow:0 5px 0 #a3135f;width:96px;height:96px}
+  #drift{width:72px;height:72px;font-size:16px;background:rgba(42,22,96,.8)}
+  .keys{position:fixed;left:50%;bottom:12px;transform:translateX(-50%);font-size:14px;opacity:.85;z-index:5;text-align:center;pointer-events:none}
+  @media (pointer:coarse){.keys{display:none}}
+  .top-l{position:fixed;left:12px;bottom:auto;top:auto;z-index:7}
+  #pause{position:fixed;left:50%;top:10px;transform:translateX(-50%);z-index:7;border:0;background:#2a1660;color:#fff;border:3px solid var(--gold);border-radius:999px;font:800 18px "Baloo 2";padding:2px 14px;display:none;cursor:pointer}
+  body.racing #pause{display:block}
+  .scr{position:fixed;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;padding:14px;overflow:auto;background:radial-gradient(circle at 50% 20%,#6d3df2,#2a1660 70%)}
+  .card{background:#fff;color:#2a1660;border-radius:26px;padding:20px;max-width:880px;width:100%;box-shadow:0 10px 0 #ff4fa3,0 30px 60px rgba(0,0,0,.4)}
+  .card h1{margin:0;font-size:40px;line-height:1;color:var(--purple)}.card h1 span{color:var(--pink)}
+  .card .sub{margin:4px 0 12px;color:#6b5a99;font-weight:600}
+  .lbl{font-weight:800;letter-spacing:.06em;text-transform:uppercase;font-size:13px;color:#8d7bbf;margin:12px 0 6px}
+  .lvls{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+  @media(max-width:700px){.lvls{grid-template-columns:repeat(3,1fr)}}
+  .lv{border:0;border-radius:18px;padding:12px 8px;cursor:pointer;color:#fff;font:800 18px "Baloo 2";box-shadow:0 5px 0 rgba(0,0,0,.25);text-align:center}
+  .lv small{display:block;font-weight:600;font-size:12px;opacity:.9}.lv.on{outline:4px solid var(--gold);transform:translateY(-2px)}
+  .chars{display:flex;gap:10px;flex-wrap:wrap}
+  .ch{border:3px solid #e8e0ff;background:#f7f4ff;border-radius:18px;padding:6px 14px;font:800 17px "Baloo 2";cursor:pointer;color:#2a1660}
+  .ch.on{border-color:var(--pink);background:#ffe5f2}
+  .go{margin-top:14px;width:100%;border:0;border-radius:18px;padding:14px;font:800 26px "Baloo 2";color:#fff;background:linear-gradient(90deg,#ff4fa3,#6d3df2);box-shadow:0 6px 0 #3a1d9a;cursor:pointer}
+  .how{font-size:14px;color:#6b5a99;margin-top:10px;line-height:1.35}
+  .q{position:fixed;inset:0;z-index:30;display:none;align-items:center;justify-content:center;background:rgba(20,8,50,.55);padding:12px}
+  .q .card{max-width:640px;text-align:center;padding:18px 18px 20px}
+  .q .gift{font-size:34px;margin:-6px 0 0}
+  .q .pr{font-size:28px;font-weight:800;line-height:1.15;margin:4px 0 10px}.q .pr .em{display:block;font-size:84px;line-height:1.05}
+  .q .opts{display:grid;gap:10px}
+  .q .opts button{border:0;border-radius:16px;padding:12px 14px;font:800 22px "Baloo 2";color:#fff;cursor:pointer;box-shadow:0 5px 0 rgba(0,0,0,.25);line-height:1.15}
+  .q .opts button.ok{background:var(--ok)!important}.q .opts button.no{background:var(--bad)!important;opacity:.85}
+  .q .say{border:0;background:#ede6ff;color:#6d3df2;border-radius:999px;font:800 16px "Baloo 2";padding:4px 14px;cursor:pointer}
+  .res table{width:100%;border-collapse:collapse;margin:8px 0;font-weight:700}.res td{padding:6px 8px;border-bottom:1px solid #eee}.res tr.me{background:#ffe5f2}
+  .row{display:flex;gap:10px;flex-wrap:wrap}.row .go{flex:1;font-size:20px;padding:12px}
+  .ghost{background:#efeaff!important;color:#6d3df2!important;box-shadow:0 6px 0 #cfc3ff!important}
+</style>
+</head>
+<body data-no-nav>
+<canvas id="c"></canvas>
+<div class="hud" id="hud" hidden>
+  <div class="pos" id="pos"><b>1</b><small>of 6</small></div>
+  <div class="gems" id="gems">💎 0</div>
+  <div class="lap"><div id="lapt">Lap 1/3</div><div class="t" id="time">0:00.0</div></div>
+  <canvas id="mini" width="300" height="300"></canvas>
+  <div class="lights" id="lights"><i></i><i></i><i></i></div>
+  <div class="big" id="big"></div>
+  <div class="toast" id="toast"></div>
+</div>
+<button id="pause" aria-label="Menu">❚❚ Menu</button>
+<div class="ctl" id="ctlL"><button id="left" aria-label="Steer left">◀</button><button id="right" aria-label="Steer right">▶</button></div>
+<div class="ctl" id="ctlR" style="flex-direction:column"><button id="drift">Drift</button><button id="brake">Brake</button></div>
+<div class="keys" id="keys" hidden>← → steer · ↓ brake · Space drift · drive through 🎁 gift boxes and answer for a turbo</div>
+
+<div class="scr" id="menu">
+  <div class="card">
+    <h1>IF <span>Kart</span> 🏁</h1>
+    <p class="sub">A 3D kart race in English. Drive through the 🎁 gift boxes, answer the question and get a turbo boost!</p>
+    <div class="lbl">Choose your level</div>
+    <div class="lvls" id="lvls"></div>
+    <div class="lbl">Choose your driver</div>
+    <div class="chars" id="chars"></div>
+    <button class="go" id="go">▶ Race!</button>
+    <p class="how">Phone: ◀ ▶ to steer, the kart drives by itself, Brake on the right. Computer: arrow keys, Space to drift.<br>Right answer = turbo and a 💎. Wrong answer = your kart spins. 3 laps — try to finish first!</p>
+  </div>
+</div>
+<div class="q" id="q"><div class="card"><div class="gift">🎁</div><div class="pr" id="qp"></div><div class="opts" id="qo"></div><p style="margin:10px 0 0"><button class="say" id="qs">🔊 Listen</button></p></div></div>
+<div class="scr" id="res" style="display:none"><div class="card res" id="resc"></div></div>
+
+<script src="/a/block-quest/lib/three-0.160.0.min.js"></script>
+<script src="/a/kids-quest/content.js?v=3"></script>
+<script src="game.js?v=1"></script>
+</body>
+</html>

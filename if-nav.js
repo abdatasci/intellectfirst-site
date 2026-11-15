@@ -51,7 +51,7 @@
       '<a href="#" class="back" aria-label="' + T[0] + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg><span>' + T[0] + '</span></a>' +
       '<a href="/" class="home" aria-label="' + T[1] + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg><span>' + T[1] + '</span></a>';
     // Young Learners pages: a one-tap way into the IF Kids Quest story game
-    if (/^\/a\/(young-learners|yl-centre|kids-english|starters-tests|movers-tests|flyers-tests|flyers-arcade|yl-tests|kids-[a-z-]+|starters-[a-z-]+|movers-[a-z-]+|flyers-[a-z-]+)(\/|$)/.test(path) && !/^\/a\/kids-quest/.test(path)) {
+    if (/^\/a\/(young-learners|yl-centre|kids-english|starters-tests|movers-tests|flyers-tests|flyers-arcade|yl-tests|kids-[a-z-]+|starters-[a-z-]+|movers-[a-z-]+|flyers-[a-z-]+)(\/|$)/.test(path) && !/^\/a\/(kids-quest|if-kart)/.test(path)) {
       var kq = document.createElement('a'); kq.href = '/a/kids-quest/'; kq.className = 'kq';
       kq.innerHTML = '<b aria-hidden="true">🏎️</b><span>Kids Quest</span>';
       bar.appendChild(kq);

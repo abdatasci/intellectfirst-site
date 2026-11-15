@@ -9,7 +9,7 @@
   if (!ss || ss.__ifVoice || !window.Audio) return;
   ss.__ifVoice = true;
   var native = { speak: ss.speak.bind(ss), cancel: ss.cancel.bind(ss), pause: ss.pause && ss.pause.bind(ss), resume: ss.resume && ss.resume.bind(ss) };
-  var KIDPATH = /^\/a\/(kids-quest|young-learners|yl-centre|kids-english|starters-tests|movers-tests|flyers-tests|flyers-arcade|yl-tests)(\/|$)/;
+  var KIDPATH = /^\/a\/(kids-quest|if-kart|young-learners|yl-centre|kids-english|starters-tests|movers-tests|flyers-tests|flyers-arcade|yl-tests)(\/|$)/;
   var kid = function () { return KIDPATH.test(location.pathname) || (/^\/app\//.test(location.pathname) && /yl-|maths/.test(location.hash)); };
   // Four British voices: a woman and a man for children's pages, a different woman and man for teens and adults.
   // Children's pages start with the female voice, other pages with the male voice;
