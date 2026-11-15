@@ -232,6 +232,11 @@
   function power(name, d, pid, p) {
     var cur = M_UNIT(), T = d.to && H.players[d.to], live = T && !T.kicked && d.to !== pid;
     if (name === 'res') {
+      // one result per question: ignore repeats (double taps, resent messages) and anything faster than a person can answer
+      var nowT = Date.now();
+      if (d.n != null && +d.n === p.lastN) return;
+      if (nowT - (p.lastRes || 0) < 700) return;
+      p.lastRes = nowT; if (d.n != null) p.lastN = +d.n;
       p.answered++; if (d.ok) { p.correct++; p.streak++; } else p.streak = 0;
       // a wrong answer costs money: 10% of what you have (at least 25), never below zero (not in the team games)
       if (!d.ok && H.mode !== 'tug' && H.mode !== 'boss') { var fine = Math.min(p.score, H.mode === 'balloon' || H.mode === 'kart' ? 1 : Math.max(25, Math.round(p.score * 0.1))); p.score -= fine; p.lost = (p.lost || 0) + fine; }

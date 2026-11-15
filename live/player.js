@@ -129,9 +129,11 @@
       '<div class="prompt">' + L.qhtml(q.p, esc) + '</div><div class="lock" id="lk"></div>' +
       '<div class="opts' + (long ? ' long' : '') + '">' + q.o.map(function (o, k) { return '<button class="opt o' + k + '" data-k="' + k + '"><span class="sh">' + L.SHAPES[k] + '</span>' + esc(o) + '</button>'; }).join('') + '</div></div>');
     raceTop();
+    var done = false;   // one answer per question: a double tap must not count twice
     view.querySelectorAll('.opt').forEach(function (b) {
       b.onclick = function () {
-        if (Date.now() < R.lock || S.st.phase !== 'race' || !b.isConnected) return;
+        if (done || Date.now() < R.lock || S.st.phase !== 'race' || !b.isConnected) return;
+        done = true; view.querySelectorAll('.opt').forEach(function (x) { x.disabled = true; });
         var k = +b.dataset.k, ok = k === L.unhide(q.h, R.salt);
         R.n++;
         if (ok) { R.ok++; R.streak++; R.s += 100 + Math.min(R.streak - 1, 5) * 20; flash(true); L.sfx('ok'); }
@@ -143,7 +145,7 @@
           var lk = $('#lk'); if (lk) lk.textContent = fine ? 'Wrong! −' + L.fmtN(fine) + ' ' + (power ? L.mode(S.st.mode).cur : 'points') : 'Wait a moment…';
         }
         R.i++;
-        if (power) { S.bus.pub('p', 'res', { pid: S.pid, ok: ok }); if (ok) { S.busy = true; return setTimeout(reward, 350); } return setTimeout(vPlay, 1500); }
+        if (power) { S.bus.pub('p', 'res', { pid: S.pid, ok: ok, n: R.n }); if (ok) { S.busy = true; return setTimeout(reward, 350); } return setTimeout(vPlay, 1500); }
         S.bus.pub('p', 'race', { pid: S.pid, s: R.s, ok: R.ok, n: R.n });
         setTimeout(vRace, ok ? 180 : 1500);
       };
