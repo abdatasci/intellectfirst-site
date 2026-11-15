@@ -28,7 +28,10 @@ const no = (status, error) => Response.json({ error }, { status, headers: { 'Cac
 
 export default async (req) => {
   const url = new URL(req.url);
-  if (url.pathname.endsWith('/status')) return Response.json({ ready: !!process.env.ELEVENLABS_API_KEY, model: MODEL }, { headers: { 'Cache-Control': 'no-store' } });
+  if (url.pathname.endsWith('/status')) {
+    const last = await V().get('last-error', { type: 'json' }).catch(() => null);
+    return Response.json({ ready: !!process.env.ELEVENLABS_API_KEY, model: MODEL, lastError: last }, { headers: { 'Cache-Control': 'no-store' } });
+  }
   const text = String(url.searchParams.get('t') || '').replace(/\s+/g, ' ').trim();
   const v = url.searchParams.get('v') || '', kind = VOICES[v] ? v : LEGACY[v] || 'am';
   if (!text || text.length > MAX_LEN) return no(400, 'text');
@@ -55,6 +58,7 @@ export default async (req) => {
   if (!r || !r.ok) {
     const why = r ? (await r.text().catch(() => '')).slice(0, 300) : 'network';
     console.log('ElevenLabs error', r && r.status, why);
+    await store.setJSON('last-error', { at: new Date().toISOString(), status: r ? r.status : 0, message: why.replace(/sk_[A-Za-z0-9]+/g, 'sk_…') }).catch(() => {});
     return no(503, 'tts');
   }
   const buf = await r.arrayBuffer();
