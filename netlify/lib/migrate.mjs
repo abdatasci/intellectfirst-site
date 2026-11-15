@@ -2,6 +2,7 @@
 // the site handles a request after the deploy. Only record ids here, never names: this repository is public.
 import { getStore } from '@netlify/blobs';
 import { createHash } from 'node:crypto';
+import seed from './school-seed.json';
 
 const S = () => getStore({ name: 'school', consistency: 'strong' });
 const A = () => getStore({ name: 'ifadmin', consistency: 'strong' });
@@ -113,7 +114,19 @@ async function onTime20261115() {
   return ['C1 Teen 15 Nov 13:00 → checked in on time'];
 }
 
-const MIGRATIONS = [['timetable-2026-11-14', () => applyTimetable(TT_2026_11_14)], ['timetable-2026-11-14-pending', () => applyPending(PENDING_2026_11_14), true], ['private-2026-11-15', () => grantPrivate(PRIVATE_2026_11_15)], ['schedule-2026-11-15', schedule20261115], ['ontime-2026-11-15', onTime20261115]];
+/* Teacher phone numbers kept out of the public code: Netlify environment variable IF_TEACHER_PHONES = "t-id=+7…,t-id2=+7…".
+   Copied into the teacher records (Admin → Teachers) so teachers can connect to the Telegram bot with their number. */
+async function teacherPhones() {
+  const pairs = String(process.env.IF_TEACHER_PHONES || '').split(',').map(x => x.split('=').map(y => y.trim())).filter(x => x[0] && x[1]);
+  if (!pairs.length) return null;
+  const W = S(), T = (await W.get('teachers', { type: 'json' })) || structuredClone(seed.teachers || []);
+  const lines = [];
+  for (const [id, phone] of pairs) { const t = T.find(x => x.id === id); if (t && t.phone !== phone) { t.phone = phone; lines.push(id + ': phone added'); } }
+  if (lines.length) await W.setJSON('teachers', T);
+  return lines.length ? lines : ['no change'];
+}
+
+const MIGRATIONS = [['timetable-2026-11-14', () => applyTimetable(TT_2026_11_14)], ['timetable-2026-11-14-pending', () => applyPending(PENDING_2026_11_14), true], ['private-2026-11-15', () => grantPrivate(PRIVATE_2026_11_15)], ['schedule-2026-11-15', schedule20261115], ['ontime-2026-11-15', onTime20261115], ['teacher-phones-2026-11-15', teacherPhones]];
 let running = null;
 /** Run any migration that has not run yet. Safe to call on every request (cached per instance). */
 let checkedAt = 0;
