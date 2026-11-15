@@ -18,6 +18,7 @@ import seed from '../lib/school-seed.json';
 import ckey from '../lib/content-key.json';
 import { loadStudents, saveStudents, loadAttendance } from '../lib/students.mjs';
 import { migrate as runMigrations } from '../lib/migrate.mjs';
+import { openTasks, dismissTask } from '../lib/tasks.mjs';
 import { teaching as teachingHours, adminHours, shift as workShift, addManual as addWork, removeEntry as removeWork, teamAdmin } from '../lib/hours.mjs';
 import { lessonsOn, loadLog, withEntry, checkIn, saveRegister, setCancelled, correct, since as checkSince, monthLessons, punctuality, classAttendance, today as todayStr, GRACE_MIN, EARLY_MIN } from '../lib/lessons.mjs';
 
@@ -608,10 +609,12 @@ export default async (req) => {
   if ((path === 'hours/shift' || path === 'hours/add' || path === 'hours/remove') && method === 'POST') {
     if (profile.role !== 'admin') return fail(403, 'admin');
     const b = await req.json().catch(() => ({}));
+    // an administrator can also add or remove time for another staff member (from that person's page)
+    const who = b.for && path !== 'hours/shift' ? str(b.for, 60) : uid, whoName = who === uid ? (profile.name || '') : ((await getProfile(who))?.name || '');
     try {
       if (path === 'hours/shift') return json({ admin: await workShift(uid, profile.name || '', b.action === 'out' ? 'out' : 'in', b.note) });
-      if (path === 'hours/add') return json({ admin: await addWork(uid, profile.name || '', b) });
-      return json({ admin: await removeWork(uid, String(b.month || '').slice(0, 7), String(b.id || '')) });
+      if (path === 'hours/add') return json({ admin: await addWork(who, whoName, b) });
+      return json({ admin: await removeWork(who, String(b.month || '').slice(0, 7), String(b.id || '')) });
     } catch (e) { if (e.code) return fail(409, e.code); throw e; }
   }
   if (path === 'hours/team' && method === 'GET') {
@@ -799,6 +802,34 @@ export default async (req) => {
       const [students, classes, teachers, books] = await Promise.all([doc('students'), doc('classes'), doc('teachers'), doc('books')]);
       const dir = (await U().get('directory', { type: 'json' })) || {};
       return json({ students, classes, teachers, books, accounts: Object.entries(dir).map(([id, d]) => ({ id, ...d })) });
+    }
+    if (path === 'admin/tasks' && method === 'GET') return json({ tasks: await openTasks() });
+    if (path === 'admin/tasks/done' && method === 'POST') { await dismissTask(b.key); return json({ tasks: await openTasks() }); }
+    /* ---- a staff member's page (teacher record + account): the director and the manager see and amend it ---- */
+    const sp = path.match(/^admin\/staff\/([A-Za-z0-9-]+)$/);
+    if (sp && (method === 'GET' || method === 'PUT')) {
+      const id = sp[1], teachers = await doc('teachers'), dir = (await U().get('directory', { type: 'json' })) || {};
+      let t = teachers.find(x => x.id === id) || null;
+      let suid = t ? (t.uid || Object.keys(dir).find(u => dir[u].teacherId === t.id && isStaff(dir[u].role)) || null) : (dir[id] && isStaff(dir[id].role) ? id : null);
+      if (!t && !suid) { const pp = await getProfile(id); if (pp && isStaff(pp.role)) suid = id; }
+      let p2 = suid ? await getProfile(suid) : null;
+      if (!t && p2?.teacherId) t = teachers.find(x => x.id === p2.teacherId) || null;
+      if (!t && !p2) return fail(404, 'missing');
+      if (method === 'PUT') {
+        if (b.teacher && t) { for (const k of ['name', 'role', 'phone', 'email']) if (k in b.teacher) t[k] = str(b.teacher[k], 120); await save('teachers', teachers); }
+        if (b.profile && p2) {
+          for (const k of ['name', 'phone', 'city', 'birth', 'about']) if (k in b.profile) p2[k] = str(b.profile[k], k === 'about' ? 600 : 120);
+          for (const k of ['education', 'experience', 'skillsHard', 'skillsSoft', 'hobbies']) if (k in b.profile) p2[k] = String(b.profile[k] == null ? '' : b.profile[k]).slice(0, 3000);
+          await putProfile(suid, p2);
+        }
+      }
+      const month = /^\d{4}-\d{2}$/.test(url.searchParams.get('month') || '') ? url.searchParams.get('month') : todayStr().slice(0, 7);
+      const cls = t ? (await doc('classes')).filter(c => c.teacherId === t.id) : [];
+      return json({ id, month, teacher: t, uid: suid,
+        profile: p2 ? { name: p2.name, role: p2.role, email: p2.email || '', phone: p2.phone || '', city: p2.city || '', birth: p2.birth || '', about: p2.about || '', photo: p2.photo, education: p2.education || '', experience: p2.experience || '', skillsHard: p2.skillsHard || '', skillsSoft: p2.skillsSoft || '', hobbies: p2.hobbies || '' } : null,
+        classes: cls.map(c => ({ id: c.id, label: c.label, schedule: c.schedule || '', room: c.room || '' })),
+        teaching: cls.length ? await teachingHours(cls, month) : null,
+        admin: suid ? await adminHours(suid, month) : null });
     }
     const coll = path.match(/^admin\/(students|classes|teachers|books)$/);
     if (coll && method === 'PUT') {
