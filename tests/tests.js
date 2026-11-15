@@ -2,7 +2,7 @@
 (function () {
   'use strict';
   var L = window.LIVE, $ = L.$, esc = L.esc, view = $('#view');
-  var ME = null, BANKS = null;
+  var ME = null, BANKS = null, CLS = null, CLV = '';
   var COURSES = [
     ['gen', 'General English (any level)', null, null],
     ['v-A1', 'English File Elementary', 'A1'], ['v-A2', 'English File Pre-intermediate', 'A2'], ['v-B1', 'English File Intermediate', 'B1'],
@@ -21,8 +21,11 @@
     if (!res.ok) { var e = new Error(d.error || res.status); e.code = d.error; e.status = res.status; throw e; }
     return d;
   }
-  async function loadMe() { try { if (window.NFIdentity) await NFIdentity.getUser(); } catch (e) {} try { var r = await fetch('/api/school/me', { credentials: 'same-origin' }); if (r.ok) { var d = await r.json(); ME = d.profile || null; } } catch (e) {} }
+  async function loadMe() { try { if (window.NFIdentity) await NFIdentity.getUser(); } catch (e) {} try { var r = await fetch('/api/school/me', { credentials: 'same-origin' }); if (r.ok) { var d = await r.json(); ME = d.profile || null; CLS = window.IFClass ? IFClass.keys(d) : null; if (CLS) { CLV = IFClass.level(d.student && d.student.level) || ((CLS.filter(function (k) { return /^(ge|be):/.test(k); })[0] || '').split(':')[1] || ''); C = Object.assign(C, { course: myCourses()[0][0], level: CLV || C.level }); } } } catch (e) {} }
   function staff() { return ME && (ME.role === 'teacher' || ME.role === 'admin'); }
+  var KEY2C = { 'book:ef-a1': 'v-A1', 'book:ef-a2': 'v-A2', 'book:ef-b1': 'v-B1', 'book:ef-b2': 'v-B2', 'book:ef-c1': 'v-C1', 'book:teens-b1': 'v-TeensB1', 'book:teens-b2': 'v-TeensB2', 'yl:movers': 'v-Movers', 'yl:flyers': 'v-Flyers', ket: 'v-KET', pet: 'v-PET', ielts: 'v-IELTS' };
+  function myCourses() { if (!CLS) return COURSES; var ids = CLS.map(function (k) { return KEY2C[k]; }).filter(Boolean), out = COURSES.filter(function (c) { return ids.indexOf(c[0]) >= 0; }); if (CLV) out.push(COURSES[0]); return out.length ? out : COURSES; }
+  function myLevels() { return CLS && CLV ? [CLV] : L.LEVELS; }
   function bank(id) { return BANKS.filter(function (b) { return b.id === id; })[0]; }
   function course(id) { return COURSES.filter(function (c) { return c[0] === id; })[0]; }
   function when(iso) { return new Date(iso).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }); }
@@ -54,8 +57,11 @@
     ['IELTS', [['IELTS Centre', 'Mock tests, Writing and Speaking with live AI band scores', '/a/ielts/', 0]]]
   ];
   function centres() {
-    return '<div class="panel tc"><h2>All test centres</h2><p class="sub">Every test is supported by AI: writing is marked by AI and every result is saved to the student\'s profile and the teacher\'s results.</p>' +
-      CENTRES.map(function (g) {
+    var ok = CLS && CLS.map(IFClass.testPaths).filter(Boolean);
+    var list = !ok ? CENTRES : CENTRES.map(function (g) { return [g[0], g[1].filter(function (t) { return ok.indexOf(t[2]) >= 0; })]; }).filter(function (g) { return g[1].length; });
+    return '<div class="panel tc"><h2>' + (ok ? 'Your class tests' : 'All test centres') + '</h2><p class="sub">' + (ok ? 'The tests for your class, coursebook and level. Writing is marked by AI and every result goes to your profile and your teacher.' : 'Every test is supported by AI: writing is marked by AI and every result is saved to the student\'s profile and the teacher\'s results.') + '</p>' +
+      (list.length ? '' : '<p class="mini">Your teacher will share your tests here.</p>') +
+      list.map(function (g) {
         return '<div class="tc-g"><h3>' + esc(g[0]) + '</h3><div class="tc-grid">' + g[1].map(function (t) {
           return '<a class="tc-card" href="' + t[2] + '"><b>' + esc(t[0]) + '</b><span>' + esc(t[1]) + '</span><span class="tc-tags"><i class="ai">✨ AI-marked</i>' + (t[3] ? '<i>Students</i>' : '<i>Open to all</i>') + '</span></a>';
         }).join('') + '</div></div>';
@@ -69,10 +75,11 @@
   }
 
   function form() {
-    var box = $('#form'), c = course(C.course) || COURSES[0], b = c[0] === 'gen' ? null : bank(c[0]);
+    var box = $('#form'), c = (myCourses().indexOf(course(C.course)) >= 0 && course(C.course)) || myCourses()[0], b = c[0] === 'gen' ? null : bank(c[0]);
     if (b && (!C.units.length || !C.units.every(function (u) { return b.units.some(function (x) { return x.id === u; }); }))) C.units = [b.units[0].id];
-    var h = '<label class="f">Course</label><select class="inp" id="crs">' + COURSES.map(function (x) { return '<option value="' + x[0] + '"' + (x[0] === c[0] ? ' selected' : '') + '>' + esc(x[1]) + '</option>'; }).join('') + '</select>';
-    if (!b) h += '<label class="f">Level</label><div class="seg" id="lv">' + L.LEVELS.map(function (l) { return '<button type="button" data-v="' + l + '" class="' + (C.level === l ? 'on' : '') + '">' + l + '</button>'; }).join('') + '</div>' +
+    var h = '<label class="f">Course</label><select class="inp" id="crs">' + myCourses().map(function (x) { return '<option value="' + x[0] + '"' + (x[0] === c[0] ? ' selected' : '') + '>' + esc(x[1]) + '</option>'; }).join('') + '</select>';
+    if (!b && CLS && CLV) C.level = CLV;
+    if (!b) h += '<label class="f">Level</label><div class="seg" id="lv">' + myLevels().map(function (l) { return '<button type="button" data-v="' + l + '" class="' + (C.level === l ? 'on' : '') + '">' + l + '</button>'; }).join('') + '</div>' +
       '<label class="f">Topic or grammar point <span style="text-transform:none;letter-spacing:0">(optional)</span></label><input class="inp" id="tp" maxlength="150" placeholder="e.g. travel, present perfect, phrasal verbs with get" value="' + esc(C.topic) + '">';
     else h += '<label class="f">Units <button class="linkbtn" type="button" id="allu" style="text-transform:none;letter-spacing:0;margin-left:8px">select all</button></label><div class="units">' + b.units.map(function (u) { return '<label><input type="checkbox" value="' + esc(u.id) + '"' + (C.units.indexOf(u.id) >= 0 ? ' checked' : '') + '> <b>' + esc(u.id) + '</b> ' + esc(u.t) + '</label>'; }).join('') + '</div>';
     h += '<label class="f">Test</label><div class="seg" id="len">' + Object.keys(LENGTHS).map(function (k) { return '<button type="button" data-v="' + k + '" class="' + (C.length === k ? 'on' : '') + '">' + LENGTHS[k].name + '</button>'; }).join('') + '</div>' +

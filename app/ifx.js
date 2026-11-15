@@ -61,7 +61,7 @@
      Everything else asks visitors to create a free account (which also starts the full-access trial). */
   var FREE_IDS = { 'voc-a1': 1, 'voc-b1': 1, 'voc-ket': 1, 'skill-games': 1, 'live': 1, 'if-kart': 1, 'kids-quest': 1, 'bq-kids': 1, 'g-skill': 1, 'placement': 1, 'ielts-centre': 1, 'timetable': 1 };
   var isFree = function (it) { return !!(it && FREE_IDS[it.id]); };
-  var canOpen = function (it) { return isFree(it) || access().signed; };
+  var canOpen = function (it) { if (S.cls && !fullView() && !fits(it) && it.s !== 'more') return false; return isFree(it) || access().signed; };
   var JOIN = '/me/#/register?next=' + encodeURIComponent('/app/');
   function tasterHTML() { return meLoaded && !access().signed ? '<div class="taster"><div><b>You are trying IF English free — no account needed.</b><span>Open the first unit of every course, the placement test and a selection of games. Create a free account for the first two units of every course, a 7-day trial of everything, and your progress on every device.</span></div><a class="btn gold" href="' + JOIN + '">Create a free account</a></div>' : ''; }
   /* Full-access trial countdown (guests in their 7-day trial, not paid). */
@@ -96,6 +96,8 @@
     var pf = ME && ME.profile;
     if (pf) {   // the account decides: courses chosen at registration or in My account
       if (pf.study && pf.study.length) S.study = pf.study.slice();
+      var ck = window.IFClass && IFClass.keys(ME);
+      if (ck) { S.cls = ck; S.study = ck.concat((pf.study || []).filter(function (k) { return (k === 'ielts' || /^be:/.test(k)) && ck.indexOf(k) < 0; })); } else delete S.cls;
       if (pf.track === 'parent') S.who = 'child'; if (pf.track === 'tutor' || ME.access === 'staff') { S.teacher = true; S.who = S.who || 'teach'; }
       try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {}
     }
@@ -232,13 +234,22 @@
     if (sel.indexOf(k) >= 0) return; if (courses.length >= 3) { toast('Up to 3 courses — remove one first.'); return go('#/onboard'); }
     if (/^ge:/.test(k)) sel = sel.filter(function (x) { return !/^ge:/.test(x); });
     sel.push(k); S.study = sel; save(); saveStudy(sel); toast('Added: ' + SNAME[k]); route(); }; }); }
-  function goalBar() { return '<div class="goalbar">🎯 <span>For your goals: <b>' + esc(mine().map(function (k) { return SNAME[k]; }).join(' · ')) + '</b></span>' + addOnHTML() + '<a href="#/onboard">Change goals</a></div>'; }
+  function goalBar() { if (S.cls) return '<div class="goalbar">🏫 <span>Your class: <b>' + esc(mine().map(function (k) { return SNAME[k]; }).join(' · ')) + '</b></span>' + addOnHTML() + '</div>'; return '<div class="goalbar">🎯 <span>For your goals: <b>' + esc(mine().map(function (k) { return SNAME[k]; }).join(' · ')) + '</b></span>' + addOnHTML() + '<a href="#/onboard">Change goals</a></div>'; }
   function secCount(k) { if (k === 'ielts') return mine().indexOf('ielts') >= 0 ? 1 : 0; var n = IFX_DIR.filter(function (x) { return x.s === k && fits(x); }).length; if (k === 'grammar' || k === 'vocab') n += lessonsOf([k === 'grammar' ? 'grammar' : 'vocab']).filter(function (x) { return myCourses().indexOf(x.c) >= 0; }).length; return n; }
   function focusNav() { var full = fullView(); $$('a[data-k]').forEach(function (a) { var k = a.dataset && a.dataset.k; if (!k || ['vocab', 'grammar', 'games', 'tests', 'ielts'].indexOf(k) < 0) return; a.style.display = full || secCount(k) ? '' : 'none'; }); }
-  function fits(it) { var m = mine(); return !m.length || S.teacher || m.some(function (k) { return fitsKey(it, k); }); }
+  function fits(it) { var m = mine(); if (!m.length || S.teacher) return true;
+    if (S.cls && it.id === 'placement') return false;   // already placed in a class
+    if (S.cls && (it.s === 'tests' || it.s === 'vocab')) {   // class tests and vocabulary: exactly their book / Cambridge level
+      var own = { 'book:teens-b1': ['teens-b1', 'voc-tb1'], 'book:teens-b2': ['teens-b2', 'voc-tb2'], 'yl:starters': ['starters-t', 'voc-starters'], 'yl:movers': ['movers-t', 'voc-movers'], 'yl:flyers': ['flyers-t', 'voc-flyers'] };
+      var ex = m.filter(function (k) { return own[k]; }); if (ex.length && (it.tr === 'kids' || /teens/.test((it.tags || []).join(' ')))) return ex.some(function (k) { return own[k].indexOf(it.id) >= 0; });
+    }
+    if (S.cls && (it.tags || []).indexOf('book') >= 0 && (it.s === 'tests' || it.s === 'vocab')) {   // coursebook tests and vocabulary: their own coursebook only
+      var bk = m.filter(function (k) { return /^book:/.test(k); }); if (bk.length) return bk.some(function (k) { return fitsKey(it, k); });
+    }
+    return m.some(function (k) { return fitsKey(it, k); }); }
   function myCourses() {
     var out = []; mine().forEach(function (k) { var c = planOf(k).course; if (c && out.indexOf(c) < 0) out.push(c); });
-    if (S.teacher || !out.length) COURSES.forEach(function (c) { if (out.indexOf(c) < 0) out.push(c); });
+    if (S.teacher || (!out.length && !S.cls)) COURSES.forEach(function (c) { if (out.indexOf(c) < 0) out.push(c); });
     return out;
   }
   function pickerHTML(sel, kidsFirst) {
@@ -247,6 +258,7 @@
   }
   function vOnboard(step) {
     setNav('home');
+    if (S.cls) return go('#/');
     if (step !== 'pick') {
       view().innerHTML = tasterHTML() + trialHTML() + '<div class="onb"><p class="h-eyebrow">IF English</p><h1>Who is learning?</h1><p class="lead">We\'ll show what fits — and keep the rest out of the way.</p><div class="pick">' +
         [['me', '🙋', 'Me', 'Teens and adults: General, Business, IELTS, KET, PET'], ['child', '🧸', 'My child', 'Young Learners (6–12) and Maths in English'], ['teach', '👩‍🏫', 'I am a teacher', 'Use every course in class with Teach mode']].map(function (g) { return '<button data-w="' + g[0] + '"><i>' + g[1] + '</i><span><b>' + g[2] + '</b><span>' + g[3] + '</span></span></button>'; }).join('') + '</div></div>';
@@ -655,6 +667,7 @@
     setNav(it.s === 'kids' ? 'more' : it.s);
     if (!canOpen(it)) {
       if (!meLoaded) { view().innerHTML = '<p style="text-align:center;margin-top:40px">Loading…</p>'; return; }
+      if (S.cls && access().signed) { view().innerHTML = '<div class="join"><span class="ic">🏫</span><h2>' + esc(it.t) + '</h2><p>This isn\'t part of your class. You can open everything for your class and level: ' + esc(mine().map(function (k) { return SNAME[k]; }).join(', ')) + '.</p><div class="row" style="justify-content:center"><a class="btn gold" href="#/">Back to my class</a></div></div>'; return; }
       view().innerHTML = '<div class="join"><span class="ic">' + it.icon + '</span><h2>' + esc(it.t) + '</h2><p>This is part of the full IF English app. Create a free account (it takes a minute) to open it — you also get the first two units of every course and 7 days of full access.</p>' +
         '<div class="row" style="justify-content:center;gap:10px;flex-wrap:wrap"><a class="btn gold" href="' + JOIN + '">Create a free account</a><a class="btn ghost" href="/me/#/login?next=' + encodeURIComponent('/app/#/play/' + it.id) + '">Sign in</a></div>' +
         '<p class="note">Free without an account: the first unit of every course, the placement test, IF Live, IF Kart, Kids Quest, IF Skill Games, the IELTS Centre and three vocabulary courses.</p>' +
