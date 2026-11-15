@@ -89,7 +89,21 @@ async function grantPrivate(hashes) {
   return out;
 }
 
-const MIGRATIONS = [['timetable-2026-11-14', () => applyTimetable(TT_2026_11_14)], ['timetable-2026-11-14-pending', () => applyPending(PENDING_2026_11_14), true], ['private-2026-11-15', () => grantPrivate(PRIVATE_2026_11_15)]];
+/* 15 Nov 2026: C1 Teens moves to Saturdays and Sundays 13:00–14:30; today's PET lesson (Sun 15 Nov, 13:00) is cancelled. */
+async function schedule20261115() {
+  const lines = await applyTimetable({ groups: [['b2t', 'Sat, Sun 13:00-14:30', 't-abdoulie']] });
+  const W = S(), classes = (await W.get('classes', { type: 'json' })) || [];
+  const c = classes.find(x => x.id === 'c-b2t');
+  if (c && c.schedule !== 'Sat, Sun 13:00-14:30') { c.schedule = 'Sat, Sun 13:00-14:30'; await W.setJSON('classes', classes); lines.push('class c-b2t: Sat, Sun 13:00-14:30'); }
+  const ch = (await W.get('lessonchanges', { type: 'json' })) || {};
+  ch.cancel = ch.cancel || {};
+  ch.cancel['c-pet|2026-11-15|13:00'] = { note: 'PET group cancelled today', by: 'Abdoulie Manneh', at: new Date().toISOString() };
+  await W.setJSON('lessonchanges', ch);
+  lines.push('cancelled c-pet 2026-11-15 13:00');
+  return lines;
+}
+
+const MIGRATIONS = [['timetable-2026-11-14', () => applyTimetable(TT_2026_11_14)], ['timetable-2026-11-14-pending', () => applyPending(PENDING_2026_11_14), true], ['private-2026-11-15', () => grantPrivate(PRIVATE_2026_11_15)], ['schedule-2026-11-15', schedule20261115]];
 let running = null;
 /** Run any migration that has not run yet. Safe to call on every request (cached per instance). */
 let checkedAt = 0;
