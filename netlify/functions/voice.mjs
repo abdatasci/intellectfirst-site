@@ -8,11 +8,15 @@ import { getStore } from '@netlify/blobs';
 import { createHash } from 'node:crypto';
 
 const V = () => getStore({ name: 'voice', consistency: 'strong' });
-// Two British English voices; every page can use either (listeners choose, dialogues use both).
+// Four British English voices: a woman and a man for children's pages, a different woman and man for teens and adults.
+// v = kf | km (kids) · af | am (teens and adults). Dialogues use both voices of a set.
 const VOICES = {
-  female: process.env.ELEVENLABS_VOICE_FEMALE || process.env.ELEVENLABS_VOICE_KIDS || 'Xb7hH8MSUJpSbSDYk0k2',   // Alice — British English, clear and friendly
-  male: process.env.ELEVENLABS_VOICE_MALE || process.env.ELEVENLABS_VOICE_ADULT || 'JBFqnCBsd6RMkjVDRZzb'       // George — British English, warm
+  kf: process.env.ELEVENLABS_VOICE_KIDS_FEMALE || 'pFZP5JQG7iQjIQuC4Bku',   // Lily — warm British storyteller
+  km: process.env.ELEVENLABS_VOICE_KIDS_MALE || 'JBFqnCBsd6RMkjVDRZzb',     // George — warm, friendly British storyteller
+  af: process.env.ELEVENLABS_VOICE_FEMALE || 'Xb7hH8MSUJpSbSDYk0k2',        // Alice — clear, confident British English
+  am: process.env.ELEVENLABS_VOICE_MALE || 'onwK4e9ZLuTAKqWW03F9'           // Daniel — British English, news-presenter style
 };
+const LEGACY = { female: 'af', male: 'am', kid: 'kf', adult: 'am' };
 const MODEL = process.env.ELEVENLABS_MODEL || 'eleven_multilingual_v2';
 const MAX_LEN = 3000, DAILY_CHARS = +process.env.ELEVENLABS_DAILY_CHARS || 40000;
 const SITE = /^https:\/\/([a-z0-9-]+--)?(intellectfirst\.com|www\.intellectfirst\.com|intellect-first-academy\.netlify\.app)(\/|$)/;
@@ -26,7 +30,7 @@ export default async (req) => {
   const url = new URL(req.url);
   if (url.pathname.endsWith('/status')) return Response.json({ ready: !!process.env.ELEVENLABS_API_KEY, model: MODEL }, { headers: { 'Cache-Control': 'no-store' } });
   const text = String(url.searchParams.get('t') || '').replace(/\s+/g, ' ').trim();
-  const v = url.searchParams.get('v'), kind = v === 'female' || v === 'kid' ? 'female' : 'male';
+  const v = url.searchParams.get('v') || '', kind = VOICES[v] ? v : LEGACY[v] || 'am';
   if (!text || text.length > MAX_LEN) return no(400, 'text');
   const voice = VOICES[kind], key = createHash('sha256').update(`${MODEL}|${voice}|${text}`).digest('hex');
   const store = V();
@@ -46,7 +50,7 @@ export default async (req) => {
     method: 'POST',
     headers: { 'xi-api-key': apiKey, 'Content-Type': 'application/json', Accept: 'audio/mpeg' },
     body: JSON.stringify({ text, model_id: MODEL, language_code: MODEL.includes('multilingual_v2') ? undefined : 'en',
-      voice_settings: { stability: 0.55, similarity_boost: 0.75, style: 0.25, use_speaker_boost: true } })
+      voice_settings: { stability: 0.55, similarity_boost: 0.75, style: kind[0] === 'k' ? 0.35 : 0.15, use_speaker_boost: true } })
   }).catch(() => null);
   if (!r || !r.ok) {
     const why = r ? (await r.text().catch(() => '')).slice(0, 300) : 'network';

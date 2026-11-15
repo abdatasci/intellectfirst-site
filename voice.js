@@ -11,7 +11,8 @@
   var native = { speak: ss.speak.bind(ss), cancel: ss.cancel.bind(ss), pause: ss.pause && ss.pause.bind(ss), resume: ss.resume && ss.resume.bind(ss) };
   var KIDPATH = /^\/a\/(kids-quest|young-learners|yl-centre|kids-english|starters-tests|movers-tests|flyers-tests|flyers-arcade|yl-tests)(\/|$)/;
   var kid = function () { return KIDPATH.test(location.pathname) || (/^\/app\//.test(location.pathname) && /yl-|maths/.test(location.hash)); };
-  // Two British voices. Children's pages start with the female voice, other pages with the male voice;
+  // Four British voices: a woman and a man for children's pages, a different woman and man for teens and adults.
+  // Children's pages start with the female voice, other pages with the male voice;
   // each listener can switch (saved on the device). A page can also choose per sentence: utterance.ifVoice = 'female' | 'male'.
   var pref = function () { try { var x = localStorage.getItem('ifVoice'); if (x === 'female' || x === 'male') return x; } catch (e) {} return kid() ? 'female' : 'male'; };
   window.IFVoice = { get: pref, set: function (x) { try { localStorage.setItem('ifVoice', x === 'male' ? 'male' : 'female'); } catch (e) {} }, toggle: function () { var n = pref() === 'male' ? 'female' : 'male'; window.IFVoice.set(n); return n; } };
@@ -28,7 +29,8 @@
     var u = queue.shift(); if (!u) return;
     if (!real(u)) { native.speak(u); return next(); }
     current = u;
-    player.src = '/api/voice?v=' + (u.ifVoice === 'female' || u.ifVoice === 'male' ? u.ifVoice : pref()) + '&t=' + encodeURIComponent(String(u.text).replace(/\s+/g, ' ').trim());
+    var g = u.ifVoice === 'female' || u.ifVoice === 'male' ? u.ifVoice : pref();
+    player.src = '/api/voice?v=' + (kid() ? 'k' : 'a') + (g === 'male' ? 'm' : 'f') + '&t=' + encodeURIComponent(String(u.text).replace(/\s+/g, ' ').trim());
     var r = +u.rate || 1; player.playbackRate = r < 0.8 ? 0.85 : r > 1.3 ? 1.2 : 1;
     try { player.preservesPitch = true; } catch (e) {}
     var p = player.play(); if (p && p.catch) p.catch(function (e) { if (current === u && e && e.name !== 'AbortError') fail(u); });
