@@ -131,13 +131,26 @@ export default async (req, context) => {
         const l = key && links[key];
         return { id: s.id, name: `${s.first} ${s.last}`.trim(), classes: s.classes || [], status: s.status || 'active', phone: s.phone || '', parentPhone: s.parentPhone || '', account: !!(s.uid || acc[s.id]), connected: l ? { username: l.username || '', at: l.at } : null };
       }).sort((a, b) => a.name.localeCompare(b.name));
-      return json({ bot: info?.username || null, ready: !!(tgToken() && info?.username), students });
+      // teachers: connected with their website account or by phone/invite as 'tid:<id>' (clock in and registers in the bot)
+      const teachers = (await doc('teachers')).map(t => {
+        const acc = t.uid && links[t.uid] ? t.uid : Object.entries(dir).find(([u, d]) => d.teacherId === t.id && links[u])?.[0];
+        const l = links[acc] || links['tid:' + t.id];
+        return { id: t.id, name: t.name || '', phone: t.phone || '', connected: l ? { username: l.username || '', at: l.at } : null };
+      });
+      return json({ bot: info?.username || null, ready: !!(tgToken() && info?.username), students, teachers });
     }
     if (path === 'bot/invite' && method === 'POST') {
       const info = await botInfo(); if (!tgToken() || !info?.username) return fail(503, 'bot_not_ready');
       const b = await req.json().catch(() => ({}));
-      const s = (await doc('students')).find(x => x.id === b.studentId); if (!s) return fail(404, 'student');
       const dir = (await U().get('directory', { type: 'json' })) || {};
+      if (b.teacherId) {   // a teacher: their website account if they have one, otherwise the teacher record itself
+        const t = (await doc('teachers')).find(x => x.id === b.teacherId); if (!t) return fail(404, 'teacher');
+        const acc = t.uid && dir[t.uid] ? t.uid : Object.entries(dir).find(([, d]) => d.teacherId === t.id && (d.role === 'teacher' || d.role === 'admin'))?.[0];
+        const c = code();
+        await S().setJSON(`bot/link/${c}`, { uid: acc || 'tid:' + t.id, exp: Date.now() + 30 * 864e5, by: 'admin-invite' });
+        return json({ url: `https://t.me/${info.username}?start=${c}`, bot: info.username });
+      }
+      const s = (await doc('students')).find(x => x.id === b.studentId); if (!s) return fail(404, 'student');
       const accUid = s.uid || Object.entries(dir).find(([, d]) => d.studentId === s.id)?.[0];
       const c = code();
       await S().setJSON(`bot/link/${c}`, { uid: accUid || 'sid:' + s.id, exp: Date.now() + 30 * 864e5, by: 'admin-invite' });

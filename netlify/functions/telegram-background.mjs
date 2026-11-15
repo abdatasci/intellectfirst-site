@@ -3,6 +3,7 @@
 import { S, getProfile, contextFor, reply, publicReply, allow, tgSecret, tgSend, tg, getLinks, saveLinks, linkChat, matchPhone, local, money, langOf, localise } from '../lib/bot-core.mjs';
 import { handleReceipt, decideReceipt } from '../lib/receipts.mjs';
 import { loadHomework, forClasses, isUpcoming } from '../lib/homework.mjs';
+import { isStaff, STAFF_KB, STAFF_HELP, staffHello, sendToday, staffCallback } from '../lib/teachbot.mjs';
 
 const SITE = 'https://intellectfirst.com/me/#/assistant';
 const PHONE_KB = lang => ({ keyboard: [[{ text: { en: '📱 Connect with my phone number', ru: '📱 Подключиться по номеру телефона', kk: '📱 Телефон нөмірі арқылы қосылу' }[lang] || '📱 Connect with my phone number', request_contact: true }]], resize_keyboard: true, one_time_keyboard: true });
@@ -82,8 +83,13 @@ export default async (req) => {
         if (!c) { await tg('answerCallbackQuery', { callback_query_id: q.id, text: 'Expired. Share your number again.' }); return new Response('ok'); }
         await linkChat(c.key, chatId, q.from?.username, lang); await S().delete(`bot/phonepick/${chatId}`);
         await tg('answerCallbackQuery', { callback_query_id: q.id, text: '✓' });
-        await tgSend(chatId, L[lang].hello(c.name.split(' ')[0]), { reply_markup: KB });
+        const sp = isStaff(await getProfile(c.key)), f = c.name.split(' ')[0]; await tgSend(chatId, sp ? staffHello(f) : L[lang].hello(f), { reply_markup: sp ? STAFF_KB : KB });
       } catch (e) { console.error('phone pick', e.message); }
+      return new Response('ok');
+    }
+    if (/^(ci:|ro:|rt:\d|ra$|rs$)/.test(String(q.data || ''))) {
+      try { const uid = await S().get(`bot/chat/${q.message?.chat?.id || q.from?.id}`), p = uid && await getProfile(uid); await staffCallback(q, uid, p || null); }
+      catch (e) { console.error('staff button', e.message); await tg('answerCallbackQuery', { callback_query_id: q.id, text: 'Something went wrong. Try again.' }).catch(() => {}); }
       return new Response('ok');
     }
     try {
@@ -117,14 +123,14 @@ export default async (req) => {
       links[link.uid] = { chatId, username: m.from?.username || '', lang, at: new Date().toISOString() };
       await saveLinks(links); await S().set(`bot/chat/${chatId}`, link.uid);
       const p = await getProfile(link.uid);
-      await tgSend(chatId, L[lang].hello((p?.name || m.from?.first_name || '').split(' ')[0]), { reply_markup: KB });
+      const f = (p?.name || m.from?.first_name || '').split(' ')[0]; await tgSend(chatId, isStaff(p) ? staffHello(f) : L[lang].hello(f), { reply_markup: isStaff(p) ? STAFF_KB : KB });
       return new Response('ok');
     }
     if (m.contact) {   // connect by phone number (Telegram's "share my number" button)
       if (m.contact.user_id && m.contact.user_id !== m.from?.id) { await tgSend(chatId, L[lang].phoneOwn, { reply_markup: PHONE_KB(lang) }); return new Response('ok'); }
       const cands = await matchPhone(m.contact.phone_number);
       if (!cands.length) { await tgSend(chatId, L[lang].phoneNone('+' + String(m.contact.phone_number).replace(/^\+/, '')), { reply_markup: { remove_keyboard: true } }); return new Response('ok'); }
-      if (cands.length === 1) { await linkChat(cands[0].key, chatId, m.from?.username, lang); await tgSend(chatId, L[lang].hello(cands[0].name.split(' ')[0]), { reply_markup: KB }); return new Response('ok'); }
+      if (cands.length === 1) { await linkChat(cands[0].key, chatId, m.from?.username, lang); const sp = isStaff(await getProfile(cands[0].key)), f = cands[0].name.split(' ')[0]; await tgSend(chatId, sp ? staffHello(f) : L[lang].hello(f), { reply_markup: sp ? STAFF_KB : KB }); return new Response('ok'); }
       await S().setJSON(`bot/phonepick/${chatId}`, { cands: cands.slice(0, 8), lang, exp: Date.now() + 30 * 60e3 });
       await tgSend(chatId, L[lang].phonePick, { reply_markup: { inline_keyboard: cands.slice(0, 8).map((c, i) => [{ text: c.name + (c.classes ? ' · ' + c.classes : ''), callback_data: 'ph:' + i }]) } });
       return new Response('ok');
@@ -148,6 +154,9 @@ export default async (req) => {
       await tgSend(chatId, L[lang].stopped, { reply_markup: { remove_keyboard: true } }); return new Response('ok');
     }
     if (m.photo || m.document) { tg('sendChatAction', { chat_id: chatId, action: 'typing' }).catch(() => {}); await handleReceipt({ chatId, uid, msg: m, lang }); return new Response('ok'); }
+    const me = await getProfile(uid).catch(() => null);
+    if (isStaff(me) && /^\/today\b|^🕑|^\/clock/i.test(text)) { await sendToday(chatId, uid, me); return new Response('ok'); }
+    if (isStaff(me) && /^\/start\b|^\/help\b|^❓/i.test(text)) { await tgSend(chatId, STAFF_HELP, { reply_markup: STAFF_KB }); return new Response('ok'); }
     if (/^\/receipt\b|^📎/i.test(text)) { await tgSend(chatId, L[lang].receiptHow, { reply_markup: KB }); return new Response('ok'); }
     if (/^\/start\b|^\/help\b|^❓/i.test(text)) { await tgSend(chatId, L[lang].help, { reply_markup: KB }); return new Response('ok'); }
     const ctx = await contextFor(uid);

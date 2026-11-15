@@ -2,13 +2,14 @@
 // (evening before and that morning) and tuition reminders (3 days before, due day, 3 days overdue; paused while a
 // receipt waits for confirmation). Saved as website notifications for students with an account, sent on Telegram to students who
 // connected the bot, and on WhatsApp to the student's (and parent's) phone number from IF Admin.
-import { S, doc, getLinks, uidsByStudent, loadChanges, dueReminders, reminderText, tgSend, tgToken, tg, tgSecret, addNote, ymd } from '../lib/bot-core.mjs';
+import { S, doc, getLinks, getProfile, uidsByStudent, loadChanges, dueReminders, reminderText, tgSend, tgToken, tg, tgSecret, addNote, ymd } from '../lib/bot-core.mjs';
 import { waReady, waSend, waNumber } from '../lib/whatsapp.mjs';
 import { loadHomework } from '../lib/homework.mjs';
 import { migrate } from '../lib/migrate.mjs';
 import { lessonsOn, loadLog, today as todayStr } from '../lib/lessons.mjs';
 import { getStore } from '@netlify/blobs';
 import { chaseManager } from '../lib/tasks.mjs';
+import { lessonButtons } from '../lib/teachbot.mjs';
 
 /** Once: let the existing webhook also receive button presses (receipt Confirm / Not right). */
 async function upgradeWebhook() {
@@ -27,30 +28,36 @@ async function lessonWatch(classes, links) {
   const date = todayStr(), now = Date.now(), lessons = lessonsOn(classes, date, await loadChanges()).filter(l => !l.cancelled && !l.movedTo);
   const soon = lessons.filter(l => { const t = Date.parse(l.at) - now; return t <= 20 * 60000 && t > -5 * 60000; });
   const late = lessons.filter(l => { const t = now - Date.parse(l.at); return t >= 10 * 60000 && now < Date.parse(l.endAt); });
-  if (!soon.length && !late.length) return 0;
+  const ended = lessons.filter(l => { const t = now - Date.parse(l.endAt); return t >= 0 && t < 3 * 3600e3; });
+  if (!soon.length && !late.length && !ended.length) return 0;
   const store = getStore({ name: 'school', consistency: 'strong' }), month = date.slice(0, 7), L = await loadLog(month);
   const U = getStore({ name: 'ielts', consistency: 'strong' }), teachers = await doc('teachers');
   const staff = [];   // [{uid, chatId, role, teacherId}]
   for (const [uid, l] of Object.entries(links)) {
     if (uid.startsWith('sid:')) continue;
-    const p = await U.get(`u/${uid}/profile`, { type: 'json' }).catch(() => null);
+    const p = await getProfile(uid).catch(() => null);   // website accounts, and teachers connected by phone ('tid:')
     if (p && (p.role === 'admin' || p.role === 'teacher')) staff.push({ uid, chatId: l.chatId, role: p.role, teacherId: p.teacherId || '', manager: !!p.manager });
   }
   let n = 0, dirty = false;
   const entry = l => L[l.key] || (L[l.key] = { classId: l.classId, label: l.label, date: l.date, start: l.start, end: l.end, teacherId: l.teacherId });
   for (const l of soon) {
     const e = entry(l); if (e.checkIn || e.cancelled || e.pinged) continue;
-    for (const s of staff.filter(x => x.teacherId && x.teacherId === l.teacherId)) { try { await tgSend(s.chatId, `🕑 ${l.label} starts at ${l.start}${l.room ? ' (' + l.room + ')' : ''}.\nCheck in on the website (from 5 minutes before the start): intellectfirst.com/me → Calendar or Today. Then take the register.`); n++; } catch (x) {} }
+    for (const s of staff.filter(x => x.teacherId && x.teacherId === l.teacherId)) { try { await tgSend(s.chatId, `🕑 ${l.label} starts at ${l.start}${l.room ? ' (' + l.room + ')' : ''}.\nPress ✅ Clock in when you start (from 5 minutes before), then take the register here or on the website.`, { reply_markup: { inline_keyboard: lessonButtons(l, e) } }); n++; } catch (x) {} }
     e.pinged = true; dirty = true;
   }
   for (const l of late) {
     const e = entry(l); if (e.checkIn || e.cancelled || e.alerted) continue;
     const t = (teachers.find(x => x.id === l.teacherId) || {}).name || 'The teacher';
-    for (const s of staff.filter(x => x.role === 'admin' || x.manager)) { try { await tgSend(s.chatId, `⚠️ ${t} has not checked in for ${l.label} (started ${l.start}${l.room ? ', ' + l.room : ''}).\nSee today's lessons: intellectfirst.com/me/#/admin/lessons`); n++; } catch (x) {} }
-    for (const s of staff.filter(x => x.teacherId && x.teacherId === l.teacherId)) { try { await tgSend(s.chatId, `⚠️ You have not checked in for ${l.label} (started ${l.start}). Please check in now on the website: intellectfirst.com/me → Today.`); } catch (x) {} }
+    for (const s of staff.filter(x => x.role === 'admin' || x.manager)) { try { await tgSend(s.chatId, `⚠️ ${t} has not checked in for ${l.label} (started ${l.start}${l.room ? ', ' + l.room : ''}).\nIf the lesson is running, you can clock in for them here. Today's lessons: intellectfirst.com/me/#/admin/lessons`, { reply_markup: { inline_keyboard: [[{ text: '✅ Clock in for ' + t.split(' ')[0], callback_data: 'ci:' + l.key }]] } }); n++; } catch (x) {} }
+    for (const s of staff.filter(x => x.teacherId && x.teacherId === l.teacherId)) { try { await tgSend(s.chatId, `⚠️ You have not clocked in for ${l.label} (started ${l.start}). Press the button now:`, { reply_markup: { inline_keyboard: lessonButtons(l, e) } }); } catch (x) {} }
     e.alerted = true; dirty = true;
   }
-  if (dirty) { const fresh = await loadLog(month); for (const [k, v] of Object.entries(L)) fresh[k] = { ...v, ...(fresh[k] || {}), pinged: v.pinged || fresh[k]?.pinged, alerted: v.alerted || fresh[k]?.alerted }; await store.setJSON('lessonlog/' + month, fresh); }
+  for (const l of ended) {   // after the lesson: a button to take the register, once
+    const e = entry(l); if (!e.checkIn || e.takenAt || e.cancelled || e.regPinged) continue;
+    for (const s of staff.filter(x => x.teacherId && x.teacherId === l.teacherId)) { try { await tgSend(s.chatId, `📋 ${l.label} (${l.start}) has finished. Please take the register:`, { reply_markup: { inline_keyboard: lessonButtons(l, e) } }); n++; } catch (x) {} }
+    e.regPinged = true; dirty = true;
+  }
+  if (dirty) { const fresh = await loadLog(month); for (const [k, v] of Object.entries(L)) fresh[k] = { ...v, ...(fresh[k] || {}), pinged: v.pinged || fresh[k]?.pinged, alerted: v.alerted || fresh[k]?.alerted, regPinged: v.regPinged || fresh[k]?.regPinged }; await store.setJSON('lessonlog/' + month, fresh); }
   return n;
 }
 

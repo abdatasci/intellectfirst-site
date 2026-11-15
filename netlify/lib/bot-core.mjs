@@ -28,6 +28,8 @@ export async function doc(name) {
 export async function getProfile(uid) {
   // 'sid:<studentId>': a Telegram chat connected by phone number to a school record, for a student with no website account
   if (String(uid).startsWith('sid:')) { const s = (await loadStudents()).find(x => x.id === uid.slice(4)); return s ? { role: 'student', studentId: s.id, name: `${s.first} ${s.last}`.trim(), viaPhone: true } : null; }
+  // 'tid:<teacherId>': a teacher connected by the phone number in their teacher record (no website account needed)
+  if (String(uid).startsWith('tid:')) { const t = (await doc('teachers')).find(x => x.id === uid.slice(4)); return t ? { role: 'teacher', teacherId: t.id, name: t.name || '', viaPhone: true } : null; }
   return (await U().get(`u/${uid}/profile`, { type: 'json' })) || null;
 }
 const phoneKey = p => { const d = String(p || '').replace(/\D/g, ''); return d.length >= 10 ? d.slice(-10) : ''; };
@@ -42,6 +44,12 @@ export async function matchPhone(phone) {
     out.push({ key: k, name: `${s.first} ${s.last}`.trim(), classes: (s.classes || []).join(', ') });
   }
   for (const [uid, d] of Object.entries(dir)) if (!seen.has(uid) && phoneKey(d.phone) === key) { seen.add(uid); out.push({ key: uid, name: d.name || '', classes: d.role === 'admin' ? 'Administrator' : d.role === 'teacher' ? 'Teacher' : (d.classChoice || '') }); }
+  // teacher records (Admin → Teachers): teachers with a website account use it; the others connect as 'tid:<id>'
+  for (const t of (await doc('teachers')).filter(t => phoneKey(t.phone) === key)) {
+    const acc = t.uid && dir[t.uid] ? t.uid : Object.entries(dir).find(([, d]) => d.teacherId === t.id && (d.role === 'teacher' || d.role === 'admin'))?.[0];
+    const k = acc || 'tid:' + t.id; if (seen.has(k)) continue; seen.add(k);
+    out.push({ key: k, name: t.name || '', classes: 'Teacher' });
+  }
   return out;
 }
 /** Connect a Telegram chat to an account (uid) or a school record ('sid:<id>'). */
