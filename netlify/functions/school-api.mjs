@@ -84,7 +84,7 @@ async function putProfile(uid, p) {
 // Online access plans, set against the 2026–27 brochure: the cheapest course is ₸45,000 a month (8 lessons with a teacher),
 // so self-study online access sits at about a fifth of it (6 months ≈ one month of group lessons).
 const MEMBERSHIP = {
-  plans: { 1: 9900, 3: 24900, 6: 44900 },
+  plans: { 1: 9900, 3: 24900, 6: 44900, 12: 79900 },   // the year costs less a month than 6 months (about 4 months free against paying monthly)
   teacherPlans: { 1: 4000, 3: 8000, 6: 10000, 12: 20000 },   // Teacher plan: Teach mode, class games, all lessons for use in class
   trialDays: TRIAL_DAYS,
   offer: '',

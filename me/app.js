@@ -429,19 +429,23 @@
     var p = ME.profile, m0 = ME.membership || {}, r = role(), student = r !== 'guest', paid = paidActive(p), trial = trialOn(p), tutor = p.track === 'tutor';
     var m = tutor ? Object.assign({}, m0, { plans: m0.teacherPlans || {} }) : m0;
     var tick = function (a) { return '<ul class="plist">' + a.map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ul>'; };
-    var free = ['Games and quests for every level (Flyers Arcade, KET and PET Quest, Skill Games, Grammar Game Centre…)', 'Free placement test', 'Join IF Live games with a PIN', '2 AI practice tests a day', '6 rounds of AI practice a day', 'Notifications on Telegram'];
-    var full = ['Everything in the free account', 'All Test Centres: A1–C1, KET, PET, Young Learners, Teens', 'IF English: 12 vocabulary courses with audio and games', 'IELTS Centre: AI marking of Writing and Speaking', 'Unlimited AI tests and AI practice', 'AI study assistant', 'Results saved on your profile'];
+    var free = ['IF English: the first two units of every course', '3 games a day, at every level (Kart, Block Quest, Skill Games, Grammar Game Centre…)', 'Free placement test', 'Join IF Live games with a PIN', '2 AI practice tests a day', '6 rounds of AI practice a day', 'Notifications on Telegram'];
+    var full = ['Everything in the free account', 'Every unit of every IF English course', 'Unlimited games', 'All Test Centres: A1–C1, KET, PET, Young Learners, Teens', 'IF English: 12 vocabulary courses with audio and games', 'IELTS Centre: AI marking of Writing and Speaking', 'Unlimited AI tests and AI practice', 'AI study assistant', 'Results saved on your profile'];
     if (tutor) full = ['Every IF English course and lesson, for you and in class', 'Teach mode: big text for the projector, answers shown when you choose', 'IF Live: host class games with a PIN or QR code, with AI questions', 'All Test Centres and the IELTS lessons, Studio and Speaking Lab', 'Vocabulary, grammar and game banks for every level'];
     var L = plansOf(m), base = L.length ? L[0].per : 0, fp = fromPrice(m);
     var lead = student ? 'As ' + (p.track === 'private' ? 'Abdoulie\'s individual student' : 'an IF Academy student') + ', full access is included free with your lessons.' :
       paid ? 'Your access runs until ' + when(p.paidUntil) + '. You can extend it below.' :
       trial ? 'Your free trial ends in ' + daysLeft(p.trialUntil) + ' day' + (daysLeft(p.trialUntil) > 1 ? 's' : '') + '. Choose a plan to keep everything open.' :
       'IF Academy students and Abdoulie\'s individual students get full access free with their lessons. Everyone else can join online.';
-    var cards = L.map(function (x, i) {
-      var save = base && x.months > 1 ? Math.round((1 - x.per / base) * 100) : 0;
-      return '<label class="plan' + (i === L.length - 1 ? ' best' : '') + '"><input type="radio" name="pl" value="' + x.months + '"' + (i === L.length - 1 ? ' checked' : '') + '>' +
-        (i === L.length - 1 ? '<span class="tag">Best value</span>' : '') + '<b>' + (x.months === 12 ? '1 year' : x.months + ' month' + (x.months > 1 ? 's' : '')) + '</b><span class="pm">' + kzt(x.per) + '<small> / month</small></span>' +
-        '<span class="tot">' + (x.months > 1 ? kzt(x.total) + ' in total' + (save > 0 ? ' · save ' + save + '%' : '') : 'Pay monthly') + '</span></label>';
+    // Longest plan first (the year), highlighted and chosen by default, with the monthly price and the saving beside it.
+    var top = L.length ? L[L.length - 1] : null, order = L.slice().reverse();
+    var cards = order.map(function (x) {
+      var save = base && x.months > 1 ? Math.round((1 - x.per / base) * 100) : 0, free = base && x.months > 1 ? Math.floor((base * x.months - x.total) / base) : 0, best = x === top && L.length > 1;
+      return '<label class="plan' + (best ? ' best' : '') + '"><input type="radio" name="pl" value="' + x.months + '"' + (best || L.length === 1 ? ' checked' : '') + '>' +
+        (best ? '<span class="tag">' + (free >= 1 ? free + ' month' + (free > 1 ? 's' : '') + ' free' : 'Best value') + '</span>' : '') +
+        '<b>' + (x.months === 12 ? '1 year' : x.months + ' month' + (x.months > 1 ? 's' : '')) + '</b>' +
+        '<span class="pm">' + (x.months > 1 ? kzt(x.total) : kzt(x.per) + '<small> / month</small>') + '</span>' +
+        '<span class="tot">' + (x.months > 1 ? '≈ ' + kzt(x.per) + ' a month' + (save > 0 ? ' · save ' + save + '%' : '') + (base ? '<s>' + kzt(base * x.months) + '</s>' : '') : 'Pay monthly, stop any time') + '</span></label>';
     }).join('');
     view.innerHTML = '<section class="hero" style="padding-bottom:4px"><div class="eyebrow">' + (tutor ? 'Teacher plan' : 'IF Academy online') + '</div><h1>' + (student || paid ? 'You have full access' : trial ? 'Keep full access' : tutor ? 'Teach with IF English' : 'Get full access') + '</h1><p class="lead">' + lead + '</p></section>' +
       '<section class="section plans"><div class="box"><h3>Free account</h3>' + tick(free) + '</div><div class="box hl"><h3>' + (tutor ? 'Teacher plan' : 'Full access') + '</h3>' + (student ? '<p class="price">Included with your lessons</p>' : fp ? '<p class="price">from ' + kzt(fp) + ' <small>a month</small></p>' : '') + tick(full) + '</div></section>' +

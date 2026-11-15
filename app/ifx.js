@@ -58,6 +58,33 @@
   var canOpen = function (it) { return isFree(it) || access().signed; };
   var JOIN = '/me/#/register?next=' + encodeURIComponent('/app/');
   function tasterHTML() { return meLoaded && !access().signed ? '<div class="taster"><div><b>You are trying IF English free — no account needed.</b><span>Open the first unit of every course, the placement test and a selection of games. Create a free account for the first two units of every course, a 7-day trial of everything, and your progress on every device.</span></div><a class="btn gold" href="' + JOIN + '">Create a free account</a></div>' : ''; }
+  /* Full-access trial countdown (guests in their 7-day trial, not paid). */
+  function trialHTML() {
+    var p = ME && ME.profile; if (!p || p.role !== 'guest' || !p.trialUntil) return '';
+    if (p.paidUntil && Date.parse(p.paidUntil) > Date.now()) return '';
+    var left = Math.ceil((Date.parse(p.trialUntil) - Date.now()) / 864e5);
+    if (left <= 0 && (access().member || Date.parse(p.trialUntil) < 1e12)) return '';   // a student, or a phone that already had a trial
+    if (left <= 0) return '<div class="taster trial"><div><b>Your free trial has ended</b><span>You still have the free account: the first two units of every course and ' + GAME_LIMIT + ' games a day. Get full access for everything again.</span></div><a class="btn gold" href="/me/#/upgrade">See plans</a></div>';
+    return '<div class="taster trial"><div><b>⭐ Full access: ' + left + ' day' + (left > 1 ? 's' : '') + ' left</b><span>Every course, game and test is open during your trial. After it, the free account keeps the first two units of every course and ' + GAME_LIMIT + ' games a day.</span></div><a class="btn ghost" href="/me/#/upgrade">See plans</a></div>';
+  }
+  /* Free game allowance: without full access, 3 different games a day (any level); reopening one of today's is free.
+     IF Live (joining a class game with a PIN) never counts. Members, students and staff: unlimited. */
+  var GAME_LIMIT = 3, GKEY = 'ifx.games';
+  var counted = function (it) { return it && (it.s === 'games' || it.s === 'grammar' || it.s === 'archive') && it.id !== 'live'; };
+  function gamesToday() { var g; try { g = JSON.parse(localStorage.getItem(GKEY)); } catch (e) {} return g && g.d === day() ? g : { d: day(), ids: [] }; }
+  function gameLeft() { return Math.max(0, GAME_LIMIT - gamesToday().ids.length); }
+  function useGame(it) {   // true if this game may open now
+    if (!counted(it) || access().member) return true;
+    var g = gamesToday(); if (g.ids.indexOf(it.id) >= 0) return true;
+    if (g.ids.length >= GAME_LIMIT) return false;
+    g.ids.push(it.id); try { localStorage.setItem(GKEY, JSON.stringify(g)); } catch (e) {}
+    return true;
+  }
+  function gamesChip(sec) {
+    if (!meLoaded || access().member || (sec !== 'games' && sec !== 'grammar')) return '';
+    var n = gameLeft();
+    return '<div class="gleft' + (n ? '' : ' none') + '">🎮 ' + (n ? n + ' of ' + GAME_LIMIT + ' free games left today' : 'No free games left today — come back tomorrow') + ' · <a href="/me/#/upgrade">Unlimited with full access</a></div>';
+  }
   async function loadMe() {
     try { var r = await fetch('/api/school/me', { credentials: 'same-origin' }); if (r.ok) ME = await r.json(); } catch (e) {}
     var pf = ME && ME.profile;
@@ -196,7 +223,7 @@
   function vOnboard(step) {
     setNav('home');
     if (step !== 'pick') {
-      view().innerHTML = tasterHTML() + '<div class="onb"><p class="h-eyebrow">IF English</p><h1>Who is learning?</h1><p class="lead">We\'ll show what fits — and keep the rest out of the way.</p><div class="pick">' +
+      view().innerHTML = tasterHTML() + trialHTML() + '<div class="onb"><p class="h-eyebrow">IF English</p><h1>Who is learning?</h1><p class="lead">We\'ll show what fits — and keep the rest out of the way.</p><div class="pick">' +
         [['me', '🙋', 'Me', 'Teens and adults: General, Business, IELTS, KET, PET'], ['child', '🧸', 'My child', 'Young Learners (6–12) and Maths in English'], ['teach', '👩‍🏫', 'I am a teacher', 'Use every course in class with Teach mode']].map(function (g) { return '<button data-w="' + g[0] + '"><i>' + g[1] + '</i><span><b>' + g[2] + '</b><span>' + g[3] + '</span></span></button>'; }).join('') + '</div></div>';
       $$('[data-w]').forEach(function (b) { b.onclick = function () { S.who = b.dataset.w; S.teacher = S.who === 'teach'; save(); if (S.teacher) { S.study = S.study && S.study.length ? S.study : []; save(); return go('#/'); } vOnboard('pick'); }; });
       return;
@@ -224,7 +251,7 @@
     var goalPct = Math.min(100, Math.round((S.today.d === day() ? S.today.xp : 0) / GOAL_XP * 100));
     var lvPct = P.level && LEVELS.indexOf(P.level) >= 0 ? (function () { var cs = COURSES.filter(function (c) { return c.level === P.level && (c.track === 'general' || c.track === 'business'); }); var n = 0, d = 0; cs.forEach(function (c) { var s2 = courseStats(c); n += s2.n; d += s2.d; }); return n ? Math.round(d / n * 100) : 0; })() : null;
     var nextLv = P.level ? LEVELS[LEVELS.indexOf(P.level) + 1] : null;
-    var html = tasterHTML() + '<div class="page-h"><div><p class="h-eyebrow">' + (S.teacher ? '👩‍🏫 Teacher' : S.who === 'child' ? '🧸 Young learner' : 'IF English') + '</p><h1>' + (a.name ? 'Hi, ' + esc(a.name.split(' ')[0]) + '!' : 'Welcome to IF English') + '</h1></div><a class="chip" href="#/onboard">✎ My courses</a></div>' +
+    var html = tasterHTML() + trialHTML() + '<div class="page-h"><div><p class="h-eyebrow">' + (S.teacher ? '👩‍🏫 Teacher' : S.who === 'child' ? '🧸 Young learner' : 'IF English') + '</p><h1>' + (a.name ? 'Hi, ' + esc(a.name.split(' ')[0]) + '!' : 'Welcome to IF English') + '</h1></div><a class="chip" href="#/onboard">✎ My courses</a></div>' +
       (keys.length ? '<div class="chips mycourses">' + keys.map(function (k) { return '<button class="chip' + (k === act ? ' on' : '') + '" data-a="' + k + '">' + SICON[k] + ' ' + esc(SNAME[k]) + '</button>'; }).join('') + '</div>' : '') +
       '<div class="hello"><div class="plan">' + (main ? '<p class="h-eyebrow" style="color:var(--gold2)">' + esc(t('yourPlan')) + '</p><h2>' + (nx ? esc(nx.l.title) : 'Course complete! 🎉') + '</h2><p>' + esc(main.title) + (nx ? ' · ' + esc(t('unit')) + ' ' + (nx.ui + 1) + ': ' + esc(nx.u.title) : '') + '</p>' +
         (nx ? '<a class="btn gold" href="#/lesson/' + main.id + '/' + nx.u.id + '/' + nx.l.id + '">' + (st.d ? t('cont') : t('start')) + ' →</a>' : '<a class="btn gold" href="#/courses">Next course →</a>')
@@ -516,7 +543,7 @@
     if (k === 'vocab') { var vl = lessonsOf(['vocab']).filter(function (x) { return f === 'all' || f === 'level' || (f === 'business' ? x.c.track === 'business' : f === 'exam' ? x.c.track === 'exam' : f === 'general' ? x.c.track === 'general' : f === 'fit' ? myCourses().indexOf(x.c) >= 0 : false); }); if (vl.length) extra = '<div class="sec"><h2>Vocabulary lessons</h2></div><div class="grid">' + vl.map(lessonCard).join('') + '</div>'; }
     if (k === 'grammar') { var gl = lessonsOf(['grammar']).filter(function (x) { return f === 'all' || f === 'fit' ? (f === 'all' || myCourses().indexOf(x.c) >= 0) : x.c.level === f; }); if (gl.length) extra = '<div class="sec"><h2>Grammar lessons</h2></div><div class="grid">' + gl.map(lessonCard).join('') + '</div>'; }
     view().innerHTML = '<div class="page-h"><div><p class="h-eyebrow">' + esc(t(k)) + '</p><h1>' + esc(sc.h) + '</h1><p>' + esc(sc.p) + '</p></div></div>' +
-      '<div class="chips">' + sc.f.map(function (x) { return '<button class="chip' + (x[0] === f ? ' on' : '') + '" data-f="' + x[0] + '">' + esc(x[1]) + '</button>'; }).join('') + '</div>' +
+      '<div class="chips">' + sc.f.map(function (x) { return '<button class="chip' + (x[0] === f ? ' on' : '') + '" data-f="' + x[0] + '">' + esc(x[1]) + '</button>'; }).join('') + '</div>' + gamesChip(k) +
       (k === 'grammar' ? extra : '') + (items.length ? (k === 'grammar' ? '<div class="sec"><h2>Grammar games and practice</h2></div>' : '') + '<div class="grid">' + items.map(itemCard).join('') + '</div>' : (k === 'grammar' && extra ? '' : '<div class="empty">Nothing here for this filter yet. Try “All”.</div>')) + (k === 'vocab' ? extra : '');
     $$('[data-f]').forEach(function (b) { b.onclick = function () { vSection(k, b.dataset.f); }; });
   }
@@ -530,6 +557,13 @@
       view().innerHTML = '<div class="join"><span class="ic">' + it.icon + '</span><h2>' + esc(it.t) + '</h2><p>This is part of the full IF English app. Create a free account (it takes a minute) to open it — you also get the first two units of every course and 7 days of full access.</p>' +
         '<div class="row" style="justify-content:center;gap:10px;flex-wrap:wrap"><a class="btn gold" href="' + JOIN + '">Create a free account</a><a class="btn ghost" href="/me/#/login?next=' + encodeURIComponent('/app/#/play/' + it.id) + '">Sign in</a></div>' +
         '<p class="note">Free without an account: the first unit of every course, the placement test, IF Live, IF Kart, Kids Quest, IF Skill Games, the IELTS Centre and three vocabulary courses.</p>' +
+        '<a class="chip" href="#/' + (SEC[it.s] ? it.s : 'more') + '">← Back</a></div>';
+      return;
+    }
+    if (!useGame(it)) {
+      view().innerHTML = '<div class="join"><span class="ic">🎮</span><h2>That\'s ' + GAME_LIMIT + ' games today!</h2><p>The free account includes ' + GAME_LIMIT + ' different games a day, at every level. You can still replay today\'s games (' + gamesToday().ids.map(function (x) { var g = IFX_DIR.filter(function (y) { return y.id === x; })[0]; return g ? '<a href="#/play/' + x + '">' + esc(g.t) + '</a>' : ''; }).filter(Boolean).join(', ') + '), do your lessons, or come back tomorrow.</p>' +
+        '<div class="row" style="justify-content:center;gap:10px;flex-wrap:wrap"><a class="btn gold" href="/me/#/upgrade">Unlimited games with full access</a>' + (access().signed ? '' : '<a class="btn ghost" href="' + JOIN + '">Create a free account</a>') + '</div>' +
+        '<p class="note">IF Academy students and Abdoulie\'s individual students have unlimited games free with their lessons.</p>' +
         '<a class="chip" href="#/' + (SEC[it.s] ? it.s : 'more') + '">← Back</a></div>';
       return;
     }
