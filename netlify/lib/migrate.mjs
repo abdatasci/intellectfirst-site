@@ -103,7 +103,17 @@ async function schedule20261115() {
   return lines;
 }
 
-const MIGRATIONS = [['timetable-2026-11-14', () => applyTimetable(TT_2026_11_14)], ['timetable-2026-11-14-pending', () => applyPending(PENDING_2026_11_14), true], ['private-2026-11-15', () => grantPrivate(PRIVATE_2026_11_15)], ['schedule-2026-11-15', schedule20261115]];
+/* 15 Nov 2026: the director taught C1 Teen on time but pressed clock-in late: record it as on time (register kept). */
+async function onTime20261115() {
+  const W = S(), L = (await W.get('lessonlog/2026-11', { type: 'json' })) || {}, k = 'c-b2t|2026-11-15|13:00', e = L[k];
+  if (!e || !e.checkIn) return null;   // not clocked in yet: try again later
+  e.checkIn = '2026-11-15T08:00:00.000Z'; e.lateMin = 0;
+  e.note = 'On time: clock-in pressed later (corrected by the director)'; e.correctedAt = new Date().toISOString(); e.correctedBy = 'Abdoulie Manneh';
+  await W.setJSON('lessonlog/2026-11', L);
+  return ['C1 Teen 15 Nov 13:00 → checked in on time'];
+}
+
+const MIGRATIONS = [['timetable-2026-11-14', () => applyTimetable(TT_2026_11_14)], ['timetable-2026-11-14-pending', () => applyPending(PENDING_2026_11_14), true], ['private-2026-11-15', () => grantPrivate(PRIVATE_2026_11_15)], ['schedule-2026-11-15', schedule20261115], ['ontime-2026-11-15', onTime20261115]];
 let running = null;
 /** Run any migration that has not run yet. Safe to call on every request (cached per instance). */
 let checkedAt = 0;
