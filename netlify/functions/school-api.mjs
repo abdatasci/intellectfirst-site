@@ -834,7 +834,7 @@ export default async (req) => {
       const p = await getProfile(str(b.uid, 60)); if (!p) return fail(404, 'missing');
       if (isStaff(p.role)) return fail(400, 'staff');
       if (b.action === 'approve') {
-        p.role = 'student'; p.track = TRACKS.includes(b.track) ? b.track : (p.request?.track && p.request.track !== 'outside' ? p.request.track : 'private');
+        delete p.declined; p.role = 'student'; p.track = TRACKS.includes(b.track) ? b.track : (p.request?.track && p.request.track !== 'outside' ? p.request.track : 'private');
         if (p.track === 'alumni') p.alumni = true;
         delete p.request; Object.assign(p, await linkByPhone(b.uid, p));
       } else if (b.action === 'paid') {
@@ -848,8 +848,8 @@ export default async (req) => {
           fin.push({ id: newId('f'), month: today.slice(0, 7), date: today, type: 'income', category: p.track === 'tutor' ? 'Teacher plan' : 'Online membership', amount, note: `${p.name} · ${months} month${months > 1 ? 's' : ''}`, source: `member:${b.uid}:${Date.now()}` });
           await S().setJSON('finance', fin);
         }
-      } else if (b.action === 'stop') { p.paidUntil = null; p.trialUntil = new Date(0).toISOString(); if (p.role === 'student') { p.role = 'guest'; p.track = p.track === 'private' || p.track === 'if' ? p.track : 'outside'; } }
-      else if (b.action === 'decline') delete p.request;
+      } else if (b.action === 'stop') { p.paidUntil = null; p.trialUntil = new Date(0).toISOString(); p.declined = true; if (p.role === 'student') { p.role = 'guest'; p.track = p.track === 'private' || p.track === 'if' ? p.track : 'outside'; } }
+      else if (b.action === 'decline') { delete p.request; p.declined = true; }
       else return fail(400, 'action');
       await putProfile(b.uid, p);
       return json({ profile: p });
