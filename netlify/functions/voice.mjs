@@ -8,9 +8,10 @@ import { getStore } from '@netlify/blobs';
 import { createHash } from 'node:crypto';
 
 const V = () => getStore({ name: 'voice', consistency: 'strong' });
+// Two British English voices; every page can use either (listeners choose, dialogues use both).
 const VOICES = {
-  kid: process.env.ELEVENLABS_VOICE_KIDS || 'Xb7hH8MSUJpSbSDYk0k2',     // Alice — clear, friendly British English
-  adult: process.env.ELEVENLABS_VOICE_ADULT || 'JBFqnCBsd6RMkjVDRZzb'   // George — warm British English
+  female: process.env.ELEVENLABS_VOICE_FEMALE || process.env.ELEVENLABS_VOICE_KIDS || 'Xb7hH8MSUJpSbSDYk0k2',   // Alice — British English, clear and friendly
+  male: process.env.ELEVENLABS_VOICE_MALE || process.env.ELEVENLABS_VOICE_ADULT || 'JBFqnCBsd6RMkjVDRZzb'       // George — British English, warm
 };
 const MODEL = process.env.ELEVENLABS_MODEL || 'eleven_multilingual_v2';
 const MAX_LEN = 3000, DAILY_CHARS = +process.env.ELEVENLABS_DAILY_CHARS || 40000;
@@ -25,7 +26,7 @@ export default async (req) => {
   const url = new URL(req.url);
   if (url.pathname.endsWith('/status')) return Response.json({ ready: !!process.env.ELEVENLABS_API_KEY, model: MODEL }, { headers: { 'Cache-Control': 'no-store' } });
   const text = String(url.searchParams.get('t') || '').replace(/\s+/g, ' ').trim();
-  const kind = url.searchParams.get('v') === 'kid' ? 'kid' : 'adult';
+  const v = url.searchParams.get('v'), kind = v === 'female' || v === 'kid' ? 'female' : 'male';
   if (!text || text.length > MAX_LEN) return no(400, 'text');
   const voice = VOICES[kind], key = createHash('sha256').update(`${MODEL}|${voice}|${text}`).digest('hex');
   const store = V();
@@ -45,7 +46,7 @@ export default async (req) => {
     method: 'POST',
     headers: { 'xi-api-key': apiKey, 'Content-Type': 'application/json', Accept: 'audio/mpeg' },
     body: JSON.stringify({ text, model_id: MODEL, language_code: MODEL.includes('multilingual_v2') ? undefined : 'en',
-      voice_settings: { stability: 0.55, similarity_boost: 0.75, style: kind === 'kid' ? 0.35 : 0.15, use_speaker_boost: true } })
+      voice_settings: { stability: 0.55, similarity_boost: 0.75, style: 0.25, use_speaker_boost: true } })
   }).catch(() => null);
   if (!r || !r.ok) {
     const why = r ? (await r.text().catch(() => '')).slice(0, 300) : 'network';

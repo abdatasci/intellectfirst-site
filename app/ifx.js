@@ -103,6 +103,7 @@
       '<header class="top"><div class="top-in"><a class="brand" href="#/"><img src="/brand/if-shield-3d-180.webp" alt=""><span>IF English<small>IF ACADEMY</small></span></a>' +
       '<label class="srch"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="q" type="search" placeholder="' + esc(t('search')) + '" autocomplete="off" aria-label="Search"></label>' +
       '<div class="stats"><span class="stat" title="' + esc(t('streak')) + '">🔥 <b id="stS">' + S.streak + '</b></span><span class="stat xp" title="XP">⚡ <b id="stX">' + S.xp + '</b></span>' +
+      (window.IFVoice ? '<button class="lang" id="vox" title="Voice: British female / male" aria-label="Voice">' + (IFVoice.get() === 'male' ? '👨' : '👩') + '</button>' : '') +
       '<button class="lang" id="lng" aria-label="Language">' + lang.toUpperCase() + '</button>' +
       (a.signed ? '<a class="acct" href="/me/" title="' + esc(a.name) + '">' + esc((a.name || '?').charAt(0).toUpperCase()) + '</a>' : '<a class="btn sm" href="/me/#/login?next=/app/">' + esc(t('signin')) + '</a>') + '</div></div></header>' +
       '<div class="shell"><nav class="side nav" aria-label="Sections">' + NAV.map(function (n) { return '<a href="#/' + (n[0] === 'home' ? '' : n[0]) + '" data-k="' + n[0] + '"><i>' + n[1] + '</i>' + esc(t(n[0])) + '</a>'; }).join('') + '<a class="more-link" href="#/more" data-k="more"><i>➕</i>' + esc(t('more')) + '</a></nav><main class="main" id="view"></main></div><div class="toast" id="toast" role="status"></div>';
@@ -110,6 +111,7 @@
     var q = $('#q'), qt;
     q.oninput = function () { clearTimeout(qt); qt = setTimeout(function () { var v = q.value.trim(); if (v) { if (location.hash.indexOf('#/search') !== 0) history.pushState(null, '', '#/search'); vSearch(v); } }, 180); };
     q.onkeydown = function (e) { if (e.key === 'Enter') { location.hash = '#/search'; vSearch(q.value.trim()); } };
+    if ($('#vox')) $('#vox').onclick = function () { var n = IFVoice.toggle(); this.textContent = n === 'male' ? '👨' : '👩'; toast(n === 'male' ? 'British male voice' : 'British female voice'); say(n === 'male' ? 'Hello! This is the British male voice.' : 'Hello! This is the British female voice.'); };
     $('#lng').onclick = function () { lang = { en: 'ru', ru: 'kk', kk: 'en' }[lang]; try { localStorage.setItem('if.lang', lang); } catch (e) {} document.documentElement.lang = lang; frame(); route(); };
   }
   function setNav(k) { $$('.nav a').forEach(function (a) { a.classList.toggle('on', a.dataset.k === k); }); var x = $('#stS'); if (x) { x.textContent = S.streak; $('#stX').textContent = S.xp; } }

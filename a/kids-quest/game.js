@@ -207,11 +207,12 @@
     teacherMenu: function () {
       var s = this, layer = s.add.container(0, 0).setDepth(60);
       layer.add(s.add.rectangle(W / 2, H / 2, W, H, 0x0b1230, 0.6).setInteractive());
-      var g = s.add.graphics(); g.fillStyle(0xffffff, 1).fillRoundedRect(230, 110, 500, 320, 26); layer.add(g);
+      var g = s.add.graphics(); g.fillStyle(0xffffff, 1).fillRoundedRect(230, 100, 500, 360, 26); layer.add(g);
       layer.add(txt(s, W / 2, 150, 'For teachers and parents', 28, '#13294b'));
       layer.add(button(s, W / 2, 220, 400, 54, SAVE.all ? 'Lock lands again' : 'Open all lands', { fill: 0xf3eeff, line: 0x7c4dff }, function () { SAVE.all = !SAVE.all; persist(); s.scene.restart(); }));
       layer.add(button(s, W / 2, 290, 400, 54, 'Start again (clear feathers)', { fill: 0xfff0f0, line: 0xe94f64 }, function () { SAVE.done = {}; persist(); s.scene.restart(); }));
-      layer.add(button(s, W / 2, 370, 200, 50, 'Close', { fill: 0xffffff, line: 0xdddddd }, function () { layer.destroy(); }));
+      var vb = button(s, W / 2, 360, 400, 54, 'Voice: ' + (window.IFVoice && IFVoice.get() === 'male' ? '👨 British man' : '👩 British woman'), { fill: 0xeef6ff, line: 0x3d8bfd }, function () { if (!window.IFVoice) return; var n = IFVoice.toggle(); vb.label.setText('Voice: ' + (n === 'male' ? '👨 British man' : '👩 British woman')); say(n === 'male' ? 'Hello! I am the British man.' : 'Hello! I am the British woman.'); }); layer.add(vb);
+      layer.add(button(s, W / 2, 420, 200, 50, 'Close', { fill: 0xffffff, line: 0xdddddd }, function () { layer.destroy(); }));
     }
   });
 
