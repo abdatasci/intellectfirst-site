@@ -186,3 +186,14 @@ h1,h2,h3{font-family:var(--h);letter-spacing:.03em;margin:0}
 @media (max-width:860px){.hero,.row2{grid-template-columns:1fr}.hero .host{flex-direction:row;gap:12px;justify-content:center}.hero .host .ifbot{width:120px}.hero .host .bubble{text-align:left}}
 @media (max-width:560px){.top{flex-wrap:wrap}.lvls{order:3;width:100%;justify-content:space-between}#trks{order:4}.hero .intro{padding:22px 18px}.arena{padding:20px 12px;min-height:400px}.hud{gap:8px;padding:10px}.hud .num b{font-size:18px}.ring{width:44px;height:44px}.result .grid3 b{font-size:16px}}
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition:none!important}}
+
+/* Word Arcade */
+.arc .arcrow{display:flex;flex-wrap:wrap;gap:8px}
+.cchip{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.04);color:var(--ink);text-decoration:none;font-size:14px;transition:border-color .2s,background .2s}
+.cchip b{font-family:var(--h);font-size:12px;letter-spacing:.06em;color:var(--cy)}
+.cchip:hover,.cchip.on{border-color:rgba(34,211,238,.6);background:rgba(34,211,238,.1)}
+.arch{padding:28px 28px 22px;margin-top:10px}
+.gcard .badge{font-family:var(--h);font-weight:900;font-size:30px;line-height:1;color:var(--c1);text-shadow:0 0 18px var(--c1);margin-bottom:8px;position:relative}
+.gcard .badge small{display:block;font-size:10px;letter-spacing:.2em;margin-top:6px;color:var(--soft);text-shadow:none}
+.arena-frame{margin-top:14px;padding:0;overflow:hidden;height:calc(100vh - 150px);min-height:520px}
+.arena-frame iframe{width:100%;height:100%;border:0;display:block;background:transparent}

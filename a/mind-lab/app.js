@@ -106,15 +106,56 @@
       '<section class="hero"><div class="glass intro"><p class="eyebrow">IF Academy · ' + (S.tr === 'general' ? 'General English' : S.tr === 'business' ? 'Business English' : 'IELTS') + ' · ' + S.lv + '</p><h1>Train your English brain.</h1>' +
         '<p class="lead">Seven fast games that sharpen how you focus, read, listen, write, choose words, check grammar and speak — in English, at your level. One round takes about two minutes.</p>' +
         '<div class="chiprow"><a class="btn" href="#/play/' + td.filter(function (g) { return !done[g.id]; }).concat(td)[0].id + '">▶ ' + (Object.keys(done).length ? 'Continue today\'s session' : 'Start today\'s session') + '</a>' +
-        '<span class="stat">🔥 <b>' + st + '</b> day' + (st === 1 ? '' : 's') + '</span><span class="stat">⚡ Mind score <b>' + Math.round(total) + '</b></span></div></div>' +
+        '<a class="btn ghost" href="#/arcade">🕹 Word Arcade</a><span class="stat">🔥 <b>' + st + '</b> day' + (st === 1 ? '' : 's') + '</span><span class="stat">⚡ Mind score <b>' + Math.round(total) + '</b></span></div></div>' +
       '<div class="glass host">' + (window.IFBots ? IFBots.html('f', 'Nova', true) : '') + '<p class="bubble" id="bub">Tap to hear Nova.</p><button class="btn ghost" id="hi">🔊 Brief me</button></div></section>' +
       '<section class="row2"><div class="glass panel"><h2>Today\'s session</h2><div class="today">' + td.map(function (g) { return '<a href="#/play/' + g.id + '" class="' + (done[g.id] ? 'done' : '') + '">' + emblem(g.id, g.c1, g.c2) + '<span class="k">' + g.t + '<small>' + SK[g.sk] + (S.best[bkey(S.lv, g.id)] ? ' · best ' + S.best[bkey(S.lv, g.id)] : '') + '</small></span></a>'; }).join('') + '</div></div>' +
       '<div class="glass panel"><h2>Your skill map</h2>' + radar() + '</div></section>' +
+      arcadeStrip() +
       '<div class="sec"><h2>All games</h2><p>' + tag() + ' · change it at the top</p></div>' +
       '<section class="games">' + GAMES.map(function (g) { var b = S.best[bkey(S.lv, g.id)]; return '<a class="gcard" style="--c1:' + g.c1 + ';--c2:' + g.c2 + '" href="#/play/' + g.id + '">' + emblem(g.id, g.c1, g.c2) + '<span class="sk">' + SK[g.sk] + '</span><h3>' + g.t + '</h3><p>' + esc(g.p) + '</p><span class="best">' + (b ? 'Best at ' + tag() + ': <b>' + b + '</b>' : 'Not played at ' + tag() + ' yet') + '</span></a>'; }).join('') + '</section>' +
       '<p class="note">All the words, texts and sentences are written by IF Academy for B1–C2 learners. Listening uses IF Academy\'s natural British voices. Speaking works best in Chrome, Edge or Safari with a microphone.</p>';
     $('#hi').onclick = function () { var m = GREET[S.plays % GREET.length]; $('#bub').textContent = m; speak(m, 'f'); };
   }
+
+  /* ---------- WORD ARCADE: every word from every IF English course and coursebook ----------
+     The vocabulary games (Learn, Write, Spell, Scramble, Game Room, Blocks, Match, Gravity…) and the IF Arcade run on
+     each course's own word lists; Mind Lab opens them in its own look (the course page with ?arcade=1). */
+  var GROUPS = [['general', 'General English · English File'], ['teens', 'Teens 16–18'], ['exam', 'Exams'], ['young', 'Young learners · Cambridge']];
+  var GRP = function (c) { return c.id === 'KET' ? 'exam' : c.group; };
+  function courses() { return (window.IFEN_COURSES || []).slice(); }
+  function arcadeStrip() {
+    var L = courses(); if (!L.length) return '';
+    var pick = S.tr === 'ielts' ? 'IELTS' : S.tr === 'business' ? 'C1' : ({ B1: 'B1', B2: 'B2', C1: 'C1', C2: 'C1' })[S.lv];
+    return '<div class="sec"><h2>Word Arcade</h2><p>Every word from every IF English course — in games</p></div>' +
+      '<section class="glass panel arc"><div class="arcrow">' + L.map(function (c) { return '<a class="cchip' + (c.id === pick ? ' on' : '') + '" href="#/arcade/' + c.id + '"><b>' + esc(c.badge) + '</b><span>' + esc(c.title.en) + '</span></a>'; }).join('') + '</div>' +
+      '<p class="sub" style="margin:12px 2px 0">Learn · Write · Spell · Scramble · Game Room · Blocks · Match · Gravity · and the IF Arcade, with the words of any unit.</p></section>';
+  }
+  function vArcade() {
+    hush(); RUN = null;
+    var L = courses();
+    view.innerHTML = '<section class="glass intro arch"><p class="eyebrow">IF Mind Lab · Word Arcade</p><h1 style="font-size:clamp(26px,4vw,42px)">Every word. Every course. Play it.</h1>' +
+      '<p class="lead" style="color:var(--soft);max-width:640px">Choose a course, then a unit: learn the words, write and spell them, unscramble them, and race them in the arcade games. Your best scores are saved on this device.</p></section>' +
+      GROUPS.map(function (g) {
+        var cs = L.filter(function (c) { return GRP(c) === g[0]; }); if (!cs.length) return '';
+        return '<div class="sec"><h2>' + esc(g[1]) + '</h2></div><section class="games">' + cs.map(function (c) {
+          return '<a class="gcard" style="--c1:' + ({ general: '#22d3ee', teens: '#a78bfa', exam: '#fbbf24', young: '#34d399' })[g[0]] + ';--c2:#6366f1" href="#/arcade/' + c.id + '"><span class="badge">' + esc(c.badge) + '<small>' + esc(c.badgeSub || '') + '</small></span>' +
+            '<h3>' + esc(c.title.en) + '</h3><p>' + c.units + ' units · ' + c.words + ' words</p><span class="best">Open the arcade →</span></a>';
+        }).join('') + '</section>';
+      }).join('') + '<p class="note">The words come from the IF English courses (English File, English for Teenagers, Cambridge KET, PET, Movers, Flyers and IELTS). Studying with flashcards and tests stays in IF English → Vocabulary.</p>';
+  }
+  function vArena(id, unit) {
+    hush(); RUN = null;
+    var c = courses().filter(function (x) { return x.id === id; })[0]; if (!c) return go('#/arcade');
+    var src = '/a/if-english/courses/' + encodeURIComponent(id) + '/index.html?arcade=1' + (unit ? '#' + encodeURIComponent(unit) : '');
+    view.innerHTML = '<div class="glass hud"><a class="quit" href="#/arcade" aria-label="All courses" style="display:grid;place-items:center;text-decoration:none">←</a><div class="gt"><svg class="em" viewBox="0 0 64 64" aria-hidden="true"><rect x="8" y="14" width="48" height="36" rx="10" fill="none" stroke="#22d3ee" stroke-width="3"/><circle cx="22" cy="32" r="5" fill="none" stroke="#a78bfa" stroke-width="3"/><path d="M40 28h8M44 24v8" stroke="#a78bfa" stroke-width="3" stroke-linecap="round"/></svg><div><b>WORD ARCADE</b><small id="arcu">' + esc(c.title.en) + '</small></div></div>' +
+      '<a class="btn ghost" href="' + esc(src) + '" target="_blank" rel="noopener" style="padding:8px 14px;font-size:13px">⛶ Full screen</a></div>' +
+      '<div class="glass arena-frame"><iframe id="arf" src="' + esc(src) + '" title="Word Arcade · ' + esc(c.title.en) + '" allow="autoplay; fullscreen"></iframe></div>';
+  }
+  addEventListener('message', function (e) {
+    if (e.origin !== location.origin || !e.data || !e.data.ifArena) return;
+    var c = courses().filter(function (x) { return x.id === e.data.ifArena; })[0], u = $('#arcu');
+    if (u && c) u.textContent = c.title.en + (e.data.unit ? ' · unit ' + e.data.unit : '');
+  });
 
   /* ---------- game runner ---------- */
   var RUN = null;
@@ -420,6 +461,7 @@
     var h = location.hash.replace(/^#\/?/, '').split('?')[0], p = h.split('/');
     stop(); RUN = null; window.scrollTo(0, 0);
     if (p[0] === 'play' && p[1]) return vPlay(p[1]);
+    if (p[0] === 'arcade') return p[1] ? vArena(decodeURIComponent(p[1]), decodeURIComponent(p[2] || '')) : vArcade();
     vHome();
   }
   addEventListener('hashchange', route);
