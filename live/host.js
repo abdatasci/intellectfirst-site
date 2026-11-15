@@ -208,7 +208,7 @@
       return;
     }
     if (name === 'race' && H.phase === 'race') {
-      if (+d.s > p.score) p.score = Math.min(+d.s, 100000);
+      p.score = Math.max(0, Math.min(+d.s || 0, 100000));
       p.correct = Math.max(p.correct, +d.ok || 0); p.answered = Math.max(p.answered, +d.n || 0); scheduleRender(); return;
     }
     if (name === 'need' && H.phase === 'race') sendQs();
@@ -231,6 +231,8 @@
     var cur = M_UNIT(), T = d.to && H.players[d.to], live = T && !T.kicked && d.to !== pid;
     if (name === 'res') {
       p.answered++; if (d.ok) { p.correct++; p.streak++; } else p.streak = 0;
+      // a wrong answer costs money: 10% of what you have (at least 25), never below zero (not in the team games)
+      if (!d.ok && H.mode !== 'tug' && H.mode !== 'boss') { var fine = Math.min(p.score, Math.max(25, Math.round(p.score * 0.1))); p.score -= fine; p.lost = (p.lost || 0) + fine; }
       if (d.ok && H.mode === 'tug' && p.team >= 0 && H.tug) {
         H.tug[p.team]++; p.score++;
         if (Math.abs(H.tug[0] - H.tug[1]) >= H.tugGoal) { H.tugWin = H.tug[0] > H.tug[1] ? 0 : 1; feed('🪢 ' + L.TEAMS[H.tugWin] + ' pulled the rope over the line!', null, null, 'big'); save(); return finish(); }
@@ -382,7 +384,7 @@
       if (!a) { P.ok = -1; P.gain = 0; P.streak = 0; return; }
       P.answered++;
       if (a.c === q.a) { P.streak++; P.correct++; P.gain = Math.round(1000 * (1 - Math.min(a.ms, lim) / lim / 2)) + Math.min(P.streak - 1, 5) * 50; P.score += P.gain; P.ok = 1; }
-      else { P.ok = 0; P.gain = 0; P.streak = 0; }
+      else { P.ok = 0; P.gain = -Math.min(P.score, 200); P.score += P.gain; P.streak = 0; }   // wrong answer: −200 points
     });
     H.phase = 'reveal'; save(); render(); push(true);
   }

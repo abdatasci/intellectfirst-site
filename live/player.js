@@ -106,7 +106,7 @@
     var title = ok === 1 ? 'Correct!' : ok === 0 ? 'Not this time' : 'Time\'s up';
     var right = d.reveal && d.q ? d.q.o[d.reveal.a] : '';
     show('<div class="res ' + cls + '"><div class="big">' + title + '</div>' +
-      (ok === 1 ? '<div class="gain">+' + y[2] + ' points</div>' : right ? '<p>Answer: <b>' + esc(right) + '</b></p>' : '') +
+      (ok === 1 ? '<div class="gain">+' + y[2] + ' points</div>' : (ok === 0 && y && y[2] < 0 ? '<div class="gain" style="color:#ff8a8a">' + y[2] + ' points</div>' : '') + (right ? '<p>Answer: <b>' + esc(right) + '</b></p>' : '')) +
       (y[4] > 1 ? '<div class="streak">🔥 Streak ' + y[4] + '</div>' : '') +
       '<div class="rank">' + y[0] + ' points · ' + ordinal(y[1]) + ' place</div>' + teamTag() + '</div>');
     if (ok != null && d.phase === 'reveal' && !vResult.seen[d.i]) { vResult.seen[d.i] = 1; flash(ok === 1); }
@@ -137,8 +137,10 @@
         if (ok) { R.ok++; R.streak++; R.s += 100 + Math.min(R.streak - 1, 5) * 20; flash(true); L.sfx('ok'); }
         else {
           R.streak = 0; R.lock = Date.now() + 1500; flash(false); L.sfx('no');
+          var fine = power ? (S.st.mode === 'tug' || S.st.mode === 'boss' ? 0 : Math.min(myScore(), Math.max(25, Math.round(myScore() * 0.1)))) : Math.min(R.s, 50);
+          if (!power) R.s -= fine;
           b.classList.add('dim'); var right = view.querySelector('[data-k="' + L.unhide(q.h, R.salt) + '"]'); if (right) right.classList.add('pick');
-          var lk = $('#lk'); if (lk) lk.textContent = 'Wait a moment…';
+          var lk = $('#lk'); if (lk) lk.textContent = fine ? 'Wrong! −' + L.fmtN(fine) + ' ' + (power ? L.mode(S.st.mode).cur : 'points') : 'Wait a moment…';
         }
         R.i++;
         if (power) { S.bus.pub('p', 'res', { pid: S.pid, ok: ok }); if (ok) { S.busy = true; return setTimeout(reward, 350); } return setTimeout(vPlay, 1500); }
