@@ -30,6 +30,24 @@
     lsSet(KEY, all);
   }
   function result(k) { return (lsGet(KEY) || {})[k]; }
+  // Also save to the student's IELTS account, so it appears in My progress and in the teacher's Students view.
+  async function postResult(body, retried) {
+    try {
+      var r = await fetch('/api/ielts/result', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      if (r.status === 401 && !retried && window.NFIdentity) { try { await window.NFIdentity.refreshSession(); } catch (e) {} return postResult(body, true); }
+      return r.ok ? 'saved' : r.status === 401 ? 'signin' : r.status === 403 ? 'activate' : 'error';
+    } catch (e) { return 'error'; }
+  }
+  function saveNote(id) {
+    return '<p class="hint" id="' + id + '">Saving to your progress…</p>';
+  }
+  async function record(noteId, body) {
+    var st = await postResult(body), el = document.getElementById(noteId); if (!el) return;
+    el.innerHTML = st === 'saved' ? '✓ Saved to <a href="#/progress">My progress</a>. Your teacher can see this result.' :
+      st === 'signin' ? 'Not saved to your account: <a href="#/login">sign in</a> so your teacher can see your results. (It is kept on this device.)' :
+      st === 'activate' ? 'Not saved to your account yet: <a href="#/activate">activate your IELTS account</a> with your class code.' :
+      'Could not save to your account just now. It is kept on this device.';
+  }
   // Approximate conversion tables used by the IELTS partners for Academic Reading and Listening (raw score out of 40).
   var BANDS = {
     reading: [[39, 9], [37, 8.5], [35, 8], [33, 7.5], [30, 7], [27, 6.5], [23, 6], [19, 5.5], [15, 5], [13, 4.5], [10, 4], [8, 3.5], [6, 3], [4, 2.5], [2, 2], [1, 1], [0, 0]],
@@ -95,28 +113,35 @@
 
   /* ---------- skill pages ---------- */
   function bestLine(k) { var r = result(k); return r ? '<div class="best"><span>Last</span><strong>' + r.score + '/' + r.total + '</strong></div>' : ''; }
+  function bandBadge(k) { var r = result(k); return r && r.band != null ? '<div class="best"><span>Band</span><strong>' + bandStr(r.band) + '</strong></div>' : ''; }
   async function vReading() {
     setNav('reading'); await loadR();
-    var t = R.tests[0], r = result('rmock:' + t.id);
     view.innerHTML = '<section class="hero"><div class="eyebrow">Reading · Academic</div><h1>Reading</h1><p class="lead">Three passages, 40 questions, 60 minutes. Practise one passage at a time with instant marking, or sit a full timed mock test for a band score.</p></section>' +
-      '<section class="section"><div class="sec-head"><div><h2>Mock test</h2><p>Exam conditions: 60 minutes, all three passages, scored out of 40.</p></div></div>' +
-      '<div class="task-list"><a class="task" href="#/rmock"><div><span class="id">60 minutes · 40 questions</span><b>' + esc(t.name) + '</b><span class="k">' + t.passages.map(function (id) { return esc(passage(id).title); }).join(' · ') + '</span></div>' + (r ? '<div class="best"><span>Band</span><strong>' + bandStr(r.band) + '</strong></div>' : '') + '</a></div></section>' +
-      '<section class="section"><div class="sec-head"><div><h2>Practice</h2><p>One passage, no time pressure. Check your answers when you are ready.</p></div></div><div class="task-list">' +
-      R.passages.map(function (p) {
-        var types = p.groups.map(function (g) { return g.type === 'choice' ? (g.choices[0] === 'YES' ? 'Yes/No/Not given' : 'True/False/Not given') : g.type === 'match' ? (/heading/i.test(g.instr) ? 'Matching headings' : 'Matching') : g.type === 'mcq' ? 'Multiple choice' : 'Completion'; });
-        return '<a class="task" href="#/rprac/' + p.id + '"><div><span class="id">Passage ' + p.part + ' · ' + itemsOf(p.groups).length + ' questions · about ' + p.minutes + ' min</span><b>' + esc(p.title) + '</b><span class="k">' + types.join(' · ') + '</span></div>' + bestLine('rprac:' + p.id) + '</a>';
-      }).join('') + '</div></section>';
+      '<section class="section"><div class="sec-head"><div><h2>Mock tests</h2><p>Exam conditions: 60 minutes, all three passages, scored out of 40.</p></div></div><div class="task-list">' +
+      R.tests.map(function (t) { return '<a class="task" href="#/rmock/' + t.id + '"><div><span class="id">60 minutes · 40 questions</span><b>' + esc(t.name) + '</b><span class="k">' + t.passages.map(function (id) { return esc(passage(id).title); }).join(' · ') + '</span></div>' + bandBadge('rmock:' + t.id) + '</a>'; }).join('') + '</div></section>' +
+      '<section class="section"><div class="sec-head"><div><h2>Practice</h2><p>One passage, no time pressure. Check your answers when you are ready.</p></div></div>' +
+      R.tests.map(function (t) {
+        return '<h3 class="rl-testh">' + esc(t.name) + '</h3><div class="task-list">' + t.passages.map(passage).map(function (p) {
+          var types = p.groups.map(function (g) { return g.type === 'choice' ? (g.choices[0] === 'YES' ? 'Yes/No/Not given' : 'True/False/Not given') : g.type === 'match' ? (/heading/i.test(g.instr) ? 'Matching headings' : 'Matching') : g.type === 'mcq' ? 'Multiple choice' : 'Completion'; });
+          return '<a class="task" href="#/rprac/' + p.id + '"><div><span class="id">Passage ' + p.part + ' · ' + itemsOf(p.groups).length + ' questions · about ' + p.minutes + ' min</span><b>' + esc(p.title) + '</b><span class="k">' + types.filter(function (x, i, a) { return a.indexOf(x) === i; }).join(' · ') + '</span></div>' + bestLine('rprac:' + p.id) + '</a>';
+        }).join('') + '</div>';
+      }).join('') + '</section>';
   }
   async function vListening() {
     setNav('listening'); await loadL();
-    var t = L.tests[0], r = result('lmock:' + t.id);
     view.innerHTML = '<section class="hero"><div class="eyebrow">Listening · 4 parts</div><h1>Listening</h1><p class="lead">Four recordings, 40 questions, about 30 minutes, with British voices. Practise one part at a time (replay as often as you like, then read the transcript), or sit a full mock test where you hear everything once.</p>' +
       '<p class="hint">Use headphones. The first time a recording plays it may take a few seconds to load.</p></section>' +
-      '<section class="section"><div class="sec-head"><div><h2>Mock test</h2><p>Exam conditions: each recording is played once, then you have 2 minutes to check.</p></div></div>' +
-      '<div class="task-list"><a class="task" href="#/lmock"><div><span class="id">About 30 minutes · 40 questions</span><b>' + esc(t.name) + '</b><span class="k">' + t.parts.map(function (id) { return esc(part(id).title); }).join(' · ') + '</span></div>' + (r ? '<div class="best"><span>Band</span><strong>' + bandStr(r.band) + '</strong></div>' : '') + '</a></div></section>' +
-      '<section class="section"><div class="sec-head"><div><h2>Practice</h2><p>One part at a time. Pause and replay, then check your answers and read the transcript.</p></div></div><div class="task-list">' +
-      L.parts.map(function (p) { return '<a class="task" href="#/lprac/' + p.id + '"><div><span class="id">Part ' + p.part + ' · questions ' + p.groups[0].from + '–' + p.groups[p.groups.length - 1].to + '</span><b>' + esc(p.title) + '</b><span class="k">' + esc(p.desc) + '</span></div>' + bestLine('lprac:' + p.id) + '</a>'; }).join('') +
-      '</div></section>';
+      '<section class="section"><div class="sec-head"><div><h2>Mock tests</h2><p>Exam conditions: each recording is played once, then you have 2 minutes to check.</p></div></div><div class="task-list">' +
+      L.tests.map(function (t) { return '<a class="task" href="#/lmock/' + t.id + '"><div><span class="id">About 30 minutes · 40 questions</span><b>' + esc(t.name) + '</b><span class="k">' + t.parts.map(function (id) { return esc(part(id).title); }).join(' · ') + '</span></div>' + bandBadge('lmock:' + t.id) + '</a>'; }).join('') + '</div></section>' +
+      '<section class="section"><div class="sec-head"><div><h2>Practice</h2><p>One part at a time. Pause and replay, then check your answers and read the transcript.</p></div></div>' +
+      L.tests.map(function (t) {
+        return '<h3 class="rl-testh">' + esc(t.name) + '</h3><div class="task-list">' + t.parts.map(part).map(function (p) { return '<a class="task" href="#/lprac/' + p.id + '"><div><span class="id">Part ' + p.part + ' · questions ' + p.groups[0].from + '–' + p.groups[p.groups.length - 1].to + '</span><b>' + esc(p.title) + '</b><span class="k">' + esc(p.desc) + '</span></div>' + bestLine('lprac:' + p.id) + '</a>'; }).join('') + '</div>';
+      }).join('') + '</section>';
+  }
+  function pickTest(tests, prefix, id) {
+    var t = tests.filter(function (x) { return x.id === id; })[0]; if (t) return t;
+    var fresh = tests.filter(function (x) { return !result(prefix + x.id); });
+    return fresh[0] || tests[Math.floor(Math.random() * tests.length)];
   }
 
   /* ---------- reading practice ---------- */
@@ -131,16 +156,16 @@
         '<div class="rl-split"><article class="rl-text">' + passageHTML(p) + '</article><div class="rl-qs" id="qs">' + p.groups.map(function (g) { return groupHTML(g, ans, revealed); }).join('') + '</div></div>';
       var cnt = function () { $('#cnt').textContent = answered(p.groups, ans) + ' / ' + itemsOf(p.groups).length + ' answered'; };
       bindAnswers($('#qs'), ans, cnt); cnt();
-      if ($('#chk')) $('#chk').onclick = function () { revealed = true; var s = score(p.groups, ans); saveResult('rprac:' + p.id, s.score, s.total, null); draw(); window.scrollTo(0, 0); };
+      if ($('#chk')) $('#chk').onclick = function () { revealed = true; var s = score(p.groups, ans); saveResult('rprac:' + p.id, s.score, s.total, null); draw(); $('.rl-result').insertAdjacentHTML('afterend', saveNote('svn')); record('svn', { skill: 'reading', taskId: p.id, title: p.title, part: p.part, score: s.score, total: s.total, answers: ans }); window.scrollTo(0, 0); };
       if ($('#again')) $('#again').onclick = function () { ans = {}; revealed = false; draw(); window.scrollTo(0, 0); };
     }
     draw();
   }
 
   /* ---------- reading mock ---------- */
-  async function vReadMock() {
+  async function vReadMock(id) {
     setNav('reading'); await loadR();
-    var t = R.tests[0], ps = t.passages.map(passage), all = [].concat.apply([], ps.map(function (p) { return p.groups; }));
+    var t = pickTest(R.tests, 'rmock:', id), t0 = Date.now(), ps = t.passages.map(passage), all = [].concat.apply([], ps.map(function (p) { return p.groups; }));
     view.innerHTML = '<div class="panel" style="max-width:620px"><h2>' + esc(t.name) + '</h2><p class="sub">Academic Reading · 60 minutes · 40 questions</p>' +
       '<ul class="rl-rules"><li>There are three passages. Move between them with the tabs; your answers are kept.</li><li>The clock counts down from 60 minutes. When it reaches zero, your answers are submitted.</li><li>Spelling counts in completion questions.</li><li>You get your score out of 40 and an approximate IELTS band, then you can review every answer.</li></ul>' +
       '<button class="btn gold" id="go">Start the test</button></div>';
@@ -163,11 +188,11 @@
       $('#sub').onclick = function () { var left = 40 - answered(all, ans); if (confirm(left ? 'You have ' + left + ' unanswered question' + (left > 1 ? 's' : '') + '. Submit anyway?' : 'Submit your answers?')) finish(false); };
       function finish(timeUp) {
         if (done) return; done = true; endT(); window.onbeforeunload = null;
-        var s = score(all, ans), b = toBand('reading', s.score); saveResult('rmock:' + t.id, s.score, s.total, b);
+        var s = score(all, ans), b = toBand('reading', s.score); saveResult('rmock:' + t.id, s.score, s.total, b); setTimeout(function () { record('svn', { skill: 'reading', taskId: t.id, title: t.name, mock: true, score: s.score, total: s.total, band: b, seconds: Math.round((Date.now() - t0) / 1000), answers: ans }); });
         var per = ps.map(function (p, i) { var x = score(p.groups, ans); return '<div><span>Passage ' + (i + 1) + '</span><b>' + x.score + ' / ' + x.total + '</b></div>'; }).join('');
-        view.innerHTML = '<section class="hero" style="padding-bottom:6px"><div class="eyebrow">' + (timeUp ? 'Time is up' : 'Test complete') + '</div><h1>' + esc(t.name) + '</h1></section>' + resultBox(s, b, per) +
+        view.innerHTML = '<section class="hero" style="padding-bottom:6px"><div class="eyebrow">' + (timeUp ? 'Time is up' : 'Test complete') + '</div><h1>' + esc(t.name) + '</h1></section>' + resultBox(s, b, per) + saveNote('svn') +
           '<p class="hint">The band is an estimate from the usual Academic Reading conversion table. Below, every answer is marked: ✓ correct, ✗ with the right answer.</p>' +
-          '<div class="row" style="margin:14px 0"><a class="btn ghost sm" href="#/reading">← Reading</a><a class="btn sm" href="#/rmock" onclick="location.reload()">Take it again</a></div>' +
+          '<div class="row" style="margin:14px 0"><a class="btn ghost sm" href="#/reading">← Reading</a><a class="btn sm" href="#/rmock/' + t.id + '" onclick="setTimeout(function(){location.reload()})">Take it again</a></div>' +
           ps.map(function (p, i) { return '<details class="rl-review"' + (i === 0 ? ' open' : '') + '><summary>Passage ' + (i + 1) + ' · ' + esc(p.title) + '</summary><div class="rl-split"><article class="rl-text">' + passageHTML(p) + '</article><div class="rl-qs">' + p.groups.map(function (g) { return groupHTML(g, ans, true); }).join('') + '</div></div></details>'; }).join('');
         window.scrollTo(0, 0);
       }
@@ -245,16 +270,16 @@
         } else if (pl.isPaused()) { pl.resume(); btn.textContent = '❚❚ Pause'; } else { pl.pause(); btn.textContent = '▶ Resume'; }
       };
       sk.onclick = function () { if (pl) pl.skip(); };
-      if ($('#chk')) $('#chk').onclick = function () { stopPlayer(); revealed = true; var s = score(p.groups, ans); saveResult('lprac:' + p.id, s.score, s.total, null); draw(); window.scrollTo(0, 0); };
+      if ($('#chk')) $('#chk').onclick = function () { stopPlayer(); revealed = true; var s = score(p.groups, ans); saveResult('lprac:' + p.id, s.score, s.total, null); draw(); $('.rl-result').insertAdjacentHTML('afterend', saveNote('svn')); record('svn', { skill: 'listening', taskId: p.id, title: p.title, part: p.part, score: s.score, total: s.total, answers: ans }); window.scrollTo(0, 0); };
       if ($('#again')) $('#again').onclick = function () { ans = {}; revealed = false; draw(); };
     }
     draw();
   }
 
   /* ---------- listening mock ---------- */
-  async function vListenMock() {
+  async function vListenMock(id) {
     setNav('listening'); await loadL();
-    var t = L.tests[0], ps = t.parts.map(part), all = [].concat.apply([], ps.map(function (p) { return p.groups; }));
+    var t = pickTest(L.tests, 'lmock:', id), ps = t.parts.map(part), all = [].concat.apply([], ps.map(function (p) { return p.groups; }));
     view.innerHTML = '<div class="panel" style="max-width:620px"><h2>' + esc(t.name) + '</h2><p class="sub">Four parts · 40 questions · about 30 minutes</p>' +
       '<ul class="rl-rules"><li>Each recording is played <b>once</b>. You cannot pause or replay it.</li><li>Before each part you have time to read the questions. The question tabs move on with the recording, but you can look at any part.</li><li>After Part 4 you have 2 minutes to check your answers, then they are submitted.</li><li>Use headphones and a quiet room. Spelling counts.</li></ul>' +
       '<button class="btn gold" id="go">Start the test</button></div>';
@@ -280,11 +305,11 @@
       $('#sub').onclick = function () { finish(); };
       function finish() {
         if (done) return; done = true; pl.kill(); window.onbeforeunload = null; stop.forEach(function (f) { try { f(); } catch (e) {} });
-        var s = score(all, ans), b = toBand('listening', s.score); saveResult('lmock:' + t.id, s.score, s.total, b);
+        var s = score(all, ans), b = toBand('listening', s.score); saveResult('lmock:' + t.id, s.score, s.total, b); setTimeout(function () { record('svn', { skill: 'listening', taskId: t.id, title: t.name, mock: true, score: s.score, total: s.total, band: b, answers: ans }); });
         var per = ps.map(function (p, i) { var x = score(p.groups, ans); return '<div><span>Part ' + (i + 1) + '</span><b>' + x.score + ' / ' + x.total + '</b></div>'; }).join('');
-        view.innerHTML = '<section class="hero" style="padding-bottom:6px"><div class="eyebrow">Test complete</div><h1>' + esc(t.name) + '</h1></section>' + resultBox(s, b, per) +
+        view.innerHTML = '<section class="hero" style="padding-bottom:6px"><div class="eyebrow">Test complete</div><h1>' + esc(t.name) + '</h1></section>' + resultBox(s, b, per) + saveNote('svn') +
           '<p class="hint">The band is an estimate from the usual Listening conversion table. Review each part below and read the transcript.</p>' +
-          '<div class="row" style="margin:14px 0"><a class="btn ghost sm" href="#/listening">← Listening</a><a class="btn sm" href="#/lmock" onclick="location.reload()">Take it again</a></div>' +
+          '<div class="row" style="margin:14px 0"><a class="btn ghost sm" href="#/listening">← Listening</a><a class="btn sm" href="#/lmock/' + t.id + '" onclick="setTimeout(function(){location.reload()})">Take it again</a></div>' +
           ps.map(function (p, i) { return '<details class="rl-review"' + (i === 0 ? ' open' : '') + '><summary>Part ' + (i + 1) + ' · ' + esc(p.title) + '</summary><div class="rl-qs rl-wide">' + p.groups.map(function (g) { return groupHTML(g, ans, true); }).join('') + '</div>' + transcriptHTML(p) + '</details>'; }).join('');
         window.scrollTo(0, 0);
       }
@@ -313,18 +338,39 @@
       '</div></section>';
   }
 
+  async function reportHtml(a, opts) {
+    opts = opts || {};
+    var R_ = a.skill === 'reading', ans = a.answers || {}, groups, title, extra = '', back = '';
+    if (R_) { await loadR(); var t = R.tests.filter(function (x) { return x.id === a.taskId; })[0], ps = t ? t.passages.map(passage) : [passage(a.taskId)].filter(Boolean); }
+    else { await loadL(); var t = L.tests.filter(function (x) { return x.id === a.taskId; })[0], ps = t ? t.parts.map(part) : [part(a.taskId)].filter(Boolean); }
+    if (!ps.length) return '<div class="empty" style="margin-top:30px">This test is no longer available.</div>';
+    groups = [].concat.apply([], ps.map(function (p) { return p.groups; }));
+    var s = score(groups, ans);
+    var per = ps.length > 1 ? ps.map(function (p, i) { var x = score(p.groups, ans); return '<div><span>' + (R_ ? 'Passage ' : 'Part ') + (i + 1) + '</span><b>' + x.score + ' / ' + x.total + '</b></div>'; }).join('') : '';
+    var when = new Date(a.at).toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+    var h = '<section class="hero" style="padding-bottom:6px"><div class="eyebrow">' + (R_ ? 'Reading' : 'Listening') + (a.mockId ? ' · mock test' : ' · practice') + ' · ' + esc(when) + '</div><h1>' + esc(a.title) + '</h1></section>' +
+      resultBox({ score: a.score != null ? a.score : s.score, total: a.total || s.total }, a.band != null ? a.band : (a.result && a.result.overall != null ? a.result.overall : null), per + (a.seconds ? '<div><span>Time</span><b>' + Math.round(a.seconds / 60) + ' min</b></div>' : ''));
+    h += ps.map(function (p, i) {
+      return '<details class="rl-review"' + (i === 0 ? ' open' : '') + '><summary>' + (R_ ? 'Passage ' : 'Part ') + p.part + ' · ' + esc(p.title) + '</summary>' +
+        (R_ ? '<div class="rl-split"><article class="rl-text">' + passageHTML(p) + '</article><div class="rl-qs">' + p.groups.map(function (g) { return groupHTML(g, ans, true); }).join('') + '</div></div>'
+            : '<div class="rl-qs rl-wide">' + p.groups.map(function (g) { return groupHTML(g, ans, true); }).join('') + '</div>' + transcriptHTML(p)) + '</details>';
+    }).join('');
+    if (!opts.teacher) h += '<div class="row" style="margin-top:22px"><a class="btn" href="' + (a.mockId ? (R_ ? '#/rmock/' : '#/lmock/') : (R_ ? '#/rprac/' : '#/lprac/')) + esc(a.taskId) + '">Try it again</a><a class="btn ghost" href="#/progress">My progress</a></div>';
+    return h;
+  }
+
   function route(parts) {
     cleanup();
     switch (parts[0]) {
       case 'reading': vReading(); return true;
       case 'rprac': vReadPractice(parts[1]); return true;
-      case 'rmock': vReadMock(); return true;
+      case 'rmock': vReadMock(parts[1]); return true;
       case 'listening': vListening(); return true;
       case 'lprac': vListenPractice(parts[1]); return true;
-      case 'lmock': vListenMock(); return true;
+      case 'lmock': vListenMock(parts[1]); return true;
       case 'speakmock': speakMock(); return true;
     }
     return false;
   }
-  window.IFRL = { route: route, skillsHTML: skillsHTML };
+  window.IFRL = { route: route, skillsHTML: skillsHTML, reportHtml: reportHtml };
 })();

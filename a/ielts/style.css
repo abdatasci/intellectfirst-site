@@ -299,3 +299,5 @@ figure.ch svg{width:100%;height:auto;display:block}
   .rl-text{position:static;max-height:none}
   .rl-sticky{top:0}
 }
+.rl-testh{font-size:19px;margin:18px 0 10px}
+.badge.lis{background:#dfeaf6;color:var(--navy)}.badge.rea{background:#e8f0e2;color:#2e5a2e}

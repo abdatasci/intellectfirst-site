@@ -344,7 +344,7 @@
     setNav('writing'); await loadBank();
     if (needAccount('#/report/' + id)) return;
     view.innerHTML = '<p style="margin-top:30px"><span class="spin"></span> Loading report…</p>';
-    try { var a = (await api('attempt/' + id)).attempt; if (a.skill === 'speaking') { setNav('speaking'); view.innerHTML = speakingReportHtml(a); } else view.innerHTML = reportHtml(a); window.scrollTo(0, 0); }
+    try { var a = (await api('attempt/' + id)).attempt; if (a.skill === 'speaking') { setNav('speaking'); view.innerHTML = speakingReportHtml(a); } else if ((a.skill === 'reading' || a.skill === 'listening') && window.IFRL) { setNav(a.skill); view.innerHTML = await IFRL.reportHtml(a); } else view.innerHTML = reportHtml(a); window.scrollTo(0, 0); }
     catch (e) { view.innerHTML = '<div class="empty" style="margin-top:30px">This report could not be found.</div>'; }
   }
 
@@ -451,21 +451,24 @@
     var scored = att.filter(function (a) { return typeof a.band === 'number'; });
     var last5 = scored.slice(-5), avg = last5.length ? half(last5.reduce(function (s, a) { return s + a.band; }, 0) / last5.length) : null;
     var best = scored.reduce(function (m, a) { return Math.max(m, a.band); }, 0);
-    var sp = scored.filter(function (a) { return a.skill === 'speaking'; }), wr = scored.filter(function (a) { return a.skill !== 'speaking'; });
+    var sp = scored.filter(function (a) { return a.skill === 'speaking'; }), wr = scored.filter(function (a) { return !a.skill || a.skill === 'writing'; });
+    var rl = function (sk) { var all = att.filter(function (a) { return a.skill === sk; }), m = all.filter(function (a) { return typeof a.band === 'number'; }); return { n: all.length, last: m.length ? m[m.length - 1].band : null }; };
+    var LI = rl('listening'), RE = rl('reading');
     var crit = { 'Task Ach./Resp.': [], 'Coherence': [], 'Lexis': [], 'Grammar': [] };
     wr.slice(-8).forEach(function (a) { if (!a.criteria) return; var c = a.criteria; crit['Task Ach./Resp.'].push(c.TA != null ? c.TA : c.TR); crit['Coherence'].push(c.CC); crit['Lexis'].push(c.LR); crit['Grammar'].push(c.GRA); });
-    var mocks = {}; scored.forEach(function (a) { if (a.mock) (mocks[a.mock] = mocks[a.mock] || []).push(a); });
+    var mocks = {}; wr.forEach(function (a) { if (a.mock) (mocks[a.mock] = mocks[a.mock] || []).push(a); });
     var spAvg = sp.length ? half(sp.slice(-3).reduce(function (s, a) { return s + a.band; }, 0) / Math.min(3, sp.length)) : null;
     var wrAvg = wr.length ? half(wr.slice(-5).reduce(function (s, a) { return s + a.band; }, 0) / Math.min(5, wr.length)) : null;
-    var h = '<div class="stats"><div class="stat"><span>Essays marked</span><b>' + wr.length + '</b></div><div class="stat"><span>Writing average (last 5)</span><b>' + band(wrAvg) + '</b></div><div class="stat"><span>Speaking tests</span><b>' + sp.length + '</b></div><div class="stat"><span>Speaking average (last 3)</span><b>' + band(spAvg) + '</b></div><div class="stat"><span>Best band</span><b>' + band(best || null) + '</b></div><div class="stat"><span>Writing mocks</span><b>' + Object.keys(mocks).length + '</b></div></div>';
+    var h = '<div class="stats"><div class="stat"><span>Essays marked</span><b>' + wr.length + '</b></div><div class="stat"><span>Writing average (last 5)</span><b>' + band(wrAvg) + '</b></div><div class="stat"><span>Speaking tests</span><b>' + sp.length + '</b></div><div class="stat"><span>Speaking average (last 3)</span><b>' + band(spAvg) + '</b></div><div class="stat"><span>Best band</span><b>' + band(best || null) + '</b></div><div class="stat"><span>Writing mocks</span><b>' + Object.keys(mocks).length + '</b></div></div>' +
+      '<div class="stats" style="margin-top:10px"><div class="stat"><span>Listening tests &amp; practice</span><b>' + LI.n + '</b></div><div class="stat"><span>Listening band (last mock)</span><b>' + band(LI.last) + '</b></div><div class="stat"><span>Reading tests &amp; practice</span><b>' + RE.n + '</b></div><div class="stat"><span>Reading band (last mock)</span><b>' + band(RE.last) + '</b></div></div>';
     h += '<section class="section"><h3>Band trend</h3><div class="trend">' + trendSvg(att) + '</div></section>';
     h += '<section class="section"><h3>Writing criteria (last 8 essays)</h3><div class="stats" style="margin-top:8px">' + Object.keys(crit).map(function (k) {
       var v = crit[k].filter(function (x) { return typeof x === 'number'; }); var m = v.length ? half(v.reduce(function (s, x) { return s + x; }, 0) / v.length) : null;
       return '<div class="stat"><span>' + k + '</span><b>' + band(m) + '</b></div>';
     }).join('') + '</div></section>';
-    h += '<section class="section"><h3>All work</h3>' + (att.length ? '<div class="tscroll" style="margin-top:8px"><table class="t"><thead><tr><th>Date</th><th>Task</th><th>Words</th><th>Band</th><th></th></tr></thead><tbody>' +
+    h += '<section class="section"><h3>All work</h3>' + (att.length ? '<div class="tscroll" style="margin-top:8px"><table class="t"><thead><tr><th>Date</th><th>Task</th><th>Words / score</th><th>Band</th><th></th></tr></thead><tbody>' +
       att.slice().reverse().map(function (a) {
-        return '<tr><td>' + when(a.at) + '</td><td>' + (a.mock ? '<span class="badge">Mock</span> ' : '') + (a.skill === 'speaking' ? '<span class="badge ai">Speaking</span> ' + esc(a.title) : 'Task ' + a.part + ' · ' + esc(a.title)) + '</td><td>' + (a.words || '–') + '</td><td><b>' + band(a.band) + '</b></td><td style="white-space:nowrap"><a href="' + base + a.id + '">Report</a> · <button class="linkbtn" data-del="' + a.id + '">Delete</button></td></tr>';
+        return '<tr><td>' + when(a.at) + '</td><td>' + (a.mock ? '<span class="badge">Mock</span> ' : '') + (a.skill === 'speaking' ? '<span class="badge ai">Speaking</span> ' + esc(a.title) : a.skill === 'listening' ? '<span class="badge lis">Listening</span> ' + esc(a.title) : a.skill === 'reading' ? '<span class="badge rea">Reading</span> ' + esc(a.title) : 'Task ' + a.part + ' · ' + esc(a.title)) + '</td><td>' + (a.total ? a.score + ' / ' + a.total : (a.words || '–')) + '</td><td><b>' + band(a.band) + '</b></td><td style="white-space:nowrap"><a href="' + base + a.id + '">Report</a> · <button class="linkbtn" data-del="' + a.id + '">Delete</button></td></tr>';
       }).join('') + '</tbody></table></div>' : '<div class="empty" style="margin-top:8px">No marked work yet. <a href="#/writing">Start with a writing task</a>.</div>') + '</section>';
     return h;
   }
@@ -483,7 +486,7 @@
     setNav('progress'); await loadBank();
     if (needAccount('#/progress')) return;
     await loadMe(); header();
-    view.innerHTML = '<section class="hero" style="padding-bottom:6px"><div class="eyebrow">' + esc(ME.profile.name) + '</div><h1>My progress</h1><p class="lead">Every marked essay and speaking test, your band over time and how each criterion is developing.</p></section>' +
+    view.innerHTML = '<section class="hero" style="padding-bottom:6px"><div class="eyebrow">' + esc(ME.profile.name) + '</div><h1>My progress</h1><p class="lead">Every Listening and Reading test, marked essay and speaking test, your band over time and how each criterion is developing.</p></section>' +
       progressHtml(ME.profile, ME.attempts || [], '#/report/') +
       ((ME.attempts || []).length ? '<div class="row" style="margin-top:22px"><button class="btn ghost sm" id="clearall">Clear all my results</button></div>' : '');
     wireDeletes('attempt/', vProgress);
@@ -503,7 +506,7 @@
     try {
       if (uid && aid) {
         var a = (await api('teacher/student/' + uid + '/' + aid)).attempt;
-        view.innerHTML = '<div class="row" style="margin-top:18px"><a class="btn ghost sm" href="#/teacher/' + uid + '">← Back to student</a></div>' + (a.skill === 'speaking' ? speakingReportHtml(a, { teacher: true }) : reportHtml(a, { teacher: true }));
+        view.innerHTML = '<div class="row" style="margin-top:18px"><a class="btn ghost sm" href="#/teacher/' + uid + '">← Back to student</a></div>' + (a.skill === 'speaking' ? speakingReportHtml(a, { teacher: true }) : (a.skill === 'reading' || a.skill === 'listening') && window.IFRL ? await IFRL.reportHtml(a, { teacher: true }) : reportHtml(a, { teacher: true }));
       } else if (uid) {
         var d = await api('teacher/student/' + uid);
         view.innerHTML = '<div class="row" style="margin-top:18px"><a class="btn ghost sm" href="#/teacher">← All students</a></div><section class="hero" style="padding:18px 0 6px"><div class="eyebrow">Student</div><h1>' + esc(d.profile.name) + '</h1><p class="lead">' + esc(d.profile.email) + ' · joined ' + when(d.profile.since) + '</p></section>' +
@@ -511,9 +514,9 @@
         wireDeletes('teacher/student/' + uid + '/', function () { vTeacher(uid); });
       } else {
         var s = (await api('teacher/students')).students;
-        view.innerHTML = '<section class="hero" style="padding-bottom:6px"><div class="eyebrow">Teacher view</div><h1>Students</h1><p class="lead">Everyone registered in the IELTS Centre, most recently active first.</p></section>' +
-          (s.length ? '<div class="tscroll"><table class="t"><thead><tr><th>Student</th><th>Marked work</th><th>Latest</th><th>Average (last 5)</th><th>Last active</th></tr></thead><tbody>' +
-            s.map(function (r) { return '<tr><td><a href="#/teacher/' + r.id + '">' + esc(r.name) + '</a><br><small style="color:var(--muted)">' + esc(r.email) + '</small></td><td>' + r.attempts + '</td><td><b>' + band(r.latest) + '</b></td><td>' + band(r.average) + '</td><td>' + when(r.lastActive) + '</td></tr>'; }).join('') +
+        view.innerHTML = '<section class="hero" style="padding-bottom:6px"><div class="eyebrow">Teacher view</div><h1>Students</h1><p class="lead">Everyone registered in the IELTS Centre, most recently active first. Bands are each student\'s latest result in each skill (Listening and Reading: full mock tests).</p></section>' +
+          (s.length ? '<div class="tscroll"><table class="t"><thead><tr><th>Student</th><th>Work saved</th><th>Listening</th><th>Reading</th><th>Writing</th><th>Speaking</th><th>Last active</th></tr></thead><tbody>' +
+            s.map(function (r) { return '<tr><td><a href="#/teacher/' + r.id + '">' + esc(r.name) + '</a><br><small style="color:var(--muted)">' + esc(r.email) + '</small></td><td>' + r.attempts + '</td>' + ['listening', 'reading', 'writing', 'speaking'].map(function (k) { return '<td><b>' + band((r.skills || {})[k]) + '</b></td>'; }).join('') + '<td>' + when(r.lastActive) + '</td></tr>'; }).join('') +
             '</tbody></table></div>' : '<div class="empty">No students have registered yet. Share this page and your class code with them.</div>');
       }
     } catch (e) { view.innerHTML = '<div class="empty" style="margin-top:30px">Could not load student data. Please try again.</div>'; }

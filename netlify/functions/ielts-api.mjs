@@ -40,7 +40,7 @@ async function addAttempt(uid, attempt) {
   idx.push({ id: attempt.id, at: attempt.at, skill: attempt.skill, task: attempt.taskId, title: attempt.title,
     part: attempt.part, mock: attempt.mockId || null, band: attempt.result?.overall ?? null,
     criteria: attempt.result?.criteria ? Object.fromEntries(Object.entries(attempt.result.criteria).map(([k, v]) => [k, v.band])) : null,
-    words: attempt.words ?? null });
+    words: attempt.words ?? null, score: attempt.score ?? null, total: attempt.total ?? null });
   await s.setJSON(`u/${uid}/index`, idx.slice(-500));
   const p = await getProfile(uid);
   if (p) { p.lastActive = attempt.at; p.attempts = (p.attempts || 0) + 1; await putProfile(uid, p); }
@@ -245,6 +245,22 @@ export default async (req) => {
     return json({ attempt });
   }
 
+  // Reading and Listening results (marked in the browser against the answer key): saved so the student's
+  // progress and the teacher's Students view include them. A band is kept for full mock tests only.
+  if (path === 'result' && method === 'POST') {
+    const b = await req.json().catch(() => ({}));
+    const skill = ['reading', 'listening'].includes(b.skill) ? b.skill : null;
+    const total = Math.round(Number(b.total)), scoreN = Math.round(Number(b.score));
+    if (!skill || !/^[a-z0-9]{2,12}$/.test(String(b.taskId || '')) || !(total > 0 && total <= 40) || !(scoreN >= 0 && scoreN <= total)) return fail(400, 'result');
+    const mock = !!b.mock, bandN = Number(b.band);
+    const answers = {}; for (const [k, v] of Object.entries(b.answers || {}).slice(0, 40)) if (/^\d{1,2}$/.test(k)) answers[k] = String(v ?? '').slice(0, 60);
+    const attempt = { id: newId(), at: new Date().toISOString(), skill, taskId: String(b.taskId), title: String(b.title || '').slice(0, 80) + (mock ? '' : ' · practice'),
+      part: mock ? 0 : (Number(b.part) || 0), mockId: mock ? String(b.taskId) : null, score: scoreN, total, seconds: Number(b.seconds) || null, answers,
+      result: { overall: mock && bandN >= 0 && bandN <= 9 ? Math.round(bandN * 2) / 2 : null } };
+    await addAttempt(uid, attempt);
+    return json({ attempt: { id: attempt.id } });
+  }
+
   if (path === 'clear' && method === 'POST') return json({ attempts: await removeAttempts(uid, 'all') });
   const dm = path.match(/^attempt\/([a-z0-9]+)$/);
   if (dm && method === 'DELETE') return json({ attempts: await removeAttempts(uid, [dm[1]]) });
@@ -262,8 +278,10 @@ export default async (req) => {
         const idx = await listAttempts(id);
         const scored = idx.filter(x => typeof x.band === 'number');
         const last5 = scored.slice(-5);
+        const lastOf = sk => idx.filter(x => (x.skill || 'writing') === sk && typeof x.band === 'number').at(-1)?.band ?? null;
         return { id, name: d.name, email: d.email, attempts: idx.length,
           latest: scored.at(-1)?.band ?? null, average: last5.length ? half(last5.reduce((a, x) => a + x.band, 0) / last5.length) : null,
+          skills: { listening: lastOf('listening'), reading: lastOf('reading'), writing: lastOf('writing'), speaking: lastOf('speaking') },
           lastActive: idx.at(-1)?.at ?? null };
       }));
       rows.sort((a, b) => String(b.lastActive || '').localeCompare(String(a.lastActive || '')));
