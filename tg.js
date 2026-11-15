@@ -5,6 +5,21 @@
    IELTS work in Telegram exactly as on the website, with no password. Same-origin frames (games) share it too. */
 (function () {
   var K = 'if.tginit', init = '';
+  function note(why) {
+    var go = function () {
+      if (document.getElementById('if-tgnote')) return;
+      var ru = !/^en/i.test(navigator.language || ''), b = document.createElement('div'); b.id = 'if-tgnote';
+      b.style.cssText = 'position:fixed;left:12px;right:12px;bottom:12px;z-index:99999;background:#0b1f3a;color:#fff;border-radius:14px;padding:14px 16px;font:15px/1.45 system-ui,sans-serif;box-shadow:0 10px 30px rgba(0,0,0,.3)';
+      var M = {
+        '': ru ? 'Чтобы войти автоматически, закройте это окно и нажмите кнопку «IF Academy» (меню слева от поля ввода) или «👤 My account» в боте, затем кнопку под сообщением.' : 'To be signed in automatically, close this window and tap the "IF Academy" Menu button (left of the message box), or "👤 My account" in the bot and then the button under its reply.',
+        'not-connected': ru ? 'Этот Telegram ещё не подключён к вашему аккаунту. В боте нажмите «📱 Подключиться по номеру телефона», затем откройте снова.' : 'This Telegram is not connected to your account yet. In the bot, tap "📱 Connect with my phone number", then open this again.',
+        'expired': ru ? 'Сессия устарела. Закройте окно и откройте снова из бота.' : 'This session is old. Close the window and open it again from the bot.'
+      };
+      b.textContent = (M[why] || M['']) + (why && !M[why] ? ' (' + why + ')' : '');
+      document.body.appendChild(b);
+    };
+    if (document.body) go(); else document.addEventListener('DOMContentLoaded', go);
+  }
   try {
     var m = location.hash.match(/[#&]tgWebAppData=([^&]*)/);
     if (m) { init = decodeURIComponent(m[1]); sessionStorage.setItem(K, init); }
@@ -15,13 +30,12 @@
   var inTg = !!init || /[?&]tg=1/.test(location.search);
   if (init && !/(^|&)user=/.test(init)) { init = ''; try { sessionStorage.removeItem(K); } catch (e) {} }
   if (!init) {
-    if (inTg && window.top === window) document.addEventListener('DOMContentLoaded', function () {
-      var ru = !/^en/i.test(navigator.language || ''), b = document.createElement('div');
-      b.style.cssText = 'position:fixed;left:12px;right:12px;bottom:12px;z-index:99999;background:#0b1f3a;color:#fff;border-radius:14px;padding:14px 16px;font:15px/1.45 system-ui,sans-serif;box-shadow:0 10px 30px rgba(0,0,0,.3)';
-      b.textContent = ru ? 'Чтобы войти автоматически, закройте это окно и нажмите кнопку «IF Academy» (меню слева от поля ввода) или «👤 My account» в боте, затем кнопку под сообщением.'
-        : 'To be signed in automatically, close this window and tap the "IF Academy" Menu button (left of the message box), or "👤 My account" in the bot and then the button under its reply.';
-      document.body.appendChild(b);
-    });
+    if (inTg && window.top === window) {
+      // some Telegram apps give the data only to Telegram's own script: ask it, and start again signed in
+      window.__ifTgRetry = function () { try { var d = window.Telegram && Telegram.WebApp && Telegram.WebApp.initData; if (d && /(^|&)user=/.test(d) && !sessionStorage.getItem('if.tgretry')) { sessionStorage.setItem(K, d); sessionStorage.setItem('if.tgretry', '1'); location.reload(); return true; } } catch (e) {} return false; };
+      document.write('<script src="https://telegram.org/js/telegram-web-app.js"><\/script><script>window.__ifTgRetry()<\/script>');
+      document.addEventListener('DOMContentLoaded', function () { if (!window.__ifTgRetry()) note(''); });
+    }
     return;
   }
   window.IF_TG = init;
@@ -41,7 +55,9 @@
         opts.headers = h;
       }
     } catch (e) {}
-    return of.call(this, input, opts);
+    var pr = of.call(this, input, opts);
+    try { if (/\/api\/school\/me(\?|$)/.test(url)) pr.then(function (r) { if (r.status === 401) r.clone().json().then(function (j) { if (window.top === window) note((j && j.tg) || 'signin-refused'); }).catch(function () {}); }).catch(function () {}); } catch (e) {}
+    return pr;
   };
 
   // 2. the pages' "are you signed in?" check: the website sign-in if there is one, otherwise the bot connection

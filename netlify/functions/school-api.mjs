@@ -350,7 +350,7 @@ export default async (req) => {
     try { await refreshSession(); } catch {}   // an expired 1-hour token is renewed from the refresh cookie: people stay signed in
     try { user = await getUser(); } catch { user = null; }
   }
-  if (!user) return fail(401, 'signin');
+  if (!user) return fail(401, 'signin', req.tgWhy ? { tg: req.tgWhy } : {});
   const uid = user.id;
   let profile = await getProfile(uid);
   if (await ensureTrial(uid, profile)) await putProfile(uid, profile);   // free accounts made before the trial existed

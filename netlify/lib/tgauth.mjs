@@ -43,12 +43,28 @@ async function ensureLite(link) {
   return p;
 }
 
-/** The account behind the X-TG-Init header ({ id, email, telegram }), or null (then the usual website sign-in applies). */
+/** A school record connected by phone ('sid:'/'tid:') whose person also has a website account → that account. */
+async function realAccount(link) {
+  const [kind, id] = link.split(':');
+  const dir = (await U().get('directory', { type: 'json' })) || {};
+  if (kind === 'sid') { const e = Object.entries(dir).find(([, d]) => d.studentId === id); return e ? e[0] : null; }
+  const t = (await doc('teachers')).find(x => x.id === id);
+  if (t && t.uid && dir[t.uid]) return t.uid;
+  const e = Object.entries(dir).find(([, d]) => d.teacherId === id && (d.role === 'teacher' || d.role === 'admin'));
+  return e ? e[0] : null;
+}
+
+/** The account behind the X-TG-Init header ({ id, email, telegram }), or null (then the usual website sign-in applies).
+    Why it failed is left on req.tgWhy so the page can say so. */
 export async function tgAccount(req) {
   const init = req.headers.get('x-tg-init'); if (!init) return null;
-  const tu = tgInitUser(init); if (!tu) return null;
-  const link = await S().get(`bot/chat/${tu.id}`); if (!link) return null;
+  const why = r => { try { req.tgWhy = r; } catch {} return null; };
+  if (!process.env.TELEGRAM_BOT_TOKEN) return why('no-token');
+  if (!/(^|&)user=/.test(init)) return why('no-user');
+  const tu = tgInitUser(init); if (!tu) return why(/auth_date=(\d+)/.test(init) && Date.now() / 1000 - +init.match(/auth_date=(\d+)/)[1] > MAX_AGE_S ? 'expired' : 'bad-signature');
+  let link = await S().get(`bot/chat/${tu.id}`); if (!link) return why('not-connected');
+  if (/^(sid|tid):/.test(link)) link = (await realAccount(link)) || link;
   const prof = /^(sid|tid):/.test(link) ? await ensureLite(link) : await U().get(`u/${link}/profile`, { type: 'json' });
-  if (!prof && /^(sid|tid):/.test(link)) return null;
+  if (!prof && /^(sid|tid):/.test(link)) return why('no-record');
   return { id: link, email: (prof && prof.email) || '', name: (prof && prof.name) || '', user_metadata: { full_name: [tu.first_name, tu.last_name].filter(Boolean).join(' ') }, app_metadata: {}, telegram: true };
 }
