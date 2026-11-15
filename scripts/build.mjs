@@ -22,7 +22,7 @@ for (const f of ['dist/index.html', 'dist/a/ielts/index.html', 'dist/a/ielts/app
 console.log('Homepage, portal and IELTS Centre assets stamped with version', V);
 
 // Every page gets the shared Back / Home buttons and the 3D-shield tilt (if-nav.js decides what to show).
-let navCount = 0;
+let navCount = 0, voiceCount = 0;
 (function walk(dir) {
   for (const n of readdirSync(dir)) {
     const p = `${dir}/${n}`;
@@ -30,12 +30,14 @@ let navCount = 0;
     if (statSync(p).isDirectory()) { walk(p); continue; }
     if (!n.endsWith('.html')) continue;
     let s = readFileSync(p, 'utf8');
+    // Real voices: every page that speaks gets /voice.js in <head> (before any page script runs).
+    if (!s.includes('/voice.js') && /<head(\s[^>]*)?>/i.test(s)) { s = s.replace(/<head(\s[^>]*)?>/i, m => m + `\n<script src="/voice.js?v=${V}"></script>`); writeFileSync(p, s); voiceCount++; }
     if (s.includes('if-nav.js') || s.includes('data-no-nav') || !/<\/body>/i.test(s)) continue;
     s = s.replace(/<\/body>(?![\s\S]*<\/body>)/i, `<script src="/if-nav.js?v=${V}" defer></script>\n</body>`);
     writeFileSync(p, s); navCount++;
   }
 })('dist');
-console.log('Back/Home navigation added to', navCount, 'pages');
+console.log('Back/Home navigation added to', navCount, 'pages; real voices on', voiceCount, 'pages');
 
 // Public AI assistant: refresh its knowledge from the homepage on every deploy, so prices and courses never go stale.
 // Only public page text is used (sections below + class timetable), never student data.
