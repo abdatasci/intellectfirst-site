@@ -228,8 +228,8 @@
     if ((o.k === 'steal' || o.k === 'swap' || o.k === 'hack') && !list.length) o = { k: 'add', v: 50, l: '+50' };
     if (o.k === 'add' || o.k === 'mul' || o.k === 'lose') { S.bus.pub('p', 'gain', { pid: S.pid, k: o.k, v: o.v }); return cont(250); }
     if (o.k === 'none') return cont(200);
+    if (o.k === 'hack') return mystery(list, guess);   // hacking is blind: you only find out whose server it was afterwards
     targets(o.k === 'steal' ? 'Take ' + o.v * 100 + '% from…' : o.k === 'swap' ? 'Swap your total with…' : 'Hack who?', list, function (e) {
-      if (o.k === 'hack') return guess(e);
       S.bus.pub('p', o.k, { pid: S.pid, to: e[0], pct: o.v }); L.sfx('coin'); cont(300);
     });
   }
@@ -239,9 +239,16 @@
     show('<div class="pw"><h2>' + esc(title) + '</h2><div class="tlist">' + list.map(function (e, i) { return '<button class="tg" data-i="' + i + '"><b>' + esc(e[1]) + '</b><span>' + L.fmtN(e[2]) + ' ' + cur + '</span></button>'; }).join('') + '</div></div>');
     view.querySelectorAll('.tg').forEach(function (b) { b.onclick = function () { done(list[+b.dataset.i]); }; });
   }
+  /** Anonymous servers: names and scores hidden, order shuffled every time. */
+  function mystery(list, done) {
+    var pick = L.shuffle(list).slice(0, Math.min(6, list.length)), ic = ['🖥️', '💾', '📡', '🗄️', '🛰️', '💽'];
+    show('<div class="pw"><h2>💻 Pick a server to hack</h2><p style="color:rgba(255,255,255,.75)">Every server belongs to another player — you\'ll only find out whose after the hack.</p><div class="chests">' +
+      pick.map(function (e, i) { return '<button class="chest anon" data-i="' + i + '"><span style="font-size:42px">' + ic[i % ic.length] + '</span><b>Server ' + String.fromCharCode(65 + i) + '</b></button>'; }).join('') + '</div></div>');
+    view.querySelectorAll('.anon').forEach(function (b) { b.onclick = function () { var e = pick[+b.dataset.i]; e = e.slice(); e.anon = 'Server ' + String.fromCharCode(65 + +b.dataset.i); done(e); }; });
+  }
   function guess(e) {
     var opts = e[4] || L.PASSWORDS.slice(0, 3);
-    show('<div class="pw"><h2>Hack ' + esc(e[1]) + '</h2><p style="color:rgba(255,255,255,.75)">Guess their password:</p><div class="tlist">' + opts.map(function (o) { return '<button class="tg pwg" data-v="' + esc(o) + '"><b>🔑 ' + esc(o) + '</b></button>'; }).join('') + '</div></div>');
+    show('<div class="pw"><h2>Hack ' + esc(e.anon || e[1]) + '</h2><p style="color:rgba(255,255,255,.75)">Guess their password:</p><div class="tlist">' + opts.map(function (o) { return '<button class="tg pwg" data-v="' + esc(o) + '"><b>🔑 ' + esc(o) + '</b></button>'; }).join('') + '</div></div>');
     view.querySelectorAll('.pwg').forEach(function (b) {
       b.onclick = function () {
         show('<div class="wait"><div class="pulse hackp"></div><h2>Hacking…</h2></div>'); L.sfx('hack');
@@ -250,7 +257,7 @@
         S.hackWait = function (ev) {
           if (done || ev.b !== e[0]) return; done = true; S.hackWait = null;
           if (ev.ok) { L.sfx('win'); show('<div class="res good"><div class="big">Hacked!</div><div class="gain">+' + L.fmtN(ev.v) + ' ₿ from ' + esc(e[1]) + '</div></div>'); }
-          else { L.sfx('bad'); show('<div class="res bad"><div class="big">Access denied</div><p>Wrong password. Keep mining!</p></div>'); }
+          else { L.sfx('bad'); show('<div class="res bad"><div class="big">Access denied</div><p>That was ' + esc(e[1]) + '\'s server — wrong password. Keep mining!</p></div>'); }
           cont(1600);
         };
         setTimeout(function () { if (!done) { done = true; S.hackWait = null; vPlay(); } }, 6000);
