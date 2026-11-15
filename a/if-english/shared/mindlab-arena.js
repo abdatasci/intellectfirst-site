@@ -45,7 +45,7 @@
         btns.forEach(function (b) { if (GAME.test(label(b))) b.style.display = 'none'; });
         var a = M.querySelector('.ml-link');
         if (!a) { a = document.createElement('a'); a.className = 'ml-link'; a.target = '_top'; a.textContent = '🧠 Games in IF Mind Lab'; M.appendChild(a); }
-        a.href = '/a/mind-lab/#/arcade/' + encodeURIComponent(ns) + '/' + encodeURIComponent(cur());
+        a.href = '/a/mind-lab/#/';
         if (on && GAME.test(label(on))) { var f = btns.filter(function (b) { return STUDY_FIRST.test(label(b)); })[0]; if (f) setTimeout(function () { f.click(); }, 0); }
       }
     } catch (e) {}

@@ -197,3 +197,20 @@ h1,h2,h3{font-family:var(--h);letter-spacing:.03em;margin:0}
 .gcard .badge small{display:block;font-size:10px;letter-spacing:.2em;margin-top:6px;color:var(--soft);text-shadow:none}
 .arena-frame{margin-top:14px;padding:0;overflow:hidden;height:calc(100vh - 150px);min-height:520px}
 .arena-frame iframe{width:100%;height:100%;border:0;display:block;background:transparent}
+
+/* levels that move with the answers */
+.gcard .lvb{position:absolute;top:14px;right:14px;z-index:2;font-family:var(--h);font-weight:700;font-size:11px;letter-spacing:.12em;padding:5px 10px;border-radius:999px;color:#050816;background:linear-gradient(135deg,var(--c1),var(--c2));box-shadow:0 0 14px color-mix(in srgb,var(--c1) 55%,transparent)}
+.emo{display:inline-grid;place-items:center;width:42px;height:42px;border-radius:12px;font-size:22px;flex:none;background:radial-gradient(circle at 30% 25%,rgba(255,255,255,.18),rgba(255,255,255,.03));border:1px solid var(--line);box-shadow:inset 0 0 14px rgba(34,211,238,.15)}
+.emo.big{width:64px;height:64px;font-size:32px;border-radius:18px;margin-bottom:6px;position:relative;z-index:1;box-shadow:0 0 22px color-mix(in srgb,var(--c1) 35%,transparent),inset 0 0 18px rgba(255,255,255,.08)}
+.hud .num.lvl b{color:var(--cy)}
+.hud .num.lvl.up b{animation:lvup .9s}.hud .num.lvl.down b{animation:lvdn .9s}
+@keyframes lvup{0%{transform:scale(1.8);color:#34d399;text-shadow:0 0 18px #34d399}}
+@keyframes lvdn{0%{transform:scale(.6);color:#fb7185}}
+.lvchip{display:inline-block;margin:0 0 8px;padding:6px 14px;border-radius:999px;font-family:var(--h);font-size:12px;letter-spacing:.14em;color:var(--soft);border:1px solid var(--line)}
+.lvchip.up{color:#34d399;border-color:rgba(52,211,153,.5);background:rgba(52,211,153,.12);animation:pop .5s}
+.lvchip.down{color:#fb7185;border-color:rgba(251,113,133,.45);background:rgba(251,113,133,.1)}
+.wres{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:center;padding:14px 18px;margin-top:14px;font-size:16px}
+.wres .lvchip{margin:0}
+/* the word games inside Mind Lab */
+.ifs-host{margin-top:14px;padding:22px 18px;min-height:420px;--card:rgba(20,30,70,.55);--paper:rgba(20,30,70,.55);--fg:#e8f0ff;--ink:#e8f0ff;--line:rgba(148,178,255,.22);--muted:#9fb0d0;color:#e8f0ff}
+.ifs-host button{font-family:var(--f)}

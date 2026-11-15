@@ -1,4 +1,5 @@
-/* IF Mind Lab — seven short English brain-training games (original IF Academy designs), B1–C2.
+/* IF Mind Lab — 24 English brain-training games. Seven original IF Academy games (B1–C2) and seventeen word games
+   on every word of the IF English courses (Pre A1–C2). Every game keeps its own level, which moves with the answers.
    SIGNAL LOCK (focus) · HYPERREAD (reading speed) · ECHO (listening) · GLYPH FORGE (spelling & writing)
    PRECISION (vocabulary) · FAULT LINE (grammar) · VOICE GATE (speaking).
    Scores, best scores, a skill rating per area and the daily session are kept on this device. */
@@ -13,16 +14,19 @@
   var TRACKS = { general: 'General', business: 'Business', ielts: 'IELTS' };
   var T = window.ML_TRACKS || {};
   function data(kind, lv) { return (S.tr !== 'general' && T[S.tr] && T[S.tr][kind]) || D[kind][lv]; }
-  var tag = function () { return (S.tr === 'general' ? '' : TRACKS[S.tr] + ' · ') + S.lv; };
+  var trk = function () { return S.tr === 'general' ? '' : TRACKS[S.tr] + ' · '; };
+  var gkey = function (id) { return (S.tr === 'general' ? '' : S.tr + ':') + id; };
+  // every game keeps its own level and moves it with the answers (3 right in a row: up · 2 wrong in a row: down)
+  var glevel = function (id) { var v = S.glv[gkey(id)]; return v == null ? Math.max(0, LEVELS.indexOf(S.lv)) : v; };
   var bkey = function (lv, id) { return (S.tr === 'general' ? '' : S.tr + ':') + lv + ':' + id; };
   var day = function () { return new Date(Date.now() + 5 * 3600e3).toISOString().slice(0, 10); };
 
   /* ---------- saved state ---------- */
   var KEY = 'ifml.v1', S;
   try { S = JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { S = {}; }
-  S.lv = LEVELS.indexOf(S.lv) >= 0 ? S.lv : 'B2'; S.tr = TRACKS[S.tr] ? S.tr : 'general';
+  S.lv = LEVELS.indexOf(S.lv) >= 0 ? S.lv : 'B1'; S.tr = TRACKS[S.tr] ? S.tr : 'general';
   (function () { var q = (location.search.match(/[?&]track=([a-z]+)/) || [])[1]; if (q && TRACKS[q]) S.tr = q; })();   // opened from IF English IELTS / Business
-  S.best = S.best || {}; S.rate = S.rate || {}; S.days = S.days || {}; S.plays = S.plays || 0;
+  S.best = S.best || {}; S.rate = S.rate || {}; S.days = S.days || {}; S.plays = S.plays || 0; S.glv = S.glv || {}; S.wlv = S.wlv || {};
   function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
 
   /* ---------- the games ---------- */
@@ -75,17 +79,75 @@
 
   /* ---------- level picker ---------- */
   function drawLevels() {
-    $('#lvls').innerHTML = LEVELS.map(function (l) { return '<button data-l="' + l + '" class="' + (l === S.lv ? 'on' : '') + '" aria-pressed="' + (l === S.lv) + '">' + l + '</button>'; }).join('');
-    $$('#lvls button').forEach(function (b) { b.onclick = function () { S.lv = b.dataset.l; save(); drawLevels(); if (!RUN) route(); else toast('The new level starts with your next game.'); }; });
     $('#trks').innerHTML = Object.keys(TRACKS).map(function (k) { return '<button data-t="' + k + '" class="' + (k === S.tr ? 'on' : '') + '" aria-pressed="' + (k === S.tr) + '">' + TRACKS[k] + '</button>'; }).join('');
     $$('#trks button').forEach(function (b) { b.onclick = function () { S.tr = b.dataset.t; save(); drawLevels(); if (!RUN) route(); else toast('The new content starts with your next game.'); }; });
   }
 
-  /* ---------- home ---------- */
-  function todays() {   // three games for today's session, chosen by date so everyone's day has a plan
+  /* ---------- WORD GAMES: the IF Arcade games, with words chosen for you ----------
+     Every word from every IF English course (words.js, Pre A1–C2). No units to pick: each game has its own level.
+     After each round the level moves: 80% or more right → up, under 50% → down. */
+  var WL = ['PA1', 'A1', 'A2', 'B1', 'B2', 'C1', 'C2'], WLN = { PA1: 'Pre A1', A1: 'A1', A2: 'A2', B1: 'B1', B2: 'B2', C1: 'C1', C2: 'C2' };
+  var WG = [
+    { id: 'learn', t: 'LEARN', e: '🧠', sk: 'vocab', n: 8, p: 'Meet new words: choose the meaning, then type the word until you master it.' },
+    { id: 'write', t: 'WRITE', e: '✍️', sk: 'write', n: 10, p: 'Read the meaning and write the word.' },
+    { id: 'spell', t: 'SPELL', e: '🔤', sk: 'write', n: 10, p: 'Listen to the word and type what you hear.' },
+    { id: 'scramble', t: 'SCRAMBLE', e: '🔀', sk: 'write', n: 10, p: 'Put the letters back in the right order.' },
+    { id: 'speed', t: 'SPEED QUIZ', e: '⏱️', sk: 'speed', n: 40, p: '60 seconds. How many meanings can you match?' },
+    { id: 'gravity', t: 'GRAVITY', e: '🪐', sk: 'speed', n: 30, p: 'Type the word before its meaning hits the ground.' },
+    { id: 'search', t: 'WORD SEARCH', e: '🔎', sk: 'focus', n: 10, p: 'Find the hidden words in the grid — across, down and diagonal.' },
+    { id: 'memory', t: 'MEMORY', e: '🃏', sk: 'focus', n: 8, p: 'Turn two cards at a time and pair each word with its meaning.' },
+    { id: 'blast', t: 'BLAST', e: '🚀', sk: 'vocab', n: 25, p: 'Shoot the asteroid that matches the meaning.' },
+    { id: 'treasure', t: 'TREASURE HUNT', e: '💰', sk: 'vocab', n: 25, p: 'Answer to open chests. Beat three bots to the most gold.' },
+    { id: 'fishing', t: 'FISHING', e: '🎣', sk: 'vocab', n: 25, p: 'Answer to cast. Catch the heaviest fish in 2½ minutes.' },
+    { id: 'race', t: 'RACE', e: '🏎️', sk: 'vocab', n: 25, p: 'Every right answer moves your car. Beat three bots to the line.' },
+    { id: 'factory', t: 'FACTORY', e: '🏭', sk: 'vocab', n: 25, p: 'Answer to earn cash, build machines and get rich.' },
+    { id: 'cafe', t: 'CAFÉ', e: '☕', sk: 'vocab', n: 25, p: 'Answer to restock. Serve customers before they leave.' },
+    { id: 'defense', t: 'MONSTER DEFENSE', e: '🛡️', sk: 'vocab', n: 25, p: 'Answer to fire at monsters before they reach your castle.' },
+    { id: 'boss', t: 'BOSS BATTLE', e: '🐉', sk: 'vocab', n: 25, p: 'Answer to hit the dragon before it hits you.' },
+    { id: 'balloon', t: 'BALLOON POP', e: '🎈', sk: 'vocab', n: 25, p: 'Pop the balloon with the right word.' }
+  ];
+  var wgById = function (id) { return WG.filter(function (g) { return g.id === id; })[0]; };
+  var wkey = function (id) { return (S.tr === 'general' ? '' : S.tr + ':') + 'w:' + id; };
+  var wlevel = function (id) { var v = S.wlv[wkey(id)]; return v == null ? 3 : v; };   // teens and adults start at B1; it adapts from the first round
+  function wordsFor(id, lvi) {
+    var B = window.ML_WORDS || { levels: {} }, L = B.levels[WL[lvi]] || [], pick = shuffle(L).slice(0, 60);
+    if (S.tr === 'ielts' && lvi >= 3) pick = shuffle((B.ielts || []).concat(lvi >= 5 ? L : [])).slice(0, 60);
+    if (S.tr === 'business') { var bz = B.business || {}, k = ['A2', 'A2', 'A2', 'B1', 'B2', 'C1', 'C1'][lvi]; pick = shuffle((bz[k] || []).concat(pick.slice(0, 20))); }
+    var seen = {}; return pick.filter(function (x) { var k = x[0].toLowerCase(); if (seen[k]) return false; seen[k] = 1; return true; }).slice(0, wgById(id).n).map(function (x) { return { w: x[0], d: x[1], ru: '', dr: '' }; });
+  }
+  function vWord(id) {
+    var g = wgById(id); if (!g || !window.IFStudy) return go('#/');
+    hush(); RUN = null;
+    var lvi = wlevel(id), words = wordsFor(id, lvi), reported = false;
+    view.innerHTML = '<div class="glass hud"><a class="quit" href="#/" aria-label="Mind Lab" style="display:grid;place-items:center;text-decoration:none">✕</a><div class="gt"><span class="emo">' + g.e + '</span><div><b>' + g.t + '</b><small>' + trk() + SK[g.sk] + '</small></div></div>' +
+      '<div class="num lvl"><b>' + WLN[WL[lvi]] + '</b><small>LEVEL</small></div></div><div id="wres"></div><div class="glass ifs-host" id="wg"></div>';
+    window.IFResults = { report: function (r) {
+      if (reported || !r || !(r.total > 0)) return; reported = true;
+      var acc = Math.max(0, Math.min(1, r.score / r.total)), nl = acc >= .8 ? Math.min(WL.length - 1, lvi + 1) : acc < .5 ? Math.max(0, lvi - 1) : lvi;
+      S.wlv[wkey(id)] = nl;
+      var k = wkey(id), sc = Math.round(acc * 100), rec = sc > (S.best[k] || 0); if (rec) S.best[k] = sc;
+      var target = acc * (300 + lvi * 120), old = S.rate[g.sk] || 0; S.rate[g.sk] = old ? old * .75 + target * .25 : target;
+      S.days[day()] = S.days[day()] || {}; S.days[day()][id] = 1; S.plays++; save();
+      $('#wres').innerHTML = '<div class="glass wres">' + lvlChange(lvi, nl, WL.map(function (x) { return WLN[x]; })) + '<b>' + r.score + ' / ' + r.total + '</b> · ' + sc + '% ' +
+        '<a class="btn" href="#/w/' + id + '?r=' + Date.now() + '">Next round' + (nl !== lvi ? ' at ' + WLN[WL[nl]] : '') + ' →</a><a class="btn ghost" href="#/">Mind Lab</a></div>';
+      $('#wres').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } };
+    IFStudy.mount($('#wg'), { words: words, key: 'ml:' + id + ':' + WL[lvi], ru: false, mode: id, title: WLN[WL[lvi]] + ' words' });
+  }
+  function lvlChange(a, b, names) {
+    if (a === b) return '<span class="lvchip">Level ' + names[b] + '</span>';
+    return '<span class="lvchip ' + (b > a ? 'up' : 'down') + '">' + (b > a ? '▲ Level up: ' : '▼ Level ') + names[a] + ' → ' + names[b] + '</span>';
+  }
+
+  /* ---------- home: games by skill, like a brain-training app ---------- */
+  var ALL = function () { return GAMES.map(function (g) { return { id: g.id, t: g.t, sk: g.sk, kind: 'mind', g: g }; }).concat(WG.map(function (g) { return { id: g.id, t: g.t, sk: g.sk, kind: 'word', g: g }; })); };
+  var hrefOf = function (x) { return x.kind === 'word' ? '#/w/' + x.id : '#/play/' + x.id; };
+  function todays() {   // three games a day — one Mind Lab game, one word game, one more — chosen by date so everyone's day has a plan
     var d = day(), seed = 0; for (var i = 0; i < d.length; i++) seed = (seed * 31 + d.charCodeAt(i)) % 9973;
-    var order = GAMES.map(function (g, i) { return { g: g, k: (seed * (i + 7)) % 101 }; }).sort(function (a, b) { return a.k - b.k; });
-    return order.slice(0, 3).map(function (x) { return x.g; });
+    var all = ALL(), mind = all.filter(function (x) { return x.kind === 'mind'; }), word = all.filter(function (x) { return x.kind === 'word'; });
+    var a = mind[seed % mind.length], b = word[(seed * 7) % word.length], c = mind[(seed * 3 + 2) % mind.length];
+    if (c === a) c = mind[(mind.indexOf(a) + 3) % mind.length];
+    return [a, b, c];
   }
   function streak() { var n = 0, d = function (k) { return new Date(Date.now() + 5 * 3600e3 - k * 864e5).toISOString().slice(0, 10); }, k = S.days[d(0)] ? 0 : 1; while (S.days[d(k)]) { n++; k++; } return n; }
   function radar() {
@@ -98,86 +160,71 @@
     return '<svg class="radar" viewBox="-40 -6 380 296" role="img" aria-label="Your skill ratings"><defs><linearGradient id="rgr" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#22d3ee" stop-opacity=".55"/><stop offset="1" stop-color="#a78bfa" stop-opacity=".45"/></linearGradient></defs>' + grid + axes +
       '<polygon points="' + poly + '" fill="url(#rgr)" stroke="#67e8f9" stroke-width="2" style="filter:drop-shadow(0 0 8px rgba(34,211,238,.6))"/>' + keys.map(function (k, i) { var p = pt(i, R * val(k)); return '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="3.5" fill="#fff"/>'; }).join('') + labels + '</svg>';
   }
-  var GREET = ['Welcome to the Mind Lab. Three short games a day keep your English sharp. Pick your level, and let\'s begin.', 'Good to see you again. Today\'s session is ready: three games, about six minutes.', 'Focus, speed, precision. Let\'s train your English brain.'];
+  var GREET = ['Welcome to the Mind Lab. Every game finds your level: answer well and it gets harder; slip, and it steps back. Three games a day is all it takes.', 'Good to see you again. Today\'s workout is ready: three games, about six minutes.', 'Focus, speed, precision. Let\'s train your English brain.'];
+  var SECTIONS = [
+    ['focus', 'Focus & memory', ['signal', 'search', 'memory']],
+    ['speed', 'Speed', ['hyper', 'speed', 'gravity']],
+    ['vocab', 'Vocabulary', ['precise', 'learn', 'blast', 'treasure', 'fishing']],
+    ['write', 'Writing & spelling', ['glyph', 'write', 'spell', 'scramble']],
+    ['listen', 'Listening', ['echo']],
+    ['grammar', 'Grammar', ['fault']],
+    ['speak', 'Speaking', ['voice']],
+    ['arcade', 'Word arcade', ['race', 'factory', 'cafe', 'defense', 'boss', 'balloon']]
+  ];
+  var SCOL = { focus: ['#22d3ee', '#6366f1'], speed: ['#a78bfa', '#22d3ee'], vocab: ['#fbbf24', '#f472b6'], write: ['#f472b6', '#a78bfa'], listen: ['#38bdf8', '#f472b6'], grammar: ['#fb7185', '#fbbf24'], speak: ['#34d399', '#22d3ee'], arcade: ['#fbbf24', '#22d3ee'] };
+  function card(x, sec) {
+    var all = ALL(), it = all.filter(function (y) { return y.id === x; })[0]; if (!it) return '';
+    var col = SCOL[sec], g = it.g, mind = it.kind === 'mind';
+    var lv = mind ? LEVELS[glevel(x)] : WLN[WL[wlevel(x)]], best = S.best[mind ? gkey(x) : wkey(x)];
+    return '<a class="gcard" style="--c1:' + (mind ? g.c1 : col[0]) + ';--c2:' + (mind ? g.c2 : col[1]) + '" href="' + hrefOf(it) + '">' +
+      '<span class="lvb">' + lv + '</span>' + (mind ? emblem(g.id, g.c1, g.c2) : '<span class="emo big">' + g.e + '</span>') +
+      '<span class="sk">' + SK[g.sk] + '</span><h3>' + g.t + '</h3><p>' + esc(g.p) + '</p><span class="best">' + (best ? 'Best: <b>' + best + (mind ? '' : '%') + '</b>' : 'New — tap to start') + '</span></a>';
+  }
   function vHome() {
     hush(); RUN = null;
     var td = todays(), done = S.days[day()] || {}, st = streak(), total = Object.keys(SK).reduce(function (a, k) { return a + (S.rate[k] || 0); }, 0);
+    var first = td.filter(function (x) { return !done[x.id]; })[0];
     view.innerHTML =
-      '<section class="hero"><div class="glass intro"><p class="eyebrow">IF Academy · ' + (S.tr === 'general' ? 'General English' : S.tr === 'business' ? 'Business English' : 'IELTS') + ' · ' + S.lv + '</p><h1>Train your English brain.</h1>' +
-        '<p class="lead">Seven fast games that sharpen how you focus, read, listen, write, choose words, check grammar and speak — in English, at your level. One round takes about two minutes.</p>' +
-        '<div class="chiprow"><a class="btn" href="#/play/' + td.filter(function (g) { return !done[g.id]; }).concat(td)[0].id + '">▶ ' + (Object.keys(done).length ? 'Continue today\'s session' : 'Start today\'s session') + '</a>' +
-        '<a class="btn ghost" href="#/arcade">🕹 Word Arcade</a><span class="stat">🔥 <b>' + st + '</b> day' + (st === 1 ? '' : 's') + '</span><span class="stat">⚡ Mind score <b>' + Math.round(total) + '</b></span></div></div>' +
+      '<section class="hero"><div class="glass intro"><p class="eyebrow">IF Academy · ' + (S.tr === 'general' ? 'General English' : S.tr === 'business' ? 'Business English' : 'IELTS') + '</p><h1>Train your English brain.</h1>' +
+        '<p class="lead">Twenty-four games for focus, speed, vocabulary, writing, listening, grammar and speaking. Every game finds your level by itself: answer well and it gets harder; slip, and it steps back.</p>' +
+        '<div class="chiprow">' + (first ? '<a class="btn" href="' + hrefOf(first) + '">▶ ' + (Object.keys(done).length ? 'Continue today\'s workout' : 'Start today\'s workout') + '</a>' : '<span class="btn gold" style="cursor:default">✓ Today\'s workout done</span>') +
+        '<span class="stat">🔥 <b>' + st + '</b> day' + (st === 1 ? '' : 's') + '</span><span class="stat">⚡ Mind score <b>' + Math.round(total) + '</b></span></div></div>' +
       '<div class="glass host">' + (window.IFBots ? IFBots.html('f', 'Nova', true) : '') + '<p class="bubble" id="bub">Tap to hear Nova.</p><button class="btn ghost" id="hi">🔊 Brief me</button></div></section>' +
-      '<section class="row2"><div class="glass panel"><h2>Today\'s session</h2><div class="today">' + td.map(function (g) { return '<a href="#/play/' + g.id + '" class="' + (done[g.id] ? 'done' : '') + '">' + emblem(g.id, g.c1, g.c2) + '<span class="k">' + g.t + '<small>' + SK[g.sk] + (S.best[bkey(S.lv, g.id)] ? ' · best ' + S.best[bkey(S.lv, g.id)] : '') + '</small></span></a>'; }).join('') + '</div></div>' +
+      '<section class="row2"><div class="glass panel"><h2>Today\'s workout</h2><div class="today">' + td.map(function (x) { var g = x.g; return '<a href="' + hrefOf(x) + '" class="' + (done[x.id] ? 'done' : '') + '">' + (x.kind === 'mind' ? emblem(g.id, g.c1, g.c2) : '<span class="emo">' + g.e + '</span>') + '<span class="k">' + g.t + '<small>' + SK[g.sk] + ' · level ' + (x.kind === 'mind' ? LEVELS[glevel(x.id)] : WLN[WL[wlevel(x.id)]]) + '</small></span></a>'; }).join('') + '</div></div>' +
       '<div class="glass panel"><h2>Your skill map</h2>' + radar() + '</div></section>' +
-      arcadeStrip() +
-      '<div class="sec"><h2>All games</h2><p>' + tag() + ' · change it at the top</p></div>' +
-      '<section class="games">' + GAMES.map(function (g) { var b = S.best[bkey(S.lv, g.id)]; return '<a class="gcard" style="--c1:' + g.c1 + ';--c2:' + g.c2 + '" href="#/play/' + g.id + '">' + emblem(g.id, g.c1, g.c2) + '<span class="sk">' + SK[g.sk] + '</span><h3>' + g.t + '</h3><p>' + esc(g.p) + '</p><span class="best">' + (b ? 'Best at ' + tag() + ': <b>' + b + '</b>' : 'Not played at ' + tag() + ' yet') + '</span></a>'; }).join('') + '</section>' +
-      '<p class="note">All the words, texts and sentences are written by IF Academy for B1–C2 learners. Listening uses IF Academy\'s natural British voices. Speaking works best in Chrome, Edge or Safari with a microphone.</p>';
+      SECTIONS.map(function (sc) { return '<div class="sec" id="s-' + sc[0] + '"><h2>' + sc[1] + '</h2></div><section class="games">' + sc[2].map(function (x) { return card(x, sc[0]); }).join('') + '</section>'; }).join('') +
+      '<p class="note">The word games use every word from the IF English courses — English File, English for Teenagers, Cambridge Starters to PET, IELTS and Business — chosen for your level. Listening uses IF Academy\'s natural British voices. Speaking works best in Chrome, Edge or Safari with a microphone.</p>';
     $('#hi').onclick = function () { var m = GREET[S.plays % GREET.length]; $('#bub').textContent = m; speak(m, 'f'); };
   }
-
-  /* ---------- WORD ARCADE: every word from every IF English course and coursebook ----------
-     The vocabulary games (Learn, Write, Spell, Scramble, Game Room, Blocks, Match, Gravity…) and the IF Arcade run on
-     each course's own word lists; Mind Lab opens them in its own look (the course page with ?arcade=1). */
-  var GROUPS = [['general', 'General English · English File'], ['teens', 'Teens 16–18'], ['exam', 'Exams'], ['young', 'Young learners · Cambridge']];
-  var GRP = function (c) { return c.id === 'KET' ? 'exam' : c.group; };
-  function courses() { return (window.IFEN_COURSES || []).slice(); }
-  function arcadeStrip() {
-    var L = courses(); if (!L.length) return '';
-    var pick = S.tr === 'ielts' ? 'IELTS' : S.tr === 'business' ? 'C1' : ({ B1: 'B1', B2: 'B2', C1: 'C1', C2: 'C1' })[S.lv];
-    return '<div class="sec"><h2>Word Arcade</h2><p>Every word from every IF English course — in games</p></div>' +
-      '<section class="glass panel arc"><div class="arcrow">' + L.map(function (c) { return '<a class="cchip' + (c.id === pick ? ' on' : '') + '" href="#/arcade/' + c.id + '"><b>' + esc(c.badge) + '</b><span>' + esc(c.title.en) + '</span></a>'; }).join('') + '</div>' +
-      '<p class="sub" style="margin:12px 2px 0">Learn · Write · Spell · Scramble · Game Room · Blocks · Match · Gravity · and the IF Arcade, with the words of any unit.</p></section>';
-  }
-  function vArcade() {
-    hush(); RUN = null;
-    var L = courses();
-    view.innerHTML = '<section class="glass intro arch"><p class="eyebrow">IF Mind Lab · Word Arcade</p><h1 style="font-size:clamp(26px,4vw,42px)">Every word. Every course. Play it.</h1>' +
-      '<p class="lead" style="color:var(--soft);max-width:640px">Choose a course, then a unit: learn the words, write and spell them, unscramble them, and race them in the arcade games. Your best scores are saved on this device.</p></section>' +
-      GROUPS.map(function (g) {
-        var cs = L.filter(function (c) { return GRP(c) === g[0]; }); if (!cs.length) return '';
-        return '<div class="sec"><h2>' + esc(g[1]) + '</h2></div><section class="games">' + cs.map(function (c) {
-          return '<a class="gcard" style="--c1:' + ({ general: '#22d3ee', teens: '#a78bfa', exam: '#fbbf24', young: '#34d399' })[g[0]] + ';--c2:#6366f1" href="#/arcade/' + c.id + '"><span class="badge">' + esc(c.badge) + '<small>' + esc(c.badgeSub || '') + '</small></span>' +
-            '<h3>' + esc(c.title.en) + '</h3><p>' + c.units + ' units · ' + c.words + ' words</p><span class="best">Open the arcade →</span></a>';
-        }).join('') + '</section>';
-      }).join('') + '<p class="note">The words come from the IF English courses (English File, English for Teenagers, Cambridge KET, PET, Movers, Flyers and IELTS). Studying with flashcards and tests stays in IF English → Vocabulary.</p>';
-  }
-  function vArena(id, unit) {
-    hush(); RUN = null;
-    var c = courses().filter(function (x) { return x.id === id; })[0]; if (!c) return go('#/arcade');
-    var src = '/a/if-english/courses/' + encodeURIComponent(id) + '/index.html?arcade=1' + (unit ? '#' + encodeURIComponent(unit) : '');
-    view.innerHTML = '<div class="glass hud"><a class="quit" href="#/arcade" aria-label="All courses" style="display:grid;place-items:center;text-decoration:none">←</a><div class="gt"><svg class="em" viewBox="0 0 64 64" aria-hidden="true"><rect x="8" y="14" width="48" height="36" rx="10" fill="none" stroke="#22d3ee" stroke-width="3"/><circle cx="22" cy="32" r="5" fill="none" stroke="#a78bfa" stroke-width="3"/><path d="M40 28h8M44 24v8" stroke="#a78bfa" stroke-width="3" stroke-linecap="round"/></svg><div><b>WORD ARCADE</b><small id="arcu">' + esc(c.title.en) + '</small></div></div>' +
-      '<a class="btn ghost" href="' + esc(src) + '" target="_blank" rel="noopener" style="padding:8px 14px;font-size:13px">⛶ Full screen</a></div>' +
-      '<div class="glass arena-frame"><iframe id="arf" src="' + esc(src) + '" title="Word Arcade · ' + esc(c.title.en) + '" allow="autoplay; fullscreen"></iframe></div>';
-  }
-  addEventListener('message', function (e) {
-    if (e.origin !== location.origin || !e.data || !e.data.ifArena) return;
-    var c = courses().filter(function (x) { return x.id === e.data.ifArena; })[0], u = $('#arcu');
-    if (u && c) u.textContent = c.title.en + (e.data.unit ? ' · unit ' + e.data.unit : '');
-  });
 
   /* ---------- game runner ---------- */
   var RUN = null;
   function vPlay(id) {
     var g = byId(id); if (!g) return go('#/');
-    hush(); RUN = { g: g, lv: S.lv, score: 0, combo: 1, maxCombo: 1, right: 0, wrong: 0, log: [], timers: [], alive: true };
-    view.innerHTML = '<div class="glass hud"><button class="quit" id="qt" aria-label="Quit">✕</button><div class="gt">' + emblem(g.id, g.c1, g.c2) + '<div><b>' + g.t + '</b><small>' + SK[g.sk] + ' · ' + tag() + '</small></div></div>' +
-      '<div class="num combo"><b id="cb">×1</b><small>COMBO</small></div><div class="num"><b id="sc">0</b><small>SCORE</small></div>' +
+    hush(); RUN = { g: g, lvi: glevel(id), lvi0: glevel(id), up: 0, down: 0, used: {}, score: 0, combo: 1, maxCombo: 1, right: 0, wrong: 0, log: [], timers: [], alive: true };
+    view.innerHTML = '<div class="glass hud"><button class="quit" id="qt" aria-label="Quit">✕</button><div class="gt">' + emblem(g.id, g.c1, g.c2) + '<div><b>' + g.t + '</b><small>' + trk() + SK[g.sk] + '</small></div></div>' +
+      '<div class="num lvl"><b id="lvn">' + LEVELS[RUN.lvi] + '</b><small>LEVEL</small></div><div class="num combo"><b id="cb">×1</b><small>COMBO</small></div><div class="num"><b id="sc">0</b><small>SCORE</small></div>' +
       '<svg class="ring" viewBox="0 0 60 60" id="rg"><defs><linearGradient id="rg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="' + g.c1 + '"/><stop offset="1" stop-color="' + g.c2 + '"/></linearGradient></defs><circle class="bgc" cx="30" cy="30" r="25"/><circle class="fg" id="rf" cx="30" cy="30" r="25" stroke-dasharray="157.1" stroke-dashoffset="0" transform="rotate(-90 30 30)"/><text x="30" y="35" text-anchor="middle" id="rt">–</text></svg></div>' +
       '<div class="glass arena" id="ar"></div>';
     $('#qt').onclick = function () { stop(); go('#/'); };
     var ar = $('#ar'), n = 3;
-    ar.innerHTML = '<p class="eyebrow">' + SK[g.sk] + ' · ' + tag() + '</p><h2 style="font-size:clamp(22px,4vw,34px)">' + g.t + '</h2><p class="sub" style="max-width:560px">' + esc(g.p) + '</p><div class="countdown" id="cd">3</div>';
+    ar.innerHTML = '<p class="eyebrow">' + trk() + SK[g.sk] + ' · level ' + LEVELS[RUN.lvi] + '</p><h2 style="font-size:clamp(22px,4vw,34px)">' + g.t + '</h2><p class="sub" style="max-width:560px">' + esc(g.p) + '</p><div class="countdown" id="cd">3</div>';
     var cd = setInterval(function () { if (!RUN || RUN.g !== g) return clearInterval(cd); n--; sfx.tick(); if (n > 0) { $('#cd').textContent = n; $('#cd').style.animation = 'none'; void $('#cd').offsetWidth; $('#cd').style.animation = ''; } else { clearInterval(cd); g.run(ar, api()); } }, 750);
     RUN.timers.push(cd);
   }
   function api() {
     var R = RUN;
+    function adapt(ok) {
+      if (ok) { R.up++; R.down = 0; if (R.up >= 3 && R.lvi < LEVELS.length - 1) { R.lvi++; R.up = 0; lvlShow(true); } }
+      else { R.down++; R.up = 0; if (R.down >= 2 && R.lvi > 0) { R.lvi--; R.down = 0; lvlShow(false); } }
+    }
+    function lvlShow(up) { var b = $('#lvn'); if (b) { b.textContent = LEVELS[R.lvi]; b.parentNode.classList.remove('up', 'down'); void b.offsetWidth; b.parentNode.classList.add(up ? 'up' : 'down'); } toast(up ? '▲ Level up: ' + LEVELS[R.lvi] : '▼ Level ' + LEVELS[R.lvi] + ' — steady it, then climb again'); if (up) sfx.end(); }
     return {
-      lv: R.lv,
-      add: function (pts, el, x, y) { if (!R.alive) return; var p = Math.round(pts * R.combo); R.score += p; R.right++; R.combo = Math.min(5, R.combo + .25); R.maxCombo = Math.max(R.maxCombo, R.combo); hud(); sfx.ok(Math.floor(R.combo)); if (el) floatTxt(el, '+' + p, '#34d399', x, y); },
-      miss: function (pen, el, x, y) { if (!R.alive) return; R.score = Math.max(0, R.score - (pen || 0)); R.wrong++; R.combo = 1; hud(); sfx.bad(); if (el && pen) floatTxt(el, '−' + pen, '#fb7185', x, y); },
+      get lv() { return LEVELS[R.lvi]; },
+      // the next item at the current level (a fresh one each time until the level's set is used up)
+      next: function (kind) { var lv = LEVELS[R.lvi], pool = data(kind, lv), u = R.used[kind + lv] || (R.used[kind + lv] = []); var left = pool.filter(function (x) { return u.indexOf(x) < 0; }); if (!left.length) { u.length = 0; left = pool.slice(); } var it = left[Math.floor(Math.random() * left.length)]; u.push(it); return it; },
+      add: function (pts, el, x, y) { if (!R.alive) return; adapt(true); var p = Math.round(pts * R.combo); R.score += p; R.right++; R.combo = Math.min(5, R.combo + .25); R.maxCombo = Math.max(R.maxCombo, R.combo); hud(); sfx.ok(Math.floor(R.combo)); if (el) floatTxt(el, '+' + p, '#34d399', x, y); },
+      miss: function (pen, el, x, y) { if (!R.alive) return; adapt(false); R.score = Math.max(0, R.score - (pen || 0)); R.wrong++; R.combo = 1; hud(); sfx.bad(); if (el && pen) floatTxt(el, '−' + pen, '#fb7185', x, y); },
       log: function (ok, txt) { R.log.push({ ok: ok, t: txt }); },
       clock: function (sec, onEnd) { var t0 = Date.now(), iv = setInterval(function () { if (!R.alive) return clearInterval(iv); var left = Math.max(0, sec - (Date.now() - t0) / 1000); ring(left / sec, Math.ceil(left)); if (left <= 0) { clearInterval(iv); onEnd ? onEnd() : finish(); } }, 100); R.timers.push(iv); },
       steps: function (i, n) { ring(1 - i / n, (i + 1 > n ? n : i + 1) + '/' + n); },
@@ -192,19 +239,20 @@
   function finish() {
     if (!RUN || !RUN.alive) return;
     var R = RUN, g = R.g; stop();
-    var tries = R.right + R.wrong, acc = tries ? Math.round(R.right / tries * 100) : 0, k = bkey(R.lv, g.id), rec = R.score > (S.best[k] || 0);
+    var tries = R.right + R.wrong, acc = tries ? Math.round(R.right / tries * 100) : 0, k = gkey(g.id), rec = R.score > (S.best[k] || 0);
     if (rec) S.best[k] = R.score;
     // skill rating 0–1000: harder levels count for more; a moving average so one bad round doesn't wipe progress
     var perf = Math.min(1, (acc / 100) * .7 + Math.min(1, R.score / ({ signal: 900, hyper: 700, echo: 600, glyph: 700, precise: 900, fault: 800, voice: 450 }[g.id])) * .3);
-    var target = perf * (550 + LEVELS.indexOf(R.lv) * 150), old = S.rate[g.sk] || 0;
+    S.glv[gkey(g.id)] = R.lvi;
+    var target = perf * (550 + R.lvi * 150), old = S.rate[g.sk] || 0;
     S.rate[g.sk] = old ? old * .65 + target * .35 : target;
     S.days[day()] = S.days[day()] || {}; S.days[day()][g.id] = 1; S.plays++;
     save(); sfx.end();
     var td = todays(), done = S.days[day()], nxt = td.filter(function (x) { return !done[x.id]; })[0];
-    view.innerHTML = '<div class="glass result"><p class="eyebrow">' + g.t + ' · ' + tag() + '</p>' + (rec ? '<span class="rec">★ NEW PERSONAL BEST</span>' : '') +
+    view.innerHTML = '<div class="glass result"><p class="eyebrow">' + trk() + g.t + '</p>' + lvlChange(R.lvi0, R.lvi, LEVELS) + (rec ? '<span class="rec">★ NEW PERSONAL BEST</span>' : '') +
       '<div class="big">' + R.score + '</div><p class="sub">' + (acc >= 85 ? 'Outstanding precision.' : acc >= 65 ? 'Strong round — keep the combo alive next time.' : 'Good training. Slow down a little and aim for accuracy.') + '</p>' +
-      '<div class="grid3"><div><b>' + acc + '%</b><small>Accuracy</small></div><div><b>×' + (Math.round(R.maxCombo * 4) / 4) + '</b><small>Top combo</small></div><div><b>' + Math.round(S.rate[g.sk]) + '</b><small>' + SK[g.sk] + '</small></div></div>' +
-      '<div class="chiprow" style="justify-content:center"><a class="btn" href="#/play/' + g.id + '?r=' + Date.now() + '">↻ Play again</a>' + (nxt ? '<a class="btn gold" href="#/play/' + nxt.id + '">Next: ' + nxt.t + ' →</a>' : '<a class="btn gold" href="#/">Session complete ✓</a>') + '<a class="btn ghost" href="#/">Mind Lab</a></div>' +
+      '<div class="grid3"><div><b>' + acc + '%</b><small>Accuracy</small></div><div><b>' + LEVELS[R.lvi] + '</b><small>Level now</small></div><div><b>×' + (Math.round(R.maxCombo * 4) / 4) + '</b><small>Top combo</small></div><div><b>' + Math.round(S.rate[g.sk]) + '</b><small>' + SK[g.sk] + '</small></div></div>' +
+      '<div class="chiprow" style="justify-content:center"><a class="btn" href="#/play/' + g.id + '?r=' + Date.now() + '">↻ Play again</a>' + (nxt ? '<a class="btn gold" href="' + hrefOf(nxt) + '">Next: ' + nxt.t + ' →</a>' : '<a class="btn gold" href="#/">Session complete ✓</a>') + '<a class="btn ghost" href="#/">Mind Lab</a></div>' +
       (R.log.length ? '<ul class="review">' + R.log.filter(function (x) { return !x.ok; }).slice(0, 6).map(function (x) { return '<li>' + x.t + '</li>'; }).join('') + '</ul>' : '') + '</div>';
     RUN = null;
   }
@@ -241,12 +289,12 @@
 
   /* ===== 2. HYPERREAD — reading speed ===== */
   function hyper(ar, A) {
-    var texts = shuffle(data('read', A.lv)).slice(0, 4), i = 0, wpm = 220 + LEVELS.indexOf(A.lv) * 30;
+    var N = 4, i = 0, wpm = 220 + LEVELS.indexOf(A.lv) * 30;
     function next() {
-      if (i >= texts.length) return A.end();
-      A.steps(i, texts.length);
-      var tx = texts[i], words = tx.t.split(/\s+/), chunks = []; for (var k = 0; k < words.length; k += 3) chunks.push(words.slice(k, k + 3).join(' '));
-      ar.innerHTML = '<p class="wpm">TEXT ' + (i + 1) + ' / ' + texts.length + ' · ' + wpm + ' WORDS A MINUTE</p><div class="reticle"><span class="w" id="w">Ready…</span></div><p class="sub">Keep your eyes on the centre.</p>';
+      if (i >= N) return A.end();
+      A.steps(i, N);
+      var tx = A.next('read'), words = tx.t.split(/\s+/), chunks = []; for (var k = 0; k < words.length; k += 3) chunks.push(words.slice(k, k + 3).join(' '));
+      ar.innerHTML = '<p class="wpm">TEXT ' + (i + 1) + ' / ' + N + ' · ' + A.lv + ' · ' + wpm + ' WORDS A MINUTE</p><div class="reticle"><span class="w" id="w">Ready…</span></div><p class="sub">Keep your eyes on the centre.</p>';
       var c = 0, per = 60000 / wpm * 3;
       A.later(function show() { var w = $('#w'); if (!w) return; if (c >= chunks.length) return ask(); w.textContent = chunks[c++]; A.later(show, per + (/[.,;:]$/.test(chunks[c - 1]) ? 120 : 0)); }, 900);
       function ask() {
@@ -264,11 +312,11 @@
 
   /* ===== 3. ECHO — listening ===== */
   function echo(ar, A) {
-    var items = shuffle(data('echo', A.lv)).slice(0, 5), i = 0;
+    var N = 5, i = 0;
     function next() {
-      if (i >= items.length) return A.end();
-      A.steps(i, items.length);
-      var it = items[i], g = i % 2 ? 'm' : 'f', words = it.s.replace(/[.?!]$/, '').split(' '), punct = (it.s.match(/[.?!]$/) || ['.'])[0], replays = 0, pick = [];
+      if (i >= N) return A.end();
+      A.steps(i, N);
+      var it = A.next('echo'), g = i % 2 ? 'm' : 'f', words = it.s.replace(/[.?!]$/, '').split(' '), punct = (it.s.match(/[.?!]$/) || ['.'])[0], replays = 0, pick = [];
       var tiles = shuffle(words.map(function (w, k) { return { w: w, k: k } }).concat(it.x.map(function (w) { return { w: w, k: -1 }; })));
       ar.innerHTML = '<div class="echohost">' + (window.IFBots ? IFBots.html(g, g === 'm' ? 'Atlas' : 'Nova', true) : '') + '</div><p class="sub">Listen, then build the sentence. <button class="btn ghost" id="rp" style="padding:6px 12px;font-size:13px;margin-left:6px">🔊 Replay (−20)</button></p><div class="built" id="bt"></div><div class="bank" id="bk"></div><p style="margin-top:18px"><button class="btn" id="ck" disabled>Check</button></p>';
       function draw() {
@@ -297,10 +345,9 @@
 
   /* ===== 4. GLYPH FORGE — spelling and writing ===== */
   function glyph(ar, A) {
-    var list = shuffle(data('spell', A.lv)), i = 0;
     function next() {
       if (!A.alive()) return;
-      var it = list[i++ % list.length], w = it[0], hint = 0;
+      var it = A.next('spell'), w = it[0], hint = 0;
       ar.innerHTML = '<p class="eyebrow">Meaning</p><p class="prompt">' + esc(it[1]) + '</p><div class="slots" id="sl">' + w.split('').map(function () { return '<i></i>'; }).join('') + '</div>' +
         '<input class="ginput" id="gi" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" aria-label="Type the word" maxlength="' + (w.length + 4) + '">' +
         '<p style="margin-top:14px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap"><button class="btn ghost" id="sy">🔊 Hear it</button><button class="btn ghost" id="hn">💡 Letter (−10)</button><button class="btn" id="go">Forge ↵</button></p>';
@@ -323,10 +370,9 @@
 
   /* ===== 5. PRECISION — vocabulary ===== */
   function precise(ar, A) {
-    var list = shuffle(data('precise', A.lv)), i = 0;
     function next() {
       if (!A.alive()) return;
-      var it = list[i++ % list.length], t1 = Date.now(), o = shuffle(it.o.map(function (x, k) { return { x: x, k: k }; }));
+      var it = A.next('precise'), t1 = Date.now(), o = shuffle(it.o.map(function (x, k) { return { x: x, k: k }; }));
       ar.innerHTML = '<p class="eyebrow">Replace the highlighted words</p><p class="prompt">' + esc(it.s).replace(/\[(.+?)\]/, '<span class="hl">$1</span>') + '</p><div class="opts">' + o.map(function (x) { return '<button class="opt" data-k="' + x.k + '">' + esc(x.x) + '</button>'; }).join('') + '</div>';
       $$('.opt', ar).forEach(function (b) { b.onclick = function () {
         var ok = +b.dataset.k === it.a; $$('.opt', ar).forEach(function (x) { x.disabled = true; if (+x.dataset.k === it.a) x.classList.add('ok'); }); if (!ok) b.classList.add('bad');
@@ -339,10 +385,9 @@
 
   /* ===== 6. FAULT LINE — grammar ===== */
   function fault(ar, A) {
-    var list = shuffle(data('fault', A.lv)), i = 0;
     function next() {
       if (!A.alive()) return;
-      var it = list[i++ % list.length], ws = it.s.split(' '), t1 = Date.now();
+      var it = A.next('fault'), ws = it.s.split(' '), t1 = Date.now();
       ar.innerHTML = '<p class="eyebrow">Tap the wrong word</p><div class="sent">' + ws.map(function (w, k) { return '<button data-k="' + k + '">' + esc(w) + '</button>'; }).join('') + '</div><p style="margin-top:20px"><button class="btn ghost" data-k="-1">✓ No error</button></p><p class="fix" id="fx"></p>';
       $$('[data-k]', ar).forEach(function (b) { b.onclick = function () {
         var k = +b.dataset.k, ok = k === it.b;
@@ -359,12 +404,12 @@
   var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   var norm = function (s) { return String(s).toLowerCase().replace(/[’‘]/g, "'").replace(/[^a-z0-9' ]+/g, ' ').split(/\s+/).filter(Boolean); };
   function voice(ar, A) {
-    var items = shuffle(data('speak', A.lv)).slice(0, 4), i = 0;
+    var N = 4, i = 0;
     var micSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0014 0M12 18v3"/></svg>';
     function next() {
-      if (i >= items.length) return A.end();
-      A.steps(i, items.length);
-      var s = items[i], want = norm(s), tries = 0;
+      if (i >= N) return A.end();
+      A.steps(i, N);
+      var s = A.next('speak'), want = norm(s), tries = 0;
       ar.innerHTML = '<p class="eyebrow">Read it aloud</p><p class="prompt">' + esc(s) + '</p><button class="mic" id="mc" aria-label="Speak">' + micSvg + '</button><p class="heard" id="hd">' + (SR ? 'Press the button, then read the sentence clearly.' : 'Your browser cannot listen. Read the sentence aloud, then rate yourself.') + '</p>' +
         '<p style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:10px"><button class="btn ghost" id="md">🔊 Hear the model</button>' + (SR ? '<button class="btn ghost" id="sk">Skip</button>' : '<button class="btn" id="ys">I said it clearly</button><button class="btn ghost" id="sk">Needs practice</button>') + '</p>';
       $('#md').onclick = function () { speak(s, i % 2 ? 'm' : 'f'); };
@@ -459,9 +504,10 @@
   function go(h) { if (location.hash === h) route(); else location.hash = h; }
   function route() {
     var h = location.hash.replace(/^#\/?/, '').split('?')[0], p = h.split('/');
-    stop(); RUN = null; window.scrollTo(0, 0);
+    stop(); RUN = null; window.scrollTo(0, 0); try { if (window.IFStudy) IFStudy.stop(); } catch (e) {}
     if (p[0] === 'play' && p[1]) return vPlay(p[1]);
-    if (p[0] === 'arcade') return p[1] ? vArena(decodeURIComponent(p[1]), decodeURIComponent(p[2] || '')) : vArcade();
+    if (p[0] === 'w' && p[1]) return vWord(p[1]);
+    if (p[0] === 'arcade') { vHome(); var el = document.getElementById('s-vocab'); if (el) el.scrollIntoView(); return; }   // old links
     vHome();
   }
   addEventListener('hashchange', route);
