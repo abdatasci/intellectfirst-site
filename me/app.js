@@ -466,6 +466,7 @@
     var h = '<section class="prof"><div style="position:relative">' + avatar(ME.user.id, p.name, p.photo) + '<button class="avbtn" id="ph" style="border-radius:0 0 60px 60px">Change</button></div>' +
       '<div><div class="eyebrow">' + roleLbl + (st ? ' · ' + esc((st.classes || []).join(', ')) : '') + '</div><h1>' + esc(p.name) + '</h1><p class="lead" style="font-size:15.5px">' + (/@students\.intellectfirst\.com$/.test(ME.user.email) ? 'Login: ' + esc(ME.user.email.split('@')[0]) : esc(ME.user.email)) + (p.phone ? ' · ' + esc(p.phone) : '') + '</p>' +
       '<div class="chips">' + (st ? statusChip(st.status) : '') + (p.goals ? '<span class="chip2">Goal: ' + esc(p.goals) + '</span>' : '') + (p.since ? '<span class="chip2 mute">Member since ' + when(p.since) + '</span>' : '') + '</div></div></section>';
+    if (r === 'teacher' || r === 'admin') { h += '<div id="hrs"><p class="sub"><span class="spin"></span> Loading your hours…</p></div>'; loadHours().then(drawHours); }
     h += accessBand(p);
     if (r === 'student' && !st && p.track !== 'private' && !p.alumni) h += '<div class="banner"><b>We have not found your school record yet.</b> Check that your phone number below is the one you gave IF Academy (yours or your parent\'s). If it still does not match, your teacher can link your account.</div>';
     h += '<div id="tgband"></div>';
@@ -864,18 +865,74 @@
   /* ---------- admin ---------- */
   async function loadAdmin() { ADMIN = await api('admin/all'); try { ADMIN.att = (await api('admin/attendance')).attendance; } catch (e) { ADMIN.att = {}; } ME.books = ADMIN.books; ME.teachers = ADMIN.teachers; return ADMIN; }
   function adminTabs(on) {
-    return '<div class="tabs2">' + [['lessons', 'Lessons'], ['telegram', 'Telegram'], ['receipts', 'Receipts'], ['feedback', 'Feedback'], ['logins', 'Student logins'], ['accounts', 'Accounts' + ((ADMIN.accounts || []).filter(function (x) { return x.request; }).length ? ' (' + ADMIN.accounts.filter(function (x) { return x.request; }).length + ' waiting)' : '')], ['classes', 'Classes'], ['teachers', 'Teachers'], ['books', 'Books'], ['export', 'Export results'], ['placement', 'Placement tests'], ['bot', 'Bot & reminders']].map(function (t) {
+    return '<div class="tabs2">' + [['lessons', 'Lessons'], ['hours', 'Hours'], ['telegram', 'Telegram'], ['receipts', 'Receipts'], ['feedback', 'Feedback'], ['logins', 'Student logins'], ['accounts', 'Accounts' + ((ADMIN.accounts || []).filter(function (x) { return x.request; }).length ? ' (' + ADMIN.accounts.filter(function (x) { return x.request; }).length + ' waiting)' : '')], ['classes', 'Classes'], ['teachers', 'Teachers'], ['books', 'Books'], ['export', 'Export results'], ['placement', 'Placement tests'], ['bot', 'Bot & reminders']].map(function (t) {
       return '<a href="#/admin/' + t[0] + '" class="' + (on === t[0] ? 'on' : '') + '">' + t[1] + '</a>';
     }).join('') + '<a href="/me/ifadmin/" style="background:var(--navy);color:#fff;border-color:var(--navy)">IF Admin ↗</a><a href="#" onclick="window.IFAdminAI&&IFAdminAI.open();return false" style="border-color:#C9A227">✨ AI assistant</a></div>';
+  }
+
+  /* ---------- working hours: teaching hours (lessons that took place) and administrative hours (shifts) ---------- */
+  var HRS = { d: null };
+  function hh(h) { h = +h || 0; var m = Math.round(h * 60); if (m < 60) return m + ' min'; return Math.floor(m / 60) + ' h' + (m % 60 ? ' ' + (m % 60) + ' min' : ''); }
+  function hm(iso) { return new Date(iso).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Qostanay' }); }
+  async function loadHours() { try { HRS.d = await api('hours/me'); } catch (e) { HRS.d = null; } return HRS.d; }
+  function hoursHTML() {
+    var d = HRS.d; if (!d || (!d.teaching && !d.admin)) return '';
+    var T = d.teaching, A = d.admin, mon = monthLabel(d.month);
+    var stat = function (n, l) { return '<div class="hstat"><b>' + n + '</b><span>' + l + '</span></div>'; };
+    var h = '<div class="panel wide hours"><div class="row" style="justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px"><h2 style="margin:0">My hours · ' + esc(mon) + '</h2>' + (role() === 'admin' ? '<a class="btn ghost sm" href="#/admin/hours">Team hours →</a>' : '') + '</div><div class="hgrid">';
+    if (T) h += '<div class="hcol"><div class="eyebrow">📚 Teaching</div>' + '<div class="hbig">' + hh(T.hours) + '</div><p class="sub">' + T.lessons + ' lesson' + (T.lessons === 1 ? '' : 's') + ' taught this month. Only lessons that took place count — cancelled or missed lessons don\'t.</p>' +
+      '<div class="hstats">' + stat(hh(T.today), 'today') + stat(hh(T.week), 'this week') + stat(hh(T.planned), 'still planned (' + T.plannedLessons + ')') + '</div>' +
+      (T.list.length ? '<details class="more"><summary>Lessons counted</summary><table class="t small">' + T.list.slice().reverse().map(function (l) { return '<tr><td>' + l.date.slice(8) + '.' + l.date.slice(5, 7) + '</td><td>' + esc(l.start) + '–' + esc(l.end) + '</td><td>' + esc(l.label) + (l.late ? ' <span class="chip2 bad">late</span>' : '') + '</td><td>' + hh(l.h) + '</td></tr>'; }).join('') + '</table></details>' : '') + '</div>';
+    if (A) {
+      var o = A.open;
+      h += '<div class="hcol"><div class="eyebrow">🗂️ Administrative work</div>' +
+        '<div class="hshift ' + (o ? 'on' : '') + '">' + (o ? '<span class="dot"></span><div><b>Working since ' + hm(o.in) + '</b><span>' + hh((Date.now() - new Date(o.in)) / 3.6e6) + ' so far</span></div><button class="btn" data-hrs="out">Finish work</button>' : '<div><b>Not clocked in</b><span>Press Start when you begin admin work.</span></div><button class="btn" data-hrs="in">▶ Start work</button>') + '</div>' +
+        '<div class="hbig">' + hh(A.hours) + '</div><p class="sub">this month · ' + A.days + ' day' + (A.days === 1 ? '' : 's') + '</p>' +
+        '<div class="hstats">' + stat(hh(A.today), 'today') + stat(hh(A.week), 'this week') + '</div>' +
+        '<button class="btn ghost sm" data-hrs="add">+ Add time worked away from the desk</button>' +
+        (A.list.length ? '<details class="more"><summary>Entries (' + A.list.length + ')</summary><table class="t small">' + A.list.map(function (x) { return '<tr><td>' + x.day.slice(8) + '.' + x.day.slice(5, 7) + '</td><td>' + hm(x.in) + '–' + (x.out ? hm(x.out) : 'now') + '</td><td>' + hh(x.h) + '</td><td>' + (x.manual ? '<span class="chip2 mute">added</span> ' : '') + (x.auto ? '<span class="chip2 bad">not finished — closed after 8 h</span> ' : '') + esc(x.note || '') + '</td><td>' + (x.manual || x.auto ? '<button class="btn ghost sm" data-hrs="rm" data-id="' + esc(x.id) + '">Remove</button>' : '') + '</td></tr>'; }).join('') + '</table></details>' : '') + '</div>';
+    }
+    return h + '</div></div>';
+  }
+  function drawHours() { var el = document.getElementById('hrs'); if (el) el.innerHTML = hoursHTML(); }
+  document.addEventListener('click', async function (e) {
+    var b = e.target.closest('[data-hrs]'); if (!b) return;
+    var k = b.dataset.hrs, r;
+    try {
+      if (k === 'in' || k === 'out') { b.disabled = true; r = await api('hours/shift', { method: 'POST', body: { action: k } }); toast(k === 'in' ? 'Started ✓ Have a good day!' : 'Finished ✓'); }
+      else if (k === 'rm') { if (!confirm('Remove this entry?')) return; r = await api('hours/remove', { method: 'POST', body: { month: HRS.d.month, id: b.dataset.id } }); }
+      else if (k === 'add') {
+        var td = new Date(Date.now() + 5 * 3600e3).toISOString().slice(0, 10);
+        modal('<h2>Add time worked</h2><p class="sub">For admin work away from the desk — for example answering WhatsApp or Instagram enquiries in the evening.</p>' +
+          '<label class="lbl">Date</label><input class="inp" type="date" id="hd" value="' + td + '" max="' + td + '"><div class="row" style="gap:10px"><div style="flex:1"><label class="lbl">From</label><input class="inp" type="time" id="hf" value="19:00"></div><div style="flex:1"><label class="lbl">To</label><input class="inp" type="time" id="ht" value="20:00"></div></div>' +
+          '<label class="lbl">What did you do?</label><input class="inp" id="hn" maxlength="200" placeholder="e.g. WhatsApp: 6 enquiries, 2 trial lessons booked"><p style="margin-top:14px"><button class="btn" id="hsave">Save</button></p>');
+        $('#hsave').onclick = async function () {
+          try { var x = await api('hours/add', { method: 'POST', body: { date: $('#hd').value, from: $('#hf').value, to: $('#ht').value, note: $('#hn').value } }); if (x.admin && HRS.d && $('#hd').value.slice(0, 7) === HRS.d.month) HRS.d.admin = x.admin; closeModal(); drawHours(); toast('Added ✓'); }
+          catch (er) { toast('Check the date and times (the end must be after the start, not in the future).'); }
+        };
+        return;
+      }
+      if (r && r.admin && HRS.d) HRS.d.admin = r.admin; drawHours();
+    } catch (er) { toast(er && /open/.test(er.message) ? 'You are already clocked in.' : 'Could not save. Try again.'); b.disabled = false; }
+  });
+  async function aHours(head, month) {
+    view.innerHTML = head + '<p><span class="spin"></span></p>';
+    month = month || new Date(Date.now() + 5 * 3600e3).toISOString().slice(0, 7);
+    var d; try { d = await api('hours/team?month=' + month); } catch (e) { view.innerHTML = head + '<div class="empty">Could not load hours.</div>'; return; }
+    view.innerHTML = head + '<div class="panel wide"><div class="row" style="gap:12px;align-items:center;flex-wrap:wrap"><h2 style="margin:0">Team hours</h2><input class="inp" type="month" id="hmon" value="' + d.month + '" style="max-width:180px"></div>' +
+      '<h3 style="margin-top:16px">Teaching (lessons that took place)</h3>' + (d.teaching.length ? '<table class="t"><tr><th>Teacher</th><th>Hours</th><th>Lessons</th><th>This week</th><th>Still planned</th></tr>' + d.teaching.map(function (t) { return '<tr><td><b>' + esc(t.name) + '</b></td><td>' + hh(t.hours) + '</td><td>' + t.lessons + '</td><td>' + hh(t.week) + '</td><td>' + hh(t.planned) + '</td></tr>'; }).join('') + '</table>' : '<p class="sub">No lessons yet.</p>') +
+      '<h3 style="margin-top:18px">Administrative work (shifts)</h3>' + (d.admin.length ? '<table class="t"><tr><th>Name</th><th>Hours</th><th>Days</th><th>This week</th><th>Now</th></tr>' + d.admin.map(function (a) { return '<tr><td><b>' + esc(a.name) + '</b></td><td>' + hh(a.hours) + '</td><td>' + a.days + '</td><td>' + hh(a.week) + '</td><td>' + (a.open ? '<span class="chip2 ok">working since ' + hm(a.open.in) + '</span>' : '—') + '</td></tr>'; }).join('') + '</table>' : '<p class="sub">No shifts recorded this month. Administrators press “Start work” at the top of the admin page.</p>') +
+      '<p class="small" style="margin-top:12px">WhatsApp and Instagram conversations are not tracked automatically; time worked on them away from the desk can be added with “+ Add time”.</p></div>';
+    $('#hmon').onchange = function () { aHours(head, this.value); };
   }
   async function vAdmin(tab) {
     setNav('admin'); if (role() !== 'admin') return go('#/');
     if (!tab || tab === 'students' || tab === 'finance' || tab === 'import') tab = 'logins';
     view.innerHTML = '<p style="margin-top:30px"><span class="spin"></span> Loading school records…</p>';
-    await loadAdmin();
+    await Promise.all([loadAdmin(), loadHours()]);
     var head = '<section class="hero" style="padding-bottom:4px"><div class="eyebrow">Administrator</div><h1>School admin</h1><p class="lead">' + ADMIN.students.length + ' students · ' + ADMIN.classes.length + ' classes · ' + ADMIN.teachers.length + ' teachers · ' + ADMIN.accounts.length + ' accounts</p></section>' +
-      '<div class="panel wide" style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-bottom:14px"><div style="flex:1;min-width:240px"><b>Students, payments, attendance and results are managed in IF Admin.</b><br><span class="sub">The website reads them from IF Admin automatically: student profiles, teacher views, the assistant and Telegram reminders. A payment marked in IF Admin stops that student\'s reminder.</span></div><a class="btn" href="/me/ifadmin/">Open IF Admin ↗</a></div>' + adminTabs(tab);
-    ({ lessons: aLessons, telegram: aTelegram, receipts: aReceipts, feedback: aFeedback, students: aStudents, classes: aClasses, teachers: aTeachers, books: aBooks, accounts: aAccounts, logins: aLogins, import: aImport, export: aExport, placement: aPlacement, finance: aFinance, bot: aBot }[tab] || aAccounts)(head);
+      '<div class="panel wide" style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-bottom:14px"><div style="flex:1;min-width:240px"><b>Students, payments, attendance and results are managed in IF Admin.</b><br><span class="sub">The website reads them from IF Admin automatically: student profiles, teacher views, the assistant and Telegram reminders. A payment marked in IF Admin stops that student\'s reminder.</span></div><a class="btn" href="/me/ifadmin/">Open IF Admin ↗</a></div><div id="hrs">' + hoursHTML() + '</div>' + adminTabs(tab);
+    ({ lessons: aLessons, telegram: aTelegram, receipts: aReceipts, feedback: aFeedback, students: aStudents, classes: aClasses, teachers: aTeachers, books: aBooks, accounts: aAccounts, logins: aLogins, import: aImport, export: aExport, placement: aPlacement, finance: aFinance, bot: aBot, hours: aHours }[tab] || aAccounts)(head);
   }
 
   /* ---------- lessons monitor: every lesson of a day, teachers' check-ins and registers, punctuality this month ---------- */

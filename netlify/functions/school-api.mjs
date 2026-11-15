@@ -18,6 +18,7 @@ import seed from '../lib/school-seed.json';
 import ckey from '../lib/content-key.json';
 import { loadStudents, saveStudents, loadAttendance } from '../lib/students.mjs';
 import { migrate as runMigrations } from '../lib/migrate.mjs';
+import { teaching as teachingHours, adminHours, shift as workShift, addManual as addWork, removeEntry as removeWork, teamAdmin } from '../lib/hours.mjs';
 import { lessonsOn, loadLog, withEntry, checkIn, saveRegister, setCancelled, correct, since as checkSince, monthLessons, punctuality, classAttendance, today as todayStr, GRACE_MIN, EARLY_MIN } from '../lib/lessons.mjs';
 
 const S = () => getStore({ name: 'school', consistency: 'strong' });
@@ -593,6 +594,35 @@ export default async (req) => {
     const roster = l => students.filter(s => inClass(list.find(c => c.id === l.classId), s) && !/withdrawn|finished/i.test(s.status || '')).map(s => ({ sid: s.id, name: `${s.first} ${s.last}`.trim(), frozen: s.status === 'frozen' })).sort((a, b) => a.name.localeCompare(b.name));
     return json({ from, days, early: EARLY_MIN, grace: GRACE_MIN, now: now.toISOString(), me: profile.teacherId || '', lessons: out.map(l => ({ ...l, teacher: (teachers.find(t => t.id === l.teacherId) || {}).name || '', students: roster(l) })), classes: list.map(c => ({ id: c.id, label: c.label, schedule: c.schedule || '', room: c.room || '' })),
       teachers: profile.role === 'admin' ? teachers.filter(t => mine.some(c => c.teacherId === t.id)).map(t => ({ id: t.id, name: t.name })) : [] });
+  }
+  /* ---- working hours: teaching hours from lessons that took place; administrative hours from shifts ---- */
+  if (path === 'hours/me' && method === 'GET') {
+    if (!isStaff(profile.role)) return fail(403, 'staff');
+    const month = /^\d{4}-\d{2}$/.test(url.searchParams.get('month') || '') ? url.searchParams.get('month') : todayStr().slice(0, 7);
+    const mine = await classesForTeacher(profile), own = profile.role === 'admin' ? mine.filter(c => c.teacherId && c.teacherId === profile.teacherId) : mine;
+    const out = { month, teaching: own.length ? await teachingHours(own, month) : null };
+    if (profile.role === 'admin') out.admin = await adminHours(uid, month);
+    return json(out);
+  }
+  if ((path === 'hours/shift' || path === 'hours/add' || path === 'hours/remove') && method === 'POST') {
+    if (profile.role !== 'admin') return fail(403, 'admin');
+    const b = await req.json().catch(() => ({}));
+    try {
+      if (path === 'hours/shift') return json({ admin: await workShift(uid, profile.name || '', b.action === 'out' ? 'out' : 'in', b.note) });
+      if (path === 'hours/add') return json({ admin: await addWork(uid, profile.name || '', b) });
+      return json({ admin: await removeWork(uid, String(b.month || '').slice(0, 7), String(b.id || '')) });
+    } catch (e) { if (e.code) return fail(409, e.code); throw e; }
+  }
+  if (path === 'hours/team' && method === 'GET') {
+    if (profile.role !== 'admin') return fail(403, 'admin');
+    const month = /^\d{4}-\d{2}$/.test(url.searchParams.get('month') || '') ? url.searchParams.get('month') : todayStr().slice(0, 7);
+    const [classes, teachers] = await Promise.all([doc('classes'), doc('teachers')]);
+    const rows = [];
+    for (const t of teachers) {
+      const cl = classes.filter(c => c.teacherId === t.id); if (!cl.length) continue;
+      const h = await teachingHours(cl, month); rows.push({ id: t.id, name: t.name, hours: h.hours, lessons: h.lessons, week: h.week, planned: h.planned });
+    }
+    return json({ month, teaching: rows.sort((a, b) => b.hours - a.hours), admin: await teamAdmin(month) });
   }
   if (path === 'teach/lesson-change' && method === 'POST') {
     if (!isStaff(profile.role)) return fail(403, 'staff');
