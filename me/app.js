@@ -47,7 +47,7 @@
     ['Business English', [['be:A2', 'Business A2'], ['be:B1', 'Business B1'], ['be:B2', 'Business B2'], ['be:C1', 'Business C1']]],
     ['Exams', [['ielts', 'IELTS'], ['ket', 'KET (A2 Key)'], ['pet', 'PET (B1 Preliminary)']]],
     ['Young learners (6–12)', [['yl:starters', 'Starters'], ['yl:movers', 'Movers'], ['yl:flyers', 'Flyers'], ['maths', 'Maths in English']]],
-    ['Coursebooks (optional, up to 2)', [['book:ef-a1', 'English File Elementary'], ['book:ef-a2', 'English File Pre-intermediate'], ['book:ef-b1', 'English File Intermediate'], ['book:ef-b2', 'English File Upper-intermediate'], ['book:ef-c1', 'English File Advanced'], ['book:teens-b1', 'English for Teenagers B1–B2'], ['book:teens-b2', 'English for Teenagers B2–C1'], ['book:giu', 'Grammar in Use (Intermediate)']]]
+    ['Coursebooks (optional, up to 2)', [['book:ef-a1', 'English File Elementary'], ['book:ef-a2', 'English File Pre-intermediate'], ['book:ef-b1', 'English File Intermediate'], ['book:ef-b2', 'English File Upper-intermediate'], ['book:ef-c1', 'English File Advanced'], ['book:ef-c2', 'English File Advanced Plus (C2)'], ['book:teens-b1', 'English for Teenagers B1–B2'], ['book:teens-b2', 'English for Teenagers B2–C1'], ['book:giu', 'Grammar in Use (Intermediate)']]]
   ];
   var STUDY_NAME = {}; STUDY.forEach(function (g) { g[1].forEach(function (x) { STUDY_NAME[x[0]] = (g[0] === 'General English' ? 'General English ' : g[0] === 'Young learners (6–12)' && x[0] !== 'maths' ? 'Young Learners ' : '') + x[1]; }); });
   function studyPicker(sel, kidsFirst) {
