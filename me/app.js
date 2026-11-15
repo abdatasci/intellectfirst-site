@@ -115,7 +115,7 @@
     var fbn = $('[data-nav=feedback]'); if (fbn) fbn.hidden = !role() || staff();
     $('[data-nav=admin]').hidden = role() !== 'admin';
     if (role() === 'admin' && !window.__ifaAIload) { window.__ifaAIload = true; var sc = document.createElement('script'); sc.src = '/me/ifadmin/ai-chat.js'; document.body.appendChild(sc); }
-    var ifa = $('[data-nav=ifadmin]'); if (ifa) ifa.hidden = role() !== 'admin';
+    var ifa = $('[data-nav=ifadmin]'); if (ifa) ifa.hidden = true;   // merged into Admin
     $('[data-nav=classroom]').hidden = !role();
     $('[data-nav=assistant]').hidden = !role();
     var lv = $('[data-nav=live]'); if (lv) { lv.hidden = !role(); lv.href = staff() ? '/live/host/' : '/live/'; }
@@ -874,11 +874,35 @@
   }
 
   /* ---------- admin ---------- */
+  /* Records (the IF Admin app: students, payments, attendance, expenses, salaries, results) are part of Admin.
+     They run in one frame that stays loaded while you switch between the record tabs. */
+  var REC = [['overview', 'Overview'], ['students', 'Students'], ['payments', 'Payments'], ['expenses', 'Expenses'], ['salaries', 'Staff & salaries'], ['cash', 'Cash flow'], ['attendance', 'Attendance'], ['rem', 'Payment reminders'], ['results', 'Test results'], ['access', 'Student access']];
+  var RECKEY = { salaries: 'staff' };
+  function recHost() {
+    var h = document.getElementById('ifaHost');
+    if (!h) {
+      h = document.createElement('div'); h.id = 'ifaHost'; h.className = 'wrap'; h.hidden = true;
+      h.innerHTML = '<iframe id="ifaFrame" title="School records" style="width:100%;border:0;display:block;min-height:70vh;background:transparent"></iframe>';
+      view.parentNode.insertBefore(h, view.nextSibling);
+      var f = h.firstChild;
+      setInterval(function () { if (h.hidden) return; try { var d = f.contentDocument, ht = Math.max(d.documentElement.scrollHeight, d.body ? d.body.scrollHeight : 0); if (ht && Math.abs(ht - f.offsetHeight) > 4) f.style.height = ht + 'px'; } catch (e) {} }, 400);
+      window.addEventListener('ifadmin:changed', function () { try { f.contentWindow.dispatchEvent(new Event('ifadmin:changed')); } catch (e) {} });
+    }
+    return h;
+  }
+  function showRec(tab) {
+    var h = recHost(), f = h.firstChild, k = RECKEY[tab] || tab;
+    if (!f.getAttribute('src')) f.src = '/me/ifadmin/?embed=1#' + k;
+    else { try { f.contentWindow.location.hash = k; } catch (e) { f.src = '/me/ifadmin/?embed=1#' + k; } }
+    h.hidden = false;
+  }
+  function hideRec() { var h = document.getElementById('ifaHost'); if (h) h.hidden = true; }
   async function loadAdmin() { ADMIN = await api('admin/all'); try { ADMIN.att = (await api('admin/attendance')).attendance; } catch (e) { ADMIN.att = {}; } ME.books = ADMIN.books; ME.teachers = ADMIN.teachers; return ADMIN; }
   function adminTabs(on) {
-    return '<div class="tabs2">' + [['lessons', 'Lessons'], ['staff', 'Staff'], ['hours', 'Hours'], ['telegram', 'Telegram'], ['receipts', 'Receipts'], ['feedback', 'Feedback'], ['logins', 'Student logins'], ['accounts', 'Accounts' + ((ADMIN.accounts || []).filter(function (x) { return x.request; }).length ? ' (' + ADMIN.accounts.filter(function (x) { return x.request; }).length + ' waiting)' : '')], ['classes', 'Classes'], ['teachers', 'Teachers'], ['books', 'Books'], ['export', 'Export results'], ['placement', 'Placement tests'], ['bot', 'Bot & reminders']].map(function (t) {
+    var acc = (ADMIN && ADMIN.accounts) || [];
+    return '<div class="tabs2 rec">' + REC.map(function (t) { return '<a href="#/admin/' + t[0] + '" class="' + (on === t[0] ? 'on' : '') + '">' + t[1] + '</a>'; }).join('') + '</div><div class="tabs2">' + [['lessons', 'Lessons'], ['staff', 'Staff'], ['hours', 'Hours'], ['telegram', 'Telegram'], ['receipts', 'Receipts'], ['feedback', 'Feedback'], ['logins', 'Student logins'], ['accounts', 'Accounts' + (acc.filter(function (x) { return x.request; }).length ? ' (' + acc.filter(function (x) { return x.request; }).length + ' waiting)' : '')], ['classes', 'Classes'], ['teachers', 'Teachers'], ['books', 'Books'], ['export', 'Export results'], ['placement', 'Placement tests'], ['bot', 'Bot & reminders']].map(function (t) {
       return '<a href="#/admin/' + t[0] + '" class="' + (on === t[0] ? 'on' : '') + '">' + t[1] + '</a>';
-    }).join('') + '<a href="/me/ifadmin/" style="background:var(--navy);color:#fff;border-color:var(--navy)">IF Admin ↗</a><a href="#" onclick="window.IFAdminAI&&IFAdminAI.open();return false" style="border-color:#C9A227">✨ AI assistant</a></div>';
+    }).join('') + '<a href="#" onclick="window.IFAdminAI&&IFAdminAI.open();return false" style="border-color:#C9A227">✨ AI assistant</a></div>';
   }
 
   /* ---------- working hours: teaching hours (lessons that took place) and administrative hours (shifts) ---------- */
@@ -1001,11 +1025,16 @@
   });
   async function vAdmin(tab) {
     setNav('admin'); if (role() !== 'admin') return go('#/');
-    if (!tab || tab === 'students' || tab === 'finance' || tab === 'import') tab = 'logins';
+    if (!tab) tab = 'overview';
+    if (tab === 'finance' || tab === 'import') tab = 'payments';
+    if (REC.some(function (t) { return t[0] === tab; })) {
+      view.innerHTML = '<section class="hero" style="padding-bottom:4px"><div class="eyebrow">Administrator</div><h1>School admin</h1></section>' + adminTabs(tab);
+      showRec(tab); return;
+    }
     view.innerHTML = '<p style="margin-top:30px"><span class="spin"></span> Loading school records…</p>';
     await Promise.all([loadAdmin(), loadHours(), loadTasks()]);
     var head = '<section class="hero" style="padding-bottom:4px"><div class="eyebrow">Administrator</div><h1>School admin</h1><p class="lead">' + ADMIN.students.length + ' students · ' + ADMIN.classes.length + ' classes · ' + ADMIN.teachers.length + ' teachers · ' + ADMIN.accounts.length + ' accounts</p></section>' +
-      '<div class="panel wide" style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-bottom:14px"><div style="flex:1;min-width:240px"><b>Students, payments, attendance and results are managed in IF Admin.</b><br><span class="sub">The website reads them from IF Admin automatically: student profiles, teacher views, the assistant and Telegram reminders. A payment marked in IF Admin stops that student\'s reminder.</span></div><a class="btn" href="/me/ifadmin/">Open IF Admin ↗</a></div><div id="todo">' + tasksHTML() + '</div><div id="hrs">' + hoursHTML() + '</div>' + adminTabs(tab);
+      '<div id="todo">' + tasksHTML() + '</div><div id="hrs">' + hoursHTML() + '</div>' + adminTabs(tab);
     ({ lessons: aLessons, telegram: aTelegram, receipts: aReceipts, feedback: aFeedback, students: aStudents, classes: aClasses, teachers: aTeachers, books: aBooks, accounts: aAccounts, logins: aLogins, import: aImport, export: aExport, placement: aPlacement, finance: aFinance, bot: aBot, hours: aHours, staff: aStaff }[tab] || aAccounts)(head);
   }
 
@@ -1920,6 +1949,7 @@
   async function route() {
     closeModal(); window.scrollTo(0, 0);
     var parts = location.hash.replace(/^#\/?/, '').split('/');
+    hideRec();
     try {
       switch (parts[0]) {
         case '': return vProfile();

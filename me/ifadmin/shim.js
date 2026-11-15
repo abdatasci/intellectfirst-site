@@ -2,6 +2,8 @@
    private storage (/api/ifadmin) in place of claude.ai's database. */
 (function () {
   var ID = window.NFIdentity;
+  // Inside the Admin page of My account (iframe): no own header, tab bar, back link or AI button — the Admin page has them.
+  var EMBED = window.top !== window || /[?&]embed=1/.test(location.search);
   var box = document.getElementById('msg');
   function show(html) { box.innerHTML = '<h1>IF Admin</h1>' + html; }
   async function api(path, opts) {
@@ -58,7 +60,7 @@
   function toolbar() {
     var bar = document.createElement('div');
     bar.style.cssText = 'max-width:1100px;margin:10px auto 0;padding:0 16px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;font:14px Calibri,Carlito,system-ui,sans-serif';
-    bar.innerHTML = '<a href="/me/#/admin" style="color:inherit;font-weight:700">← My account · Admin</a><span style="flex:1"></span>' +
+    bar.innerHTML = (EMBED ? '' : '<a href="/me/#/admin" style="color:inherit;font-weight:700">← My account · Admin</a>') + '<span style="flex:1"></span>' +
       '<button id="ifaBk" style="font:inherit;font-weight:700;border:1px solid #D8E1EE;background:transparent;color:inherit;border-radius:10px;padding:6px 12px;cursor:pointer">Download backup</button>' +
       '<label style="font-weight:700;border:1px solid #D8E1EE;border-radius:10px;padding:6px 12px;cursor:pointer">Restore backup<input type="file" id="ifaRs" accept=".json" hidden></label>';
     var main = document.querySelector('main'); if (main) main.parentNode.insertBefore(bar, main);
@@ -79,6 +81,20 @@
 
   /* ---------- AI assistant panel (write what happened; it proposes the changes) ---------- */
   function aiChat() { var sc = document.createElement('script'); sc.src = '/me/ifadmin/ai-chat.js'; document.body.appendChild(sc); }
+
+  /* ---------- small fixes to the app, and the embedded (merged Admin) mode ---------- */
+  function patch(html) {
+    // Status "Paid" also records the full amount due (and today's date), not just the status.
+    html = html.replace("r[f]=el.dataset.num?numv(el.value):el.value;if(el.dataset.num){",
+      "r[f]=el.dataset.num?numv(el.value):el.value;if(f==='s'&&r.s==='Paid'&&(+r.paid||0)<netDue(r)){r.paid=netDue(r);if(!r.d)r.d=todayISO()}if(el.dataset.num){");
+    if (!EMBED) return html;
+    var css = '<style>header.hero{display:none!important}main>.tabs,#app>.tabs{display:none!important}main{padding-top:4px!important}body{background:transparent!important}</style>';
+    // the Admin page switches sections by changing this frame's #hash
+    var js = '<script>(function(){function go(){var h=(location.hash||"").slice(1);try{if(h&&UI.tab!==h){UI.tab=h;render()}}catch(e){}}window.addEventListener("hashchange",go);setTimeout(go,0)})()<\/script>';
+    js = css + js;   // a <style> at the end of the page still applies, and keeps the doctype first
+    var i = html.toLowerCase().lastIndexOf('</body>');
+    return i >= 0 ? html.slice(0, i) + js + html.slice(i) : html + js;
+  }
 
   /* ---------- start ---------- */
   async function start() {
@@ -106,8 +122,9 @@
       document.getElementById('first').onchange = function () { restoreFile(this.files[0]); };
       return;
     }
+    html = patch(html);
     document.open(); document.write(html); document.close();
-    var tries = 0, t = setInterval(function () { if (document.querySelector('main') || ++tries > 50) { clearInterval(t); toolbar(); aiChat(); } }, 100);
+    var tries = 0, t = setInterval(function () { if (document.querySelector('main') || ++tries > 50) { clearInterval(t); toolbar(); if (!EMBED) aiChat(); } }, 100);
     window.addEventListener('ifadmin:changed', function () { setTimeout(poll, 300); });
     setInterval(poll, 20000); document.addEventListener('visibilitychange', function () { if (!document.hidden) poll(); });
   }

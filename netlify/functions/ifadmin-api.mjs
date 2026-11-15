@@ -6,6 +6,8 @@
 //   POST /api/ifadmin/restore        → {collections:{...}} replace collections from a backup
 //   POST /api/ifadmin/ai             → {messages} AI assistant: reply + proposed changes (nothing saved)
 //   POST /api/ifadmin/ai/apply       → {ops} save the proposed changes (undo point kept)    POST ai/undo {id}
+// With header x-if-sync-key = IFADMIN_SYNC_KEY (env), Claude can read/write records without a sign-in:
+//   GET all · GET/PUT/DELETE doc/<c>/<id> · POST backup
 // Data lives in the private Blobs store "ifadmin", one document per collection (key c/<name>) holding {id: doc}.
 import { getStore } from '@netlify/blobs';
 import { getUser, refreshSession } from '@netlify/identity';
@@ -20,6 +22,12 @@ const U = () => getStore({ name: 'ielts', consistency: 'strong' });
 const json = (data, status = 200) => Response.json(data, { status, headers: { 'Cache-Control': 'no-store' } });
 const fail = (status, error) => json({ error }, status);
 const ID = /^[A-Za-z0-9_.:@+~-]{1,200}$/;
+function syncKeyOk(k) {
+  const want = (globalThis.Netlify?.env?.get('IFADMIN_SYNC_KEY')) || process.env.IFADMIN_SYNC_KEY || '';
+  if (want.length < 32 || typeof k !== 'string' || k.length !== want.length) return false;
+  let d = 0; for (let i = 0; i < want.length; i++) d |= want.charCodeAt(i) ^ k.charCodeAt(i);
+  return d === 0;
+}
 
 const getColl = async c => (await A().get('c/' + c, { type: 'json' })) || {};
 async function putColl(c, map) {
@@ -40,11 +48,38 @@ async function appHtml() {
 export default async (req) => {
   const url = new URL(req.url);
   const path = url.pathname.replace(/^\/api\/ifadmin\/?/, '').replace(/\/$/, '');
+  const method = req.method;
+  // Claude (the director's assistant) keeps the records up to date with a private key instead of a sign-in.
+  const sk = req.headers.get('x-if-sync-key');
+  if (sk) {
+    if (!syncKeyOk(sk)) return fail(401, 'key');
+    if (path === 'all' && method === 'GET') {
+      const out = {}; await Promise.all(COLLS.filter(c => c !== 'mine').map(async c => { out[c] = await getColl(c); }));
+      return json({ collections: out, stamp: (await A().get('stamp', { type: 'json' })) || {} });
+    }
+    const kd = path.match(/^doc\/([a-z]+)\/(.+)$/);
+    if (kd && COLLS.includes(kd[1]) && ID.test(decodeURIComponent(kd[2]))) {
+      const c = kd[1], id = decodeURIComponent(kd[2]), map = await getColl(c);
+      if (method === 'GET') return map[id] ? json({ id, data: map[id] }) : fail(404, 'doc');
+      if (method === 'PUT') {
+        const body = await req.json().catch(() => null);
+        if (!body || typeof body !== 'object' || Array.isArray(body)) return fail(400, 'doc');
+        if (JSON.stringify(body).length > 900000) return fail(413, 'big');
+        map[id] = body; await putColl(c, map); return json({ ok: true });
+      }
+      if (method === 'DELETE') { delete map[id]; await putColl(c, map); return json({ ok: true }); }
+    }
+    if (path === 'backup' && method === 'POST') {
+      const prev = {}; for (const c of COLLS) prev[c] = await getColl(c);
+      const key = 'backup/' + new Date().toISOString().replace(/[:.]/g, '-'); await A().setJSON(key, prev);
+      return json({ ok: true, key });
+    }
+    return fail(404, 'route');
+  }
   let user; try { user = (await refreshSession().catch(() => null), await getUser()); } catch { user = null; }
   if (!user) return fail(401, 'signin');
   const profile = (await U().get(`u/${user.id}/profile`, { type: 'json' })) || null;
   if (profile?.role !== 'admin') return fail(403, 'admin');
-  const method = req.method;
 
   if (path === 'app' && method === 'GET') {
     let html; try { html = await appHtml(); } catch (e) { console.error('ifadmin decrypt', e?.message); html = null; }

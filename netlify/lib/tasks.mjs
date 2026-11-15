@@ -49,7 +49,7 @@ export async function openTasks(now = new Date()) {
   for (const s of students) {
     if (/withdrawn|finished|frozen/i.test(s.status || '')) continue;
     const p = payStatus(s, now); if (!p || p.state !== 'overdue') continue;
-    out.push({ key: `pay:${s.id}:${p.month}`, kind: 'payment', text: `Tuition overdue: ${`${s.first} ${s.last}`.trim()} — ${money(p.fee) || 'fee'} for ${p.month} (due ${dshort(p.dueDate)})`, link: '/me/ifadmin/' });
+    out.push({ key: `pay:${s.id}:${p.month}`, kind: 'payment', text: `Tuition overdue: ${`${s.first} ${s.last}`.trim()} — ${money(p.fee) || 'fee'} for ${p.month} (due ${dshort(p.dueDate)})`, link: '/me/#/admin/payments' });
   }
   // receipts waiting
   for (const r of (await listReceipts()).filter(r => r.status === 'pending')) out.push({ key: `rc:${r.id}`, kind: 'payment', text: `Confirm payment receipt: ${r.name || 'a student'}${r.amount ? ' — ' + money(r.amount) : ''}`, link: '/me/#/admin/receipts' });
