@@ -19,15 +19,11 @@ window.IFX_DIR = [
 
   /* ---------- grammar ---------- */
   { id: 'gram-centre', s: 'grammar', t: 'IF Grammar Arena', d: 'Grammar in Use as games: follow the Quest unit by unit, or practise any unit with the game you like', lv: ['A1', 'A2', 'B1', 'B2', 'C1'], tr: 'general', tags: ['book', 'game', 'teens', 'adults', 'general', 'ielts'], href: '/a/grammar-arena/', icon: '🧩' },
-  { id: 'skill-games', s: 'grammar', t: 'IF Skill Games', d: 'Spot the error, build the sentence, choose the precise word', lv: ['A2', 'B1', 'B2', 'C1'], tr: 'general', tags: ['game', 'daily', 'teens', 'adults', 'general'], href: '/a/skill-games/index.html', icon: '⚡' },
 
   /* ---------- games ---------- */
   { id: 'live', s: 'games', t: 'IF Live', d: 'Class games on the big screen: join with a PIN — or practise alone with AI questions', lv: ['A1', 'A2', 'B1', 'B2', 'C1'], tr: 'general', tags: ['class', 'vocabulary', 'grammar', 'ai', 'teens', 'adults', 'business', 'ielts'], href: '/live/', icon: '📡' },
   { id: 'gameroom', s: 'games', t: 'Board & mystery games', d: 'For the class: Mafia, murder mysteries, Alibi, riddles, board and card games', lv: ['A1', 'A2', 'B1', 'B2', 'C1'], tr: 'general', tags: ['class', 'teens', 'adults', 'ielts'], href: '/a/if-english/gameroom/index.html', icon: '🕵️' },
-  { id: 'mind-lab-ielts', s: 'ielts', t: 'IF Mind Lab · IELTS', d: 'Brain training with IELTS content: Task 1 trend words, academic vocabulary, fast reading, listening and speaking', lv: ['B2', 'C1'], tr: 'exam', tags: ['ielts', 'brain', 'teens', 'adults'], href: '/a/mind-lab/?track=ielts', icon: '🧠' },
   { id: 'mind-lab', s: 'games', t: 'IF Mind Lab', d: 'Brain-training games for teens and adults: focus, reading speed, listening, spelling, vocabulary, grammar and speaking, B1–C2', lv: ['B1', 'B2', 'C1', 'C2'], tr: 'general', tags: ['vocabulary', 'grammar', 'teens', 'daily', 'adults', 'general', 'business', 'ielts', 'brain'], href: '/a/mind-lab/', icon: '🧠' },
-  { id: 'g-skill', s: 'games', t: 'IF Skill Games', d: 'Quick daily grammar and word workouts', lv: ['A2', 'B1', 'B2', 'C1'], tr: 'general', tags: ['grammar', 'vocabulary', 'teens', 'adults', 'general'], href: '/a/skill-games/index.html', icon: '⚡' },
-  { id: 'g-gram', s: 'games', t: 'IF Grammar Arena', d: 'Grammar in Use as games: a Quest through the units, or practise any unit', lv: ['A1', 'A2', 'B1', 'B2', 'C1'], tr: 'general', tags: ['grammar', 'teens', 'adults', 'general', 'ielts'], href: '/a/grammar-arena/', icon: '🧩' },
   { id: 'ket-boost', s: 'archive', t: 'KET Booster Arcade', d: '16 units of A2 Key games', lv: ['A2'], tr: 'exam', tags: ['ket', 'vocabulary', 'grammar'], href: '/a/ket-booster/index.html', icon: '🚀' },
   { id: 'ket-quest', s: 'archive', t: 'KET Quest Arena', d: '48 lesson games for A2 Key', lv: ['A2'], tr: 'exam', tags: ['ket', 'vocabulary', 'grammar'], href: '/a/ket-quest/index.html', icon: '🏆' },
   { id: 'pet-arcade', s: 'archive', t: 'PET Arcade', d: 'B1 Preliminary arcade games', lv: ['B1'], tr: 'exam', tags: ['pet', 'vocabulary', 'grammar'], href: '/a/pet-arcade/index.html', icon: '👾' },
@@ -63,7 +59,6 @@ window.IFX_DIR = [
   { id: 'starters-t', s: 'tests', t: 'Starters tests', d: 'Pre A1 Starters practice tests with listening', lv: ['A1'], tr: 'kids', tags: ['kids', 'cambridge'], href: '/a/starters-tests/', icon: '⭐' },
   { id: 'movers-t', s: 'tests', t: 'Movers tests', d: 'A1 Movers practice tests with listening', lv: ['A1'], tr: 'kids', tags: ['kids', 'cambridge'], href: '/a/movers-tests/', icon: '🐯' },
   { id: 'flyers-t', s: 'tests', t: 'Flyers tests', d: 'A2 Flyers practice tests with listening', lv: ['A2'], tr: 'kids', tags: ['kids', 'cambridge'], href: '/a/flyers-tests/', icon: '🦅' },
-  { id: 'ielts-tests', s: 'tests', t: 'IELTS practice tests', d: 'Reading, Listening and Writing practice with AI marking', lv: ['B2', 'C1'], tr: 'exam', tags: ['ielts'], href: '/a/ielts/index.html', icon: '🎓' },
 
   /* ---------- IELTS practice tools (the lessons are an IF English course) ---------- */
   { id: 'ielts-studio', s: 'ielts', t: 'IF IELTS Studio', d: 'Writing practice, Task 1 charts, the Language and Vocabulary banks (PDF)', lv: ['B1', 'B2', 'C1'], tr: 'exam', tags: ['ielts', 'writing'], href: '/a/ielts-studio/index.html', icon: '✍️' },

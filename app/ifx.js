@@ -191,15 +191,15 @@
     var lv = (k.split(':')[1] || '').toUpperCase(), P = { key: k, name: SNAME[k], icon: SICON[k] };
     if (/^ge:/.test(k)) { P.course = BY['ge-' + lv.toLowerCase()]; P.level = lv; P.voc = byId('voc-' + lv.toLowerCase()); P.test = IFX_DIR.filter(function (x) { return x.s === 'tests' && (x.tags || []).indexOf('book') >= 0 && (x.lv || []).indexOf(lv) >= 0; })[0]; }
     else if (/^be:/.test(k)) { P.course = BY['be-' + lv.toLowerCase()]; P.level = lv; P.voc = byId('voc-' + lv.toLowerCase()); }
-    else if (k === 'ielts') { P.course = BY.ielts; P.voc = byId('band9'); P.test = byId('ielts-tests'); P.level = 'IELTS'; }
+    else if (k === 'ielts') { P.course = BY.ielts; P.voc = byId('band9'); P.test = byId('ielts-centre'); P.level = 'IELTS'; }
     else if (k === 'ket') { P.voc = byId('voc-ket'); P.game = byId('ket-quest'); P.test = byId('test-centre'); P.level = 'A2'; }
     else if (k === 'pet') { P.voc = byId('voc-pet'); P.game = byId('pet-arcade'); P.test = byId('pet-tests'); P.level = 'B1'; }
     else if (/^yl:/.test(k)) { var y = k.split(':')[1]; P.course = BY['yl-' + y]; P.voc = byId('voc-' + y) || byId('yl'); P.game = byId('kids-quest'); P.test = byId(y + '-t'); P.kids = true; }
     else if (k === 'maths') { P.course = BY.maths; P.game = byId('yl-games'); P.kids = true; }
     else if (/^book:/.test(k)) { var bk = k.slice(5), BL = { 'ef-a1': 'A1', 'ef-a2': 'A2', 'ef-b1': 'B1', 'ef-b2': 'B2', 'ef-c1': 'C1', 'ef-c2': 'C2', 'teens-b1': 'B1', 'teens-b2': 'B2', giu: 'B1' }; P.level = BL[bk]; P.book = true;
-      if (/^ef-/.test(bk)) { P.test = byId(bk); P.voc = byId('voc-' + bk.slice(3)); P.game = byId('g-skill'); }
+      if (/^ef-/.test(bk)) { P.test = byId(bk); P.voc = byId('voc-' + bk.slice(3)); P.game = byId('mind-lab'); }
       else if (/^teens-/.test(bk)) { P.test = byId(bk); P.voc = byId(bk === 'teens-b1' ? 'voc-tb1' : 'voc-tb2'); P.game = byId('gameroom'); }
-      else { P.voc = byId('gram-centre'); P.game = byId('g-gram'); P.test = byId('test-centre'); }
+      else { P.voc = byId('gram-centre'); P.game = byId('mind-lab'); P.test = byId('test-centre'); }
       P.course = BY[bk] || BY['ge-' + (P.level || '').toLowerCase()]; }
     if (!P.game) P.game = IFX_DIR.filter(function (x) { return x.s === 'games' && fitsKey(x, k); })[0];
     return P;
@@ -216,6 +216,11 @@
     if (/^book:/.test(k)) { var bk = k.slice(5); return it.id === bk || (/^teens/.test(bk) && /teens/.test(tags)) || (bk === 'giu' && /gram|giu/.test(it.id)) || (/^ef-/.test(bk) && it.id === 'voc-' + bk.slice(3)); }
     return false;
   }
+  /* full view: staff, teachers, or anyone who hasn't chosen goals yet. Everyone else sees only what fits their goals. */
+  function fullView() { var a = access(); return a.staff || a.teacher || S.teacher || !mine().length; }
+  function goalBar() { return '<div class="goalbar">🎯 <span>For your goals: <b>' + esc(mine().map(function (k) { return SNAME[k]; }).join(' · ')) + '</b></span><a href="#/onboard">Change goals</a></div>'; }
+  function secCount(k) { if (k === 'ielts') return mine().indexOf('ielts') >= 0 ? 1 : 0; var n = IFX_DIR.filter(function (x) { return x.s === k && fits(x); }).length; if (k === 'grammar' || k === 'vocab') n += lessonsOf([k === 'grammar' ? 'grammar' : 'vocab']).filter(function (x) { return myCourses().indexOf(x.c) >= 0; }).length; return n; }
+  function focusNav() { var full = fullView(); $$('a[data-k]').forEach(function (a) { var k = a.dataset && a.dataset.k; if (!k || ['vocab', 'grammar', 'games', 'tests', 'ielts'].indexOf(k) < 0) return; a.style.display = full || secCount(k) ? '' : 'none'; }); }
   function fits(it) { var m = mine(); return !m.length || S.teacher || m.some(function (k) { return fitsKey(it, k); }); }
   function myCourses() {
     var out = []; mine().forEach(function (k) { var c = planOf(k).course; if (c && out.indexOf(c) < 0) out.push(c); });
@@ -293,12 +298,10 @@
   var CTRACK = [['all', 'All'], ['general', 'General English'], ['business', 'Business English'], ['exam', 'IELTS'], ['kids', 'Young learners']];
   function vCourses(f) {
     setNav('courses'); f = f || 'all';
-    var list = COURSES.filter(function (c) { return f === 'all' || c.track === f; });
+    var full = fullView(), list = full ? COURSES.filter(function (c) { return f === 'all' || c.track === f; }) : myCourses();
     view().innerHTML = '<div class="page-h"><div><p class="h-eyebrow">' + esc(t('courses')) + '</p><h1>Real English courses</h1><p>Each unit: new words, the grammar, a reading with photos, and a unit check. Finish a level to unlock the next one.</p></div></div>' +
-      '<div class="chips">' + CTRACK.map(function (x) { return '<button class="chip' + (x[0] === f ? ' on' : '') + '" data-f="' + x[0] + '">' + esc(x[1]) + '</button>'; }).join('') + '</div>' +
-      '<div class="grid">' + list.map(courseCard).join('') + '</div>' +
-      '<div class="sec"><h2>More courses coming</h2></div><div class="grid">' +
-        [['🌱', 'General English A1', 'Beginner'], ['🌲', 'General English B2', 'Upper-intermediate'], ['🏔️', 'General English C1', 'Advanced'], ['💼', 'Business English B2', 'Negotiating, presenting, reports']].map(function (x) { return '<div class="card" style="opacity:.6"><span class="ic">' + x[0] + '</span><h3>' + x[1] + '</h3><p>' + x[2] + '</p><div class="meta"><span class="tag">Coming soon</span></div></div>'; }).join('') + '</div>';
+      (full ? '<div class="chips">' + CTRACK.map(function (x) { return '<button class="chip' + (x[0] === f ? ' on' : '') + '" data-f="' + x[0] + '">' + esc(x[1]) + '</button>'; }).join('') + '</div>' : goalBar()) +
+      '<div class="grid">' + list.map(courseCard).join('') + '</div>' ;
     $$('[data-f]').forEach(function (b) { b.onclick = function () { vCourses(b.dataset.f); }; });
   }
   function vCourse(id) {
@@ -603,7 +606,7 @@
     return '<a class="card" href="' + (open ? '#/lesson/' + x.c.id + '/' + x.u.id + '/' + x.l.id : '/me/#/upgrade') + '">' + (open ? '' : '<span class="lock">🔒</span>') + '<span class="ic">' + ICONS[x.l.type] + '</span><h3>' + esc(x.l.title) + '</h3><p>' + esc(x.c.title) + ' · ' + esc(t('unit')) + ' ' + (x.ui + 1) + '</p><div class="meta"><span class="tag ' + tagFor(x.c.track) + '">' + esc(x.c.level) + '</span>' + (done ? '<span class="tag" style="background:var(--ok-bg);color:var(--ok)">✓ ' + S.done[key3(x.c.id, x.u.id, x.l.id)].score + '%</span>' : '') + '</div></a>';
   }
   function vSection(k, f) {
-    setNav(k); var sc = SEC[k]; f = f || (mine().length ? 'fit' : 'all');
+    setNav(k); var sc = SEC[k]; var full = fullView(); f = full ? (f || (mine().length ? 'fit' : 'all')) : 'fit';
     var items = IFX_DIR.filter(function (x) { return x.s === k && match(x, f); });
     var EDITION = /^(kart|bq|obby|kq)-(ket|pet|flyers)$/;   // KET / PET / Flyers editions of the young learners' games
     if (k === 'games' && (f === 'all' || f === 'young')) {
@@ -615,7 +618,7 @@
         : grp('⭐ Start here', [byId('mind-lab'), byId('live')]) + grp('Class games', G(function (x) { return match(x, 'class'); })) + grp('Teens & adults', G(function (x) { return match(x, 'teens') && !match(x, 'young'); })) +
           grp('Young learners · Starters to PET', G(function (x) { return match(x, 'young'); })) + edRow + grp('More', G(function () { return true; }));
       view().innerHTML = '<div class="page-h"><div><p class="h-eyebrow">' + esc(t(k)) + '</p><h1>' + esc(sc.h) + '</h1><p>' + esc(sc.p) + '</p></div></div>' +
-        '<div class="chips">' + sc.f.map(function (x) { return '<button class="chip' + (x[0] === f ? ' on' : '') + '" data-f="' + x[0] + '">' + esc(x[1]) + '</button>'; }).join('') + '</div>' + gamesChip(k) + body;
+        (full ? '<div class="chips">' + sc.f.map(function (x) { return '<button class="chip' + (x[0] === f ? ' on' : '') + '" data-f="' + x[0] + '">' + esc(x[1]) + '</button>'; }).join('') + '</div>' : goalBar()) + gamesChip(k) + body;
       $$('[data-f]').forEach(function (b) { b.onclick = function () { vSection(k, b.dataset.f); }; });
       return;
     }
@@ -624,12 +627,14 @@
     if (k === 'vocab') { var vl = lessonsOf(['vocab']).filter(function (x) { return f === 'all' || f === 'level' || (f === 'business' ? x.c.track === 'business' : f === 'exam' ? x.c.track === 'exam' : f === 'general' ? x.c.track === 'general' : f === 'fit' ? myCourses().indexOf(x.c) >= 0 : false); }); if (vl.length) extra = '<div class="sec"><h2>Vocabulary lessons</h2></div><div class="grid">' + vl.map(lessonCard).join('') + '</div>'; }
     if (k === 'grammar') { var gl = lessonsOf(['grammar']).filter(function (x) { return f === 'all' || f === 'fit' ? (f === 'all' || myCourses().indexOf(x.c) >= 0) : x.c.level === f; }); if (gl.length) extra = '<div class="sec"><h2>Grammar lessons</h2></div><div class="grid">' + gl.map(lessonCard).join('') + '</div>'; }
     view().innerHTML = '<div class="page-h"><div><p class="h-eyebrow">' + esc(t(k)) + '</p><h1>' + esc(sc.h) + '</h1><p>' + esc(sc.p) + '</p></div></div>' +
-      '<div class="chips">' + sc.f.map(function (x) { return '<button class="chip' + (x[0] === f ? ' on' : '') + '" data-f="' + x[0] + '">' + esc(x[1]) + '</button>'; }).join('') + '</div>' + gamesChip(k) +
-      (k === 'grammar' ? extra : '') + (items.length ? (k === 'grammar' ? '<div class="sec"><h2>Grammar games and practice</h2></div>' : '') + '<div class="grid">' + items.map(itemCard).join('') + '</div>' : (k === 'grammar' && extra ? '' : '<div class="empty">Nothing here for this filter yet. Try “All”.</div>')) + (k === 'vocab' ? extra : '');
+      (full ? '<div class="chips">' + sc.f.map(function (x) { return '<button class="chip' + (x[0] === f ? ' on' : '') + '" data-f="' + x[0] + '">' + esc(x[1]) + '</button>'; }).join('') + '</div>' : goalBar()) + gamesChip(k) +
+      (k === 'grammar' ? extra : '') + (items.length ? (k === 'grammar' ? '<div class="sec"><h2>Grammar games and practice</h2></div>' : '') + '<div class="grid">' + items.map(itemCard).join('') + '</div>' : (k === 'grammar' && extra ? '' : (full ? '<div class="empty">Nothing here for this filter yet. Try “All”.</div>' : '<div class="empty">Nothing for your goals here yet. <a href="#/onboard">Change goals</a></div>'))) + (k === 'vocab' ? extra : '');
     $$('[data-f]').forEach(function (b) { b.onclick = function () { vSection(k, b.dataset.f); }; });
   }
   /* Games play inside IF English: the game opens in the app frame, with a way back and a full-screen option. */
+  var OLD_IDS = { 'skill-games': 'mind-lab', 'g-skill': 'mind-lab', 'g-gram': 'gram-centre', 'ielts-tests': 'ielts-centre', 'mind-lab-ielts': 'mind-lab' };
   function vPlay(id) {
+    if (OLD_IDS[id]) id = OLD_IDS[id];
     var it = IFX_DIR.filter(function (x) { return x.id === id; })[0];
     if (!it) return vSection('games');
     setNav(it.s === 'kids' ? 'more' : it.s);
@@ -697,6 +702,7 @@
     document.body.classList.remove('teach');
     var p = location.hash.replace(/^#\/?/, '').split('?')[0].split('/'), qs = new URLSearchParams(location.hash.split('?')[1] || '');
     window.scrollTo(0, 0);
+    try { focusNav(); } catch (e) {}
     switch (p[0]) {
       case '': return vHome();
       case 'onboard': return vOnboard();

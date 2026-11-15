@@ -253,3 +253,6 @@ body.in-lesson .ifnav{display:none!important}
 .cando.done{max-width:520px;margin:6px auto 14px;background:var(--ok-bg);color:var(--ok);padding:8px 12px;border-radius:12px}
 @media(max-width:600px){.std{flex-direction:column;align-items:flex-start}}
 .unit-h .cando{color:#cfe0ff;opacity:.92}
+
+/* focused view for students: their goals instead of filter chips */
+.goalbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 16px;padding:10px 14px;border-radius:14px;background:var(--card);border:1px solid var(--line);font-size:14px;color:var(--soft)}.goalbar b{color:var(--ink,inherit)}.goalbar a{margin-left:auto;font-weight:600;color:var(--gold2,#a8824a);text-decoration:none}
