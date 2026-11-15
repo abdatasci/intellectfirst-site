@@ -5,6 +5,7 @@ import { handleReceipt, decideReceipt } from '../lib/receipts.mjs';
 import { loadHomework, forClasses, isUpcoming } from '../lib/homework.mjs';
 import { isStaff, STAFF_KB, STAFF_HELP, staffHello, sendToday, staffCallback } from '../lib/teachbot.mjs';
 import { startHomework, hwCallback, hwMessage } from '../lib/teachhw.mjs';
+import { startTask, ctCallback, ctMessage, ctAnswer, ctPollAnswer } from '../lib/classtask.mjs';
 import { U } from '../lib/bot-core.mjs';
 
 const SITE = 'https://intellectfirst.com/me/#/assistant';
@@ -84,12 +85,12 @@ async function resultsText(ctx, uid, lang) {
 
 /* The bot's "Menu" (command list). Students get the general list; teachers get their own list in their chat.
    Updated automatically when the list changes (CMDV), so nobody has to press "Connect bot" again. */
-const CMDV = '2026-11-15b';
+const CMDV = '2026-11-15c';
 const CMDS = {
   en: [['next', 'Next lessons'], ['homework', 'Homework & tests'], ['results', 'My test results'], ['pay', 'Tuition status'], ['help', 'What I can do'], ['stop', 'Disconnect this chat']],
   ru: [['next', 'Ближайшие занятия'], ['homework', 'Домашние задания и тесты'], ['results', 'Мои результаты'], ['pay', 'Статус оплаты'], ['help', 'Что я умею'], ['stop', 'Отключить чат']]
 };
-const STAFF_CMDS = [['today', "Today's lessons: clock in, register"], ['sendhw', 'Send homework or a test to a class'], ['next', 'Next lessons'], ['help', 'Help for teachers'], ['stop', 'Disconnect this chat']];
+const STAFF_CMDS = [['today', "Today's lessons: clock in, register"], ['task', 'Class task: quiz, poll, writing or speaking'], ['sendhw', 'Send homework or a test to a class'], ['next', 'Next lessons'], ['help', 'Help for teachers'], ['stop', 'Disconnect this chat']];
 const asCmds = l => l.map(([command, description]) => ({ command, description }));
 async function syncCommands(chatId, staff) {
   try {
@@ -118,6 +119,8 @@ export default async (req) => {
   const secret = await tgSecret();
   if (!secret || req.headers.get('x-telegram-bot-api-secret-token') !== secret) return new Response('forbidden', { status: 403 });
   const up = await req.json().catch(() => null);
+  // a student answered a class-task quiz or poll
+  if (up?.poll_answer) { try { await ctPollAnswer(up.poll_answer); } catch (e) { console.error('class task vote', e.message); } return new Response('ok'); }
   // the director presses Confirm / Not right under a receipt
   if (up?.callback_query) {
     const q = up.callback_query, mm = String(q.data || '').match(/^rc:(ok|no):([a-z0-9]+)$/);
@@ -132,6 +135,11 @@ export default async (req) => {
         await tg('answerCallbackQuery', { callback_query_id: q.id, text: '✓' });
         const sp = isStaff(await getProfile(c.key)), f = c.name.split(' ')[0]; await tgSend(chatId, sp ? staffHello(f) : L[lang].hello(f), { reply_markup: sp ? STAFF_KB : KB });
       } catch (e) { console.error('phone pick', e.message); }
+      return new Response('ok');
+    }
+    if (/^ct:/.test(String(q.data || ''))) {
+      try { const uid = await S().get(`bot/chat/${q.message?.chat?.id || q.from?.id}`), p = uid && await getProfile(uid); if (!isStaff(p)) await tg('answerCallbackQuery', { callback_query_id: q.id, text: 'Only teachers can do this.' }); else await ctCallback(q, p); }
+      catch (e) { console.error('class task button', e.message); await tg('answerCallbackQuery', { callback_query_id: q.id, text: 'Something went wrong. Try again.' }).catch(() => {}); }
       return new Response('ok');
     }
     if (/^hw:/.test(String(q.data || ''))) {
@@ -208,7 +216,10 @@ export default async (req) => {
     const me = await getProfile(uid).catch(() => null);
     await syncCommands(chatId, isStaff(me));
     if (isStaff(me) && /^📝 Send homework|^\/sendhw\b|^\/sethw\b/i.test(text)) { await startHomework(chatId, me); return new Response('ok'); }
+    if (isStaff(me) && /^🎯 Class task|^\/task\b|^\/classtask\b/i.test(text)) { await startTask(chatId, me); return new Response('ok'); }
     if (isStaff(me) && await hwMessage(chatId, me, m)) return new Response('ok');
+    if (isStaff(me) && await ctMessage(chatId, me, m)) return new Response('ok');
+    if (!isStaff(me) && await ctAnswer(chatId, m, lang)) return new Response('ok');
     if (m.photo || m.document) { tg('sendChatAction', { chat_id: chatId, action: 'typing' }).catch(() => {}); await handleReceipt({ chatId, uid, msg: m, lang }); return new Response('ok'); }
     if (isStaff(me) && /^\/today\b|^🕑|^\/clock/i.test(text)) { await sendToday(chatId, uid, me); return new Response('ok'); }
     if (isStaff(me) && /^\/start\b|^\/help\b|^❓/i.test(text)) { await tgSend(chatId, STAFF_HELP, { reply_markup: STAFF_KB }); return new Response('ok'); }

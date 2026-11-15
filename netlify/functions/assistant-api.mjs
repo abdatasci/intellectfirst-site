@@ -171,7 +171,7 @@ export default async (req, context) => {
       try {
         const me = await tg('getMe');
         const hookUrl = `${url.origin}/.netlify/functions/telegram-background`;
-        await tg('setWebhook', { url: hookUrl, secret_token: await tgSecret(), allowed_updates: ['message', 'callback_query'], drop_pending_updates: true });
+        await tg('setWebhook', { url: hookUrl, secret_token: await tgSecret(), allowed_updates: ['message', 'callback_query', 'poll_answer'], drop_pending_updates: true });
         const cmds = [['next', 'Next lessons'], ['homework', 'Homework & tests'], ['results', 'My test results'], ['pay', 'Tuition status'], ['help', 'What I can do'], ['stop', 'Disconnect this chat']];
         await tg('setMyCommands', { commands: cmds.map(([command, description]) => ({ command, description })) });
         await tg('setMyCommands', { commands: [['next', 'Ближайшие занятия'], ['homework', 'Домашние задания и тесты'], ['results', 'Мои результаты'], ['pay', 'Статус оплаты'], ['help', 'Что я умею'], ['stop', 'Отключить чат']].map(([command, description]) => ({ command, description })), language_code: 'ru' });

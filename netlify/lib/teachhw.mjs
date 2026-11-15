@@ -94,7 +94,7 @@ export async function hwCallback(q, p) {
 export async function hwMessage(chatId, p, m) {
   const st = await getState(chatId); if (!st) return false;
   const text = String(m.text || m.caption || '').trim();
-  if (m.text && /^(🕑|📅|❓|📊|💳|📎|📝 Send homework)/.test(text)) { await S().delete(KEY(chatId)); return false; }   // a menu button: leave the flow
+  if (m.text && /^(🕑|📅|❓|📊|💳|📎|🎯|📝 Send homework)/.test(text)) { await S().delete(KEY(chatId)); return false; }   // a menu button: leave the flow
   if (/^\/cancel\b|^✖/i.test(text)) { await S().delete(KEY(chatId)); await tgSend(chatId, '✖ Cancelled. Nothing was sent.'); return true; }
   if (st.step === 'date') {
     const x = text.match(/^(\d{1,2})[./-](\d{1,2})(?:[./-](\d{2,4}))?(?:\s+(\d{1,2})[:.](\d{2}))?$/);
