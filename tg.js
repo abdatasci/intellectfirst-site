@@ -10,7 +10,20 @@
     if (m) { init = decodeURIComponent(m[1]); sessionStorage.setItem(K, init); }
     else init = sessionStorage.getItem(K) || '';
   } catch (e) {}
-  if (!init) return;
+  // Opened in Telegram but without sign-in data (an old reply-keyboard button: Telegram gives those no user info):
+  // say how to open it signed in, instead of leaving the person at a password screen without explanation.
+  var inTg = !!init || /[?&]tg=1/.test(location.search);
+  if (init && !/(^|&)user=/.test(init)) { init = ''; try { sessionStorage.removeItem(K); } catch (e) {} }
+  if (!init) {
+    if (inTg && window.top === window) document.addEventListener('DOMContentLoaded', function () {
+      var ru = !/^en/i.test(navigator.language || ''), b = document.createElement('div');
+      b.style.cssText = 'position:fixed;left:12px;right:12px;bottom:12px;z-index:99999;background:#0b1f3a;color:#fff;border-radius:14px;padding:14px 16px;font:15px/1.45 system-ui,sans-serif;box-shadow:0 10px 30px rgba(0,0,0,.3)';
+      b.textContent = ru ? 'Чтобы войти автоматически, закройте это окно и нажмите кнопку «IF Academy» (меню слева от поля ввода) или «👤 My account» в боте, затем кнопку под сообщением.'
+        : 'To be signed in automatically, close this window and tap the "IF Academy" Menu button (left of the message box), or "👤 My account" in the bot and then the button under its reply.';
+      document.body.appendChild(b);
+    });
+    return;
+  }
   window.IF_TG = init;
   var top = window.top === window;
   document.documentElement.classList.add('in-tg');

@@ -16,7 +16,7 @@ const S = () => getStore({ name: 'school', consistency: 'strong' });
 const FLOW = chatId => `bot/ctflow/${chatId}`;
 const CANCEL = [{ text: '✖ Cancel', callback_data: 'ct:x' }];
 const KIND = { quiz: '❓ Quiz', ai: '✨ AI quiz', poll: '📊 Poll', text: '✍️ Written answer', voice: '🎙 Speaking' };
-const MENU = /^(🕑|📅|❓|📊|💳|📎|📝|🎯)|^\//;   // menu buttons and commands are never taken as answers
+const MENU = /^(🕑|📅|❓|📊|💳|📎|📝|🎯|📚|👤)|^\//;   // menu buttons and commands are never taken as answers
 const answer = (q, text, alert) => tg('answerCallbackQuery', { callback_query_id: q.id, text, show_alert: !!alert }).catch(() => {});
 const edit = (q, text, markup) => q.message && tg('editMessageText', { chat_id: q.message.chat.id, message_id: q.message.message_id, text, reply_markup: markup || { inline_keyboard: [] } }).catch(() => {});
 const hm = d => { const l = local(d); return String(l.getUTCHours()).padStart(2, '0') + ':' + String(l.getUTCMinutes()).padStart(2, '0'); };

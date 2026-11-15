@@ -12,7 +12,7 @@ const SITE = 'https://intellectfirst.com/me/#/assistant';
 const PHONE_KB = lang => ({ keyboard: [[{ text: { en: '📱 Connect with my phone number', ru: '📱 Подключиться по номеру телефона', kk: '📱 Телефон нөмірі арқылы қосылу' }[lang] || '📱 Connect with my phone number', request_contact: true }]], resize_keyboard: true, one_time_keyboard: true });
 const APP_URL = (process.env.URL || 'https://intellectfirst.com').replace(/\/$/, '') + '/app/?tg=1';   // IF English as a Telegram Mini App
 const ME_URL = APP_URL.replace('/app/', '/me/');   // My account: results, attendance, progress, payments (teachers: classes, registers; admin: everything)
-const KB = { keyboard: [[{ text: '📚 IF English', web_app: { url: APP_URL } }, { text: '👤 My account', web_app: { url: ME_URL } }], [{ text: '📅 Next lessons' }, { text: '📝 Homework & tests' }], [{ text: '📊 My results' }, { text: '💳 Payment' }], [{ text: '📎 Send receipt' }, { text: '❓ Help' }]], resize_keyboard: true, is_persistent: true };
+const KB = { keyboard: [[{ text: '📚 IF English' }, { text: '👤 My account' }], [{ text: '📅 Next lessons' }, { text: '📝 Homework & tests' }], [{ text: '📊 My results' }, { text: '💳 Payment' }], [{ text: '📎 Send receipt' }, { text: '❓ Help' }]], resize_keyboard: true, is_persistent: true };
 const L = {
   en: {
     hello: n => `Hi ${n}! 👋 Your IF Academy account is connected.\nI'll remind you about lessons (the evening before and 2 hours before), homework, tests and tuition payments. After paying, send the receipt here.\nAsk me anything about your classes, or practise English with me.`,
@@ -87,7 +87,7 @@ async function resultsText(ctx, uid, lang) {
 
 /* The bot's "Menu" (command list). Students get the general list; teachers get their own list in their chat.
    Updated automatically when the list changes (CMDV), so nobody has to press "Connect bot" again. */
-const CMDV = '2026-11-15e';
+const CMDV = '2026-11-15f';
 const CMDS = {
   en: [['app', 'Open IF English'], ['account', 'My account: results, attendance, payments'], ['next', 'Next lessons'], ['homework', 'Homework & tests'], ['results', 'My test results'], ['pay', 'Tuition status'], ['help', 'What I can do'], ['stop', 'Disconnect this chat']],
   ru: [['app', 'Открыть IF English'], ['account', 'Мой аккаунт: результаты, посещаемость, оплаты'], ['next', 'Ближайшие занятия'], ['homework', 'Домашние задания и тесты'], ['results', 'Мои результаты'], ['pay', 'Статус оплаты'], ['help', 'Что я умею'], ['stop', 'Отключить чат']]
@@ -99,6 +99,7 @@ async function syncCommands(chatId, staff) {
     if ((await S().get('bot/cmdsv')) !== CMDV) {
       await tg('setMyCommands', { commands: asCmds(CMDS.en) });
       await tg('setMyCommands', { commands: asCmds(CMDS.ru), language_code: 'ru' });
+      await tg('setChatMenuButton', { menu_button: { type: 'web_app', text: 'IF Academy', web_app: { url: ME_URL } } }).catch(e => console.error('menu button', e.message));
       await S().set('bot/cmdsv', CMDV);
     }
     if (staff && chatId && (await S().get(`bot/cmds/${chatId}`)) !== CMDV) {
@@ -218,6 +219,16 @@ export default async (req) => {
     const me = await getProfile(uid).catch(() => null);
     await syncCommands(chatId, isStaff(me));
     if (isStaff(me) && /^📝 Send homework|^\/sendhw\b|^\/sethw\b/i.test(text)) { await startHomework(chatId, me); return new Response('ok'); }
+    // Apps opened from the reply keyboard get no sign-in data from Telegram, so these buttons answer with buttons
+    // under the message (which do), and the bot's Menu button (next to the text box) opens My account directly.
+    if (/^📚|^👤/.test(text)) {
+      const en = lang === 'en', acc = /^👤/.test(text);
+      await tgSend(chatId, acc ? (en ? '👤 Your IF Academy account — results, attendance, progress and payments. You are signed in automatically.' : '👤 Ваш аккаунт IF Academy — результаты, посещаемость, прогресс и оплаты. Вход выполняется автоматически.')
+        : (en ? '📚 IF English: courses, vocabulary, grammar, games and tests. You are signed in automatically.' : '📚 IF English: курсы, лексика, грамматика, игры и тесты. Вход выполняется автоматически.'),
+        { reply_markup: { inline_keyboard: acc ? [[{ text: en ? '👤 Open My account' : '👤 Открыть мой аккаунт', web_app: { url: ME_URL } }], [{ text: '📚 IF English', web_app: { url: APP_URL } }]]
+          : [[{ text: en ? '📚 Open IF English' : '📚 Открыть IF English', web_app: { url: APP_URL } }], [{ text: '👤 My account', web_app: { url: ME_URL } }]] } });
+      return new Response('ok');
+    }
     if (/^\/account\b|^\/me\b/i.test(text)) { await tgSend(chatId, lang === 'en' ? '👤 Your IF Academy account, right here in Telegram.' : '👤 Ваш аккаунт IF Academy прямо в Telegram.', { reply_markup: { inline_keyboard: [[{ text: '👤 Open My account', web_app: { url: ME_URL } }]] } }); return new Response('ok'); }
     if (/^\/app\b|^\/english\b/i.test(text)) { await tgSend(chatId, lang === 'en' ? '📚 IF English: courses, vocabulary, grammar, games and tests — right here in Telegram. Your progress is saved to your account.' : '📚 IF English: курсы, лексика, грамматика, игры и тесты — прямо в Telegram. Прогресс сохраняется в вашем аккаунте.', { reply_markup: { inline_keyboard: [[{ text: '📚 Open IF English', web_app: { url: APP_URL } }], [{ text: '👤 My account', web_app: { url: ME_URL } }]] } }); return new Response('ok'); }
     if (isStaff(me) && /^🎯 Class task|^\/task\b|^\/classtask\b/i.test(text)) { await startTask(chatId, me); return new Response('ok'); }
