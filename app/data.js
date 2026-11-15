@@ -32,6 +32,7 @@ window.IFX_DIR = [
   { id: 'pet-arcade', s: 'games', t: 'PET Arcade', d: 'B1 Preliminary arcade games', lv: ['B1'], tr: 'exam', tags: ['pet', 'vocabulary', 'grammar'], href: '/a/pet-arcade/index.html', icon: '👾' },
   { id: 'pet-quest', s: 'games', t: 'PET Quest', d: 'Team game for B1 Preliminary classes', lv: ['B1'], tr: 'exam', tags: ['pet', 'class'], href: '/a/pet-quest/index.html', icon: '⚔️' },
   { id: 'flyers-arcade', s: 'games', t: 'Flyers Arcade', d: 'Games for Cambridge A2 Flyers', lv: ['A2'], tr: 'kids', tags: ['kids', 'vocabulary'], href: '/a/flyers-arcade/index.html', icon: '🦅' },
+  { id: 'kids-quest', s: 'games', t: 'IF Kids Quest', d: 'Story adventure: Rainbow Valley to Star Station — kart race and word mine, Starters to Flyers', lv: ['A1', 'A2'], tr: 'kids', tags: ['kids', 'vocabulary', 'cambridge'], href: '/a/kids-quest/', icon: '🏎️' },
   { id: 'yl-games', s: 'games', t: 'Young Learners games', d: 'Memory, balloons, spelling and speed games for Starters, Movers and Flyers', lv: ['A1', 'A2'], tr: 'kids', tags: ['kids', 'vocabulary'], href: '/a/young-learners/', icon: '🎈' },
   { id: 'kids-english', s: 'games', t: 'IF Kids English', d: 'Playful English for young children', lv: ['A1'], tr: 'kids', tags: ['kids', 'vocabulary'], href: '/a/kids-english/index.html', icon: '🧸' },
 

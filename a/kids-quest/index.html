@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<title>IF Kids Quest · IF Academy</title>
+<meta name="description" content="IF Kids Quest: an English story adventure for Young Learners (Starters, Movers, Flyers) with a word kart race and a word mine.">
+<meta name="theme-color" content="#2a1f5c">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&display=swap">
+<style>
+  html,body{margin:0;height:100%;background:#2a1f5c;overflow:hidden;overscroll-behavior:none;-webkit-user-select:none;user-select:none;touch-action:manipulation}
+  #game{position:fixed;inset:0;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+  #rotate{display:none;position:fixed;inset:0;z-index:9;background:rgba(20,14,50,.94);color:#fff;font:800 22px "Baloo 2",Arial,sans-serif;text-align:center;align-items:center;justify-content:center;flex-direction:column;gap:14px;padding:24px}
+  #rotate .ph{font-size:64px;animation:turn 1.6s ease-in-out infinite}
+  #rotate button{font:inherit;font-size:17px;border:0;border-radius:999px;padding:10px 20px;background:#7c4dff;color:#fff}
+  @keyframes turn{0%,30%{transform:rotate(0)}60%,100%{transform:rotate(-90deg)}}
+  @media (orientation:portrait) and (max-width:700px){#rotate.show{display:flex}}
+</style>
+</head>
+<body data-no-nav>
+<div id="game"></div>
+<div id="rotate" class="show"><div class="ph">📱</div><div>Turn your phone sideways to play</div><small style="opacity:.75;font-size:15px">Поверните телефон горизонтально</small><button onclick="this.parentNode.classList.remove('show')">Play like this</button></div>
+<script src="lib/phaser-3.90.0.min.js"></script>
+<script src="/app/pics.js?v=1"></script>
+<script src="art.js?v=1"></script>
+<script src="content.js?v=1"></script>
+<script src="game.js?v=1"></script>
+</body>
+</html>

@@ -135,7 +135,7 @@
     else if (k === 'ielts') { P.course = BY.ielts; P.voc = byId('band9'); P.test = byId('ielts-tests'); P.level = 'IELTS'; }
     else if (k === 'ket') { P.voc = byId('voc-ket'); P.game = byId('ket-quest'); P.test = byId('test-centre'); P.level = 'A2'; }
     else if (k === 'pet') { P.voc = byId('voc-pet'); P.game = byId('pet-arcade'); P.test = byId('pet-tests'); P.level = 'B1'; }
-    else if (/^yl:/.test(k)) { var y = k.split(':')[1]; P.course = BY['yl-' + y]; P.voc = byId('voc-' + y) || byId('yl'); P.game = byId('yl-games'); P.test = byId(y + '-t'); P.kids = true; }
+    else if (/^yl:/.test(k)) { var y = k.split(':')[1]; P.course = BY['yl-' + y]; P.voc = byId('voc-' + y) || byId('yl'); P.game = byId('kids-quest'); P.test = byId(y + '-t'); P.kids = true; }
     else if (k === 'maths') { P.course = BY.maths; P.game = byId('yl-games'); P.kids = true; }
     else if (/^book:/.test(k)) { var bk = k.slice(5), BL = { 'ef-a1': 'A1', 'ef-a2': 'A2', 'ef-b1': 'B1', 'ef-b2': 'B2', 'ef-c1': 'C1', 'teens-b1': 'B1', 'teens-b2': 'B2', giu: 'B1' }; P.level = BL[bk]; P.book = true;
       if (/^ef-/.test(bk)) { P.test = byId(bk); P.voc = byId('voc-' + bk.slice(3)); P.game = byId('g-skill'); }
@@ -209,7 +209,7 @@
       '<div class="sec"><h2>Today\'s three steps</h2></div><div class="steps">' +
         step(1, main && nx ? { href: '#/lesson/' + main.id + '/' + nx.u.id + '/' + nx.l.id, t: nx.l.title, d: main.title + ' · ' + TYPE[nx.l.type] } : P.voc ? { href: P.voc.href, t: P.voc.t, d: 'Next unit' } : null, 'Lesson') +
         step(2, P.voc && main ? { href: P.voc.href, t: P.voc.t, d: 'Learn 10 new words' } : P.test ? { href: P.test.href, t: P.test.t, d: 'Check your progress' } : null, 'Words') +
-        step(3, P.game ? { href: P.game.href, t: P.game.t, d: 'Play to review' } : null, 'Game') +
+        step(3, P.game ? { href: '#/play/' + P.game.id, t: P.game.t, d: 'Play to review' } : null, 'Game') +
       '</div>' +
       (S.teacher || a.teacher ? teacherBox(a) : '') +
       '<div class="sec"><h2>' + esc(t('forYou')) + '</h2><a href="#/courses">' + esc(t('all')) + ' →</a></div><div class="grid">' + myCourses().slice(0, 6).map(courseCard).join('') + '</div>';
@@ -413,7 +413,7 @@
   }
   function finish() {
     var fb = $('#fb'); if (fb) fb.remove();
-    document.body.classList.remove('teach');
+    document.body.classList.remove('teach'); document.body.classList.remove('playing');
     var score = L.total ? Math.round(L.right / L.total * 100) : 100;
     var k = key3(L.c.id, L.u.id, L.l.id), first = !S.done[k];
     var xp = (first ? 10 : 4) + Math.round(score / 20);
@@ -458,7 +458,7 @@
     return (it.tags || []).indexOf(f) >= 0;
   }
   function itemCard(it) {
-    return '<a class="card" href="' + esc(it.href) + '"><span class="ic">' + it.icon + '</span><h3>' + esc(it.t) + '</h3><p>' + esc(it.d) + '</p><div class="meta">' + (it.lv || []).slice(0, 3).map(function (l) { return '<span class="tag ' + tagFor(it.tr) + '">' + l + '</span>'; }).join('') + ((it.lv || []).length > 3 ? '<span class="tag">+</span>' : '') + (it.tr === 'exam' ? '<span class="tag ex">Exam</span>' : it.tr === 'kids' ? '<span class="tag kd">Kids</span>' : '') + '</div></a>';
+    return '<a class="card" href="' + (it.s === 'games' ? '#/play/' + it.id : esc(it.href)) + '"><span class="ic">' + it.icon + '</span><h3>' + esc(it.t) + '</h3><p>' + esc(it.d) + '</p><div class="meta">' + (it.lv || []).slice(0, 3).map(function (l) { return '<span class="tag ' + tagFor(it.tr) + '">' + l + '</span>'; }).join('') + ((it.lv || []).length > 3 ? '<span class="tag">+</span>' : '') + (it.tr === 'exam' ? '<span class="tag ex">Exam</span>' : it.tr === 'kids' ? '<span class="tag kd">Kids</span>' : '') + '</div></a>';
   }
   function lessonsOf(type) {   // course lessons of a kind, as cards
     var out = [];
@@ -479,6 +479,15 @@
       '<div class="chips">' + sc.f.map(function (x) { return '<button class="chip' + (x[0] === f ? ' on' : '') + '" data-f="' + x[0] + '">' + esc(x[1]) + '</button>'; }).join('') + '</div>' +
       (k === 'grammar' ? extra : '') + (items.length ? (k === 'grammar' ? '<div class="sec"><h2>Grammar games and practice</h2></div>' : '') + '<div class="grid">' + items.map(itemCard).join('') + '</div>' : (k === 'grammar' && extra ? '' : '<div class="empty">Nothing here for this filter yet. Try “All”.</div>')) + (k === 'vocab' ? extra : '');
     $$('[data-f]').forEach(function (b) { b.onclick = function () { vSection(k, b.dataset.f); }; });
+  }
+  /* Games play inside IF English: the game opens in the app frame, with a way back and a full-screen option. */
+  function vPlay(id) {
+    var it = IFX_DIR.filter(function (x) { return x.id === id; })[0];
+    if (!it) return vSection('games');
+    setNav('games');
+    view().innerHTML = '<div class="playbar"><a class="chip" href="#/games">← ' + esc(t('games')) + '</a><b>' + it.icon + ' ' + esc(it.t) + '</b><a class="chip" href="' + esc(it.href) + '" target="_blank" rel="noopener">⛶ Full screen</a></div>' +
+      '<div class="playwrap"><iframe src="' + esc(it.href) + '" title="' + esc(it.t) + '" allow="autoplay; fullscreen" allowfullscreen></iframe></div>';
+    document.body.classList.add('playing');
   }
   function vIelts() {
     setNav('ielts');
@@ -534,6 +543,7 @@
       case 'vocabulary': return vSection('vocab');
       case 'join': return mine().length ? vHome() : vOnboard();
       case 'vocab': case 'grammar': case 'games': case 'tests': return vSection(p[0]);
+      case 'play': return vPlay(p[1]);
       case 'ielts': return vIelts();
       case 'more': return vMore();
       case 'search': return vSearch(($('#q') || {}).value || qs.get('q') || '');
