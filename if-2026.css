@@ -487,3 +487,7 @@ button.chatopt{width:100%;border:0;background:none;font:inherit;text-align:left;
 .x-intro2 .hero-aside p:first-child{max-width:none;font-size:clamp(28px,3vw,42px);line-height:1.15;margin:0 0 22px}
 .x-intro2 .hero-aside p:last-child{border:0;padding:0;font-size:17px;color:var(--text-soft)}
 @media (max-width:860px){.x-intro2{padding:64px 0 48px}.x-intro2 > .wrap{grid-template-columns:1fr;gap:28px}.x-intro2 .x-photo{order:2}}
+/* courses: every card the same — dark readable text on white (the first card had white text on a white card) */
+#courses .eco-grid .eco-card:first-child{background:var(--bg-raised,#fff)!important;color:var(--text,#0f2342)!important;border-color:var(--border-c,#e6dfd2)!important}
+#courses .eco-grid .eco-card:first-child h3{color:var(--text,#0f2342)!important}
+#courses .eco-grid .eco-card:first-child p{color:var(--text-soft,#55606e)!important}
