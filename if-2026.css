@@ -478,3 +478,12 @@ button.chatopt{width:100%;border:0;background:none;font:inherit;text-align:left;
   body:has(#tabbar) #nl-badge-frame { bottom: calc(66px + env(safe-area-inset-bottom, 0px)) !important; transform: scale(.82); transform-origin: right bottom; }
   body:has(#tabbar) .totop { bottom: calc(128px + env(safe-area-inset-bottom, 0px)) !important; }
 }
+/* minimal intro: short statement + one straight classroom photo */
+.x-intro2{padding:96px 0 72px}
+.x-intro2 > .wrap{display:grid;grid-template-columns:1.1fr 1fr;gap:56px;align-items:center}
+.x-intro2 .x-photo{float:none;width:100%;margin:0;transform:none;order:2}
+.x-intro2 .x-photo img{aspect-ratio:4/3;border-radius:20px;box-shadow:none}
+.x-intro2 .hero-aside{display:block;order:1;max-width:none!important;width:100%}
+.x-intro2 .hero-aside p:first-child{max-width:none;font-size:clamp(28px,3vw,42px);line-height:1.15;margin:0 0 22px}
+.x-intro2 .hero-aside p:last-child{border:0;padding:0;font-size:17px;color:var(--text-soft)}
+@media (max-width:860px){.x-intro2{padding:64px 0 48px}.x-intro2 > .wrap{grid-template-columns:1fr;gap:28px}.x-intro2 .x-photo{order:2}}
