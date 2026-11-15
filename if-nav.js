@@ -50,6 +50,8 @@
       '<a href="#" class="back" aria-label="' + T[0] + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg><span>' + T[0] + '</span></a>' +
       '<a href="/" class="home" aria-label="' + T[1] + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg><span>' + T[1] + '</span></a>';
     document.body.appendChild(bar);
+    /* apps that redraw the whole page (IF English) would remove the buttons: put them back */
+    setInterval(function () { if (!document.body.contains(bar)) document.body.appendChild(bar); }, 800);
     bar.querySelector('.back').addEventListener('click', function (e) {
       e.preventDefault();
       var fromSite = false; try { fromSite = document.referrer && new URL(document.referrer).origin === location.origin; } catch (err) {}

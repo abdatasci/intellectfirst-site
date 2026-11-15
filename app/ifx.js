@@ -286,7 +286,7 @@
     var l = u.lessons.filter(function (x) { return x.id === lid; })[0]; if (!l) return go('#/course/' + cid);
     if (!unlocked(ui)) { if (!meLoaded) { view().innerHTML = '<p style="text-align:center;margin-top:40px">Loading…</p>'; return; } return go('#/course/' + cid); }
     teach = !!teach && access().teacher;
-    document.body.classList.toggle('teach', teach);
+    document.body.classList.toggle('teach', teach); document.body.classList.add('in-lesson');
     var items = [];
     if (l.type === 'vocab') { items.push({ k: 'learn' }); items = items.concat(vocabEx(l.words)); }
     if (l.gen) l.ex = l.gen.map(function (f) { return f(); });   // fresh numbers every time
@@ -444,7 +444,7 @@
   }
   function finish() {
     var fb = $('#fb'); if (fb) fb.remove();
-    document.body.classList.remove('teach'); document.body.classList.remove('playing');
+    document.body.classList.remove('teach'); document.body.classList.remove('playing'); document.body.classList.remove('in-lesson');
     var score = L.total ? Math.round(L.right / L.total * 100) : 100;
     var k = key3(L.c.id, L.u.id, L.l.id), first = !S.done[k];
     var xp = (first ? 10 : 4) + Math.round(score / 20);

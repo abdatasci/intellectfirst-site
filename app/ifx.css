@@ -180,3 +180,7 @@ body.teach .side{display:none}body.teach .shell{grid-template-columns:1fr}
 .listen .lhead{display:flex;gap:14px;align-items:center}.listen .lic{font-size:40px;width:68px;height:68px;border-radius:20px;background:#e0f7fb;display:grid;place-items:center;flex:none}.listen .lhead p{color:var(--muted,#5d6676);margin-top:4px}
 .listen .speakers{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:16px}.listen .spk{padding:8px 14px;border-radius:999px;background:#f3f4f6;font-weight:700;transition:all .2s}.listen .spk.on{background:#0891b2;color:#fff;transform:scale(1.08)}
 .btn.big{font-size:20px;padding:16px 34px}
+
+/* site Back / Home buttons: above the bottom tab bar on phones, hidden during a lesson (it has its own answer bar) */
+@media (max-width:860px){.ifnav{bottom:calc(78px + env(safe-area-inset-bottom,0px))!important}}
+body.in-lesson .ifnav{display:none!important}
