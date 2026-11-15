@@ -548,12 +548,13 @@
   var SEC = {
     vocab: { h: 'Vocabulary', p: 'Words by level, by coursebook and for exams — with audio, games and progress.', f: [['fit', 'For you'], ['level', 'By level'], ['general', 'General'], ['business', 'Business'], ['exam', 'Exams'], ['book', 'Coursebooks'], ['kids', 'Kids'], ['all', 'All']] },
     grammar: { h: 'Grammar', p: 'Grammar from A1 to C2: short explanations, then practice and games.', f: [['fit', 'For you'], ['A1', 'A1'], ['A2', 'A2'], ['B1', 'B1'], ['B2', 'B2'], ['C1', 'C1'], ['C2', 'C2'], ['all', 'All']] },
-    games: { h: 'Games', p: 'Learn by playing — alone, or with your class on the big screen.', f: [['fit', 'For you'], ['vocabulary', 'Vocabulary'], ['grammar', 'Grammar'], ['ket', 'KET'], ['pet', 'PET'], ['kids', 'Kids'], ['class', 'Class games'], ['all', 'All']] },
+    games: { h: 'Games', p: 'Learn by playing — alone, or with your class on the big screen.', f: [['fit', 'For you'], ['teens', 'Teens & adults'], ['general', 'General English'], ['business', 'Business English'], ['ielts', 'IELTS'], ['brain', '🧠 Brain training'], ['vocabulary', 'Vocabulary'], ['grammar', 'Grammar'], ['ket', 'KET'], ['pet', 'PET'], ['kids', 'Kids'], ['class', 'Class games'], ['all', 'All']] },
     tests: { h: 'Tests', p: 'Find your level, check your progress and prepare for exams. Results are saved to your account.', f: [['fit', 'For you'], ['book', 'Coursebook tests'], ['cambridge', 'Cambridge'], ['ielts', 'IELTS'], ['kids', 'Kids'], ['all', 'All']] }
   };
   function match(it, f) {
     if (f === 'all') return true; if (f === 'fit') return fits(it);
     if (LEVELS.indexOf(f) >= 0) return (it.lv || []).indexOf(f) >= 0;
+    if (f === 'teens') return (it.tags || []).indexOf('teens') >= 0 || (it.tags || []).indexOf('adults') >= 0;
     if (f === 'general' || f === 'business' || f === 'exam' || f === 'kids') return it.tr === f || (it.tags || []).indexOf(f) >= 0;
     return (it.tags || []).indexOf(f) >= 0;
   }

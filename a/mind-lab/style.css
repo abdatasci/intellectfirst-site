@@ -19,6 +19,7 @@ button{font:inherit;color:inherit}
 /* header */
 .top{display:flex;align-items:center;gap:14px;padding:14px max(16px,env(safe-area-inset-left));max-width:1180px;margin:0 auto}
 .brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink);margin-right:auto}
+@media (max-width:860px) and (min-width:561px){.top{flex-wrap:wrap}.brand{width:100%}}
 .hexlogo{width:38px;height:38px;filter:drop-shadow(0 0 8px rgba(34,211,238,.55))}
 .brand b{display:block;font-family:var(--h);font-weight:900;letter-spacing:.14em;font-size:15px}
 .brand small{display:block;color:var(--soft);font-size:11.5px;letter-spacing:.12em;text-transform:uppercase}
@@ -183,5 +184,5 @@ h1,h2,h3{font-family:var(--h);letter-spacing:.03em;margin:0}
 .toast.on{transform:translate(-50%,0);opacity:1}
 
 @media (max-width:860px){.hero,.row2{grid-template-columns:1fr}.hero .host{flex-direction:row;gap:12px;justify-content:center}.hero .host .ifbot{width:120px}.hero .host .bubble{text-align:left}}
-@media (max-width:560px){.top{flex-wrap:wrap}.lvls{order:3;width:100%;justify-content:space-between}.hero .intro{padding:22px 18px}.arena{padding:20px 12px;min-height:400px}.hud{gap:8px;padding:10px}.hud .num b{font-size:18px}.ring{width:44px;height:44px}.result .grid3 b{font-size:16px}}
+@media (max-width:560px){.top{flex-wrap:wrap}.lvls{order:3;width:100%;justify-content:space-between}#trks{order:4}.hero .intro{padding:22px 18px}.arena{padding:20px 12px;min-height:400px}.hud{gap:8px;padding:10px}.hud .num b{font-size:18px}.ring{width:44px;height:44px}.result .grid3 b{font-size:16px}}
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition:none!important}}
