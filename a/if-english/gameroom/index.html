@@ -691,7 +691,7 @@ function pool(){
   const r=[];
   if(VS.src==='gen'){VS.tp.forEach(tp=>(DECKS[tp]||[]).forEach(x=>{if(VS.lv.includes(x.lv))r.push({w:x.w,t:x.t,def:'',ru:'',tag:TOPIC[tp]+' · '+LV[x.lv]})}));return r}
   VS.un.forEach(key=>{const [b,c]=key.split('|');const bk=BOOK[b];if(!bk||bk.grp!==VS.src)return;const u=bk.units.find(u=>u[0]===c);if(!u)return;
-    u[2].forEach(w=>r.push({w:w[0],def:w[1],ru:w[2],t:w[3]&&w[3].length?w[3]:[],tag:bk.name+' · '+c+' '+u[1]}))});
+    u[2].forEach(w=>r.push({w:w[0],def:w[1],ru:/^C/i.test(b)?'':w[2],t:w[3]&&w[3].length?w[3]:[],tag:bk.name+' · '+c+' '+u[1]}))});
   return r;
 }
 const clueOf=x=>x.def||x.t.join(' · ');

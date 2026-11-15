@@ -131,9 +131,9 @@
     var local = id.charAt(0) === '/', src = local ? id : 'https://unsplash.com/photos/' + id + '/download?w=1200';
     return '<figure><img src="' + esc(src) + '" alt="' + esc(alt || '') + '" loading="lazy" referrerpolicy="no-referrer" onerror="this.parentNode.remove()">' + (local ? '' : '<figcaption>Photo: Unsplash</figcaption>') + '</figure>';
   }
-  var COLORS = { listen: '#0891b2', vocab: 'var(--c-vocab)', grammar: 'var(--c-grammar)', skill: 'var(--c-skill)', reading: 'var(--c-reading)', check: 'var(--c-check)', look: '#0ea5e9', maths: '#f59e0b' };
-  var ICONS = { listen: '🎧', vocab: '🔤', grammar: '🧠', skill: '🛠️', reading: '📖', check: '🏁', look: '👀', maths: '🔢' };
-  var TYPE = { listen: 'Listening', vocab: 'Vocabulary', grammar: 'Grammar', skill: 'Skills', reading: 'Reading', check: 'Unit check', look: 'Look and choose', maths: 'Maths' };
+  var COLORS = { context: '#7c3aed', listen: '#0891b2', vocab: 'var(--c-vocab)', grammar: 'var(--c-grammar)', skill: 'var(--c-skill)', reading: 'var(--c-reading)', check: 'var(--c-check)', look: '#0ea5e9', maths: '#f59e0b' };
+  var ICONS = { context: '🎯', listen: '🎧', vocab: '🔤', grammar: '🧠', skill: '🛠️', reading: '📖', check: '🏁', look: '👀', maths: '🔢' };
+  var TYPE = { context: 'In context', listen: 'Listening', vocab: 'Vocabulary', grammar: 'Grammar', skill: 'Skills', reading: 'Reading', check: 'Unit check', look: 'Look and choose', maths: 'Maths' };
   var UNIT_DOODLE = { 'ge-a2/u1': 'clock', 'ge-a2/u2': 'coffee', 'ge-a2/u3': 'suitcase', 'ge-b1/u1': 'laptop', 'ge-b1/u2': 'phone', 'be-b1/u1': 'talk', 'be-b1/u2': 'envelope', 'ielts/u1': 'chart', 'ielts/u2': 'pen', 'ielts/u3': 'book', 'ge-a1/u1': 'talk', 'ge-a1/u2': 'clock', 'ge-b2/u1': 'bulb', 'ge-b2/u2': 'phone', 'ge-c1/u1': 'talk', 'ge-c1/u2': 'laptop', 'ge-c2/u1': 'book', 'ge-c2/u2': 'globe', 'be-a2/u1': 'coffee', 'be-a2/u2': 'envelope', 'be-b2/u1': 'talk', 'be-b2/u2': 'chart', 'be-c1/u1': 'bulb', 'be-c1/u2': 'globe', 'ef-c2/u1': 'bulb', 'ef-c2/u2': 'suitcase', 'ef-c2/u3': 'book', 'ef-c2/u4': 'laptop', 'ef-c2/u5': 'globe', 'ef-c2/u6': 'chart', 'ef-c2/u7': 'pen', 'ef-c2/u8': 'coffee' };
   var DOODLE = function (c, u, cls) { var n = UNIT_DOODLE[c + '/' + u]; return n && window.IFX_DOODLE ? IFX_DOODLE(n, cls || 'doodle') : ''; };
   var PIC = function (n, c) { return window.IFX_PIC ? IFX_PIC(n, c) : ''; };
@@ -325,7 +325,8 @@
     var items = [];
     if (l.type === 'vocab') { items.push({ k: 'learn' }); items = items.concat(vocabEx(l.words)); }
     if (l.gen) l.ex = l.gen.map(function (f) { return f(); });   // fresh numbers every time
-    if (l.type === 'vocab') {}
+    if (l.type === 'context') items = contextEx(u).map(function (e) { return { k: 'ex', e: e }; });
+    if (l.type === 'vocab' || l.type === 'context') {}
     else if (l.type === 'grammar' || l.type === 'skill' || l.type === 'maths') { items.push({ k: 'rule' }); items = items.concat(l.ex.map(function (e) { return { k: 'ex', e: e }; })); }
     else if (l.type === 'listen') { items.push({ k: 'listen' }); items = items.concat(l.ex.map(function (e) { return { k: 'ex', e: e }; })); }
     else if (l.type === 'reading') { items.push({ k: 'read' }); items = items.concat(l.ex.map(function (e) { return { k: 'ex', e: e }; })); }
@@ -378,12 +379,13 @@
     if (it.k === 'listen') {
       var sp = {}; L.l.script.forEach(function (x) { if (!sp[x.s]) sp[x.s] = x.g; });
       v.innerHTML = '<div class="player">' + pTop() + '<article class="reading listen"><div class="lhead"><span class="lic">🎧</span><div><h3>' + esc(L.l.title) + '</h3><p>' + esc(L.l.intro || '') + '</p></div></div>' +
-        '<div class="speakers">' + Object.keys(sp).map(function (n) { return '<span class="spk" data-s="' + esc(n) + '">' + (sp[n] === 'm' ? '👨' : '👩') + ' ' + esc(n) + '</span>'; }).join('') + '</div>' +
+        (window.IFBots ? '<div class="ifbots stage">' + Object.keys(sp).slice(0, 3).map(function (n) { return IFBots.html(sp[n], n, Object.keys(sp).length === 1); }).join('') + '</div>' :
+        '<div class="speakers">' + Object.keys(sp).map(function (n) { return '<span class="spk" data-s="' + esc(n) + '">' + (sp[n] === 'm' ? '👨' : '👩') + ' ' + esc(n) + '</span>'; }).join('') + '</div>') +
         '<p style="text-align:center;margin:18px 0 8px"><button class="btn big" id="play">▶ Play</button></p><p class="small" style="text-align:center;color:var(--muted)">' + (L.l.task ? esc(L.l.task) : 'Listen, then answer the questions. You can listen again during the questions.') + '</p>' +
         '<details class="peek"><summary>📄 Transcript (read it after you listen)</summary><div class="txt">' + L.l.script.map(function (x) { return '<p><b>' + esc(x.s) + ':</b> ' + esc(x.t) + '</p>'; }).join('') + '</div></details></article>' +
         '<p style="text-align:center;margin-top:18px"><button class="btn" id="nx">Questions →</button></p></div>';
       bindTop();
-      $('#play').onclick = function () { var b = this; b.textContent = '🔊 Playing…'; playScript(L.l.script, function (x) { $$('.spk').forEach(function (e) { e.classList.toggle('on', x && e.dataset.s === x.s); }); }, function () { b.textContent = '↻ Play again'; }); };
+      $('#play').onclick = function () { var b = this; b.textContent = '🔊 Playing…'; playScript(L.l.script, function (x) { $$('.spk').forEach(function (e) { e.classList.toggle('on', x && e.dataset.s === x.s); }); if (window.IFBots) IFBots.talk(x ? $$('.ifbot').filter(function (e) { return e.dataset.s === String(x.s).replace(/"/g, ''); })[0] || null : null); }, function () { b.textContent = '↻ Play again'; }); };
       $('#nx').onclick = function () { try { speechSynthesis.cancel(); } catch (e) {} L.i++; drawStep(); }; return;
     }
     if (it.k === 'read') {
@@ -405,12 +407,15 @@
     } else if (e.t === 'picmc') {
       body = vis + '<h2 class="qh">' + esc(e.q) + sayBtn + '</h2><div class="opts pics">' + e.o.map(function (o, k) { return '<button class="opt" data-k="' + k + '" aria-label="Picture ' + (k + 1) + '">' + PIC(o, 'pic') + '</button>'; }).join('') + '</div>';
     } else if (e.t === 'gap') {
-      body = '<h2 class="qh">Complete the sentence.</h2><p class="gapq">' + esc(e.q).replace('___', '<input id="gi" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Answer">') + '</p>';
+      body = '<h2 class="qh">' + esc(e.h || 'Complete the sentence.') + sayBtn + '</h2><p class="gapq">' + esc(e.q).replace('___', '<input id="gi" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Answer">') + '</p>';
     } else if (e.t === 'order') {
       var ws = e.a.replace(/[.?!]$/, '').split(' '), punct = (e.a.match(/[.?!]$/) || [''])[0];
       L.ord = { ws: shuffle(ws.map(function (w, k) { return { w: w, k: k }; })), pick: [], punct: punct };
       while (L.ord.ws.map(function (x) { return x.w; }).join(' ') === ws.join(' ') && ws.length > 2) L.ord.ws = shuffle(L.ord.ws);
-      body = '<h2 class="qh">Put the words in order.</h2><div class="ord-line" id="ol"></div><div class="ord-bank" id="ob"></div>';
+      body = '<h2 class="qh">' + esc(e.h || 'Put the words in order.') + sayBtn + '</h2><div class="ord-line" id="ol"></div><div class="ord-bank" id="ob"></div>';
+    } else if (e.t === 'speak') {
+      body = '<h2 class="qh">Say it aloud. <button class="say" style="width:38px;height:38px;font-size:16px;vertical-align:middle" id="sq2" aria-label="Listen">🔊</button></h2><p class="speakq">' + esc(e.a) + '</p>' +
+        '<div class="speak"><button class="btn gold" id="mic">🎙 ' + (SR ? 'Press and speak' : 'Read it aloud') + '</button>' + (SR ? ' <button class="btn ghost sm" id="skp">Can\'t speak now — skip</button>' : '') + '<p class="heard" id="hd">' + (SR ? 'Listen first if you like, then press the button and read the sentence.' : 'Your browser cannot listen. Read the sentence aloud, then press Check.') + '</p></div>';
     } else if (e.t === 'match') {
       L.mt = { left: shuffle(e.p.map(function (p, k) { return { s: p[0], k: k }; })), right: shuffle(e.p.map(function (p, k) { return { s: p[1], k: k }; })), sel: null, ok: 0, miss: 0 };
       body = '<h2 class="qh">Match the pairs.</h2><div class="match"><div class="opts" id="ml">' + L.mt.left.map(function (x) { return '<button class="opt" data-k="' + x.k + '">' + esc(x.s) + '</button>'; }).join('') + '</div><div class="opts" id="mr">' + L.mt.right.map(function (x) { return '<button class="opt" data-k="' + x.k + '">' + esc(x.s) + '</button>'; }).join('') + '</div></div>';
@@ -433,7 +438,30 @@
       drawOrder(e);
     } else if (e.t === 'match') {
       bindMatch(e);
-    }
+    } else if (e.t === 'speak' && !L.teach) bindSpeak(e);
+  }
+  var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  var words = function (s) { return norm(s).replace(/[^a-z0-9' ]/g, ' ').split(/\s+/).filter(Boolean); };
+  function bindSpeak(e) {
+    var ck = $('#ck'), hd = $('#hd'), mic = $('#mic'), score = 0;
+    $('#sq2').onclick = function () { say(e.a); };
+    if (!SR) { ck.disabled = false; ck.onclick = function () { result(true, e); }; return; }
+    mic.onclick = function () {
+      var r = new SR(); r.lang = 'en-GB'; r.interimResults = false; r.maxAlternatives = 3;
+      mic.disabled = true; mic.textContent = '🎙 Listening…'; hd.textContent = '';
+      r.onresult = function (ev) {
+        var best = '', bs = -1;
+        for (var k = 0; k < ev.results[0].length; k++) { var said = words(ev.results[0][k].transcript), want = words(e.a), hit = want.filter(function (w) { return said.indexOf(w) >= 0; }).length / want.length; if (hit > bs) { bs = hit; best = ev.results[0][k].transcript; } }
+        score = Math.round(bs * 100);
+        hd.innerHTML = 'I heard: <b>“' + esc(best) + '”</b> · ' + score + '% of the words';
+        ck.disabled = false;
+      };
+      r.onerror = function (ev) { hd.textContent = ev && /not-allowed|service/.test(ev.error) ? 'The microphone is off for this page. Read the sentence aloud, then press Check.' : 'I could not hear you. Check the microphone and try again.'; if (ev && /not-allowed|service/.test(ev.error)) { score = 100; ck.disabled = false; } };
+      r.onend = function () { mic.disabled = false; mic.textContent = '🎙 Try again'; };
+      try { r.start(); } catch (x) { mic.disabled = false; }
+    };
+    $('#skp').onclick = function () { mic.disabled = true; this.remove(); result(true, e, '', true); };
+    ck.onclick = function () { mic.disabled = true; result(score >= 70, e, score >= 70 ? '' : 'Try to say every word: ' + e.a); };
   }
   var norm = function (s) { return String(s).toLowerCase().replace(/[’‘`]/g, "'").replace(/\s+/g, ' ').replace(/[.?!]$/, '').trim(); };
   function reveal(e) {
@@ -632,11 +660,43 @@
       default: return vHome();
     }
   }
+  /* C1–C2 courses are English only (no Russian translations), and every teen/adult unit gets an "In context"
+     lesson: listen and choose, listen and write, which sentence is right, listen and order, then say it aloud. */
+  function prepCourses() {
+    COURSES.forEach(function (c) {
+      var adv = /^C/.test(c.level || '');
+      c.units.forEach(function (u) {
+        u.lessons.forEach(function (l) { if (adv) (l.words || []).forEach(function (w) { delete w.ru; }); });
+        if (c.track === 'kids' || u.lessons.some(function (l) { return l.type === 'context'; })) return;
+        if (unitWords(u).length < 4) return;
+        var i = u.lessons.map(function (x) { return x.type; }).indexOf('check');
+        u.lessons.splice(i < 0 ? u.lessons.length : i, 0, { id: 'cx', type: 'context', title: 'Words in context: listen, write, speak' });
+      });
+    });
+  }
+  function unitWords(u) { var a = []; u.lessons.forEach(function (l) { if (l.type === 'vocab') (l.words || []).forEach(function (w) { if (!w.pic && w.e) a.push(w); }); }); return a; }
+  // the exact text of the word inside its example sentence ("split hairs" in "Let's not split hairs…"), or null
+  function inEx(w) { var full = w.w.replace(/\s*\(.*?\)\s*/g, ' ').trim(), j = w.e.toLowerCase().indexOf(full.toLowerCase()); if (j >= 0 && full.length > 1) return w.e.substr(j, full.length); var b = w.w.replace(/^(to |a |an |the )/i, '').replace(/\s*\(.*?\)\s*/g, ' ').replace(/ (sb|sth|someone|something)\b/gi, '').trim(); if (b.length < 2) return null; var i = w.e.toLowerCase().indexOf(b.toLowerCase()); return i < 0 ? null : w.e.substr(i, b.length); }
+  function contextEx(u) {
+    var all = unitWords(u), ok = shuffle(all.filter(inEx)), out = [], used = {};
+    var pick = function (n, f) { var r = []; ok.forEach(function (w) { if (r.length < n && !used[w.w] && (!f || f(w))) { used[w.w] = 1; r.push(w); } }); return r; };
+    var three = function (x) { return shuffle([x].concat(shuffle(all.filter(function (y) { return y !== x; })).slice(0, 2))); };
+    pick(3).forEach(function (x) { var o = three(x); out.push({ t: 'mc', q: 'Listen. Which word or phrase do you hear?', listen: x.e, o: o.map(function (y) { return y.w; }), a: o.indexOf(x), why: x.e }); });
+    pick(3).forEach(function (x) { var m = inEx(x); out.push({ t: 'gap', h: 'Listen and write the missing word or phrase.', listen: x.e, q: x.e.replace(m, '___'), a: [m, x.w], why: x.e }); });
+    pick(2).forEach(function (x) {
+      var bad = shuffle(ok.filter(function (y) { return y !== x; })).slice(0, 2).map(function (y) { return y.e.replace(inEx(y), inEx(x)); });
+      if (bad.length < 2) return; var o = shuffle([x.e].concat(bad));
+      out.push({ t: 'mc', q: 'Which sentence uses “' + x.w + '” correctly?', o: o, a: o.indexOf(x.e), why: x.w + ': ' + x.d });
+    });
+    pick(1, function (w) { var n = w.e.split(' ').length; return n >= 5 && n <= 13; }).forEach(function (x) { out.push({ t: 'order', h: 'Listen, then put the words in order.', listen: x.e, a: x.e }); });
+    shuffle(all).slice(0, 2).forEach(function (x) { out.push({ t: 'speak', a: x.e, why: x.w + ': ' + x.d }); });
+    return out;
+  }
   window.addEventListener('hashchange', route);
   document.addEventListener('DOMContentLoaded', async function () {
     document.documentElement.lang = lang;
     if (/[?&]embed=1/.test(location.search)) { document.body.classList.add('embed'); document.addEventListener('click', function (e) { var a = e.target.closest('a[href]'); if (a && a.getAttribute('href').charAt(0) !== '#') a.target = '_top'; }); }
-    frame(); route();
+    prepCourses(); frame(); route();
     await loadMe(); meLoaded = true; frame(); route();
   });
 })();
