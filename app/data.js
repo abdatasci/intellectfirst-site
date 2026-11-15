@@ -24,6 +24,7 @@ window.IFX_DIR = [
   /* ---------- games ---------- */
   { id: 'live', s: 'games', t: 'IF Live', d: 'Class games on the big screen: join with a PIN — or practise alone with AI questions', lv: ['A1', 'A2', 'B1', 'B2', 'C1'], tr: 'general', tags: ['class', 'vocabulary', 'grammar', 'ai'], href: '/live/', icon: '📡' },
   { id: 'gameroom', s: 'games', t: 'IF Game Room', d: 'Arcade games on your own vocabulary', lv: ['A1', 'A2', 'B1', 'B2', 'C1'], tr: 'general', tags: ['vocabulary'], href: '/a/if-english/gameroom/index.html', icon: '🕹️' },
+  { id: 'mind-lab', s: 'games', t: 'IF Mind Lab', d: 'Brain-training games for teens and adults: focus, reading speed, listening, spelling, vocabulary, grammar and speaking, B1–C2', lv: ['B1', 'B2', 'C1', 'C2'], tr: 'general', tags: ['vocabulary', 'grammar', 'teens', 'daily'], href: '/a/mind-lab/', icon: '🧠' },
   { id: 'g-skill', s: 'games', t: 'IF Skill Games', d: 'Quick daily grammar and word workouts', lv: ['A2', 'B1', 'B2', 'C1'], tr: 'general', tags: ['grammar', 'vocabulary'], href: '/a/skill-games/index.html', icon: '⚡' },
   { id: 'g-gram', s: 'games', t: 'Grammar Game Centre', d: 'Grammar in Use as games', lv: ['B1', 'B2', 'C1'], tr: 'general', tags: ['grammar'], href: '/a/grammar-game-centre/index.html', icon: '🧩' },
   { id: 'g-giu', s: 'games', t: 'Grammar in Use Quest', d: 'Grammar adventure', lv: ['B1', 'B2'], tr: 'general', tags: ['grammar'], href: '/a/grammar-in-use-quest/index.html', icon: '🗺️' },
