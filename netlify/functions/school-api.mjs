@@ -410,8 +410,9 @@ export default async (req) => {
     if (!profile?.role) return fail(403, 'activate');
     if (!isMember(profile)) return fail(403, 'members');
     const k = (await S().get('lockKeys', { type: 'json' })) || {};
-    if (!k.ks) return fail(404, 'none');
-    const until = accessUntil(profile);   // trial / paid online access: the page forgets the keys when it ends
+    const until = accessUntil(profile);
+    // members always get full access to the apps; the page keys (for encrypted class pages) come along when the site has them
+    if (!k.ks) return json({ member: true, role: isStaff(profile.role) ? 'teacher' : 'student', ...(until ? { until } : {}) });   // trial / paid online access: the page forgets the keys when it ends
     return json(isStaff(profile.role) && k.kt ? { ks: k.ks, kt: k.kt, role: 'teacher' } : { ks: k.ks, role: 'student', ...(until ? { until } : {}) });
   }
 

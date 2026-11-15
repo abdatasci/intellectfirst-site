@@ -38,7 +38,7 @@
   var GRACE = 3 * 24 * 3600 * 1000;           /* keeps Premium working offline around renewal time */
   function premiumInfo() { return lsGet('ifen:premium', { active: false }); }
   function isPremium() {
-    if (!NATIVE) return !!(window.IFLock && IFLock.canOpen('s')); /* Academy access uses the site's existing session. */
+    if (!NATIVE) return !!(window.IFLock && (IFLock.member ? IFLock.member() : IFLock.canOpen('s'))); /* Academy access uses the site's existing session. */
     var p = premiumInfo();
     if (!p || !p.active) return false;
     return p.exp == null || Date.now() < p.exp + GRACE;

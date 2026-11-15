@@ -63,6 +63,7 @@
       if (r.status === 403) r.json().then(function (d) { if (d && d.error === 'members') membersNote(); }).catch(function () {});
       return r.ok ? r.json() : null;
     }).then(function (k) {
+      if (k && k.member && !k.ks) { ls('if.member', '1'); ls('if.role', k.role || 'student'); ls('if.until', k.until || null); return canOpen(lvl) || lvl === 's'; }
       if (!k || !k.ks) return false;
       ls('if.ks', k.ks); ls('if.kt', k.kt || null); ls('if.role', k.kt ? 'teacher' : 'student'); ls('if.until', k.until || null);
       return canOpen(lvl);
@@ -76,7 +77,7 @@
     d.innerHTML = '<b style="display:block;margin-bottom:2px">This app is part of full access</b>You are signed in with a free account. IF Academy students and Abdoulie\u2019s individual students get it free; others can join online. <a href="/me/#/upgrade" style="color:#e9c98f;font-weight:700">Get full access \u2192</a>';
     (document.body || document.documentElement).appendChild(d);
   }
-  function signOut() { ['if.ks', 'if.kt', 'if.role', 'if.until'].forEach(function (k) { ls(k, null); }); }
+  function signOut() { ['if.ks', 'if.kt', 'if.role', 'if.until', 'if.member'].forEach(function (k) { ls(k, null); }); }
   /* trial or paid online access: forget the keys on this device when it ends */
   try { var u = ls('if.until'); if (u && Date.parse(u) < Date.now()) signOut(); } catch (e) {}
   function decryptBytes(lvl, bytes) {
@@ -90,7 +91,14 @@
   }
   /* a device that already opened the locked pages with the old class/staff code hands the keys to the site once,
      so every signed-in account (and the new student/staff codes) can open them too */
-  try { if (ls('if.ks') && !sessionStorage.getItem('if.shared')) { sessionStorage.setItem('if.shared', '1'); share(); } } catch (e) {}
+  try {
+    if (ls('if.ks') && !sessionStorage.getItem('if.shared2')) {
+      sessionStorage.setItem('if.shared2', '1');
+      // if the site has lost its copy of the keys (members then get no page keys), this device gives them back
+      fetch('/api/school/lockkeys', { credentials: 'same-origin' }).then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (k) { if (!k || !k.ks) share(); }).catch(function () { share(); });
+    }
+  } catch (e) {}
   /* pages without their own lock screen (apps grid, materials, IF English, login): unlock silently from the account */
   try {
     var last = +sessionStorage.getItem('if.sso') || 0;
@@ -99,5 +107,7 @@
       fromAccount('s').then(function (ok) { if (ok) location.reload(); });
     }
   } catch (e) {}
-  window.IFLock = { fromAccount: fromAccount, signIn: signIn, signOut: signOut, role: role, canOpen: canOpen, decryptText: decryptText, decryptBytes: decryptBytes, fetchDecrypt: fetchDecrypt, norm: norm };
+  /* a signed-in member (school student, individual student, paid or trial account): every app is open */
+  function member() { return !!ls('if.member') || canOpen('s'); }
+  window.IFLock = { member: member, fromAccount: fromAccount, signIn: signIn, signOut: signOut, role: role, canOpen: canOpen, decryptText: decryptText, decryptBytes: decryptBytes, fetchDecrypt: fetchDecrypt, norm: norm };
 })();
