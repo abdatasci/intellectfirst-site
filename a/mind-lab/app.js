@@ -17,7 +17,7 @@
   var trk = function () { return S.tr === 'general' ? '' : TRACKS[S.tr] + ' · '; };
   var gkey = function (id) { return (S.tr === 'general' ? '' : S.tr + ':') + id; };
   // every game keeps its own level and moves it with the answers (3 right in a row: up · 2 wrong in a row: down)
-  var glevel = function (id) { var v = S.glv[gkey(id)]; return v == null ? Math.max(0, LEVELS.indexOf(S.lv)) : v; };
+  var glevel = function (id) { var v = S.glv[gkey(id)], g = byId(id); if (v != null) return v; return g && g.words ? 3 : Math.max(0, LEVELS.indexOf(S.lv)); };
   var bkey = function (lv, id) { return (S.tr === 'general' ? '' : S.tr + ':') + lv + ':' + id; };
   var day = function () { return new Date(Date.now() + 5 * 3600e3).toISOString().slice(0, 10); };
 
@@ -40,7 +40,10 @@
     { id: 'fault', t: 'FAULT LINE', sk: 'grammar', c1: '#fb7185', c2: '#fbbf24', p: 'One word breaks the sentence — or none does. Find the fault before the clock runs out.', run: fault },
     { id: 'voice', t: 'VOICE GATE', sk: 'speak', c1: '#34d399', c2: '#22d3ee', p: 'Read the sentence aloud. The gate opens when every word comes through clearly.', run: voice }
   ];
+  (window.ML_EXT_GAMES || []).forEach(function (g) { GAMES.push(g); });
   var byId = function (id) { return GAMES.filter(function (g) { return g.id === id; })[0]; };
+  var LVS = function (g) { return g && g.words ? ['PA1', 'A1', 'A2', 'B1', 'B2', 'C1', 'C2'] : LEVELS; };
+  var LVN = function (x) { return x === 'PA1' ? 'Pre A1' : x; };
 
   /* neon emblems, one per game (original line art) */
   function emblem(id, c1, c2) {
@@ -53,7 +56,7 @@
       precise: '<path d="M32 6l6 20 20 6-20 6-6 20-6-20-20-6 20-6z" ' + s + '/><circle cx="32" cy="32" r="4" fill="' + c1 + '"/>',
       fault: '<path d="M6 32h14l6-14 8 28 6-18 4 8h14" ' + s + '/><path d="M10 52h44" ' + s + ' opacity=".5"/>',
       voice: '<rect x="24" y="8" width="16" height="30" rx="8" ' + s + '/><path d="M14 30a18 18 0 0036 0M32 48v8M22 56h20" ' + s + '/>'
-    }[id];
+    }[id] || ((byId(id) && byId(id).art) ? byId(id).art(s, c1) : '');
     return '<svg class="em" viewBox="0 0 64 64" aria-hidden="true">' + g + '<g style="filter:drop-shadow(0 0 6px ' + c1 + ')">' + art + '</g></svg>';
   }
 
@@ -115,6 +118,12 @@
     if (S.tr === 'business') { var bz = B.business || {}, k = ['A2', 'A2', 'A2', 'B1', 'B2', 'C1', 'C1'][lvi]; pick = shuffle((bz[k] || []).concat(pick.slice(0, 20))); }
     var seen = {}; return pick.filter(function (x) { var k = x[0].toLowerCase(); if (seen[k]) return false; seen[k] = 1; return true; }).slice(0, wgById(id).n).map(function (x) { return { w: x[0], d: x[1], ru: '', dr: '' }; });
   }
+  function bankAt(lv) {
+    var B = window.ML_WORDS || { levels: {} }, L = (B.levels[lv] || []).filter(function (x) { return x[0].length <= 22; }), i = WL.indexOf(lv);
+    if (S.tr === 'ielts' && i >= 3) return (B.ielts || []).concat(i >= 5 ? L : []);
+    if (S.tr === 'business') { var bz = B.business || {}; return (bz[['A2', 'A2', 'A2', 'B1', 'B2', 'C1', 'C1'][i]] || []).concat(L); }
+    return L;
+  }
   function vWord(id) {
     var g = wgById(id); if (!g || !window.IFStudy) return go('#/');
     hush(); RUN = null;
@@ -169,13 +178,14 @@
     ['listen', 'Listening', ['echo']],
     ['grammar', 'Grammar', ['fault']],
     ['speak', 'Speaking', ['voice']],
+    ['neon', 'Neon arcade', ['serpent', 'skyline', 'fusion', 'cipher']],
     ['arcade', 'Word arcade', ['race', 'factory', 'cafe', 'defense', 'boss', 'balloon']]
   ];
-  var SCOL = { focus: ['#22d3ee', '#6366f1'], speed: ['#a78bfa', '#22d3ee'], vocab: ['#fbbf24', '#f472b6'], write: ['#f472b6', '#a78bfa'], listen: ['#38bdf8', '#f472b6'], grammar: ['#fb7185', '#fbbf24'], speak: ['#34d399', '#22d3ee'], arcade: ['#fbbf24', '#22d3ee'] };
+  var SCOL = { focus: ['#22d3ee', '#6366f1'], speed: ['#a78bfa', '#22d3ee'], vocab: ['#fbbf24', '#f472b6'], write: ['#f472b6', '#a78bfa'], listen: ['#38bdf8', '#f472b6'], grammar: ['#fb7185', '#fbbf24'], speak: ['#34d399', '#22d3ee'], arcade: ['#fbbf24', '#22d3ee'], neon: ['#f472b6', '#22d3ee'] };
   function card(x, sec) {
     var all = ALL(), it = all.filter(function (y) { return y.id === x; })[0]; if (!it) return '';
     var col = SCOL[sec], g = it.g, mind = it.kind === 'mind';
-    var lv = mind ? LEVELS[glevel(x)] : WLN[WL[wlevel(x)]], best = S.best[mind ? gkey(x) : wkey(x)];
+    var lv = mind ? LVN(LVS(g)[glevel(x)]) : WLN[WL[wlevel(x)]], best = S.best[mind ? gkey(x) : wkey(x)];
     return '<a class="gcard" style="--c1:' + (mind ? g.c1 : col[0]) + ';--c2:' + (mind ? g.c2 : col[1]) + '" href="' + hrefOf(it) + '">' +
       '<span class="lvb">' + lv + '</span>' + (mind ? emblem(g.id, g.c1, g.c2) : '<span class="emo big">' + g.e + '</span>') +
       '<span class="sk">' + SK[g.sk] + '</span><h3>' + g.t + '</h3><p>' + esc(g.p) + '</p><span class="best">' + (best ? 'Best: <b>' + best + (mind ? '' : '%') + '</b>' : 'New — tap to start') + '</span></a>';
@@ -190,7 +200,7 @@
         '<div class="chiprow">' + (first ? '<a class="btn" href="' + hrefOf(first) + '">▶ ' + (Object.keys(done).length ? 'Continue today\'s workout' : 'Start today\'s workout') + '</a>' : '<span class="btn gold" style="cursor:default">✓ Today\'s workout done</span>') +
         '<span class="stat">🔥 <b>' + st + '</b> day' + (st === 1 ? '' : 's') + '</span><span class="stat">⚡ Mind score <b>' + Math.round(total) + '</b></span></div></div>' +
       '<div class="glass host">' + (window.IFBots ? IFBots.html('f', 'Nova', true) : '') + '<p class="bubble" id="bub">Tap to hear Nova.</p><button class="btn ghost" id="hi">🔊 Brief me</button></div></section>' +
-      '<section class="row2"><div class="glass panel"><h2>Today\'s workout</h2><div class="today">' + td.map(function (x) { var g = x.g; return '<a href="' + hrefOf(x) + '" class="' + (done[x.id] ? 'done' : '') + '">' + (x.kind === 'mind' ? emblem(g.id, g.c1, g.c2) : '<span class="emo">' + g.e + '</span>') + '<span class="k">' + g.t + '<small>' + SK[g.sk] + ' · level ' + (x.kind === 'mind' ? LEVELS[glevel(x.id)] : WLN[WL[wlevel(x.id)]]) + '</small></span></a>'; }).join('') + '</div></div>' +
+      '<section class="row2"><div class="glass panel"><h2>Today\'s workout</h2><div class="today">' + td.map(function (x) { var g = x.g; return '<a href="' + hrefOf(x) + '" class="' + (done[x.id] ? 'done' : '') + '">' + (x.kind === 'mind' ? emblem(g.id, g.c1, g.c2) : '<span class="emo">' + g.e + '</span>') + '<span class="k">' + g.t + '<small>' + SK[g.sk] + ' · level ' + (x.kind === 'mind' ? LVN(LVS(g)[glevel(x.id)]) : WLN[WL[wlevel(x.id)]]) + '</small></span></a>'; }).join('') + '</div></div>' +
       '<div class="glass panel"><h2>Your skill map</h2>' + radar() + '</div></section>' +
       SECTIONS.map(function (sc) { return '<div class="sec" id="s-' + sc[0] + '"><h2>' + sc[1] + '</h2></div><section class="games">' + sc[2].map(function (x) { return card(x, sc[0]); }).join('') + '</section>'; }).join('') +
       '<p class="note">The word games use every word from the IF English courses — English File, English for Teenagers, Cambridge Starters to PET, IELTS and Business — chosen for your level. Listening uses IF Academy\'s natural British voices. Speaking works best in Chrome, Edge or Safari with a microphone.</p>';
@@ -201,28 +211,33 @@
   var RUN = null;
   function vPlay(id) {
     var g = byId(id); if (!g) return go('#/');
-    hush(); RUN = { g: g, lvi: glevel(id), lvi0: glevel(id), up: 0, down: 0, used: {}, score: 0, combo: 1, maxCombo: 1, right: 0, wrong: 0, log: [], timers: [], alive: true };
+    hush(); RUN = { g: g, L: LVS(g), lvi: glevel(id), lvi0: glevel(id), up: 0, down: 0, used: {}, score: 0, combo: 1, maxCombo: 1, right: 0, wrong: 0, log: [], timers: [], alive: true };
     view.innerHTML = '<div class="glass hud"><button class="quit" id="qt" aria-label="Quit">✕</button><div class="gt">' + emblem(g.id, g.c1, g.c2) + '<div><b>' + g.t + '</b><small>' + trk() + SK[g.sk] + '</small></div></div>' +
-      '<div class="num lvl"><b id="lvn">' + LEVELS[RUN.lvi] + '</b><small>LEVEL</small></div><div class="num combo"><b id="cb">×1</b><small>COMBO</small></div><div class="num"><b id="sc">0</b><small>SCORE</small></div>' +
+      '<div class="num lvl"><b id="lvn">' + LVN(RUN.L[RUN.lvi]) + '</b><small>LEVEL</small></div><div class="num combo"><b id="cb">×1</b><small>COMBO</small></div><div class="num"><b id="sc">0</b><small>SCORE</small></div>' +
       '<svg class="ring" viewBox="0 0 60 60" id="rg"><defs><linearGradient id="rg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="' + g.c1 + '"/><stop offset="1" stop-color="' + g.c2 + '"/></linearGradient></defs><circle class="bgc" cx="30" cy="30" r="25"/><circle class="fg" id="rf" cx="30" cy="30" r="25" stroke-dasharray="157.1" stroke-dashoffset="0" transform="rotate(-90 30 30)"/><text x="30" y="35" text-anchor="middle" id="rt">–</text></svg></div>' +
       '<div class="glass arena" id="ar"></div>';
     $('#qt').onclick = function () { stop(); go('#/'); };
     var ar = $('#ar'), n = 3;
-    ar.innerHTML = '<p class="eyebrow">' + trk() + SK[g.sk] + ' · level ' + LEVELS[RUN.lvi] + '</p><h2 style="font-size:clamp(22px,4vw,34px)">' + g.t + '</h2><p class="sub" style="max-width:560px">' + esc(g.p) + '</p><div class="countdown" id="cd">3</div>';
+    ar.innerHTML = '<p class="eyebrow">' + trk() + SK[g.sk] + ' · level ' + LVN(RUN.L[RUN.lvi]) + '</p><h2 style="font-size:clamp(22px,4vw,34px)">' + g.t + '</h2><p class="sub" style="max-width:560px">' + esc(g.p) + '</p><div class="countdown" id="cd">3</div>';
     var cd = setInterval(function () { if (!RUN || RUN.g !== g) return clearInterval(cd); n--; sfx.tick(); if (n > 0) { $('#cd').textContent = n; $('#cd').style.animation = 'none'; void $('#cd').offsetWidth; $('#cd').style.animation = ''; } else { clearInterval(cd); g.run(ar, api()); } }, 750);
     RUN.timers.push(cd);
   }
   function api() {
     var R = RUN;
     function adapt(ok) {
-      if (ok) { R.up++; R.down = 0; if (R.up >= 3 && R.lvi < LEVELS.length - 1) { R.lvi++; R.up = 0; lvlShow(true); } }
+      if (ok) { R.up++; R.down = 0; if (R.up >= 3 && R.lvi < R.L.length - 1) { R.lvi++; R.up = 0; lvlShow(true); } }
       else { R.down++; R.up = 0; if (R.down >= 2 && R.lvi > 0) { R.lvi--; R.down = 0; lvlShow(false); } }
     }
-    function lvlShow(up) { var b = $('#lvn'); if (b) { b.textContent = LEVELS[R.lvi]; b.parentNode.classList.remove('up', 'down'); void b.offsetWidth; b.parentNode.classList.add(up ? 'up' : 'down'); } toast(up ? '▲ Level up: ' + LEVELS[R.lvi] : '▼ Level ' + LEVELS[R.lvi] + ' — steady it, then climb again'); if (up) sfx.end(); }
+    function lvlShow(up) { var b = $('#lvn'); if (b) { b.textContent = LVN(R.L[R.lvi]); b.parentNode.classList.remove('up', 'down'); void b.offsetWidth; b.parentNode.classList.add(up ? 'up' : 'down'); } toast(up ? '▲ Level up: ' + LVN(R.L[R.lvi]) : '▼ Level ' + LVN(R.L[R.lvi]) + ' — steady it, then climb again'); if (up) sfx.end(); }
     return {
-      get lv() { return LEVELS[R.lvi]; },
+      get lv() { return R.L[R.lvi]; },
+      // word-bank games: a word at the current level ({w, d}), and wrong options for it from the same level
+      word: function (ok) { var B = bankAt(R.L[R.lvi]), key = 'w' + R.lvi, u = R.used[key] || (R.used[key] = {}), c = B.filter(function (x) { return !u[x[0]] && (!ok || ok(x[0])); }); if (!c.length) { u = R.used[key] = {}; c = B.filter(function (x) { return !ok || ok(x[0]); }); } var x = c[Math.floor(Math.random() * c.length)] || ['word', 'a unit of language']; u[x[0]] = 1; return { w: x[0], d: x[1] }; },
+      others: function (w, n, ok) { var B = shuffle(bankAt(R.L[R.lvi])), out = []; for (var i = 0; i < B.length && out.length < n; i++) if (B[i][0].toLowerCase() !== w.toLowerCase() && (!ok || ok(B[i][0])) && out.indexOf(B[i][0]) < 0) out.push(B[i][0]); return out; },
+      score: function (n) { R.score += n; hud(); },
+      H: { $: $, $$: $$, esc: esc, shuffle: shuffle, sfx: sfx, flash: flash, floatTxt: floatTxt, speak: speak, toast: toast },
       // the next item at the current level (a fresh one each time until the level's set is used up)
-      next: function (kind) { var lv = LEVELS[R.lvi], pool = data(kind, lv), u = R.used[kind + lv] || (R.used[kind + lv] = []); var left = pool.filter(function (x) { return u.indexOf(x) < 0; }); if (!left.length) { u.length = 0; left = pool.slice(); } var it = left[Math.floor(Math.random() * left.length)]; u.push(it); return it; },
+      next: function (kind) { var lv = R.L[R.lvi], pool = data(kind, lv), u = R.used[kind + lv] || (R.used[kind + lv] = []); var left = pool.filter(function (x) { return u.indexOf(x) < 0; }); if (!left.length) { u.length = 0; left = pool.slice(); } var it = left[Math.floor(Math.random() * left.length)]; u.push(it); return it; },
       add: function (pts, el, x, y) { if (!R.alive) return; adapt(true); var p = Math.round(pts * R.combo); R.score += p; R.right++; R.combo = Math.min(5, R.combo + .25); R.maxCombo = Math.max(R.maxCombo, R.combo); hud(); sfx.ok(Math.floor(R.combo)); if (el) floatTxt(el, '+' + p, '#34d399', x, y); },
       miss: function (pen, el, x, y) { if (!R.alive) return; adapt(false); R.score = Math.max(0, R.score - (pen || 0)); R.wrong++; R.combo = 1; hud(); sfx.bad(); if (el && pen) floatTxt(el, '−' + pen, '#fb7185', x, y); },
       log: function (ok, txt) { R.log.push({ ok: ok, t: txt }); },
@@ -242,16 +257,16 @@
     var tries = R.right + R.wrong, acc = tries ? Math.round(R.right / tries * 100) : 0, k = gkey(g.id), rec = R.score > (S.best[k] || 0);
     if (rec) S.best[k] = R.score;
     // skill rating 0–1000: harder levels count for more; a moving average so one bad round doesn't wipe progress
-    var perf = Math.min(1, (acc / 100) * .7 + Math.min(1, R.score / ({ signal: 900, hyper: 700, echo: 600, glyph: 700, precise: 900, fault: 800, voice: 450 }[g.id])) * .3);
+    var perf = Math.min(1, (acc / 100) * .7 + Math.min(1, R.score / (({ signal: 900, hyper: 700, echo: 600, glyph: 700, precise: 900, fault: 800, voice: 450, serpent: 600, skyline: 700, fusion: 2500, cipher: 700 }[g.id] || 800))) * .3);
     S.glv[gkey(g.id)] = R.lvi;
-    var target = perf * (550 + R.lvi * 150), old = S.rate[g.sk] || 0;
+    var target = perf * (R.L === LEVELS ? 550 + R.lvi * 150 : 300 + R.lvi * 120), old = S.rate[g.sk] || 0;
     S.rate[g.sk] = old ? old * .65 + target * .35 : target;
     S.days[day()] = S.days[day()] || {}; S.days[day()][g.id] = 1; S.plays++;
     save(); sfx.end();
     var td = todays(), done = S.days[day()], nxt = td.filter(function (x) { return !done[x.id]; })[0];
-    view.innerHTML = '<div class="glass result"><p class="eyebrow">' + trk() + g.t + '</p>' + lvlChange(R.lvi0, R.lvi, LEVELS) + (rec ? '<span class="rec">★ NEW PERSONAL BEST</span>' : '') +
+    view.innerHTML = '<div class="glass result"><p class="eyebrow">' + trk() + g.t + '</p>' + lvlChange(R.lvi0, R.lvi, R.L.map(LVN)) + (rec ? '<span class="rec">★ NEW PERSONAL BEST</span>' : '') +
       '<div class="big">' + R.score + '</div><p class="sub">' + (acc >= 85 ? 'Outstanding precision.' : acc >= 65 ? 'Strong round — keep the combo alive next time.' : 'Good training. Slow down a little and aim for accuracy.') + '</p>' +
-      '<div class="grid3"><div><b>' + acc + '%</b><small>Accuracy</small></div><div><b>' + LEVELS[R.lvi] + '</b><small>Level now</small></div><div><b>×' + (Math.round(R.maxCombo * 4) / 4) + '</b><small>Top combo</small></div><div><b>' + Math.round(S.rate[g.sk]) + '</b><small>' + SK[g.sk] + '</small></div></div>' +
+      '<div class="grid3"><div><b>' + acc + '%</b><small>Accuracy</small></div><div><b>' + LVN(R.L[R.lvi]) + '</b><small>Level now</small></div><div><b>×' + (Math.round(R.maxCombo * 4) / 4) + '</b><small>Top combo</small></div><div><b>' + Math.round(S.rate[g.sk]) + '</b><small>' + SK[g.sk] + '</small></div></div>' +
       '<div class="chiprow" style="justify-content:center"><a class="btn" href="#/play/' + g.id + '?r=' + Date.now() + '">↻ Play again</a>' + (nxt ? '<a class="btn gold" href="' + hrefOf(nxt) + '">Next: ' + nxt.t + ' →</a>' : '<a class="btn gold" href="#/">Session complete ✓</a>') + '<a class="btn ghost" href="#/">Mind Lab</a></div>' +
       (R.log.length ? '<ul class="review">' + R.log.filter(function (x) { return !x.ok; }).slice(0, 6).map(function (x) { return '<li>' + x.t + '</li>'; }).join('') + '</ul>' : '') + '</div>';
     RUN = null;
