@@ -48,8 +48,16 @@
     var staff = tier === 'staff', member = staff || tier === 'member';
     return { signed: !!p, member: member, staff: staff, teacher: staff || (p && p.track === 'tutor' && member), tutor: p && p.track === 'tutor', name: (p && p.name) || '' };
   }
-  var FREE_UNITS = 1;   // the first unit of every course is free; the rest is part of full access
-  var unlocked = function (ui) { return ui < FREE_UNITS || access().member; };
+  var FREE_UNITS = 1;   // the first unit of every course is free without an account (2 with a free account)
+  // without an account: unit 1 of every course; with a free account: units 1 and 2; members: everything
+  var unlocked = function (ui) { return ui < (access().signed ? 2 : FREE_UNITS) || access().member; };
+  /* Free taster without an account: the first unit of every course (above), the placement test and these.
+     Everything else asks visitors to create a free account (which also starts the full-access trial). */
+  var FREE_IDS = { 'voc-a1': 1, 'voc-b1': 1, 'voc-ket': 1, 'skill-games': 1, 'live': 1, 'if-kart': 1, 'kids-quest': 1, 'bq-kids': 1, 'g-skill': 1, 'placement': 1, 'ielts-centre': 1, 'timetable': 1 };
+  var isFree = function (it) { return !!(it && FREE_IDS[it.id]); };
+  var canOpen = function (it) { return isFree(it) || access().signed; };
+  var JOIN = '/me/#/register?next=' + encodeURIComponent('/app/');
+  function tasterHTML() { return meLoaded && !access().signed ? '<div class="taster"><div><b>You are trying IF English free — no account needed.</b><span>Open the first unit of every course, the placement test and a selection of games. Create a free account for the first two units of every course, a 7-day trial of everything, and your progress on every device.</span></div><a class="btn gold" href="' + JOIN + '">Create a free account</a></div>' : ''; }
   async function loadMe() {
     try { var r = await fetch('/api/school/me', { credentials: 'same-origin' }); if (r.ok) ME = await r.json(); } catch (e) {}
     var pf = ME && ME.profile;
@@ -188,7 +196,7 @@
   function vOnboard(step) {
     setNav('home');
     if (step !== 'pick') {
-      view().innerHTML = '<div class="onb"><p class="h-eyebrow">IF English</p><h1>Who is learning?</h1><p class="lead">We\'ll show what fits — and keep the rest out of the way.</p><div class="pick">' +
+      view().innerHTML = tasterHTML() + '<div class="onb"><p class="h-eyebrow">IF English</p><h1>Who is learning?</h1><p class="lead">We\'ll show what fits — and keep the rest out of the way.</p><div class="pick">' +
         [['me', '🙋', 'Me', 'Teens and adults: General, Business, IELTS, KET, PET'], ['child', '🧸', 'My child', 'Young Learners (6–12) and Maths in English'], ['teach', '👩‍🏫', 'I am a teacher', 'Use every course in class with Teach mode']].map(function (g) { return '<button data-w="' + g[0] + '"><i>' + g[1] + '</i><span><b>' + g[2] + '</b><span>' + g[3] + '</span></span></button>'; }).join('') + '</div></div>';
       $$('[data-w]').forEach(function (b) { b.onclick = function () { S.who = b.dataset.w; S.teacher = S.who === 'teach'; save(); if (S.teacher) { S.study = S.study && S.study.length ? S.study : []; save(); return go('#/'); } vOnboard('pick'); }; });
       return;
@@ -216,7 +224,7 @@
     var goalPct = Math.min(100, Math.round((S.today.d === day() ? S.today.xp : 0) / GOAL_XP * 100));
     var lvPct = P.level && LEVELS.indexOf(P.level) >= 0 ? (function () { var cs = COURSES.filter(function (c) { return c.level === P.level && (c.track === 'general' || c.track === 'business'); }); var n = 0, d = 0; cs.forEach(function (c) { var s2 = courseStats(c); n += s2.n; d += s2.d; }); return n ? Math.round(d / n * 100) : 0; })() : null;
     var nextLv = P.level ? LEVELS[LEVELS.indexOf(P.level) + 1] : null;
-    var html = '<div class="page-h"><div><p class="h-eyebrow">' + (S.teacher ? '👩‍🏫 Teacher' : S.who === 'child' ? '🧸 Young learner' : 'IF English') + '</p><h1>' + (a.name ? 'Hi, ' + esc(a.name.split(' ')[0]) + '!' : 'Welcome to IF English') + '</h1></div><a class="chip" href="#/onboard">✎ My courses</a></div>' +
+    var html = tasterHTML() + '<div class="page-h"><div><p class="h-eyebrow">' + (S.teacher ? '👩‍🏫 Teacher' : S.who === 'child' ? '🧸 Young learner' : 'IF English') + '</p><h1>' + (a.name ? 'Hi, ' + esc(a.name.split(' ')[0]) + '!' : 'Welcome to IF English') + '</h1></div><a class="chip" href="#/onboard">✎ My courses</a></div>' +
       (keys.length ? '<div class="chips mycourses">' + keys.map(function (k) { return '<button class="chip' + (k === act ? ' on' : '') + '" data-a="' + k + '">' + SICON[k] + ' ' + esc(SNAME[k]) + '</button>'; }).join('') + '</div>' : '') +
       '<div class="hello"><div class="plan">' + (main ? '<p class="h-eyebrow" style="color:var(--gold2)">' + esc(t('yourPlan')) + '</p><h2>' + (nx ? esc(nx.l.title) : 'Course complete! 🎉') + '</h2><p>' + esc(main.title) + (nx ? ' · ' + esc(t('unit')) + ' ' + (nx.ui + 1) + ': ' + esc(nx.u.title) : '') + '</p>' +
         (nx ? '<a class="btn gold" href="#/lesson/' + main.id + '/' + nx.u.id + '/' + nx.l.id + '">' + (st.d ? t('cont') : t('start')) + ' →</a>' : '<a class="btn gold" href="#/courses">Next course →</a>')
@@ -489,7 +497,8 @@
     return (it.tags || []).indexOf(f) >= 0;
   }
   function itemCard(it) {
-    return '<a class="card" href="#/play/' + it.id + '"><span class="ic">' + it.icon + '</span><h3>' + esc(it.t) + '</h3><p>' + esc(it.d) + '</p><div class="meta">' + (it.lv || []).slice(0, 3).map(function (l) { return '<span class="tag ' + tagFor(it.tr) + '">' + l + '</span>'; }).join('') + ((it.lv || []).length > 3 ? '<span class="tag">+</span>' : '') + (it.tr === 'exam' ? '<span class="tag ex">Exam</span>' : it.tr === 'kids' ? '<span class="tag kd">Kids</span>' : '') + '</div></a>';
+    var lock = meLoaded && !canOpen(it);
+    return '<a class="card' + (lock ? ' locked' : '') + '" href="#/play/' + it.id + '">' + (lock ? '<span class="lockb">🔒 Free account</span>' : (!access().signed && isFree(it) ? '<span class="lockb free">Free to try</span>' : '')) + '<span class="ic">' + it.icon + '</span><h3>' + esc(it.t) + '</h3><p>' + esc(it.d) + '</p><div class="meta">' + (it.lv || []).slice(0, 3).map(function (l) { return '<span class="tag ' + tagFor(it.tr) + '">' + l + '</span>'; }).join('') + ((it.lv || []).length > 3 ? '<span class="tag">+</span>' : '') + (it.tr === 'exam' ? '<span class="tag ex">Exam</span>' : it.tr === 'kids' ? '<span class="tag kd">Kids</span>' : '') + '</div></a>';
   }
   function lessonsOf(type) {   // course lessons of a kind, as cards
     var out = [];
@@ -516,6 +525,14 @@
     var it = IFX_DIR.filter(function (x) { return x.id === id; })[0];
     if (!it) return vSection('games');
     setNav(it.s === 'kids' ? 'more' : it.s);
+    if (!canOpen(it)) {
+      if (!meLoaded) { view().innerHTML = '<p style="text-align:center;margin-top:40px">Loading…</p>'; return; }
+      view().innerHTML = '<div class="join"><span class="ic">' + it.icon + '</span><h2>' + esc(it.t) + '</h2><p>This is part of the full IF English app. Create a free account (it takes a minute) to open it — you also get the first two units of every course and 7 days of full access.</p>' +
+        '<div class="row" style="justify-content:center;gap:10px;flex-wrap:wrap"><a class="btn gold" href="' + JOIN + '">Create a free account</a><a class="btn ghost" href="/me/#/login?next=' + encodeURIComponent('/app/#/play/' + it.id) + '">Sign in</a></div>' +
+        '<p class="note">Free without an account: the first unit of every course, the placement test, IF Live, IF Kart, Kids Quest, IF Skill Games, the IELTS Centre and three vocabulary courses.</p>' +
+        '<a class="chip" href="#/' + (SEC[it.s] ? it.s : 'more') + '">← Back</a></div>';
+      return;
+    }
     view().innerHTML = '<div class="playbar"><a class="chip" href="#/' + (SEC[it.s] ? it.s : 'more') + '">← ' + esc(SEC[it.s] ? t(it.s) : t('more')) + '</a><b>' + it.icon + ' ' + esc(it.t) + '</b><a class="chip" href="' + esc(it.href) + '" target="_blank" rel="noopener">⛶ Full screen</a></div>' +
       '<div class="playwrap"><iframe src="' + esc(it.href) + '" title="' + esc(it.t) + '" allow="autoplay; fullscreen" allowfullscreen></iframe></div>';
     document.body.classList.add('playing');

@@ -4,7 +4,8 @@
 //   free    outside learners (and anyone still waiting for approval): open games, placement test, small daily AI allowance
 // profile.role: 'admin' | 'teacher' | 'student' | 'guest'; profile.track: 'if' | 'private' | 'alumni' | 'outside' | 'tutor'
 // ('tutor' = a teacher from outside IF Academy on the Teacher plan: a guest account that pays, with Teach mode in IF English);
-// profile.paidUntil: ISO date for paid outside learners.
+// profile.paidUntil: ISO date for paid outside learners. profile.alumniUntil: end of an IF Alumni year.
+// profile.leftUntil: a student who left IF Academy keeps full access until this date (a month after leaving).
 export const TRACKS = ['if', 'private', 'alumni', 'outside', 'tutor', 'parent'];
 export const TRACK_LABEL = { if: 'IF Academy student', private: 'Individual student', alumni: 'IF Alumni', outside: 'Outside learner', tutor: 'Teacher (Teacher plan)', parent: 'Parent (Young Learners)' };
 export function paidActive(p) { return !!(p?.paidUntil && Date.parse(p.paidUntil) > Date.now()); }
@@ -19,7 +20,14 @@ export const TRIAL_DAYS = 7;
 export function tier(p) {
   if (!p?.role) return 'none';
   if (p.role === 'teacher' || p.role === 'admin') return 'staff';
-  if (p.role === 'student') return 'member';
+  if (p.role === 'student') {
+    // IF Alumni: free full access for a year (alumniUntil). Students who leave IF Academy keep access for a month
+    // after their IF Admin record is marked "left" (leftUntil). After that they have a free account.
+    const now = Date.now();
+    if (p.track === 'alumni') return p.alumniUntil && Date.parse(p.alumniUntil) < now && !paidActive(p) ? 'free' : 'member';
+    if (p.leftUntil && Date.parse(p.leftUntil) < now && !paidActive(p)) return 'free';
+    return 'member';
+  }
   if (p.role === 'guest' && (paidActive(p) || trialActive(p))) return 'member';
   // IF Academy students and the director's individual students: everything is free, straight away.
   // (Their request stays in Admin → Accounts; declining it ends the access.)

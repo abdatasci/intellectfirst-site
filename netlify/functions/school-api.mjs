@@ -335,6 +335,17 @@ export default async (req) => {
   if (await ensureTrial(uid, profile)) await putProfile(uid, profile);   // free accounts made before the trial existed
 
   if (path === 'me' && method === 'GET') {
+    // Alumni year and leavers' month: dates are stamped the first time they apply, so every page sees the same access
+    if (profile && profile.role === 'student') {
+      let ch = false;
+      if (profile.track === 'alumni' && !profile.alumniUntil) { profile.alumniUntil = new Date(Date.now() + 365 * 864e5).toISOString(); ch = true; }
+      if (profile.studentId && profile.track !== 'alumni') {
+        const st = (await doc('students')).find(x => x.id === profile.studentId);
+        if (st && st.status === 'withdrawn' && !profile.leftUntil) { profile.leftUntil = new Date(Date.now() + 30 * 864e5).toISOString(); ch = true; }
+        else if (st && st.status !== 'withdrawn' && profile.leftUntil) { delete profile.leftUntil; ch = true; }
+      }
+      if (ch) await putProfile(uid, profile);
+    }
     const out = { user: { id: uid, email: user.email, name: profile?.name || user.name || '' }, profile, access: tier(profile), membership: await membership() };
     if (profile?.studentId) {
       const s = (await doc('students')).find(x => x.id === profile.studentId);
@@ -851,7 +862,7 @@ export default async (req) => {
       if (isStaff(p.role)) return fail(400, 'staff');
       if (b.action === 'approve') {
         delete p.declined; p.role = 'student'; p.track = TRACKS.includes(b.track) ? b.track : (p.request?.track && p.request.track !== 'outside' ? p.request.track : 'private');
-        if (p.track === 'alumni') p.alumni = true;
+        if (p.track === 'alumni') { p.alumni = true; p.alumniUntil = new Date(Date.now() + 365 * 864e5).toISOString(); }
         delete p.request; Object.assign(p, await linkByPhone(b.uid, p));
       } else if (b.action === 'paid') {
         const months = Math.max(1, Math.min(24, Math.round(+b.months || 1)));

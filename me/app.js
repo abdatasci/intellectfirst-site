@@ -157,9 +157,16 @@
       '<p class="alt"><a href="#/forgot">Forgot password?</a> · New here? <a href="#/register">Create an account</a><br>Teacher or staff? <a href="#/staff">Staff registration</a></p>');
     $('#f').onsubmit = async function (ev) {
       ev.preventDefault(); var f = ev.target, b = $('button', f); b.disabled = true;
-      try { await ID.login(loginEmail($('#em').value), $('#pw').value); await loadMe(); header(); go(role() ? '#/' : '#/activate'); }
+      try { await ID.login(loginEmail($('#em').value), $('#pw').value); await loadMe(); header(); if (!afterAuth()) go(role() ? '#/' : '#/activate'); }
       catch (e) { err(f, authMsg(e)); b.disabled = false; }
     };
+  }
+  /** After signing in or registering: back to the page that sent them here (e.g. the IF English app). */
+  function afterAuth() {
+    var nx = null; try { nx = sessionStorage.getItem('if.next'); } catch (e) {}
+    if (!nx || !role()) return false;
+    try { sessionStorage.removeItem('if.next'); } catch (e) {}
+    location.href = nx; return true;
   }
   function vRegister(isStaff, as) {
     setNav('');
@@ -229,7 +236,7 @@
               try { actBody.code = ''; act = await api('activate', { method: 'POST', body: actBody }); lsSet('if.pending', null); await loadMe(); header(); toast('That code was not right, so your account is waiting for Abdoulie to confirm it. ' + welcomeMsg(act)); return go('#/'); } catch (e5) {}
             }
             toast(e2.code === 'code' ? 'Account created, but that code is not right.' : 'Account created. Please check your details.'); return go('#/activate'); }
-          await loadMe(); header(); toast((byPhone ? 'Your login is your phone number: ' + em.split('@')[0] + '. ' : '') + welcomeMsg(act)); go('#/');
+          await loadMe(); header(); toast((byPhone ? 'Your login is your phone number: ' + em.split('@')[0] + '. ' : '') + welcomeMsg(act)); if (!afterAuth()) go('#/');
         } else f.innerHTML = '<div class="ok-msg">Almost done: open the confirmation link we emailed to <b>' + esc(em) + '</b>.</div>';
       } catch (e) { b.disabled = false; b.textContent = 'Create account'; err(f, authMsg(e)); }
     };
@@ -245,7 +252,7 @@
     $('#f').onsubmit = async function (ev) {
       ev.preventDefault(); var f = ev.target, b = $('button', f); b.disabled = true;
       var t = track();
-      try { var act = await api('activate', { method: 'POST', body: Object.assign({}, p, { code: t === 'outside' ? '' : $('#cc').value.trim(), name: $('#nm').value.trim(), phone: $('#ph').value.trim(), track: t, classChoice: t === 'alumni' ? 'IF Alumni' : t === 'private' ? 'Individual (Abdoulie Manneh)' : (p.classChoice || '') }) }); lsSet('if.pending', null); await loadMe(); header(); toast(welcomeMsg(act)); go('#/'); }
+      try { var act = await api('activate', { method: 'POST', body: Object.assign({}, p, { code: t === 'outside' ? '' : $('#cc').value.trim(), name: $('#nm').value.trim(), phone: $('#ph').value.trim(), track: t, classChoice: t === 'alumni' ? 'IF Alumni' : t === 'private' ? 'Individual (Abdoulie Manneh)' : (p.classChoice || '') }) }); lsSet('if.pending', null); await loadMe(); header(); toast(welcomeMsg(act)); if (!afterAuth()) go('#/'); }
       catch (e) { b.disabled = false; err(f, e.code === 'code' ? 'That code is not right. Check it with your teacher.' : 'Could not check the code. Try again.'); }
     };
   }
@@ -1948,7 +1955,10 @@
   /* ---------- router ---------- */
   async function route() {
     closeModal(); window.scrollTo(0, 0);
-    var parts = location.hash.replace(/^#\/?/, '').split('/');
+    // "#/login?next=/app/" or "#/register?next=…": remember where to go after signing in, then drop the query
+    var hq = location.hash.split('?');
+    if (hq.length > 1) { try { var nx = new URLSearchParams(hq.slice(1).join('?')).get('next'); if (nx && /^\/(?![\/\\])/.test(nx)) sessionStorage.setItem('if.next', nx); } catch (e) {} history.replaceState(null, '', location.pathname + location.search + hq[0]); }
+    var parts = hq[0].replace(/^#\/?/, '').split('/');
     hideRec();
     try {
       switch (parts[0]) {
