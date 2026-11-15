@@ -558,6 +558,18 @@
   @keyframes wfIn{from{opacity:0;transform:translateY(16px) scale(.6)}to{opacity:1;transform:none}}
   @media (max-width:760px){.x-bot .wf-set{display:none}}
   @media (prefers-reduced-motion:reduce){.x-bot .wf b s,.x-bot .wf b s::after{animation:none}}
+
+  /* minimal pricing: one row per category, opens to show options */
+  details.pgrp{border-top:1px solid var(--border-c,#e6dfd2)}
+  details.pgrp:last-of-type{border-bottom:1px solid var(--border-c,#e6dfd2)}
+  details.pgrp>summary{list-style:none;cursor:pointer;display:flex;align-items:baseline;justify-content:space-between;gap:24px;padding:22px 2px}
+  details.pgrp>summary::-webkit-details-marker{display:none}
+  details.pgrp>summary .cat-label{margin:0;font-size:19px;font-weight:600;letter-spacing:-.01em}
+  details.pgrp>summary .cat-from{margin:0;white-space:nowrap;display:flex;align-items:baseline;gap:6px}
+  details.pgrp>summary .cat-from::after{content:"+";font-size:22px;font-weight:300;margin-left:14px;transition:transform .25s;display:inline-block;color:#a8824a}
+  details.pgrp[open]>summary .cat-from::after{transform:rotate(45deg)}
+  details.pgrp .program-list{margin:0 0 22px}
+  @media(max-width:700px){details.pgrp>summary{flex-direction:column;gap:4px}}
 </style>
 <link rel="stylesheet" href="academy.css">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -746,22 +758,7 @@
           <p data-i18n="hero_aside_p1">Intellect First is an English language academy built around one idea: language fluency is a form of leadership. Our classrooms are small, our instruction is personal, and our standards are set against international benchmarks.</p>
           <p><strong data-i18n="hero_aside_p2">General English · Premium English · IELTS · Corporate · Individual · Business English</strong></p>
         </div>
-      <div class="launch" id="launch">
-        <div class="launch-scene">
-          <a class="lcard" href="/tests/" target="_blank" rel="noopener" style="--z:60px;--r:-8deg"><b data-i18n="tab_tests">Test Centres</b><span>A1 → C1</span></a>
-          <a class="lcard" href="/a/kids-quest/" target="_blank" rel="noopener" style="--z:20px;--r:-3deg"><b data-i18n="tab_kq">IF Kids Quest</b><span data-i18n="launch_kq">Young Learners story game</span></a>
-          <a class="lcard" href="app/index.html" target="_blank" rel="noopener" style="--z:20px;--r:3deg"><b data-i18n="tab_learn">IF English</b><span data-i18n="launch_hub">Every app, game and test</span></a>
-          <a class="lcard" href="/me/#/login" style="--z:60px;--r:8deg"><b data-i18n="tab_staff">IF Teacher Hub</b><span data-i18n="launch_staff">Sign in to My account</span></a>
-        </div>
-      </div>
     </div>
-    </div>
-    <div class="values">
-      <div class="wrap">
-        <div class="values-row">
-          <span data-i18n="val_1">Excellence</span><span data-i18n="val_2">Integrity</span><span data-i18n="val_3">Innovation</span><span data-i18n="val_4">Critical thinking</span><span data-i18n="val_5">Professionalism</span><span data-i18n="val_6">Diversity</span><span data-i18n="val_7">Lifelong learning</span><span data-i18n="val_8">Global perspective</span>
-        </div>
-      </div>
     </div>
   </section>
 
@@ -769,7 +766,7 @@
     <div class="wrap">
       <div class="section-head">
         <div>
-          <p class="section-num" data-i18n="sec03_num">06 — Gallery</p>
+          <p class="section-num" data-i18n="sec03_num">Gallery</p>
           <h2 class="section-title" data-i18n="sec03_title">Life at the academy</h2>
         </div>
         <p class="section-desc" data-i18n="sec03_desc">Real moments from our classes and events — students, teachers and the IF community.</p>
@@ -847,12 +844,11 @@
     </div>
   </section>
 
-  <div class="x-open " style="--img:url('media/ai/courses3d.webp');--fb:url('media/7f7f038c702594ab6a115950d7a7662c.jpg')" aria-hidden="true"><div class="wrap"><span class="x-open-n">02</span><p class="x-open-t" data-i18n="x_open_courses">Courses</p></div></div>
   <section id="courses">
     <div class="wrap">
       <div class="section-head">
         <div>
-          <p class="section-num" data-i18n="sec_courses_num">02 — Courses &amp; Programs</p>
+          <p class="section-num" data-i18n="sec_courses_num">Courses &amp; Programs</p>
           <h2 class="section-title" data-i18n="sec_courses_title">What we teach</h2>
         </div>
         <p class="section-desc" data-i18n="sec_courses_desc">Full pricing for every course is on the Pricing page below.</p>
@@ -883,7 +879,7 @@
           <p data-i18n="course_intensive_desc">The Weekend Speaking Intensive and Summer Fast-Track programmes for rapid progress.</p>
         </div>
       </div>
-      <div class="course-actions"><a class="cta" href="#pricing" data-i18n="nav_pricing">Pricing</a><a class="cta outline" href="#finder" data-i18n="fnd_num">Course finder</a></div>
+      <div class="course-actions"><a class="cta" href="#pricing" data-i18n="nav_pricing">Pricing</a><a class="cta outline" href="#trial">Free trial lesson</a></div>
       <div class="eco-card" style="margin-top:18px;border-left:3px solid var(--ice);">
         <h3 class="serif" style="font-size:19px;" data-i18n="path_h">How our teacher pathway works</h3>
         <p data-i18n="path_p1">Students at A2 level and below (teens and adults) first study with our local, Russian-speaking teachers for about 3–4 months. They explain grammar clearly in your own language and build a solid base. After that, students move on to lessons with a native speaker.</p>
@@ -900,7 +896,7 @@
     <div class="wrap">
       <div class="section-head">
         <div>
-          <p class="section-num" data-i18n="sec_teachers_num">01 — Staff</p>
+          <p class="section-num" data-i18n="sec_teachers_num">Staff</p>
           <h2 class="section-title" data-i18n="sec_teachers_title">The people behind the standard</h2>
         </div>
         <p class="section-desc" data-i18n="sec_teachers_desc">A small, qualified team — native-speaking and local instructors, each specialised by age group and level.</p>
@@ -989,29 +985,12 @@
     </div>
   </section>
 
-  <div class="x-open" style="--img:url('media/ai/robot3d.webp')" aria-hidden="true"><div class="wrap"><span class="x-open-n">✶</span><p class="x-open-t" data-i18n="fnd_num">Course finder</p></div></div>
-  <section id="finder">
-    <div class="wrap">
-      <div class="section-head"><div><p class="section-num" data-i18n="fnd_num">Course finder</p><h2 class="section-title" data-i18n="fnd_title">Not sure where to start?</h2></div><p class="section-desc" data-i18n="fnd_desc">Answer three quick questions and we will suggest a course.</p></div>
-      <div class="panel-form">
-        <div class="f-row">
-          <label><span data-i18n="fnd_q1">Who is learning?</span><select id="fnd_who"><option value="child" data-i18n="fnd_child">Child (6–11)</option><option value="teen" data-i18n="fnd_teen" selected>Teen (12–17)</option><option value="adult" data-i18n="fnd_adult">Adult (18+)</option></select></label>
-          <label><span data-i18n="fnd_q2">Main goal</span><select id="fnd_goal"><option value="everyday" data-i18n="fnd_everyday">Everyday English</option><option value="cambridge" data-i18n="fnd_cambridge">Cambridge exam (KET, PET)</option><option value="ielts" data-i18n="fnd_ielts">IELTS</option><option value="business" data-i18n="fnd_business">Business English</option></select></label>
-          <label><span data-i18n="fnd_q3">Current level</span><select id="fnd_lvl"><option value="unsure" data-i18n="fnd_unsure">Not sure</option><option value="beginner" data-i18n="fnd_beginner">Beginner</option><option value="some" data-i18n="fnd_some">Some English</option><option value="confident" data-i18n="fnd_confident">Confident</option></select></label>
-        </div>
-        <button type="button" class="cta" id="fnd_btn" data-i18n="fnd_btn">Suggest a course</button>
-        <div id="fnd_out" class="fnd-out" aria-live="polite" hidden></div>
-      </div>
-    </div>
-  </section>
 
-
-  <div class="x-open" style="--img:url('media/ai/globe3d.webp')" aria-hidden="true"><div class="wrap"><span class="x-open-n">03</span><p class="x-open-t" data-i18n="nav_pricing">Pricing</p></div></div>
   <section id="pricing">
     <div class="wrap">
       <div class="section-head">
         <div>
-          <p class="section-num" data-i18n="sec01_num">03 — Pricing</p>
+          <p class="section-num" data-i18n="sec01_num">Pricing</p>
           <h2 class="section-title" data-i18n="sec01_title">A course of study for every ambition</h2>
         </div>
         <div class="currency-toggle" role="group" aria-label="Market">
@@ -1022,9 +1001,7 @@
 
       <!-- Kazakhstan market (KZT) — brochure 2026–27 -->
       <div class="market-panel" data-market-panel="kz">
-        <p class="cat-label" data-i18n="cat_ge_kzt">General English — every level from Beginner (A1) to Upper-Intermediate (C1), in small interactive groups</p>
-        <p class="cat-from"><span data-i18n="price_from">from</span> <b>₸30,000</b> <small data-i18n="small_GE-L">per month</small></p>
-        <div class="program-list">
+        <details class="pgrp"><summary><span class="cat-label" data-i18n="cat_ge_kzt">General English</span><span class="cat-from"><span data-i18n="price_from">from</span> <b>₸30,000</b> <small data-i18n="small_GE-L">per month</small></span></summary><div class="program-list">
           <div class="program-row">
             <span class="prog-code">IF · GE‑L</span>
             <span class="prog-name" data-i18n="name_GE-L">Mini-group · Local teacher</span>
@@ -1043,11 +1020,9 @@
             <span class="prog-desc" data-i18n="desc_GE-N">8 lessons a month, 90 minutes each, maximum speaking practice.</span>
             <a class="prog-ask" href="https://t.me/abliem?text=Hello%21%20I%20would%20like%20to%20know%20the%20price%20for%20IF%20%C2%B7%20GE-N." target="_blank" rel="noopener" data-i18n="price_ask">Ask for your price</a>
           </div>
-        </div>
+        </div></details>
 
-        <p class="cat-label" data-i18n="cat_ielts_kzt">IELTS Preparation — all four skills, exam strategies, mock tests and individual feedback</p>
-        <p class="cat-from"><span data-i18n="price_from">from</span> <b>₸75,000</b> <small data-i18n="small_IE">per month</small></p>
-        <div class="program-list">
+        <details class="pgrp"><summary><span class="cat-label" data-i18n="cat_ielts_kzt">IELTS Preparation</span><span class="cat-from"><span data-i18n="price_from">from</span> <b>₸75,000</b> <small data-i18n="small_IE">per month</small></span></summary><div class="program-list">
           <div class="program-row">
             <span class="prog-code">IF · IE</span>
             <span class="prog-name" data-i18n="name_IE">IELTS group</span>
@@ -1060,22 +1035,18 @@
             <span class="prog-desc" data-i18n="desc_IE-P">8 lessons a month, 60 or 90 minutes each.</span>
             <a class="prog-ask" href="https://t.me/abliem?text=Hello%21%20I%20would%20like%20to%20know%20the%20price%20for%20IF%20%C2%B7%20IE-P." target="_blank" rel="noopener" data-i18n="price_ask">Ask for your price</a>
           </div>
-        </div>
+        </div></details>
 
-        <p class="cat-label" data-i18n="cat_pair_kzt">Couple Lessons — NEW: learn with a partner, friend or family member, at a shared price</p>
-        <p class="cat-from"><span data-i18n="price_from">from</span> <b>₸50,000</b> <small data-i18n="small_perperson">per person, per month</small></p>
-        <div class="program-list">
+        <details class="pgrp"><summary><span class="cat-label" data-i18n="cat_pair_kzt">Couple Lessons</span><span class="cat-from"><span data-i18n="price_from">from</span> <b>₸50,000</b> <small data-i18n="small_perperson">per person, per month</small></span></summary><div class="program-list">
           <div class="program-row">
             <span class="prog-code">IF · PR‑L</span>
             <span class="prog-name" data-i18n="name_PR">Couple · Local teacher · 2 students</span>
             <span class="prog-desc" data-i18n="desc_PR">8 lessons a month, 60 minutes each, twice a week: the attention of a private lesson at a shared price.</span>
             <a class="prog-ask" href="https://t.me/abliem?text=Hello%21%20I%20would%20like%20to%20know%20the%20price%20for%20IF%20%C2%B7%20PR-L." target="_blank" rel="noopener" data-i18n="price_ask">Ask for your price</a>
           </div>
-        </div>
+        </div></details>
 
-        <p class="cat-label" data-i18n="cat_ind_kzt">Individual Lessons — built around your goals and schedule</p>
-        <p class="cat-from"><span data-i18n="price_from">from</span> <b>₸80,000</b> <small data-i18n="small_IL-L">per month</small></p>
-        <div class="program-list">
+        <details class="pgrp"><summary><span class="cat-label" data-i18n="cat_ind_kzt">Individual Lessons</span><span class="cat-from"><span data-i18n="price_from">from</span> <b>₸80,000</b> <small data-i18n="small_IL-L">per month</small></span></summary><div class="program-list">
           <div class="program-row">
             <span class="prog-code">IF · IL‑L</span>
             <span class="prog-name" data-i18n="name_IL-L">Individual · Local teacher</span>
@@ -1100,11 +1071,9 @@
             <span class="prog-desc" data-i18n="desc_IL-N3">Three times per week, 60 minutes each.</span>
             <a class="prog-ask" href="https://t.me/abliem?text=Hello%21%20I%20would%20like%20to%20know%20the%20price%20for%20IF%20%C2%B7%20IL-N3." target="_blank" rel="noopener" data-i18n="price_ask">Ask for your price</a>
           </div>
-        </div>
+        </div></details>
 
-        <p class="cat-label" data-i18n="cat_flex_kzt">Flexible Lesson Packages, Local Teacher — pay-as-you-go, no monthly commitment</p>
-        <p class="cat-from"><span data-i18n="price_from">from</span> <b>₸60,000</b> <small data-i18n="small_onetime">one-time</small></p>
-        <div class="program-list">
+        <details class="pgrp"><summary><span class="cat-label" data-i18n="cat_flex_kzt">Flexible Lesson Packages, Local Teacher</span><span class="cat-from"><span data-i18n="price_from">from</span> <b>₸60,000</b> <small data-i18n="small_onetime">one-time</small></span></summary><div class="program-list">
           <div class="program-row">
             <span class="prog-code">IF · FP‑12</span>
             <span class="prog-name" data-i18n="name_FP12">12-Lesson Package</span>
@@ -1117,11 +1086,9 @@
             <span class="prog-desc" data-i18n="desc_FP8">8 lessons, 60 minutes each.</span>
             <a class="prog-ask" href="https://t.me/abliem?text=Hello%21%20I%20would%20like%20to%20know%20the%20price%20for%20IF%20%C2%B7%20FP-8." target="_blank" rel="noopener" data-i18n="price_ask">Ask for your price</a>
           </div>
-        </div>
+        </div></details>
 
-        <p class="cat-label" data-i18n="cat_int_kzt">Intensive Programmes — paid once for the whole course</p>
-        <p class="cat-from"><span data-i18n="price_from">from</span> <b>₸99,000</b> <small data-i18n="small_course">whole course</small></p>
-        <div class="program-list">
+        <details class="pgrp"><summary><span class="cat-label" data-i18n="cat_int_kzt">Intensive Programmes</span><span class="cat-from"><span data-i18n="price_from">from</span> <b>₸99,000</b> <small data-i18n="small_course">whole course</small></span></summary><div class="program-list">
           <div class="program-row">
             <span class="prog-code">IF · WSI</span>
             <span class="prog-name" data-i18n="name_WSI">Weekend Speaking Intensive</span>
@@ -1152,11 +1119,9 @@
             <span class="prog-desc" data-i18n="desc_CT">Business communication, meetings, presentations, email writing — online &amp; offline.</span>
             <a class="prog-ask" href="https://t.me/abliem?text=Hello%21%20I%20would%20like%20to%20know%20the%20price%20for%20IF%20%C2%B7%20CT." target="_blank" rel="noopener" data-i18n="price_ask">Ask for your price</a>
           </div>
-        </div>
+        </div></details>
 
-        <p class="cat-label" data-i18n="cat_venue_kzt">Venue &amp; space rental — IF Business Lab &amp; Event Space</p>
-        <p class="cat-from"><span data-i18n="price_from">from</span> <b>₸10,000</b> <small data-i18n="small_perhour">per hour</small></p>
-        <div class="program-list">
+        <details class="pgrp"><summary><span class="cat-label" data-i18n="cat_venue_kzt">Venue &amp; space rental</span><span class="cat-from"><span data-i18n="price_from">from</span> <b>₸10,000</b> <small data-i18n="small_perhour">per hour</small></span></summary><div class="program-list">
           <div class="program-row">
             <span class="prog-code">IF · V‑ST</span>
             <span class="prog-name">IF Studio</span>
@@ -1181,15 +1146,13 @@
             <span class="prog-desc" data-i18n="desc_VFL">Up to 40 participants.</span>
             <a class="prog-ask" href="https://t.me/abliem?text=Hello%21%20I%20would%20like%20to%20know%20the%20price%20for%20IF%20%C2%B7%20V-FL." target="_blank" rel="noopener" data-i18n="price_ask">Ask for your price</a>
           </div>
-        </div>
+        </div></details>
         <p class="price-note" data-i18n="pricenote_kzt">Prices start from the figures shown. Your exact price depends on the programme, the schedule and current offers: ask us for a personal offer. All programs begin with a free placement test.</p>
       </div>
 
       <!-- Russia market (RUB) — live pricing page, intellectfirst.com -->
       <div class="market-panel" data-market-panel="ru" style="display:none;">
-        <p class="cat-label" data-i18n="cat_ge_rub">General English</p>
-        <p class="cat-from"><span data-i18n="price_from">from</span> <b>₽10,336</b> <small data-i18n="small_permonth">per month</small></p>
-        <div class="program-list">
+        <details class="pgrp"><summary><span class="cat-label" data-i18n="cat_ge_rub">General English</span><span class="cat-from"><span data-i18n="price_from">from</span> <b>₽10,336</b> <small data-i18n="small_permonth">per month</small></span></summary><div class="program-list">
           <div class="program-row">
             <span class="prog-code">IF · GE‑NN</span>
             <span class="prog-name" data-i18n="name_GENN">Mini Group, Non-Native</span>
@@ -1220,11 +1183,9 @@
             <span class="prog-desc" data-i18n="desc_online">Online.</span>
             <a class="prog-ask" href="https://t.me/abliem?text=Hello%21%20I%20would%20like%20to%20know%20the%20price%20for%20IF%20%C2%B7%20GE-IT." target="_blank" rel="noopener" data-i18n="price_ask">Ask for your price</a>
           </div>
-        </div>
+        </div></details>
 
-        <p class="cat-label" data-i18n="cat_examb_rub">Exam &amp; Business English</p>
-        <p class="cat-from"><span data-i18n="price_from">from</span> <b>₽11,886</b> <small data-i18n="small_permonth">per month</small></p>
-        <div class="program-list">
+        <details class="pgrp"><summary><span class="cat-label" data-i18n="cat_examb_rub">Exam &amp; Business English</span><span class="cat-from"><span data-i18n="price_from">from</span> <b>₽11,886</b> <small data-i18n="small_permonth">per month</small></span></summary><div class="program-list">
           <div class="program-row">
             <span class="prog-code">IF · EB‑NN</span>
             <span class="prog-name" data-i18n="name_GENN">Mini Group, Non-Native</span>
@@ -1249,7 +1210,7 @@
             <span class="prog-desc" data-i18n="desc_online">Online.</span>
             <a class="prog-ask" href="https://t.me/abliem?text=Hello%21%20I%20would%20like%20to%20know%20the%20price%20for%20IF%20%C2%B7%20EB-IT." target="_blank" rel="noopener" data-i18n="price_ask">Ask for your price</a>
           </div>
-        </div>
+        </div></details>
         <p class="price-note" data-i18n="pricenote_rub">Prices start from the figures shown. Ask us for a personal offer. All programs begin with a free placement test.</p>
       </div>
       <p style="margin-top:36px; font-size:14.5px;"><a href="a/class-catalog/index.html" style="text-decoration:underline; color:var(--accent);" data-i18n="catalog_link">Browse the full class catalog</a> <span data-i18n="catalog_link_tail"> — see exact days and times for every group class currently running.</span></p>
@@ -1257,12 +1218,11 @@
   </section>
 
     
-<div class="x-open apps-open" style="--img:url('media/ai/apps.webp')" aria-hidden="true"><div class="wrap"><span class="x-open-n">04</span><p class="x-open-t" data-i18n="x_open_apps">Apps & games</p></div></div>
   <section id="apps">
     <div class="wrap">
       <div class="section-head">
         <div>
-          <p class="section-num" data-i18n="sec_apps_num">04 — Apps</p>
+          <p class="section-num" data-i18n="sec_apps_num">Apps</p>
           <h2 class="section-title" data-i18n="sec_apps_title">Everything in one place</h2>
         </div>
         <p class="section-desc" data-i18n="sec_apps_desc">Placement tests, vocabulary arenas, games, IF English and our teacher tools — pick a level, open an app, start practising.</p>
@@ -1273,23 +1233,14 @@
         <span class="lc-desc" data-i18n="lc_desc"></span>
         <span class="lc-go" data-i18n="lc_go"></span>
       </a>
-      <div class="tile-grid feat-apps">
-        <a class="tile" href="/a/ielts/" target="_blank" rel="noopener" style="--i:0"><span class="tile-in"><span class="tile-n">IELTS Centre</span><span class="tile-d" data-i18n="f_ielts">AI-marked Writing and Speaking, mock tests</span><span class="tile-go">↗</span></span></a>
-        <a class="tile" href="/tests/" target="_blank" rel="noopener" style="--i:1"><span class="tile-in"><span class="tile-n">IF Test Centre</span><span class="tile-d" data-i18n="f_tests">Every test in one place: placement, course, Cambridge and IELTS, all AI-marked</span><span class="tile-go">↗</span></span></a>
-        <a class="tile" href="/live/" target="_blank" rel="noopener" style="--i:2"><span class="tile-in"><span class="tile-n">IF Live</span><span class="tile-d" data-i18n="f_live">Class games on the big screen, or AI practice on your own</span><span class="tile-go">↗</span></span></a>
-        <a class="tile" href="/app/#/vocab" target="_blank" rel="noopener" style="--i:3"><span class="tile-in"><span class="tile-n">IF English</span><span class="tile-d" data-i18n="f_english">12 vocabulary courses and the Game Room</span><span class="tile-go">↗</span></span></a>
-        <a class="tile" href="/a/young-learners/" target="_blank" rel="noopener" style="--i:4"><span class="tile-in"><span class="tile-n">Young Learners Centre</span><span class="tile-d" data-i18n="f_yl">Starters to PET: games and tests for ages 6–15</span><span class="tile-go">↗</span></span></a>
-        <a class="tile" href="a/skill-games/index.html" target="_blank" rel="noopener" style="--i:5"><span class="tile-in"><span class="tile-n">IF Skill Games</span><span class="tile-d" data-i18n="f_place">Quick daily workouts: five minutes, a new mix every day</span><span class="tile-go">↗</span></span></a>
-      </div>
     </div>
   </section>
 
-  <div class="x-open x-office" style="--img:url('media/office-studio.webp')" aria-hidden="true"><div class="wrap"><span class="x-open-n">05</span><p class="x-open-t" data-i18n="x_open_spaces">Our spaces</p></div></div>
   <section id="ecosystem">
     <div class="wrap">
       <div class="section-head">
         <div>
-          <p class="section-num" data-i18n="sec02_num">05 — Ecosystem</p>
+          <p class="section-num" data-i18n="sec02_num">Ecosystem</p>
           <h2 class="section-title" data-i18n="sec02_title">Four spaces, one standard</h2>
         </div>
         <p class="section-desc" data-i18n="sec02_desc">Beyond the classroom, Intellect First runs a small ecosystem of spaces built for practice, immersion and production.</p>
@@ -1323,7 +1274,7 @@
     </div>
   </section>
 
-  <section id="feedback">
+  <section id="feedback" hidden>
     <div class="wrap">
       <div class="section-head">
         <div>
@@ -1345,7 +1296,7 @@
     <div class="wrap">
       <div class="section-head">
         <div>
-          <p class="section-num" data-i18n="sec_faqs_num">07 — FAQs</p>
+          <p class="section-num" data-i18n="sec_faqs_num">FAQs</p>
           <h2 class="section-title" data-i18n="sec_faqs_title">Questions, answered</h2>
         </div>
       </div>
@@ -1355,25 +1306,6 @@
         <details><summary class="serif" data-i18n="faq_q3">Are classes online or in person?</summary><p class="prog-desc" data-i18n="faq_a3">Both — General English for the Russian market runs online; classes in Kazakhstan run in person across our four spaces (IF Business Lab, IF Hub, IF Studio and the IF Reading Zone).</p></details>
         <details><summary class="serif" data-i18n="faq_q4">Do you offer corporate or group training?</summary><p class="prog-desc" data-i18n="faq_a4">Yes — Corporate Training is quote-based and customised to your organisation, available online and offline.</p></details>
         <details><summary class="serif" data-i18n="faq_q5">Need to change a class time or teacher?</summary><p class="prog-desc" data-i18n="faq_a5">Contact the academy directly and we'll arrange it.</p></details>
-      </div>
-    </div>
-  </section>
-
-  <section id="about">
-    <div class="wrap">
-      <div class="about-grid">
-        <div>
-          <p class="section-num" data-i18n="sec04_num">08 — About</p>
-          <h2 class="section-title" style="margin-bottom:22px;" data-i18n="sec04_title">Built on one conviction</h2>
-          <p data-i18n="about_p1">Intellect First was founded on the conviction that language instruction should be judged the way any serious education is judged — by rigour, by outcomes, and by the calibre of the people delivering it.</p>
-          <p data-i18n="about_p2">Every class is led by qualified instructors, held to international standards, and built around small groups so that no student goes unheard. The result is an academy that operates less like a language centre and more like a proper school of thought.</p>
-        </div>
-        <div class="stat-list">
-          <div class="stat"><div class="num" data-i18n="stat1_num">Excellence</div><div class="lbl" data-i18n="stat1_lbl">Held as the operating standard, not a marketing word</div></div>
-          <div class="stat"><div class="num" data-i18n="stat2_num">Small groups</div><div class="lbl" data-i18n="stat2_lbl">3–6 students in General English, so instruction stays personal</div></div>
-          <div class="stat"><div class="num" data-i18n="stat3_num">Global perspective</div><div class="lbl" data-i18n="stat3_lbl">Curriculum benchmarked against international standards</div></div>
-          <div class="stat"><div class="num" data-i18n="stat4_num">Native instruction</div><div class="lbl" data-i18n="stat4_lbl">Available through the Premium English track</div></div>
-        </div>
       </div>
     </div>
   </section>
@@ -1399,12 +1331,11 @@
     </div>
   </section>
 
-  <div class="x-open " style="--img:url('media/ai/visit3d.webp');--fb:url('media/967e678fd7da0301d59c8801d882a656.jpg')" aria-hidden="true"><div class="wrap"><span class="x-open-n">09</span><p class="x-open-t" data-i18n="x_open_visit">Visit us</p></div></div>
   <section id="location">
     <div class="wrap">
       <div class="section-head">
         <div>
-          <p class="section-num" data-i18n="loc_num">09 — Visit</p>
+          <p class="section-num" data-i18n="loc_num">Visit</p>
           <h2 class="section-title" data-i18n="loc_title">Find us in Kostanay</h2>
         </div>
         <p class="section-desc" data-i18n="loc_desc">Intellect First Academy (IF Academy) is on Al-Farabi Avenue, a short walk from the Gloriya Hotel.</p>
@@ -1520,7 +1451,7 @@
 
 <script>
   var I18N = {
-    en: { lc_all: "Open IF English: courses, words, grammar, games and tests", f_place: "Quick daily workouts: five minutes, a new mix every day", f_yl: "Starters to PET: games and tests for ages 6–15", f_english: "12 vocabulary courses and the Game Room", f_live: "Class games on the big screen, or AI practice on your own", f_tests: "Every test in one place: placement, course, Cambridge and IELTS, all AI-marked", f_ielts: "AI-marked Writing and Speaking, mock tests", small_course: "whole course", desc_IBC: "Exam preparation with a native speaker: 2 weekends, 6 hours a day: 24 hours.", name_IBC: "IELTS Weekend Bootcamp", desc_EVI: "After work: Monday–Thursday from 18:00, 90 minutes, 4 weeks: 16 lessons, 24 hours.", name_EVI: "Evening Intensive", small_perperson: "per person, per month", desc_PR: "8 lessons a month, 60 minutes each, twice a week: the attention of a private lesson at a shared price.", name_PR: "Couple · Local teacher · 2 students", cat_pair_kzt: "Couple Lessons — NEW: learn with a partner, friend or family member, at a shared price", price_from: "from", price_ask: "Ask for your price", g_c_crest: "A lesson in our main classroom", g_c_table: "Working through the Student's Book", g_c_glass: "Teens group in class", g_space: "Our space & classes", g_kicker2: "Classes, our space and events · Kostanay", g_c_studio: "Our studio classroom", g_c_present: "A presentation in class", g_c_teens: "Teens group at work", ai_name: "Ask IF Assistant", ai_sub: "AI · courses, prices, timetable — answers instantly", ai_h_sub: "AI assistant · usually answers in seconds", ai_ph: "Type your question…", ai_note: "AI can make mistakes. To book, message us on Telegram or WhatsApp.", bot_name: "IF Academy bot", ai_hello: "Hello! 👋 I'm the IF Academy assistant. Ask me about courses, prices, the timetable or how to start.", ai_q1: "Which course suits my child (10 years old)?", ai_q2: "How much are IELTS classes?", ai_q3: "Where are you and when are classes?", ai_q4: "How do I take the placement test?", ai_err: "Sorry, I couldn't answer just now. Please try again, or message us on Telegram @abliem.", ai_quota: "That's the limit of questions for today. Please message us on Telegram @abliem or WhatsApp — we'll be happy to help.", chat_pick: "Message us on", nav_hub: "Learn", nav_ielts: "IELTS Centre", nav_placement: "IF Test Centre", nav_signin: "Sign in", nav_register: "Create account", nav_account: "My account", nav_classroom: "IF Classroom", nav_admin: "Admin panel", nav_young_d: "Games and tests for kids and teens", nav_ielts_d: "Practice tests with AI marking", nav_portal_d: "Every IF app, game and test in one place", nav_placement_d: "Placement test and every course test, AI-marked", nav_apps_d: "IF English and our learning apps", nav_catalog_d: "Every group, level and time", nav_young_learners: "Young Learners Centre", app_pet_games: "PET Games", app_ket_games: "KET Games",
+    en: { lc_all: "Open IF English: courses, words, grammar, games and tests", f_place: "Quick daily workouts: five minutes, a new mix every day", f_yl: "Starters to PET: games and tests for ages 6–15", f_english: "12 vocabulary courses and the Game Room", f_live: "Class games on the big screen, or AI practice on your own", f_tests: "Every test in one place: placement, course, Cambridge and IELTS, all AI-marked", f_ielts: "AI-marked Writing and Speaking, mock tests", small_course: "whole course", desc_IBC: "Exam preparation with a native speaker: 2 weekends, 6 hours a day: 24 hours.", name_IBC: "IELTS Weekend Bootcamp", desc_EVI: "After work: Monday–Thursday from 18:00, 90 minutes, 4 weeks: 16 lessons, 24 hours.", name_EVI: "Evening Intensive", small_perperson: "per person, per month", desc_PR: "8 lessons a month, 60 minutes each, twice a week: the attention of a private lesson at a shared price.", name_PR: "Couple · Local teacher · 2 students", cat_pair_kzt: "Couple Lessons", price_from: "from", price_ask: "Ask for your price", g_c_crest: "A lesson in our main classroom", g_c_table: "Working through the Student's Book", g_c_glass: "Teens group in class", g_space: "Our space & classes", g_kicker2: "Classes, our space and events · Kostanay", g_c_studio: "Our studio classroom", g_c_present: "A presentation in class", g_c_teens: "Teens group at work", ai_name: "Ask IF Assistant", ai_sub: "AI · courses, prices, timetable — answers instantly", ai_h_sub: "AI assistant · usually answers in seconds", ai_ph: "Type your question…", ai_note: "AI can make mistakes. To book, message us on Telegram or WhatsApp.", bot_name: "IF Academy bot", ai_hello: "Hello! 👋 I'm the IF Academy assistant. Ask me about courses, prices, the timetable or how to start.", ai_q1: "Which course suits my child (10 years old)?", ai_q2: "How much are IELTS classes?", ai_q3: "Where are you and when are classes?", ai_q4: "How do I take the placement test?", ai_err: "Sorry, I couldn't answer just now. Please try again, or message us on Telegram @abliem.", ai_quota: "That's the limit of questions for today. Please message us on Telegram @abliem or WhatsApp — we'll be happy to help.", chat_pick: "Message us on", nav_hub: "Learn", nav_ielts: "IELTS Centre", nav_placement: "IF Test Centre", nav_signin: "Sign in", nav_register: "Create account", nav_account: "My account", nav_classroom: "IF Classroom", nav_admin: "Admin panel", nav_young_d: "Games and tests for kids and teens", nav_ielts_d: "Practice tests with AI marking", nav_portal_d: "Every IF app, game and test in one place", nav_placement_d: "Placement test and every course test, AI-marked", nav_apps_d: "IF English and our learning apps", nav_catalog_d: "Every group, level and time", nav_young_learners: "Young Learners Centre", app_pet_games: "PET Games", app_ket_games: "KET Games",
       nav_portal: "IF English",
       tab_home: "Home",
       tab_courses: "Courses",
@@ -1551,7 +1482,7 @@
       lvl_c2: "Handle routine tasks and talk about your life and plans.",
       lvl_c3: "Cope with most travel, study and work situations.",
       lvl_c4: "Follow fast speech and argue a point clearly.",
-      lcs_num: "04 — IF English", lcs_title: "Your learning, in one place", lcs_desc: "IF English brings every test, vocabulary arena, game and coursebook page together, with a level filter and search. Pick a block to start.", lcs_main: "Open IF English", lcs_open: "Open", lcs_hero: "Open IF English", nav_apps: "Apps", tab_apps: "Apps", lcs_b1_n: "11", lcs_b1_t: "Test Centres", lcs_b1_d: "Placement test plus English File, Teenagers and PET tests, marked automatically.", lcs_b2_n: "12", lcs_b2_t: "Vocabulary Arenas", lcs_b2_d: "Team and solo word games from Movers to C1, plus KET, PET and IELTS.", lcs_b3_n: "11", lcs_b3_t: "Game Room", lcs_b3_d: "Eleven arcade games in every level, plus Taboo, quests and Grammar in Use.", lcs_b4_n: "Hub", lcs_b4_t: "IF English & Class Catalog", lcs_b4_d: "Coursebooks and levels, and the days and times of every group class.", games_sub_v: "Choose your level", games_sub_g: "More games: quests, arcades and grammar", launch_games: "Game Room · 11 games", tab_kq: "IF Kids Quest", launch_kq: "Young Learners story game", launch_staff: "Sign in to My account", staff_h: "Staff access", staff_p: "IF Teacher Hub is for Intellect First teachers. Enter the access code you were given. Administrator tools open with the administrator code.", staff_ph: "Access code", staff_go: "Unlock", staff_bad: "That code did not work. Check it and try again.", staff_lock: "Lock again", staff_t: "Teachers", staff_a: "Administrator only", staff_wait: "Checking…", staff_ok: "Unlocked", lc_kicker: "IF English", lc_title: "One place for every IF test and vocabulary arena", lc_desc: "All Test Centres and Vocabulary Arenas, from A1 to C1 and the Cambridge exams, with a level filter and search.", lc_go: "Open IF English", lvl_c5: "Use English flexibly and precisely for study and work.", lvl_note: "A1–C1 follow the same programme books for teens and adults. Materials are mostly Cambridge and Oxford coursebooks plus other online resources. Cambridge exam preparation (Flyers, KET, PET) is taught as separate courses, not as part of B1.", lvl_exam: "Cambridge exam preparation, separate courses",
+      lcs_num: "IF English", lcs_title: "Your learning, in one place", lcs_desc: "IF English brings every test, vocabulary arena, game and coursebook page together, with a level filter and search. Pick a block to start.", lcs_main: "Open IF English", lcs_open: "Open", lcs_hero: "Open IF English", nav_apps: "Apps", tab_apps: "Apps", lcs_b1_n: "11", lcs_b1_t: "Test Centres", lcs_b1_d: "Placement test plus English File, Teenagers and PET tests, marked automatically.", lcs_b2_n: "12", lcs_b2_t: "Vocabulary Arenas", lcs_b2_d: "Team and solo word games from Movers to C1, plus KET, PET and IELTS.", lcs_b3_n: "11", lcs_b3_t: "Game Room", lcs_b3_d: "Eleven arcade games in every level, plus Taboo, quests and Grammar in Use.", lcs_b4_n: "Hub", lcs_b4_t: "IF English & Class Catalog", lcs_b4_d: "Coursebooks and levels, and the days and times of every group class.", games_sub_v: "Choose your level", games_sub_g: "More games: quests, arcades and grammar", launch_games: "Game Room · 11 games", tab_kq: "IF Kids Quest", launch_kq: "Young Learners story game", launch_staff: "Sign in to My account", staff_h: "Staff access", staff_p: "IF Teacher Hub is for Intellect First teachers. Enter the access code you were given. Administrator tools open with the administrator code.", staff_ph: "Access code", staff_go: "Unlock", staff_bad: "That code did not work. Check it and try again.", staff_lock: "Lock again", staff_t: "Teachers", staff_a: "Administrator only", staff_wait: "Checking…", staff_ok: "Unlocked", lc_kicker: "IF English", lc_title: "One place for every IF test and vocabulary arena", lc_desc: "All Test Centres and Vocabulary Arenas, from A1 to C1 and the Cambridge exams, with a level filter and search.", lc_go: "Open IF English", lvl_c5: "Use English flexibly and precisely for study and work.", lvl_note: "A1–C1 follow the same programme books for teens and adults. Materials are mostly Cambridge and Oxford coursebooks plus other online resources. Cambridge exam preparation (Flyers, KET, PET) is taught as separate courses, not as part of B1.", lvl_exam: "Cambridge exam preparation, separate courses",
       who_local: "Local teacher",
       who_then: "Local teacher for 3–4 months, then native",
       who_both: "Local or native",
@@ -1591,7 +1522,7 @@
       trial_copy: "Copy message",
       trial_copied: "Copied",
       trial_note: "This opens Telegram with your message ready to send. Nothing is stored on this page.",
-      loc_num: "09 — Visit",
+      loc_num: "Visit",
       loc_title: "Find us in Kostanay",
       loc_desc: "Intellect First Academy (IF Academy) is on Al-Farabi Avenue, a short walk from the Gloriya Hotel.",
       loc_addr_label: "Address",
@@ -1610,7 +1541,7 @@
       cap_lunch: "Lunch together after the games", cap_chain: "Team challenge", cap_badges: "Team badges and good humour",
       cap_chat: "Teachers and students, off the clock", cap_video: "A student video about their teacher", aw_head: "Awards day", cap_aw_speech: "Awards day: celebrating our students' progress", cap_aw_ielts: "IELTS Achievement Awards", cap_aw_ielts2: "A proud IELTS result", cap_aw_year: "Annual Achievement Certificates", cap_aw_teach: "Teaching Excellence Award", cap_aw_journey: "Learning Journey Awards", cap_debate: "Debate practice in class", cafe_head: "Cyber café weekend", cap_cafe1: "Intellect First Weekend: our PET group at the cyber café", cap_cafe2: "Speaking English while gaming with foreign English speakers", cap_fun: "A funny conversation in Russian", ig_head: "More on Instagram",
       ig_post: "Watch on Instagram — our lessons & events", ig_reel: "Watch the reel on Instagram",
-      nav_apps: "Apps", sec_apps_num: "04 — Apps", sec_apps_title: "Everything in one place",
+      nav_apps: "Apps", sec_apps_num: "Apps", sec_apps_title: "Everything in one place",
       sec_apps_desc: "Placement tests, vocabulary arenas, games, IF English and our teacher tools — pick a level, open an app, start practising.",
       tab_learn: "IF English", tab_tests: "Test Centres", tab_vocab: "Vocabulary Arenas", tab_games: "Games", tab_staff: "IF Teacher Hub",
       note_learn: "For students: IF English brings every IF app, test and game together, and the Class Catalog shows every group's days and times.",
@@ -1624,7 +1555,7 @@
       staff_only: "Staff only", launch_hub: "Every app, game and test",
       nav_programs: "Programs", nav_catalog: "Class Catalog", nav_ecosystem: "Ecosystem", nav_gallery: "Gallery",
       nav_teachers: "Staff", nav_courses: "Courses & Programs", nav_pricing: "Pricing", nav_faqs: "FAQs",
-      sec_teachers_num: "01 — Staff", sec_teachers_title: "The people behind the standard",
+      sec_teachers_num: "Staff", sec_teachers_title: "The people behind the standard",
       sec_teachers_desc: "A small, qualified team — native-speaking and local teachers, each specialised by age group and level, with the managers and media team who keep IF running.",
       teacher_abdoulie_role: "Founder & Director, IF Academy",
       teacher_abdoulie_desc: "Abdoulie Manneh is the founder of IF Academy and its native English-speaking teacher. Originally from The Gambia, he has taught for over 14 years in Africa, Russia and Kazakhstan, including corporate programmes for companies such as Lukoil and Rosatom. He holds degrees from universities in The Gambia, Taiwan and Russia, is TESOL-certified, and is completing a Doctor of Business Administration at Maqsut Narikbayev University.",
@@ -1636,7 +1567,7 @@
       teacher_joseph_role: "Substitute Teacher · Native Speaker", teacher_joseph_desc: "Native-speaking substitute teacher; Young learners — Movers, Cambridge YLE preparation.",
       teacher_anelya_role: "Manager", teacher_anelya_desc: "I’m the manager at IF Academy. I'm responsible for organising daily operations, coordinating teachers and students, managing schedules, communicating with parents, and ensuring everything runs smoothly. I enjoy working with people, staying organised, and creating a positive and welcoming learning environment!",
       teacher_ekaterina_role: "SMM", teacher_ekaterina_desc: "Responsible for managing the Instagram account, creating content, and developing its visual identity to turn English learning into an engaging, inspiring experience.",
-      sec_courses_num: "02 — Courses & Programs", sec_courses_title: "What we teach",
+      sec_courses_num: "Courses & Programs", sec_courses_title: "What we teach",
       sec_courses_desc: "Full pricing for every course is on the Pricing page below.",
       course_ge_name: "General English", course_ge_desc: "A1, A2, B1, B2 and C1 in General and Business English: one programme for teens and adults, in mini-groups or individually. A1–A2 students study with local teachers for the first 3–4 months; native-speaker lessons open from B1.",
       course_ielts_name: "IELTS Preparation", course_ielts_desc: "Full four-skill preparation with exam strategy, mock tests and individual feedback.",
@@ -1644,7 +1575,7 @@
       course_biz_name: "Business & Corporate", course_biz_desc: "Workplace communication, meetings, presentations and custom corporate training.",
       course_yl_name: "Young Learners", course_yl_desc: "Starters and Movers with local teachers; Flyers, KET and PET with local teachers or native speakers. Cambridge YLE and KET/PET exam preparation.",
       course_intensive_name: "Weekend & Intensive", course_intensive_desc: "The Weekend Speaking Intensive and Summer Fast-Track programmes for rapid progress.",
-      sec_faqs_num: "07 — FAQs", sec_faqs_title: "Questions, answered",
+      sec_faqs_num: "FAQs", sec_faqs_title: "Questions, answered",
       faq_q1: "How do I get started?", faq_a1: "Book a free placement test through Telegram or email — we'll assess your level and recommend the right class.",
       faq_q2: "What levels do you teach?", faq_a2: "Beginner (A1) through Upper-Intermediate (C1) for General English, plus Cambridge exam tracks (Starters, Movers, Flyers, KET, PET) for young learners.",
       faq_q3: "Are classes online or in person?", faq_a3: "Both — General English for the Russian market runs online; classes in Kazakhstan run in person across our four spaces (IF Business Lab, IF Hub, IF Studio and the IF Reading Zone).",
@@ -1659,14 +1590,14 @@
       hero_aside_p2: "General English · Premium English · IELTS · Corporate · Individual · Business English",
       val_1: "Excellence", val_2: "Integrity", val_3: "Innovation", val_4: "Critical thinking",
       val_5: "Professionalism", val_6: "Diversity", val_7: "Lifelong learning", val_8: "Global perspective",
-      sec01_num: "03 — Pricing", sec01_title: "A course of study for every ambition",
+      sec01_num: "Pricing", sec01_title: "A course of study for every ambition",
       market_kz: "Kazakhstan · ₸", market_ru: "Russia · ₽",
-      cat_ge_kzt: "General English — every level from Beginner (A1) to Upper-Intermediate (C1), in small interactive groups",
-      cat_ielts_kzt: "IELTS Preparation — all four skills, exam strategies, mock tests and individual feedback",
-      cat_ind_kzt: "Individual Lessons — built around your goals and schedule",
-      cat_flex_kzt: "Flexible Lesson Packages, Local Teacher — pay-as-you-go, no monthly commitment",
-      cat_int_kzt: "Intensive Programmes — paid once for the whole course",
-      cat_venue_kzt: "Venue & space rental — IF Business Lab & Event Space",
+      cat_ge_kzt: "General English",
+      cat_ielts_kzt: "IELTS Preparation",
+      cat_ind_kzt: "Individual Lessons",
+      cat_flex_kzt: "Lesson Packages",
+      cat_int_kzt: "Intensive Programmes",
+      cat_venue_kzt: "Venue & space rental",
       "name_GE-L": "Mini-group · Local teacher", "desc_GE-L2": "8 lessons/month, twice weekly, 60 minutes each, small groups.", "desc_GE-L": "8 lessons a month, 90 minutes each, groups of 3–6.",
       "name_GE-N": "Mini-group · Native speaker", "desc_GE-N": "8 lessons a month, 90 minutes each, maximum speaking practice.",
       name_IE: "IELTS group", desc_IE: "8 lessons a month, 90 minutes each: all four skills, exam strategy and mock tests.",
@@ -1696,18 +1627,18 @@
       pricenote_rub: "Prices start from the figures shown. Ask us for a personal offer. All programs begin with a free placement test.",
       catalog_link: "Browse the full class catalog",
       catalog_link_tail: " — see exact days and times for every group class currently running.",
-      sec02_num: "05 — Ecosystem", sec02_title: "Four spaces, one standard",
+      sec02_num: "Ecosystem", sec02_title: "Four spaces, one standard",
       sec02_desc: "Beyond the classroom, Intellect First runs a small ecosystem of spaces built for practice, immersion and production.",
       eco1_desc: "Speaking clubs, debates, public speaking practice and current-affairs discussion — where fluency meets confidence.",
       eco2_desc: "Intensive small-group work, IELTS-focused sessions and workshops for professional development.",
       eco4_desc: "A calm corner for graded readers, our library and quiet independent study — where reading becomes a habit.", eco3_desc: "Individual and online lessons, video production and podcasts — content that extends learning beyond the room.",
-      sec03_num: "06 — Gallery", sec03_title: "Life at the academy",
+      sec03_num: "Gallery", sec03_title: "Life at the academy",
       g_n_hand: "Certificates handed out at the end-of-year party", g_n_cert: "End-of-year certificate", g_n_book: "A gift for a great year", g_n_group: "Proud certificate holders", g_n_rope: "The rope challenge", g_n_chat: "Catching up between games", g_n_friends: "Friends from every group", fb_num: "Student voices", fb_title: "What our students say", fb_desc: "Real feedback from IF Academy students, written in their own accounts and published with their permission.", fb_cta_t: "Studying with us? Tell other students how it’s going.", fb_cta: "Share your feedback", fb_empty: "Our students’ feedback will appear here soon.", fb_avg: "{a} out of 5 · {n} students", fb_more: "Read more", fb_less: "Show less", g_kicker: "End-of-year BBQ party · Glamping park, Kostanay", g_all: "All", g_awards: "Awards & certificates", g_games: "Team games & activities", g_moments: "Moments", g_c_speech: "The director presenting end-of-year awards", g_c_ielts: "IELTS Achievement Award", g_c_annual: "Annual Achievement Certificate", g_c_commit: "Commitment Certificate", g_c_media: "Media & Marketing Excellence Award", g_c_teach: "Teaching Excellence Award", g_c_journey: "Learning Journey Award", g_c_teams: "Teams getting ready for the games", g_c_badges: "Handing out team badges", g_c_wolves: "Team Wolves", g_c_eagles: "Team Eagles planning their strategy", g_c_hoop: "The hoop relay", g_c_brief: "Briefing before the next round", g_c_host: "The host announcing the next challenge", g_c_lineup: "Teams lined up for the challenge", g_c_group: "All smiles with our team badges", g_c_fist: "Fist bump — well played!", g_c_hand: "Congratulations all round", g_c_sun: "Sunshine and good company", g_c_tee: "Students and teachers, off the clock",
       sec03_desc: "Real moments from our classes and events — students, teachers and the IF community.",
       frame_1: "General English — mini-group session", frame_2: "IF Hub — speaking club", frame_3: "IELTS mock testing",
       frame_4: "IF Studio — recording session", frame_5: "Corporate training on-site", frame_6: "Student showcase and graduation",
       gallery_note: "Placeholder frames — send through your academy photography and we'll drop it straight in.",
-      sec04_num: "08 — About", sec04_title: "Built on one conviction",
+      sec04_num: "About", sec04_title: "Built on one conviction",
       about_p1: "Intellect First was founded on the conviction that language instruction should be judged the way any serious education is judged — by rigour, by outcomes, and by the calibre of the people delivering it.",
       about_p2: "Every class is led by qualified instructors, held to international standards, and built around small groups so that no student goes unheard. The result is an academy that operates less like a language centre and more like a proper school of thought.",
       stat1_num: "Excellence", stat1_lbl: "Held as the operating standard, not a marketing word",
@@ -1718,7 +1649,7 @@
       foot_cta: "Book a free placement test", foot_contact_title: "Contact", foot_academy_title: "Academy",
       foot_academy_city: "Alfarabi 19, Kostanay 110000, Kazakhstan", foot_bottom_left: "Intellect First — Learn. Think. Lead."
     },
-    ru: { lc_all: "Открыть IF English: курсы, слова, грамматика, игры и тесты", f_place: "Быстрые ежедневные тренировки: пять минут, каждый день новый набор", f_yl: "От Starters до PET: игры и тесты для 6–15 лет", f_english: "12 словарных курсов и Игровая комната", f_live: "Игры для класса на большом экране или практика с ИИ", f_tests: "Все тесты в одном месте: уровень, курсы, Cambridge и IELTS, с проверкой ИИ", f_ielts: "Writing и Speaking с проверкой ИИ, пробные тесты", small_course: "за весь курс", desc_IBC: "Подготовка к экзамену с носителем языка: 2 выходных по 6 часов, всего 24 часа.", name_IBC: "IELTS-буткемп выходного дня", desc_EVI: "После работы: пн–чт с 18:00 по 90 минут, 4 недели — 16 занятий, 24 часа.", name_EVI: "Вечерний интенсив", small_perperson: "с человека в месяц", desc_PR: "8 занятий в месяц по 60 минут, 2 раза в неделю: внимание как на индивидуальном уроке, а цена — на двоих.", name_PR: "Пара · Местный преподаватель · 2 студента", cat_pair_kzt: "Парные занятия — НОВИНКА: занимайтесь с партнёром, другом или членом семьи, цена на двоих", price_from: "от", price_ask: "Узнать цену", g_c_crest: "Урок в нашем главном классе", g_c_table: "Работа с учебником", g_c_glass: "Подростковая группа на занятии", g_space: "Наши классы и занятия", g_kicker2: "Занятия, наше пространство и события · Костанай", g_c_studio: "Наш класс-студия", g_c_present: "Презентация на занятии", g_c_teens: "Группа подростков на уроке", ai_name: "Спросить IF Assistant", ai_sub: "ИИ · курсы, цены, расписание — ответ сразу", ai_h_sub: "ИИ-помощник · отвечает за секунды", ai_ph: "Напишите вопрос…", ai_note: "ИИ может ошибаться. Для записи напишите нам в Telegram или WhatsApp.", bot_name: "Бот IF Academy", ai_hello: "Здравствуйте! 👋 Я помощник IF Academy. Спросите о курсах, ценах, расписании или о том, как начать.", ai_q1: "Какой курс подойдёт ребёнку 10 лет?", ai_q2: "Сколько стоит подготовка к IELTS?", ai_q3: "Где вы находитесь и когда занятия?", ai_q4: "Как пройти тест на уровень?", ai_err: "Не получилось ответить. Попробуйте ещё раз или напишите нам в Telegram @abliem.", ai_quota: "На сегодня лимит вопросов исчерпан. Напишите нам в Telegram @abliem или WhatsApp — с радостью поможем.", chat_pick: "Напишите нам в", nav_hub: "Обучение", nav_ielts: "Центр IELTS", nav_placement: "IF Test Centre", nav_signin: "Войти", nav_register: "Создать аккаунт", nav_account: "Мой аккаунт", nav_classroom: "IF Classroom", nav_admin: "Админ-панель", nav_young_d: "Игры и тесты для детей и подростков", nav_ielts_d: "Пробные тесты с ИИ-проверкой", nav_portal_d: "Все приложения, игры и тесты IF в одном месте", nav_placement_d: "Тест уровня и все тесты курсов, проверка ИИ", nav_apps_d: "IF English и наши учебные приложения", nav_catalog_d: "Все группы, уровни и время занятий", nav_young_learners: "Центр для детей и подростков", app_pet_games: "Игры PET", app_ket_games: "Игры KET",
+    ru: { lc_all: "Открыть IF English: курсы, слова, грамматика, игры и тесты", f_place: "Быстрые ежедневные тренировки: пять минут, каждый день новый набор", f_yl: "От Starters до PET: игры и тесты для 6–15 лет", f_english: "12 словарных курсов и Игровая комната", f_live: "Игры для класса на большом экране или практика с ИИ", f_tests: "Все тесты в одном месте: уровень, курсы, Cambridge и IELTS, с проверкой ИИ", f_ielts: "Writing и Speaking с проверкой ИИ, пробные тесты", small_course: "за весь курс", desc_IBC: "Подготовка к экзамену с носителем языка: 2 выходных по 6 часов, всего 24 часа.", name_IBC: "IELTS-буткемп выходного дня", desc_EVI: "После работы: пн–чт с 18:00 по 90 минут, 4 недели — 16 занятий, 24 часа.", name_EVI: "Вечерний интенсив", small_perperson: "с человека в месяц", desc_PR: "8 занятий в месяц по 60 минут, 2 раза в неделю: внимание как на индивидуальном уроке, а цена — на двоих.", name_PR: "Пара · Местный преподаватель · 2 студента", cat_pair_kzt: "Парные занятия", price_from: "от", price_ask: "Узнать цену", g_c_crest: "Урок в нашем главном классе", g_c_table: "Работа с учебником", g_c_glass: "Подростковая группа на занятии", g_space: "Наши классы и занятия", g_kicker2: "Занятия, наше пространство и события · Костанай", g_c_studio: "Наш класс-студия", g_c_present: "Презентация на занятии", g_c_teens: "Группа подростков на уроке", ai_name: "Спросить IF Assistant", ai_sub: "ИИ · курсы, цены, расписание — ответ сразу", ai_h_sub: "ИИ-помощник · отвечает за секунды", ai_ph: "Напишите вопрос…", ai_note: "ИИ может ошибаться. Для записи напишите нам в Telegram или WhatsApp.", bot_name: "Бот IF Academy", ai_hello: "Здравствуйте! 👋 Я помощник IF Academy. Спросите о курсах, ценах, расписании или о том, как начать.", ai_q1: "Какой курс подойдёт ребёнку 10 лет?", ai_q2: "Сколько стоит подготовка к IELTS?", ai_q3: "Где вы находитесь и когда занятия?", ai_q4: "Как пройти тест на уровень?", ai_err: "Не получилось ответить. Попробуйте ещё раз или напишите нам в Telegram @abliem.", ai_quota: "На сегодня лимит вопросов исчерпан. Напишите нам в Telegram @abliem или WhatsApp — с радостью поможем.", chat_pick: "Напишите нам в", nav_hub: "Обучение", nav_ielts: "Центр IELTS", nav_placement: "IF Test Centre", nav_signin: "Войти", nav_register: "Создать аккаунт", nav_account: "Мой аккаунт", nav_classroom: "IF Classroom", nav_admin: "Админ-панель", nav_young_d: "Игры и тесты для детей и подростков", nav_ielts_d: "Пробные тесты с ИИ-проверкой", nav_portal_d: "Все приложения, игры и тесты IF в одном месте", nav_placement_d: "Тест уровня и все тесты курсов, проверка ИИ", nav_apps_d: "IF English и наши учебные приложения", nav_catalog_d: "Все группы, уровни и время занятий", nav_young_learners: "Центр для детей и подростков", app_pet_games: "Игры PET", app_ket_games: "Игры KET",
       nav_portal: "IF English",
       tab_home: "Главная",
       tab_courses: "Курсы",
@@ -1749,7 +1680,7 @@
       lvl_c2: "Решать бытовые задачи, рассказывать о жизни и планах.",
       lvl_c3: "Справляться с большинством ситуаций в поездках, учёбе и на работе.",
       lvl_c4: "Понимать быструю речь и чётко аргументировать мнение.",
-      lcs_num: "04 — IF English", lcs_title: "Всё обучение в одном месте", lcs_desc: "IF English объединяет все тесты, словарные арены, игры и страницы учебников — с фильтром по уровню и поиском. Выберите раздел и начните.", lcs_main: "Открыть IF English", lcs_open: "Открыть", lcs_hero: "Открыть IF English", nav_apps: "Приложения", tab_apps: "Приложения", lcs_b1_n: "11", lcs_b1_t: "Test Centres", lcs_b1_d: "Тест уровня, а также тесты English File, Teenagers и PET с автоматической проверкой.", lcs_b2_n: "12", lcs_b2_t: "Vocabulary Arenas", lcs_b2_d: "Командные и одиночные словарные игры от Movers до C1, а также KET, PET и IELTS.", lcs_b3_n: "11", lcs_b3_t: "Игровая комната", lcs_b3_d: "Одиннадцать аркадных игр на каждом уровне, а также Taboo, квесты и Grammar in Use.", lcs_b4_n: "Hub", lcs_b4_t: "IF English и каталог занятий", lcs_b4_d: "Учебники и уровни, а также дни и время каждой групповой группы.", games_sub_v: "Выберите уровень", games_sub_g: "Ещё игры: квесты, аркады и грамматика", launch_games: "Игровая комната · 11 игр", tab_kq: "IF Kids Quest", launch_kq: "Сюжетная игра для детей", launch_staff: "Вход в личный кабинет", staff_h: "Доступ для сотрудников", staff_p: "IF Teacher Hub — для преподавателей Intellect First. Введите выданный вам код доступа. Инструменты администратора открываются кодом администратора.", staff_ph: "Код доступа", staff_go: "Открыть", staff_bad: "Код не подошёл. Проверьте его и попробуйте ещё раз.", staff_lock: "Закрыть снова", staff_t: "Преподаватели", staff_a: "Только администратор", staff_wait: "Проверка…", staff_ok: "Открыто", lc_kicker: "IF English", lc_title: "Все тесты и словарные арены IF в одном месте", lc_desc: "Все Test Centres и Vocabulary Arenas — от A1 до C1 и экзаменов Cambridge, с фильтром по уровню и поиском.", lc_go: "Открыть IF English", lvl_c5: "Гибко и точно использовать английский в учёбе и работе.", lvl_note: "Уровни A1–C1 идут по одним и тем же учебникам для подростков и взрослых. Материалы — в основном учебники Cambridge и Oxford и другие онлайн-ресурсы. Подготовка к экзаменам Cambridge (Flyers, KET, PET) — отдельные курсы, а не часть уровня B1.", lvl_exam: "Подготовка к экзаменам Cambridge, отдельные курсы",
+      lcs_num: "IF English", lcs_title: "Всё обучение в одном месте", lcs_desc: "IF English объединяет все тесты, словарные арены, игры и страницы учебников — с фильтром по уровню и поиском. Выберите раздел и начните.", lcs_main: "Открыть IF English", lcs_open: "Открыть", lcs_hero: "Открыть IF English", nav_apps: "Приложения", tab_apps: "Приложения", lcs_b1_n: "11", lcs_b1_t: "Test Centres", lcs_b1_d: "Тест уровня, а также тесты English File, Teenagers и PET с автоматической проверкой.", lcs_b2_n: "12", lcs_b2_t: "Vocabulary Arenas", lcs_b2_d: "Командные и одиночные словарные игры от Movers до C1, а также KET, PET и IELTS.", lcs_b3_n: "11", lcs_b3_t: "Игровая комната", lcs_b3_d: "Одиннадцать аркадных игр на каждом уровне, а также Taboo, квесты и Grammar in Use.", lcs_b4_n: "Hub", lcs_b4_t: "IF English и каталог занятий", lcs_b4_d: "Учебники и уровни, а также дни и время каждой групповой группы.", games_sub_v: "Выберите уровень", games_sub_g: "Ещё игры: квесты, аркады и грамматика", launch_games: "Игровая комната · 11 игр", tab_kq: "IF Kids Quest", launch_kq: "Сюжетная игра для детей", launch_staff: "Вход в личный кабинет", staff_h: "Доступ для сотрудников", staff_p: "IF Teacher Hub — для преподавателей Intellect First. Введите выданный вам код доступа. Инструменты администратора открываются кодом администратора.", staff_ph: "Код доступа", staff_go: "Открыть", staff_bad: "Код не подошёл. Проверьте его и попробуйте ещё раз.", staff_lock: "Закрыть снова", staff_t: "Преподаватели", staff_a: "Только администратор", staff_wait: "Проверка…", staff_ok: "Открыто", lc_kicker: "IF English", lc_title: "Все тесты и словарные арены IF в одном месте", lc_desc: "Все Test Centres и Vocabulary Arenas — от A1 до C1 и экзаменов Cambridge, с фильтром по уровню и поиском.", lc_go: "Открыть IF English", lvl_c5: "Гибко и точно использовать английский в учёбе и работе.", lvl_note: "Уровни A1–C1 идут по одним и тем же учебникам для подростков и взрослых. Материалы — в основном учебники Cambridge и Oxford и другие онлайн-ресурсы. Подготовка к экзаменам Cambridge (Flyers, KET, PET) — отдельные курсы, а не часть уровня B1.", lvl_exam: "Подготовка к экзаменам Cambridge, отдельные курсы",
       who_local: "Местный преподаватель",
       who_then: "Местный преподаватель 3–4 месяца, затем носитель",
       who_both: "Местный или носитель",
@@ -1789,7 +1720,7 @@
       trial_copy: "Скопировать сообщение",
       trial_copied: "Скопировано",
       trial_note: "Откроется Telegram с готовым сообщением. На этой странице ничего не сохраняется.",
-      loc_num: "09 — Как нас найти",
+      loc_num: "Как нас найти",
       loc_title: "Мы в Костанае",
       loc_desc: "Intellect First Academy (IF Academy) находится на проспекте Аль-Фараби, в нескольких минутах ходьбы от гостиницы «Глория».",
       loc_addr_label: "Адрес",
@@ -1808,7 +1739,7 @@
       cap_lunch: "Общий обед после игр", cap_chain: "Командное испытание", cap_badges: "Командные значки и хорошее настроение",
       cap_chat: "Преподаватели и студенты в неформальной обстановке", cap_video: "Видео студентов о своём преподавателе", aw_head: "День наград", cap_aw_speech: "День наград: отмечаем успехи наших студентов", cap_aw_ielts: "Награды за результаты IELTS", cap_aw_ielts2: "Отличный результат IELTS", cap_aw_year: "Сертификаты за год обучения", cap_aw_teach: "Награда за преподавание", cap_aw_journey: "Награды «Путь обучения»", cap_debate: "Дебаты на занятии", cafe_head: "Выходные в компьютерном клубе", cap_cafe1: "Intellect First Weekend: группа PET в компьютерном клубе", cap_cafe2: "Говорим по-английски во время игр с носителями языка из других стран", cap_fun: "Весёлый разговор по-русски", ig_head: "Ещё в Instagram",
       ig_post: "Смотреть в Instagram — наши уроки и события", ig_reel: "Смотреть рилс в Instagram",
-      nav_apps: "Приложения", sec_apps_num: "04 — Приложения", sec_apps_title: "Всё в одном месте",
+      nav_apps: "Приложения", sec_apps_num: "Приложения", sec_apps_title: "Всё в одном месте",
       sec_apps_desc: "Тесты уровня, словарные арены, игры, IF English и инструменты для преподавателей — выберите уровень, откройте приложение и начните практику.",
       tab_learn: "IF English", tab_tests: "Тесты", tab_vocab: "Словарные арены", tab_games: "Игры", tab_staff: "IF Teacher Hub",
       note_learn: "Для учеников: IF English объединяет все приложения, тесты и игры IF, а Каталог занятий показывает дни и время каждой группы.",
@@ -1822,7 +1753,7 @@
       staff_only: "Только для сотрудников", launch_hub: "Все приложения, игры и тесты",
       nav_programs: "Программы", nav_catalog: "Каталог занятий", nav_ecosystem: "Экосистема", nav_gallery: "Галерея",
       nav_teachers: "Команда", nav_courses: "Курсы и программы", nav_pricing: "Цены", nav_faqs: "Вопросы",
-      sec_teachers_num: "01 — Команда", sec_teachers_title: "Люди, которые задают стандарт",
+      sec_teachers_num: "Команда", sec_teachers_title: "Люди, которые задают стандарт",
       sec_teachers_desc: "Небольшая квалифицированная команда — преподаватели-носители языка и местные преподаватели, каждый специализируется на своей возрастной группе и уровне.",
       teacher_abdoulie_role: "Основатель и директор IF Academy",
       teacher_abdoulie_desc: "Абдули Манне — основатель IF Academy и преподаватель — носитель английского языка. Родом из Гамбии, он более 14 лет преподаёт в Африке, России и Казахстане, в том числе ведёт корпоративные программы для таких компаний, как «Лукойл» и «Росатом». Он имеет дипломы университетов Гамбии, Тайваня и России, сертификацию TESOL и завершает обучение по программе Doctor of Business Administration в Maqsut Narikbayev University.",
@@ -1834,7 +1765,7 @@
       teacher_joseph_role: "Заменяющий преподаватель · носитель языка", teacher_joseph_desc: "Преподаватель-носитель языка на замене; дети — Movers, подготовка к Cambridge YLE.",
       teacher_anelya_role: "Менеджер", teacher_anelya_desc: "Я менеджер IF Academy. Я отвечаю за организацию ежедневной работы, координацию преподавателей и учеников, составление расписания, общение с родителями и слаженную работу академии. Мне нравится работать с людьми, поддерживать порядок и создавать позитивную и гостеприимную атмосферу для обучения!",
       teacher_ekaterina_role: "SMM-менеджер", teacher_ekaterina_desc: "Отвечает за ведение аккаунта в Instagram, создание контента и развитие его визуального стиля, чтобы сделать изучение английского увлекательным и вдохновляющим.",
-      sec_courses_num: "02 — Курсы и программы", sec_courses_title: "Чему мы учим",
+      sec_courses_num: "Курсы и программы", sec_courses_title: "Чему мы учим",
       sec_courses_desc: "Полные цены на каждый курс — в разделе «Цены» ниже.",
       course_ge_name: "Общий английский", course_ge_desc: "A1, A2, B1, B2 и C1 по General и Business English: единая программа для подростков и взрослых, мини-группы или индивидуально. Ученики A1–A2 первые 3–4 месяца занимаются с местными преподавателями; занятия с носителем языка открываются с уровня B1.",
       course_ielts_name: "Подготовка к IELTS", course_ielts_desc: "Полная подготовка по четырём навыкам, экзаменационные стратегии, пробные тесты и индивидуальная обратная связь.",
@@ -1842,7 +1773,7 @@
       course_biz_name: "Бизнес и корпоративное обучение", course_biz_desc: "Деловое общение, встречи, презентации и индивидуальное корпоративное обучение.",
       course_yl_name: "Детские программы", course_yl_desc: "Starters и Movers — с местными преподавателями; Flyers, KET и PET — с местными преподавателями или носителями языка. Подготовка к Cambridge YLE и KET/PET.",
       course_intensive_name: "Выходной и интенсивный формат", course_intensive_desc: "Интенсив разговорной речи выходного дня и летний ускоренный курс для быстрого прогресса.",
-      sec_faqs_num: "07 — Вопросы", sec_faqs_title: "Ответы на вопросы",
+      sec_faqs_num: "Вопросы", sec_faqs_title: "Ответы на вопросы",
       faq_q1: "Как начать?", faq_a1: "Запишитесь на бесплатное тестирование через Telegram или email — мы определим ваш уровень и подберём группу.",
       faq_q2: "Какие уровни вы преподаёте?", faq_a2: "От начального (A1) до продвинутого (C1) по общему английскому, а также подготовка к Cambridge-экзаменам (Starters, Movers, Flyers, KET, PET) для детей.",
       faq_q3: "Занятия онлайн или очно?", faq_a3: "И то, и другое — общий английский для российского рынка идёт онлайн; занятия в Казахстане проходят очно в наших четырёх пространствах (IF Business Lab, IF Hub, IF Studio и IF Reading Zone).",
@@ -1857,14 +1788,14 @@
       hero_aside_p2: "Общий английский · Premium английский · IELTS · Корпоративное обучение · Индивидуальные занятия · Бизнес-английский",
       val_1: "Совершенство", val_2: "Честность", val_3: "Инновации", val_4: "Критическое мышление",
       val_5: "Профессионализм", val_6: "Многообразие", val_7: "Непрерывное обучение", val_8: "Глобальное мышление",
-      sec01_num: "03 — Цены", sec01_title: "Курс обучения для любых целей",
+      sec01_num: "Цены", sec01_title: "Курс обучения для любых целей",
       market_kz: "Казахстан · ₸", market_ru: "Россия · ₽",
-      cat_ge_kzt: "Общий английский — все уровни от Beginner (A1) до Upper-Intermediate (C1), в небольших интерактивных группах",
-      cat_ielts_kzt: "Подготовка к IELTS — все четыре навыка, стратегии экзамена, пробные тесты и индивидуальная обратная связь",
-      cat_ind_kzt: "Индивидуальные занятия — под ваши цели и график",
-      cat_flex_kzt: "Гибкие пакеты занятий с местным преподавателем — оплата по факту, без обязательств на месяц",
-      cat_int_kzt: "Интенсивные программы — оплата один раз за весь курс",
-      cat_venue_kzt: "Аренда помещений — IF Business Lab и площадка для мероприятий",
+      cat_ge_kzt: "Общий английский",
+      cat_ielts_kzt: "Подготовка к IELTS",
+      cat_ind_kzt: "Индивидуальные занятия",
+      cat_flex_kzt: "Гибкие пакеты занятий с местным преподавателем",
+      cat_int_kzt: "Интенсивные программы",
+      cat_venue_kzt: "Аренда помещений",
       "name_GE-L": "Мини-группа · Местный преподаватель", "desc_GE-L2": "8 занятий в месяц, 2 раза в неделю по 60 минут, малые группы.", "desc_GE-L": "8 занятий в месяц по 90 минут, группы 3–6 человек.",
       "name_GE-N": "Мини-группа · Носитель языка", "desc_GE-N": "8 занятий в месяц по 90 минут, максимум разговорной практики.",
       name_IE: "Группа IELTS", desc_IE: "8 занятий в месяц по 90 минут: все четыре навыка, стратегии экзамена и пробные тесты.",
@@ -1894,18 +1825,18 @@
       pricenote_rub: "Цены указаны «от». Запросите персональное предложение. Каждая программа начинается с бесплатного тестирования уровня.",
       catalog_link: "Смотреть полный каталог занятий",
       catalog_link_tail: " — точные дни и время всех текущих групповых занятий.",
-      sec02_num: "05 — Экосистема", sec02_title: "Четыре пространства, один стандарт",
+      sec02_num: "Экосистема", sec02_title: "Четыре пространства, один стандарт",
       sec02_desc: "Помимо занятий, Intellect First создаёт пространства для практики, погружения в язык и творчества.",
       eco1_desc: "Speaking-клубы, дебаты, практика публичных выступлений и обсуждение новостей — где свобода речи становится уверенностью.",
       eco2_desc: "Интенсивная работа в малых группах, занятия по подготовке к IELTS и мастер-классы для профессионального роста.",
       eco4_desc: "Тихий уголок с адаптированными книгами, нашей библиотекой и местом для самостоятельной работы — здесь чтение становится привычкой.", eco3_desc: "Индивидуальные и онлайн-занятия, видеопродакшн и подкасты — контент, который продолжает обучение за пределами класса.",
-      sec03_num: "06 — Галерея", sec03_title: "Жизнь академии",
+      sec03_num: "Галерея", sec03_title: "Жизнь академии",
       g_n_hand: "Вручение сертификатов на празднике в конце года", g_n_cert: "Сертификат по итогам года", g_n_book: "Подарок за отличный год", g_n_group: "Гордые обладатели сертификатов", g_n_rope: "Испытание с канатом", g_n_chat: "Разговоры между играми", g_n_friends: "Друзья из всех групп", fb_num: "Голоса студентов", fb_title: "Что говорят наши студенты", fb_desc: "Настоящие отзывы студентов IF Academy — написаны в их личных кабинетах и опубликованы с их согласия.", fb_cta_t: "Учитесь у нас? Расскажите другим, как проходят занятия.", fb_cta: "Оставить отзыв", fb_empty: "Скоро здесь появятся отзывы наших студентов.", fb_avg: "{a} из 5 · отзывов: {n}", fb_more: "Читать полностью", fb_less: "Свернуть", g_kicker: "Барбекю в конце учебного года · Глэмпинг, Костанай", g_all: "Все", g_awards: "Награды и сертификаты", g_games: "Командные игры", g_moments: "Моменты", g_c_speech: "Директор вручает награды по итогам года", g_c_ielts: "Награда за результаты IELTS", g_c_annual: "Сертификат за достижения года", g_c_commit: "Сертификат за целеустремлённость", g_c_media: "Награда за медиа и маркетинг", g_c_teach: "Награда за преподавание", g_c_journey: "Награда «Путь обучения»", g_c_teams: "Команды готовятся к играм", g_c_badges: "Вручаем командные значки", g_c_wolves: "Команда «Волки»", g_c_eagles: "Команда «Орлы» обсуждает стратегию", g_c_hoop: "Эстафета с обручем", g_c_brief: "Инструктаж перед следующим раундом", g_c_host: "Ведущий объявляет новое задание", g_c_lineup: "Команды на старте", g_c_group: "Улыбки и командные значки", g_c_fist: "Отличная игра!", g_c_hand: "Поздравления", g_c_sun: "Солнце и хорошая компания", g_c_tee: "Студенты и преподаватели в неформальной обстановке",
       sec03_desc: "Настоящие моменты наших занятий и событий — студенты, преподаватели и сообщество IF.",
       frame_1: "Общий английский — занятие в мини-группе", frame_2: "IF Hub — speaking-клуб", frame_3: "Пробное тестирование IELTS",
       frame_4: "IF Studio — запись", frame_5: "Корпоративное обучение на выезде", frame_6: "Выпускной и достижения студентов",
       gallery_note: "Место для фотографий — пришлите снимки академии, и мы сразу их добавим.",
-      sec04_num: "08 — О нас", sec04_title: "Основано на одном убеждении",
+      sec04_num: "О нас", sec04_title: "Основано на одном убеждении",
       about_p1: "Intellect First основана на убеждении, что обучение языку нужно оценивать так же строго, как и любое серьёзное образование — по требовательности, результатам и уровню тех, кто его даёт.",
       about_p2: "Каждое занятие ведут квалифицированные преподаватели по международным стандартам, в малых группах, где услышан каждый студент. В результате получается не просто языковой центр, а настоящая школа мышления.",
       stat1_num: "Совершенство", stat1_lbl: "Рабочий стандарт, а не маркетинговое слово",
@@ -1916,7 +1847,7 @@
       foot_cta: "Записаться на бесплатное тестирование", foot_contact_title: "Контакты", foot_academy_title: "Академия",
       foot_academy_city: "пр. Аль-Фараби, 19, Костанай, 110000, Казахстан", foot_bottom_left: "Intellect First — Учись. Думай. Веди."
     },
-    kk: { lc_all: "IF English-ді ашу: курстар, сөздер, грамматика, ойындар, тесттер", f_place: "Күнделікті жылдам жаттығулар: бес минут, күн сайын жаңа жинақ", f_yl: "Starters-тен PET-ке дейін: 6–15 жасқа ойындар мен тесттер", f_english: "12 сөздік курсы және Ойын бөлмесі", f_live: "Үлкен экрандағы сынып ойындары немесе ЖИ-мен жаттығу", f_tests: "Барлық тесттер бір жерде: деңгей, курстар, Cambridge және IELTS, ЖИ тексереді", f_ielts: "ЖИ тексеретін Writing және Speaking, сынақ тесттер", small_course: "бүкіл курсқа", desc_IBC: "Ана тілі иесімен емтиханға дайындық: 2 демалыс, күніне 6 сағат, барлығы 24 сағат.", name_IBC: "Демалыс күнгі IELTS буткемпі", desc_EVI: "Жұмыстан кейін: дс–бс 18:00-ден, 90 минуттан, 4 апта — 16 сабақ, 24 сағат.", name_EVI: "Кешкі интенсив", small_perperson: "бір адамға, айына", desc_PR: "Айына 8 сабақ, әрқайсысы 60 минут, аптасына 2 рет: жеке сабақтағыдай назар, ал баға — екеуіне.", name_PR: "Жұп · Жергілікті оқытушы · 2 студент", cat_pair_kzt: "Жұптық сабақтар — ЖАҢА: серіктесіңізбен, досыңызбен немесе отбасы мүшесімен бірге, баға екеуіне", price_from: "бастап", price_ask: "Бағасын білу", g_c_crest: "Басты сыныптағы сабақ", g_c_table: "Оқулықпен жұмыс", g_c_glass: "Жасөспірімдер тобы сабақта", g_space: "Біздің кеңістік пен сабақтар", g_kicker2: "Сабақтар, кеңістік және іс-шаралар · Қостанай", g_c_studio: "Біздің студия-сынып", g_c_present: "Сабақтағы презентация", g_c_teens: "Жасөспірімдер тобы сабақта", ai_name: "IF Assistant-тан сұрау", ai_sub: "ЖИ · курстар, бағалар, кесте — бірден жауап", ai_h_sub: "ЖИ-көмекші · бірнеше секундта жауап береді", ai_ph: "Сұрағыңызды жазыңыз…", ai_note: "ЖИ қателесуі мүмкін. Жазылу үшін Telegram немесе WhatsApp арқылы жазыңыз.", bot_name: "IF Academy боты", ai_hello: "Сәлеметсіз бе! 👋 Мен IF Academy көмекшісімін. Курстар, бағалар, кесте немесе қалай бастау туралы сұраңыз.", ai_q1: "10 жасар балаға қай курс сай келеді?", ai_q2: "IELTS дайындығы қанша тұрады?", ai_q3: "Сіздер қайдасыздар және сабақ қашан?", ai_q4: "Деңгей тестін қалай тапсырамын?", ai_err: "Жауап бере алмадым. Қайталап көріңіз немесе Telegram @abliem арқылы жазыңыз.", ai_quota: "Бүгінгі сұрақ лимиті бітті. Telegram @abliem немесе WhatsApp арқылы жазыңыз — көмектесеміз.", chat_pick: "Бізге жазыңыз", nav_hub: "Оқу", nav_ielts: "IELTS орталығы", nav_placement: "IF Test Centre", nav_signin: "Кіру", nav_register: "Тіркелу", nav_account: "Менің аккаунтым", nav_classroom: "IF Classroom", nav_admin: "Әкімші панелі", nav_young_d: "Балалар мен жасөспірімдерге ойындар мен тесттер", nav_ielts_d: "ЖИ тексеретін сынақ тесттері", nav_portal_d: "IF-тың барлық қосымшалары, ойындары мен тесттері бір жерде", nav_placement_d: "Деңгей тесті және барлық курс тесттері, ЖИ тексереді", nav_apps_d: "IF English және оқу қосымшаларымыз", nav_catalog_d: "Барлық топтар, деңгейлер мен уақыт", nav_young_learners: "Жас оқушылар орталығы", app_pet_games: "PET ойындары", app_ket_games: "KET ойындары",
+    kk: { lc_all: "IF English-ді ашу: курстар, сөздер, грамматика, ойындар, тесттер", f_place: "Күнделікті жылдам жаттығулар: бес минут, күн сайын жаңа жинақ", f_yl: "Starters-тен PET-ке дейін: 6–15 жасқа ойындар мен тесттер", f_english: "12 сөздік курсы және Ойын бөлмесі", f_live: "Үлкен экрандағы сынып ойындары немесе ЖИ-мен жаттығу", f_tests: "Барлық тесттер бір жерде: деңгей, курстар, Cambridge және IELTS, ЖИ тексереді", f_ielts: "ЖИ тексеретін Writing және Speaking, сынақ тесттер", small_course: "бүкіл курсқа", desc_IBC: "Ана тілі иесімен емтиханға дайындық: 2 демалыс, күніне 6 сағат, барлығы 24 сағат.", name_IBC: "Демалыс күнгі IELTS буткемпі", desc_EVI: "Жұмыстан кейін: дс–бс 18:00-ден, 90 минуттан, 4 апта — 16 сабақ, 24 сағат.", name_EVI: "Кешкі интенсив", small_perperson: "бір адамға, айына", desc_PR: "Айына 8 сабақ, әрқайсысы 60 минут, аптасына 2 рет: жеке сабақтағыдай назар, ал баға — екеуіне.", name_PR: "Жұп · Жергілікті оқытушы · 2 студент", cat_pair_kzt: "Жұптық сабақтар", price_from: "бастап", price_ask: "Бағасын білу", g_c_crest: "Басты сыныптағы сабақ", g_c_table: "Оқулықпен жұмыс", g_c_glass: "Жасөспірімдер тобы сабақта", g_space: "Біздің кеңістік пен сабақтар", g_kicker2: "Сабақтар, кеңістік және іс-шаралар · Қостанай", g_c_studio: "Біздің студия-сынып", g_c_present: "Сабақтағы презентация", g_c_teens: "Жасөспірімдер тобы сабақта", ai_name: "IF Assistant-тан сұрау", ai_sub: "ЖИ · курстар, бағалар, кесте — бірден жауап", ai_h_sub: "ЖИ-көмекші · бірнеше секундта жауап береді", ai_ph: "Сұрағыңызды жазыңыз…", ai_note: "ЖИ қателесуі мүмкін. Жазылу үшін Telegram немесе WhatsApp арқылы жазыңыз.", bot_name: "IF Academy боты", ai_hello: "Сәлеметсіз бе! 👋 Мен IF Academy көмекшісімін. Курстар, бағалар, кесте немесе қалай бастау туралы сұраңыз.", ai_q1: "10 жасар балаға қай курс сай келеді?", ai_q2: "IELTS дайындығы қанша тұрады?", ai_q3: "Сіздер қайдасыздар және сабақ қашан?", ai_q4: "Деңгей тестін қалай тапсырамын?", ai_err: "Жауап бере алмадым. Қайталап көріңіз немесе Telegram @abliem арқылы жазыңыз.", ai_quota: "Бүгінгі сұрақ лимиті бітті. Telegram @abliem немесе WhatsApp арқылы жазыңыз — көмектесеміз.", chat_pick: "Бізге жазыңыз", nav_hub: "Оқу", nav_ielts: "IELTS орталығы", nav_placement: "IF Test Centre", nav_signin: "Кіру", nav_register: "Тіркелу", nav_account: "Менің аккаунтым", nav_classroom: "IF Classroom", nav_admin: "Әкімші панелі", nav_young_d: "Балалар мен жасөспірімдерге ойындар мен тесттер", nav_ielts_d: "ЖИ тексеретін сынақ тесттері", nav_portal_d: "IF-тың барлық қосымшалары, ойындары мен тесттері бір жерде", nav_placement_d: "Деңгей тесті және барлық курс тесттері, ЖИ тексереді", nav_apps_d: "IF English және оқу қосымшаларымыз", nav_catalog_d: "Барлық топтар, деңгейлер мен уақыт", nav_young_learners: "Жас оқушылар орталығы", app_pet_games: "PET ойындары", app_ket_games: "KET ойындары",
       nav_portal: "IF English",
       tab_home: "Басты",
       tab_courses: "Курстар",
@@ -1947,7 +1878,7 @@
       lvl_c2: "Күнделікті істерді шешу, өмірің мен жоспарың туралы айту.",
       lvl_c3: "Саяхатта, оқуда және жұмыста көптеген жағдайды шешу.",
       lvl_c4: "Жылдам сөйлеуді түсіну және пікірді нақты дәлелдеу.",
-      lcs_num: "04 — IF English", lcs_title: "Бүкіл оқу — бір жерде", lcs_desc: "IF English барлық тесттерді, сөздік арналарын, ойындар мен оқулық беттерін деңгей сүзгісімен және іздеумен біріктіреді. Бөлімді таңдап, бастаңыз.", lcs_main: "IF English ашу", lcs_open: "Ашу", lcs_hero: "IF English ашу", nav_apps: "Қосымшалар", tab_apps: "Қосымшалар", lcs_b1_n: "11", lcs_b1_t: "Test Centres", lcs_b1_d: "Деңгей тесті, English File, Teenagers және PET тесттері, автоматты тексеріспен.", lcs_b2_n: "12", lcs_b2_t: "Vocabulary Arenas", lcs_b2_d: "Movers-тен C1-ге дейінгі командалық және жеке сөздік ойындары, сондай-ақ KET, PET және IELTS.", lcs_b3_n: "11", lcs_b3_t: "Ойын бөлмесі", lcs_b3_d: "Әр деңгейде он бір аркада ойыны, сондай-ақ Taboo, квесттер және Grammar in Use.", lcs_b4_n: "Hub", lcs_b4_t: "IF English және сабақ каталогы", lcs_b4_d: "Оқулықтар мен деңгейлер, әр топтық сабақтың күндері мен уақыты.", games_sub_v: "Деңгейді таңдаңыз", games_sub_g: "Тағы ойындар: квесттер, аркадалар және грамматика", launch_games: "Ойын бөлмесі · 11 ойын", tab_kq: "IF Kids Quest", launch_kq: "Балаларға арналған сюжетті ойын", launch_staff: "Жеке кабинетке кіру", staff_h: "Қызметкерлерге рұқсат", staff_p: "IF Teacher Hub — Intellect First мұғалімдеріне арналған. Берілген рұқсат кодын енгізіңіз. Әкімші құралдары әкімші кодымен ашылады.", staff_ph: "Рұқсат коды", staff_go: "Ашу", staff_bad: "Код дұрыс емес. Тексеріп, қайта көріңіз.", staff_lock: "Қайта жабу", staff_t: "Мұғалімдер", staff_a: "Тек әкімші", staff_wait: "Тексерілуде…", staff_ok: "Ашылды", lc_kicker: "IF English", lc_title: "Барлық IF тесттері мен сөздік арналары бір жерде", lc_desc: "A1-ден C1-ге дейінгі және Cambridge емтихандарына арналған барлық Test Centres пен Vocabulary Arenas, деңгей сүзгісі және іздеумен.", lc_go: "IF English ашу", lvl_c5: "Оқу мен жұмыста ағылшын тілін икемді әрі нақты қолдану.", lvl_note: "A1–C1 деңгейлері жасөспірімдер мен ересектерге бірдей оқулықтармен өтеді. Материалдар — негізінен Cambridge және Oxford оқулықтары мен басқа онлайн-ресурстар. Cambridge емтихандарына дайындық (Flyers, KET, PET) — B1 деңгейінің бөлігі емес, бөлек курстар.", lvl_exam: "Cambridge емтихандарына дайындық, бөлек курстар",
+      lcs_num: "IF English", lcs_title: "Бүкіл оқу — бір жерде", lcs_desc: "IF English барлық тесттерді, сөздік арналарын, ойындар мен оқулық беттерін деңгей сүзгісімен және іздеумен біріктіреді. Бөлімді таңдап, бастаңыз.", lcs_main: "IF English ашу", lcs_open: "Ашу", lcs_hero: "IF English ашу", nav_apps: "Қосымшалар", tab_apps: "Қосымшалар", lcs_b1_n: "11", lcs_b1_t: "Test Centres", lcs_b1_d: "Деңгей тесті, English File, Teenagers және PET тесттері, автоматты тексеріспен.", lcs_b2_n: "12", lcs_b2_t: "Vocabulary Arenas", lcs_b2_d: "Movers-тен C1-ге дейінгі командалық және жеке сөздік ойындары, сондай-ақ KET, PET және IELTS.", lcs_b3_n: "11", lcs_b3_t: "Ойын бөлмесі", lcs_b3_d: "Әр деңгейде он бір аркада ойыны, сондай-ақ Taboo, квесттер және Grammar in Use.", lcs_b4_n: "Hub", lcs_b4_t: "IF English және сабақ каталогы", lcs_b4_d: "Оқулықтар мен деңгейлер, әр топтық сабақтың күндері мен уақыты.", games_sub_v: "Деңгейді таңдаңыз", games_sub_g: "Тағы ойындар: квесттер, аркадалар және грамматика", launch_games: "Ойын бөлмесі · 11 ойын", tab_kq: "IF Kids Quest", launch_kq: "Балаларға арналған сюжетті ойын", launch_staff: "Жеке кабинетке кіру", staff_h: "Қызметкерлерге рұқсат", staff_p: "IF Teacher Hub — Intellect First мұғалімдеріне арналған. Берілген рұқсат кодын енгізіңіз. Әкімші құралдары әкімші кодымен ашылады.", staff_ph: "Рұқсат коды", staff_go: "Ашу", staff_bad: "Код дұрыс емес. Тексеріп, қайта көріңіз.", staff_lock: "Қайта жабу", staff_t: "Мұғалімдер", staff_a: "Тек әкімші", staff_wait: "Тексерілуде…", staff_ok: "Ашылды", lc_kicker: "IF English", lc_title: "Барлық IF тесттері мен сөздік арналары бір жерде", lc_desc: "A1-ден C1-ге дейінгі және Cambridge емтихандарына арналған барлық Test Centres пен Vocabulary Arenas, деңгей сүзгісі және іздеумен.", lc_go: "IF English ашу", lvl_c5: "Оқу мен жұмыста ағылшын тілін икемді әрі нақты қолдану.", lvl_note: "A1–C1 деңгейлері жасөспірімдер мен ересектерге бірдей оқулықтармен өтеді. Материалдар — негізінен Cambridge және Oxford оқулықтары мен басқа онлайн-ресурстар. Cambridge емтихандарына дайындық (Flyers, KET, PET) — B1 деңгейінің бөлігі емес, бөлек курстар.", lvl_exam: "Cambridge емтихандарына дайындық, бөлек курстар",
       who_local: "Жергілікті мұғалім",
       who_then: "3–4 ай жергілікті мұғалім, содан кейін ана тілі ағылшын тілі болатын оқытушы",
       who_both: "Жергілікті немесе ана тілі ағылшын тілі болатын",
@@ -1987,7 +1918,7 @@
       trial_copy: "Хабарламаны көшіру",
       trial_copied: "Көшірілді",
       trial_note: "Telegram дайын хабарламамен ашылады. Бұл бетте ештеңе сақталмайды.",
-      loc_num: "09 — Бізді қалай табуға болады",
+      loc_num: "Бізді қалай табуға болады",
       loc_title: "Біз Қостанайдамыз",
       loc_desc: "Intellect First Academy (IF Academy) Әл-Фараби даңғылында, «Глория» қонақ үйінен бірнеше минуттық жерде орналасқан.",
       loc_addr_label: "Мекенжай",
@@ -2007,7 +1938,7 @@
       cap_lunch: "Ойыннан кейін бірге түскі ас", cap_chain: "Команда сынағы", cap_badges: "Команда белгілері және көңілді көңіл-күй",
       cap_chat: "Мұғалімдер мен оқушылар, сабақтан тыс", cap_video: "Оқушының мұғалімі туралы бейнесі", aw_head: "Марапаттау күні", cap_aw_speech: "Марапаттау күні: оқушыларымыздың жетістіктерін атап өтеміз", cap_aw_ielts: "IELTS жетістік марапаттары", cap_aw_ielts2: "IELTS-тегі мақтанышқа лайық нәтиже", cap_aw_year: "Жылдық жетістік сертификаттары", cap_aw_teach: "Үздік оқытушы марапаты", cap_aw_journey: "Оқу жолы марапаттары", cap_debate: "Сыныптағы пікірсайыс жаттығуы", cafe_head: "Киберкафедегі демалыс күні", cap_cafe1: "Intellect First демалыс күні: PET тобымыз киберкафеде", cap_cafe2: "Шетелдік ағылшын тілінде сөйлейтіндермен ойнап, ағылшынша сөйлесу", cap_fun: "Орысша күлкілі әңгіме", ig_head: "Instagram-да тағы да",
       ig_post: "Instagram-да қараңыз — сабақтарымыз бен іс-шараларымыз", ig_reel: "Instagram-дағы рилсті қараңыз",
-      nav_apps: "Қосымшалар", sec_apps_num: "04 — Қосымшалар", sec_apps_title: "Бәрі бір жерде",
+      nav_apps: "Қосымшалар", sec_apps_num: "Қосымшалар", sec_apps_title: "Бәрі бір жерде",
       sec_apps_desc: "Деңгей анықтау тестілері, сөздік арналары, ойындар, IF English және мұғалімдерге арналған құралдар — деңгейді таңдап, қосымшаны ашып, жаттығуды бастаңыз.",
       tab_learn: "IF English", tab_tests: "Тест орталықтары", tab_vocab: "Сөздік арналары", tab_games: "Ойындар", tab_staff: "IF Teacher Hub",
       note_learn: "Оқушыларға арналған: IF English IF-тың барлық қосымшаларын, тесттері мен ойындарын біріктіреді, ал Сабақ каталогы әр топтың күндері мен уақытын көрсетеді.",
@@ -2021,7 +1952,7 @@
       staff_only: "Тек қызметкерлерге", launch_hub: "Барлық қосымшалар, ойындар мен тесттер",
       nav_programs: "Бағдарламалар", nav_catalog: "Сыныптар каталогы", nav_ecosystem: "Экожүйе", nav_gallery: "Галерея",
       nav_teachers: "Ұжым", nav_courses: "Курстар", nav_pricing: "Бағалар", nav_faqs: "Сұрақ-жауап",
-      sec_teachers_num: "01 — Ұжым", sec_teachers_title: "Стандарттың артындағы адамдар",
+      sec_teachers_num: "Ұжым", sec_teachers_title: "Стандарттың артындағы адамдар",
       sec_teachers_desc: "Шағын, білікті команда — ана тілі ағылшын тілі болатын және жергілікті оқытушылар, әрқайсысы жас тобы мен деңгейі бойынша маманданған.",
       teacher_abdoulie_role: "IF Academy негізін қалаушысы және директоры",
       teacher_abdoulie_desc: "Абдули Манне — IF Academy негізін қалаушысы және ана тілі ағылшын тілі болатын оқытушысы. Гамбиядан шыққан ол Африкада, Ресейде және Қазақстанда 14 жылдан астам сабақ беріп келеді, соның ішінде «Лукойл» және «Росатом» сияқты компанияларға корпоративтік бағдарламалар жүргізген. Оның Гамбия, Тайвань және Ресей университеттерінің дипломдары мен TESOL сертификаты бар. Қазір Maqsut Narikbayev University-де Doctor of Business Administration бағдарламасын аяқтап жатыр.",
@@ -2033,7 +1964,7 @@
       teacher_joseph_role: "Алмастырушы мұғалім · ана тілі ағылшын тілі", teacher_joseph_desc: "Ана тілі ағылшын тілі болатын алмастырушы мұғалім; кішкентай оқушылар — Movers, Cambridge YLE дайындығы.",
       teacher_anelya_role: "Менеджер", teacher_anelya_desc: "Мен IF Academy менеджерімін. Күнделікті жұмысты ұйымдастыруға, мұғалімдер мен оқушылардың жұмысын үйлестіруге, сабақ кестесін басқаруға, ата-аналармен байланыс орнатуға және академия жұмысының бірқалыпты жүруіне жауаптымын. Адамдармен жұмыс істегенді, жұмысты жүйелі ұйымдастырғанды және оқуға қолайлы, жылы әрі жағымды орта қалыптастырғанды ұнатамын!",
       teacher_ekaterina_role: "SMM маманы", teacher_ekaterina_desc: "Ағылшын тілін үйренуді қызықты әрі шабыттандыратын тәжірибеге айналдыру үшін Instagram аккаунтын жүргізуге, контент жасауға және оның визуалды стилін дамытуға жауапты.",
-      sec_courses_num: "02 — Курстар мен бағдарламалар", sec_courses_title: "Біз не оқытамыз",
+      sec_courses_num: "Курстар мен бағдарламалар", sec_courses_title: "Біз не оқытамыз",
       sec_courses_desc: "Әр курстың толық бағасы төмендегі «Бағалар» бөлімінде.",
       course_ge_name: "General English", 
       course_ielts_name: "IELTS-ке дайындық", course_ielts_desc: "Төрт дағды бойынша толық дайындық: емтихан стратегиясы, сынақ тесттер және жеке кері байланыс.",
@@ -2041,7 +1972,7 @@
       course_biz_name: "Бизнес және корпоративтік", course_biz_desc: "Жұмыс орнындағы қарым-қатынас, кездесулер, презентациялар және корпоративтік оқытудың жеке бағдарламалары.",
       course_yl_name: "Кішкентай оқушылар", 
       course_intensive_name: "Демалыс күндері және қарқынды курстар", course_intensive_desc: "Жылдам нәтиже беретін Weekend Speaking Intensive және Summer Fast-Track бағдарламалары.",
-      sec_faqs_num: "07 — Жиі қойылатын сұрақтар", sec_faqs_title: "Сұрақтарға жауап",
+      sec_faqs_num: "Жиі қойылатын сұрақтар", sec_faqs_title: "Сұрақтарға жауап",
       faq_q1: "Қалай бастаймын?", faq_a1: "Telegram немесе электрондық пошта арқылы тегін деңгей анықтау тестіне жазылыңыз — біз деңгейіңізді бағалап, лайықты сыныпты ұсынамыз.",
       faq_q2: "Қандай деңгейлерді оқытасыздар?", faq_a2: "General English бойынша бастапқы деңгейден (A1) жоғары-орташаға (C1) дейін, сондай-ақ кішкентай оқушыларға арналған Cambridge емтихан бағыттары (Starters, Movers, Flyers, KET, PET).",
       faq_q3: "Сабақтар онлайн ба, әлде кездесіп өте ме?", faq_a3: "Екеуі де — Ресей нарығына арналған General English онлайн өтеді; Қазақстандағы сабақтар төрт кеңістігімізде (IF Business Lab, IF Hub, IF Studio және IF Reading Zone) жүзбе-жүз өтеді.",
@@ -2056,14 +1987,14 @@
       hero_aside_p2: "General English · Premium English · IELTS · Корпоративтік · Жеке · Business English",
       val_1: "Үздіктік", val_2: "Адалдық", val_3: "Инновация", val_4: "Сыни ойлау",
       val_5: "Кәсібилік", val_6: "Әралуандық", val_7: "Өмір бойы білім алу", val_8: "Жаһандық көзқарас",
-      sec01_num: "03 — Бағалар", sec01_title: "Әр мақсатқа лайық оқу курсы",
+      sec01_num: "Бағалар", sec01_title: "Әр мақсатқа лайық оқу курсы",
       market_kz: "Қазақстан · ₸", market_ru: "Ресей · ₽",
-      cat_ge_kzt: "Жалпы ағылшын тілі — Beginner (A1) деңгейінен Upper-Intermediate (C1) деңгейіне дейін, шағын интерактивті топтарда",
-      cat_ielts_kzt: "IELTS-ке дайындық — төрт дағды, емтихан стратегиялары, сынақ тестілері және жеке кері байланыс",
-      cat_ind_kzt: "Жеке сабақтар — мақсатыңыз бен кестеңізге сай",
-      cat_flex_kzt: "Икемді сабақ пакеттері, жергілікті мұғалім — сабақ үшін төлеңіз, айлық міндеттемесіз",
-      cat_int_kzt: "Интенсив бағдарламалар — төлем бүкіл курс үшін бір рет",
-      cat_venue_kzt: "Кеңістік жалға беру — IF Business Lab & Event Space",
+      cat_ge_kzt: "Жалпы ағылшын тілі",
+      cat_ielts_kzt: "IELTS-ке дайындық",
+      cat_ind_kzt: "Жеке сабақтар",
+      cat_flex_kzt: "Икемді сабақ пакеттері, жергілікті мұғалім",
+      cat_int_kzt: "Интенсив бағдарламалар",
+      cat_venue_kzt: "Кеңістік жалға беру",
       "name_GE-L": "Шағын топ · Жергілікті оқытушы", "desc_GE-L2": "Айына 8 сабақ, аптасына 2 рет, әрқайсысы 60 минут, шағын топтар.", "desc_GE-L": "Айына 8 сабақ, әрқайсысы 90 минут, топта 3–6 адам.",
       "name_GE-N": "Шағын топ · Тіл тасымалдаушы", "desc_GE-N": "Айына 8 сабақ, әрқайсысы 90 минут, сөйлеу практикасы барынша көп.",
       name_IE: "IELTS тобы", desc_IE: "Айына 8 сабақ, әрқайсысы 90 минут: төрт дағды, емтихан стратегиясы және сынақ тесттер.",
@@ -2093,18 +2024,18 @@
       pricenote_rub: "Бағалар «бастап» көрсетілген. Жеке ұсыныс сұраңыз. Барлық бағдарламалар тегін деңгей анықтау тестінен басталады.",
       catalog_link: "Сыныптардың толық каталогын қараңыз",
       catalog_link_tail: " — қазір жұмыс істеп тұрған әр топтық сабақтың нақты күндері мен уақытын көріңіз.",
-      sec02_num: "05 — Экожүйе", sec02_title: "Төрт кеңістік, бір стандарт",
+      sec02_num: "Экожүйе", sec02_title: "Төрт кеңістік, бір стандарт",
       sec02_desc: "Сыныптан тыс Intellect First жаттығуға, тілге еніп кетуге және шығармашылыққа арналған шағын кеңістіктер экожүйесін жүргізеді.",
       eco1_desc: "Сөйлесу клубтары, пікірсайыстар, шешендік өнер жаттығулары және өзекті жаңалықтарды талқылау — еркін сөйлеу сенімділікпен кездесетін жер.",
       eco2_desc: "Қарқынды шағын топтық жұмыс, IELTS-ке бағытталған сабақтар және кәсіби дамуға арналған шеберханалар.",
       eco4_desc: "Бейімделген кітаптар, кітапхана және өз бетімен оқуға арналған тыныш бұрыш — мұнда оқу әдетке айналады.", eco3_desc: "Жеке және онлайн сабақтар, бейне түсіру және подкасттар — оқуды сынып қабырғасынан тыс жалғастыратын контент.",
-      sec03_num: "06 — Галерея", sec03_title: "Академиядағы өмір",
+      sec03_num: "Галерея", sec03_title: "Академиядағы өмір",
       g_n_hand: "Жыл соңындағы мерекеде сертификаттар табыстау", g_n_cert: "Жыл қорытындысы бойынша сертификат", g_n_book: "Тамаша жыл үшін сыйлық", g_n_group: "Сертификат иегерлері", g_n_rope: "Арқан сынағы", g_n_chat: "Ойындар арасындағы әңгіме", g_n_friends: "Барлық топтардан достар", fb_num: "Студенттер пікірі", fb_title: "Студенттеріміз не дейді", fb_desc: "IF Academy студенттерінің нақты пікірлері — өз кабинеттерінде жазылған және олардың келісімімен жарияланған.", fb_cta_t: "Бізде оқисыз ба? Сабақтарыңыз қалай өтіп жатқанын басқаларға айтыңыз.", fb_cta: "Пікір қалдыру", fb_empty: "Жақында мұнда студенттеріміздің пікірлері пайда болады.", fb_avg: "5-тен {a} · пікірлер: {n}", fb_more: "Толық оқу", fb_less: "Жасыру", g_kicker: "Оқу жылының соңындағы барбекю · Глэмпинг, Қостанай", g_all: "Барлығы", g_awards: "Марапаттар мен сертификаттар", g_games: "Командалық ойындар", g_moments: "Сәттер", g_c_speech: "Директор жыл қорытындысы бойынша марапаттарды табыстауда", g_c_ielts: "IELTS жетістік марапаты", g_c_annual: "Жылдық жетістік сертификаты", g_c_commit: "Табандылық сертификаты", g_c_media: "Медиа және маркетинг марапаты", g_c_teach: "Үздік оқытушы марапаты", g_c_journey: "«Оқу жолы» марапаты", g_c_teams: "Командалар ойынға дайындалуда", g_c_badges: "Командалық белгілерді таратамыз", g_c_wolves: "«Қасқырлар» командасы", g_c_eagles: "«Бүркіттер» командасы стратегия құруда", g_c_hoop: "Шеңбер эстафетасы", g_c_brief: "Келесі раунд алдындағы нұсқаулық", g_c_host: "Жүргізуші жаңа тапсырманы жариялауда", g_c_lineup: "Командалар сапта", g_c_group: "Командалық белгілермен күлкі", g_c_fist: "Керемет ойын!", g_c_hand: "Құттықтаулар", g_c_sun: "Күн нұры мен жақсы көңіл", g_c_tee: "Оқушылар мен мұғалімдер, сабақтан тыс",
       sec03_desc: "Сабақтарымыз бен іс-шараларымыздан нақты сәттер — оқушылар, мұғалімдер және IF қауымдастығы.",
       frame_1: "General English — шағын топтық сабақ", frame_2: "IF Hub — сөйлесу клубы", frame_3: "IELTS сынақ тестілеуі",
       frame_4: "IF Studio — жазу сессиясы", frame_5: "Корпоративтік оқыту — ұйымның өзінде", frame_6: "Оқушылар көрсетілімі және бітіру",
       gallery_note: "Уақытша кадрлар — академия фотоларын жіберіңіз, біз бірден қоямыз.",
-      sec04_num: "08 — Біз туралы", sec04_title: "Бір сенімге құрылған",
+      sec04_num: "Біз туралы", sec04_title: "Бір сенімге құрылған",
       about_p1: "Intellect First тіл оқытуды кез келген маңызды білім сияқты — қатаңдығымен, нәтижесімен және оны жүргізетін адамдардың деңгейімен бағалау керек деген сеніммен құрылды.",
       about_p2: "Әр сабақты білікті оқытушылар жүргізеді, халықаралық стандарттарға сай келеді және шағын топтарға құрылған, сондықтан бірде-бір оқушы тыңдалмай қалмайды. Нәтижесінде академия тіл орталығынан гөрі шын мәнінде ой мектебі сияқты жұмыс істейді.",
       stat1_num: "Үздіктік", stat1_lbl: "Маркетингтік сөз емес, жұмыс стандарты ретінде ұсталады",
@@ -2197,7 +2128,7 @@
     var p=document.createElement('p');p.textContent=r[1];
     var c=document.createElement('a');c.className='cta';c.href=PORTAL+'#join';c.target='_blank';c.rel='noopener';c.textContent=({"en": "Take the placement test", "ru": "Пройти тест на уровень", "kk": "Деңгей анықтау тестін тапсыру"})[L];
     out.appendChild(a);out.appendChild(h);out.appendChild(p);out.appendChild(c)}
-  $('fnd_btn').addEventListener('click',function(){lastKey=pick();showRes()});
+  $('fnd_btn')&&$('fnd_btn').addEventListener('click',function(){lastKey=pick();showRes()});
   document.querySelectorAll('.lang-btn').forEach(function(b){b.addEventListener('click',function(){setTimeout(function(){showRes();upd()},0)})});
   var LAB=null;
   function msg(){var L=lang(),M=L==='kk'?'ru':L;var d=({"en": {"h": "Trial lesson request — Intellect First Academy", "n": "Student", "c": "Contact", "w": "Who is learning", "g": "Goal", "t": "Best time"}, "ru": {"h": "Заявка на пробное занятие — Intellect First Academy", "n": "Ученик", "c": "Контакт", "w": "Кто учится", "g": "Цель", "t": "Удобное время"}})[M];
@@ -2350,7 +2281,7 @@ show(0)})})();
 (function(){var row=document.getElementById('fbk-row');if(!row)return;var nav=document.getElementById('fbk-nav'),avg=document.getElementById('fbk-avg'),data=[];
 var tr=function(k,d){try{var L=(document.documentElement.lang||'en').slice(0,2),D=window.I18N||window.T||{};return (D[L]&&D[L][k])||(D.en&&D.en[k])||d}catch(e){return d}};
 var esc=function(t){return String(t==null?'':t).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})};
-function draw(){if(!data.length){row.innerHTML='<div class="fbk-empty">'+esc(tr('fb_empty','Our students’ feedback will appear here soon.'))+'</div>';nav.hidden=true;avg.hidden=true;return}
+function draw(){var sec=document.getElementById('feedback');if(sec)sec.hidden=!data.length;if(!data.length){row.innerHTML='<div class="fbk-empty">'+esc(tr('fb_empty','Our students’ feedback will appear here soon.'))+'</div>';nav.hidden=true;avg.hidden=true;return}
 row.innerHTML=data.map(function(f){return '<article class="fbk-card" lang="'+esc(f.lang||'en')+'"><div class="fbk-stars" aria-label="'+f.rating+' / 5">'+'★★★★★'.slice(0,f.rating)+'<i>'+'★★★★★'.slice(f.rating)+'</i></div><p class="fbk-q clip">'+esc(f.text)+'</p><button type="button" class="fbk-more" hidden>'+esc(tr('fb_more','Read more'))+'</button><div class="fbk-who"><span class="fbk-ini" aria-hidden="true">'+esc((f.name||'?')[0])+'</span><span><b>'+esc(f.name)+'</b>'+(f.course?'<small>'+esc(f.course)+'</small>':'')+'</span></div></article>'}).join('');
 [].forEach.call(row.querySelectorAll('.fbk-card'),function(c){var q=c.querySelector('.fbk-q'),b=c.querySelector('.fbk-more');if(q.scrollHeight>q.clientHeight+4){b.hidden=false;b.onclick=function(){var o=q.classList.toggle('clip');b.textContent=o?tr('fb_more','Read more'):tr('fb_less','Show less')}}});
 nav.hidden=data.length<2;if(data.length>=3){var a=data.reduce(function(s,f){return s+f.rating},0)/data.length;avg.hidden=false;avg.innerHTML='<b>★★★★★</b>'+esc(tr('fb_avg','{a} out of 5 · {n} students').replace('{a}',a.toFixed(1)).replace('{n}',data.length))}else avg.hidden=true}
