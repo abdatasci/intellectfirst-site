@@ -69,7 +69,27 @@ async function applyPending(list) {
   return applyTimetable({ individual: found });
 }
 
-const MIGRATIONS = [['timetable-2026-11-14', () => applyTimetable(TT_2026_11_14)], ['timetable-2026-11-14-pending', () => applyPending(PENDING_2026_11_14), true]];
+/* Free full access for named individual students (the director's private students). Only fingerprints of the full
+   name are kept here (sha-256 of the lower-case name, Latin and Cyrillic spellings, either order), never the name.
+   Waits until the student has a website account, then makes it a student account (track "private"). */
+const U = () => getStore({ name: 'ielts', consistency: 'strong' });
+const fpFull = n => createHash('sha256').update(String(n || '').toLowerCase().replace(/[^a-zа-яёәіңғүұқөһ\s-]/gi, ' ').replace(/\s+/g, ' ').trim()).digest('hex').slice(0, 16);
+const PRIVATE_2026_11_15 = ['466004361b64c14b', 'db9483a7e998d9de', 'ff6438ddc0028d2e', 'a6f2dae16d7ba6cd', '83b09e3cb229b656', 'e00fe6600ad2002f', '35440d93b3f5e70f'];
+async function grantPrivate(hashes) {
+  const dir = (await U().get('directory', { type: 'json' })) || {}, set = new Set(hashes), out = [];
+  for (const [uid, d] of Object.entries(dir)) {
+    if (!set.has(fpFull(d.name))) continue;
+    const p = await U().get(`u/${uid}/profile`, { type: 'json' }); if (!p || p.role === 'teacher' || p.role === 'admin') continue;
+    if (p.role !== 'student') { p.role = 'student'; p.track = 'private'; delete p.request; await U().setJSON(`u/${uid}/profile`, p); }
+    dir[uid] = { ...d, role: 'student', track: p.track, request: null };
+    out.push(`account ${uid} → student (individual)`);
+  }
+  if (!out.length) return null;   // not registered yet: try again later
+  await U().setJSON('directory', dir);
+  return out;
+}
+
+const MIGRATIONS = [['timetable-2026-11-14', () => applyTimetable(TT_2026_11_14)], ['timetable-2026-11-14-pending', () => applyPending(PENDING_2026_11_14), true], ['private-2026-11-15', () => grantPrivate(PRIVATE_2026_11_15)]];
 let running = null;
 /** Run any migration that has not run yet. Safe to call on every request (cached per instance). */
 let checkedAt = 0;
