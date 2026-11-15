@@ -276,3 +276,38 @@ button.chip:hover{background:rgba(255,255,255,.22)}
 .feed .fe{opacity:1;color:#fff;border-left:5px solid var(--k,#d4ae5a);box-shadow:0 4px 0 rgba(0,0,0,.3)}
 .feed .fe:nth-of-type(4n+1){--k:#e8513d}.feed .fe:nth-of-type(4n+2){--k:#2fa65a}.feed .fe:nth-of-type(4n+3){--k:#1aa3b8}.feed .fe:nth-of-type(4n){--k:#8a4fd6}
 .feed .fe.bad{opacity:.85}
+
+/* ===== Cyber Heist: sci-fi hacking screen ===== */
+body.cyber{background:#020806;--neon:#00ff9c;--cyan:#22d3ee;--hot:#ff2bd6;--mono:ui-monospace,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace}
+#cyrain{position:fixed;inset:0;z-index:0;opacity:.28;pointer-events:none}
+body.cyber::after{content:"";position:fixed;inset:0;z-index:3;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(0,0,0,.22) 0 1px,transparent 1px 3px),radial-gradient(ellipse at center,transparent 55%,rgba(0,0,0,.75));mix-blend-mode:multiply}
+body.cyber .top{background:rgba(2,10,8,.85);border-bottom:1px solid rgba(0,255,156,.35);position:relative;z-index:4}
+body.cyber .stage{position:relative;z-index:2;font-family:var(--mono);background:linear-gradient(rgba(0,255,156,.05) 1px,transparent 1px) 0 0/100% 40px,linear-gradient(90deg,rgba(0,255,156,.05) 1px,transparent 1px) 0 0/40px 100%}
+.cyhud{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font:600 13px var(--mono);letter-spacing:.14em;color:var(--neon);border:1px solid rgba(0,255,156,.35);padding:8px 14px;background:rgba(0,20,12,.6);box-shadow:0 0 18px rgba(0,255,156,.18) inset}
+.cyhud .blink{color:var(--hot);animation:cyblink 1s steps(2) infinite}
+@keyframes cyblink{50%{opacity:.25}}
+body.cyber .board{perspective:none}
+body.cyber .board h2{font:700 30px/1.25 var(--mono);letter-spacing:.06em;color:var(--neon);text-shadow:0 0 8px var(--neon),0 0 24px rgba(0,255,156,.5);position:relative}
+.glitch::before,.glitch::after{content:attr(data-t);position:absolute;left:0;right:0;top:0;overflow:hidden;opacity:0}
+.glitch::before{color:var(--hot);transform:translate(2px,0);clip-path:inset(0 0 60% 0);animation:gl1 2.6s infinite steps(1)}
+.glitch::after{color:var(--cyan);transform:translate(-2px,0);clip-path:inset(55% 0 0 0);animation:gl2 3.1s infinite steps(1)}
+@keyframes gl1{0%,88%,97%{opacity:0;transform:translate(0)}90%{opacity:.85;transform:translate(-4px,-1px)}94%{opacity:.85;transform:translate(5px,1px)}}
+@keyframes gl2{0%,84%,95%{opacity:0;transform:translate(0)}86%{opacity:.85;transform:translate(4px,1px)}92%{opacity:.85;transform:translate(-5px,0)}}
+body.cyber .pill{background:rgba(0,30,18,.8);color:var(--neon);border:1px solid rgba(0,255,156,.5);font-family:var(--mono);text-shadow:0 0 6px var(--neon);box-shadow:0 0 14px rgba(0,255,156,.25)}
+body.cyber .board .brow:not(.t){background:linear-gradient(90deg,rgba(0,40,24,.85),rgba(0,18,12,.85));border:1px solid rgba(0,255,156,.45);border-left:4px solid var(--neon);border-radius:4px;transform:none;color:#d8fff0;
+  box-shadow:0 0 16px rgba(0,255,156,.15),inset 0 0 22px rgba(0,255,156,.08);text-shadow:0 0 6px rgba(0,255,156,.6);font-family:var(--mono);clip-path:polygon(0 0,calc(100% - 16px) 0,100% 16px,100% 100%,16px 100%,0 calc(100% - 16px))}
+body.cyber .board .brow.first{border-color:var(--hot);border-left-color:var(--hot);box-shadow:0 0 22px rgba(255,43,214,.35),inset 0 0 26px rgba(255,43,214,.12)}
+body.cyber .board .brow:not(.t) .fill{background:linear-gradient(90deg,rgba(0,255,156,.05),rgba(0,255,156,.28));border-right:2px solid var(--neon);box-shadow:4px 0 14px var(--neon)}
+body.cyber .board .brow.first .fill{background:linear-gradient(90deg,rgba(255,43,214,.05),rgba(255,43,214,.3));border-right-color:var(--hot);box-shadow:4px 0 14px var(--hot)}
+body.cyber .board .brow:not(.t) .r{background:none;box-shadow:none;border:1px solid rgba(0,255,156,.6);border-radius:3px;color:var(--neon);font:700 16px var(--mono);width:50px;height:30px;display:flex;align-items:center;justify-content:center}
+body.cyber .board .brow:not(.t) .r::before{content:"#"}
+body.cyber .board .brow:not(.t) .n{letter-spacing:.04em}
+body.cyber .board .brow .ip{display:block;font-size:11px;color:var(--cyan);opacity:.75;letter-spacing:.12em;text-shadow:none}
+body.cyber .board .brow:not(.t) .s{white-space:nowrap;background:rgba(0,0,0,.45);border:1px solid rgba(0,255,156,.4);border-radius:3px;color:var(--neon);font-family:var(--mono)}
+body.cyber .feed{background:rgba(0,10,6,.88);border:1px solid rgba(0,255,156,.4);border-radius:4px;box-shadow:0 0 20px rgba(0,255,156,.15);font-family:var(--mono)}
+body.cyber .feed h3{color:var(--neon);font:600 13px var(--mono);letter-spacing:.04em;text-transform:none;border-bottom:1px dashed rgba(0,255,156,.35);padding-bottom:8px}
+body.cyber .feed .fe{background:transparent;border:0;border-left:2px solid var(--neon);border-radius:0;box-shadow:none;color:#bfffe3;font:500 14px/1.45 var(--mono);padding:6px 10px}
+body.cyber .feed .fe b{color:var(--hot);text-shadow:0 0 8px var(--hot);letter-spacing:.08em}
+body.cyber .feed .fe b.ok{color:var(--neon);text-shadow:none}
+body.cyber .feed .fe.hack,body.cyber .feed .fe.steal{border-left-color:var(--hot);background:rgba(255,43,214,.07)}
+body.cyber .btn.ghost{border-color:rgba(0,255,156,.6);color:var(--neon);font-family:var(--mono)}

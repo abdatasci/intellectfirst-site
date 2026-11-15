@@ -229,6 +229,7 @@
   }
 
   /* ---------- power modes: Treasure Hunt, Cyber Heist, Fishing Frenzy ---------- */
+  function ip(n) { var h = 0; for (var i = 0; i < n.length; i++) h = (h * 31 + n.charCodeAt(i)) >>> 0; return '10.' + (h & 255) + '.' + (h >> 8 & 255) + '.' + (h >> 16 & 255); }
   var ROWC = ['#e8513d', '#f28c1b', '#d9a90f', '#2fa65a', '#1aa3b8', '#3f6fe0', '#8a4fd6', '#d6449a', '#16a085', '#c0392b'];
   var M_UNIT = function () { return L.mode(H.mode).cur || ''; };
   function feed(text, a, b, k, extra) {
@@ -450,9 +451,25 @@
     renderStage(snap, true);
   }
   function teamColor(t) { return t >= 0 ? L.HEX[t] : 'rgba(255,255,255,.4)'; }
+  /* Cyber Heist: a sci-fi hacking screen (digital rain of letters, scanlines, neon nodes, terminal feed) */
+  var RAIN = null;
+  function cyber(on) {
+    document.body.classList.toggle('cyber', on);
+    if (on && !RAIN) {
+      var c = document.createElement('canvas'); c.id = 'cyrain'; document.body.prepend(c);
+      var x = c.getContext('2d'), cols = [], fs = 16, CH = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789$#@%&<>/{}[]=+*';
+      var size = function () { c.width = innerWidth; c.height = innerHeight; cols = Array.from({ length: Math.ceil(c.width / fs) }, function () { return Math.random() * c.height / fs; }); };
+      size(); addEventListener('resize', size);
+      RAIN = setInterval(function () {
+        x.fillStyle = 'rgba(2,8,6,.12)'; x.fillRect(0, 0, c.width, c.height); x.font = fs + 'px ui-monospace,Menlo,Consolas,monospace';
+        cols.forEach(function (y, i) { x.fillStyle = Math.random() < .03 ? '#d8fff0' : i % 7 === 0 ? '#22d3ee' : '#00ff9c'; x.fillText(CH[Math.floor(Math.random() * CH.length)], i * fs, y * fs); cols[i] = y * fs > c.height && Math.random() > .975 ? 0 : y + 1; });
+      }, 55);
+    } else if (!on && RAIN) { clearInterval(RAIN); RAIN = null; var old = document.getElementById('cyrain'); if (old) old.remove(); }
+  }
   function renderStage(s, host) {
     if (!s) return;
     stage(true);
+    cyber(s.mode === 'hack' && (s.phase === 'race' || s.phase === 'end' || s.phase === 'lobby'));
     var pp = $('#pinpill'); pp.hidden = s.phase === 'lobby' || s.phase === 'end'; pp.innerHTML = 'PIN <b>' + s.pin + '</b> · ' + s.count + ' players';
     var h = '<div class="stage">';
     if (s.phase === 'lobby') {
@@ -498,11 +515,13 @@
       if (host) h += '<div class="ctrl" style="justify-content:flex-end"><button class="btn ghost sm" id="endnow">End game</button></div>';
     } else if (s.phase === 'board' || s.phase === 'race') {
       var race = s.phase === 'race', MM = L.mode(s.mode), cur = MM.power ? ' ' + MM.cur : '', top = s.board.slice(0, race ? (MM.power ? 10 : 12) : 6), max = Math.max(1, s.board.length ? s.board[0][1] : 1);
+      var cy = s.mode === 'hack' && race;
+      if (cy) h += '<div class="cyhud"><span>▣ IF-NET // SECURE SERVER CLUSTER</span><span class="blink">● LIVE INTRUSION MONITOR</span><span>NODES ONLINE: ' + s.board.length + '</span></div>';
       if (MM.power) h += '<div class="pgrid">';
-      h += '<div class="board"><h2>' + (race ? (MM.power ? MM.icon + ' ' : '') + esc(s.title) : 'Scoreboard') + '</h2>' + (race ? '<div style="text-align:center;margin-bottom:6px"><span class="pill" style="font-size:22px">⏱ <span id="rtime">' + fmt(s.left) + '</span></span>' + (s.mode === 'fish' ? ' <span class="pill fz" id="fzbar"' + (s.fz ? '' : ' hidden') + '>🌊 FRENZY ×2</span>' : '') + '</div>' : '');
+      h += '<div class="board"><h2' + (cy ? ' class="glitch" data-t="' + esc('> ' + s.title.toUpperCase()) + '"' : '') + '>' + (cy ? esc('> ' + s.title.toUpperCase()) : (race ? (MM.power ? MM.icon + ' ' : '') + esc(s.title) : 'Scoreboard')) + '</h2>' + (race ? '<div style="text-align:center;margin-bottom:6px"><span class="pill" style="font-size:22px">⏱ <span id="rtime">' + fmt(s.left) + '</span></span>' + (s.mode === 'fish' ? ' <span class="pill fz" id="fzbar"' + (s.fz ? '' : ' hidden') + '>🌊 FRENZY ×2</span>' : '') + '</div>' : '');
       if (s.tboard.length) { var tm = Math.max(1, s.tboard[0][1]); h += s.tboard.map(function (t, i) { return '<div class="brow t" style="--c:' + L.HEX[t[2]] + '"><span class="fill" style="width:' + (t[1] / tm * 100) + '%;background:' + L.HEX[t[2]] + '40"></span><span class="r">' + (i + 1) + '</span><span class="n">' + esc(t[0]) + ' <small style="opacity:.6">· ' + t[3] + ' players · average</small></span><span class="s">' + t[1] + '</span></div>'; }).join('') + '<div style="height:8px"></div>'; }
-      h += top.map(function (p, i) { return '<div class="brow' + (i === 0 ? ' first' : '') + '" style="--k:' + ROWC[i % ROWC.length] + '"><span class="fill" style="width:' + (p[1] / max * 100) + '%"></span><span class="r">' + (i + 1) + '</span><span class="n">' + esc(p[0]) + (p[2] >= 0 && s.teams.length ? ' <small style="color:' + teamColor(p[2]) + '">●</small>' : '') + '</span><span class="s">' + (MM.power ? L.fmtN(p[1]) + cur : p[1]) + '</span></div>'; }).join('') + '</div>';
-      if (MM.power) h += '<div class="feed"><h3>Live feed</h3>' + ((s.feed || []).slice().reverse().map(function (e) { return '<div class="fe ' + esc(e.k) + '">' + esc(e.t) + '</div>'; }).join('') || '<p class="mini" style="color:rgba(255,255,255,.6)">' + (s.mode === 'gold' ? 'Steals and swaps appear here…' : s.mode === 'hack' ? 'Hacks appear here…' : s.mode === 'mine' ? 'Gold and diamonds appear here…' : 'Big catches appear here…') + '</p>') + '</div></div>';
+      h += top.map(function (p, i) { return '<div class="brow' + (i === 0 ? ' first' : '') + '" style="--k:' + ROWC[i % ROWC.length] + '"><span class="fill" style="width:' + (p[1] / max * 100) + '%"></span><span class="r">' + (cy ? ('0' + (i + 1)).slice(-2) : i + 1) + '</span><span class="n">' + (cy ? esc(p[0].toUpperCase().replace(/\s+/g, '_')) + '<small class="ip">' + ip(p[0]) + '</small>' : esc(p[0])) + (p[2] >= 0 && s.teams.length ? ' <small style="color:' + teamColor(p[2]) + '">●</small>' : '') + '</span><span class="s">' + (MM.power ? L.fmtN(p[1]) + cur : p[1]) + '</span></div>'; }).join('') + '</div>';
+      if (MM.power) h += '<div class="feed"><h3>' + (cy ? 'root@if-net:~$ tail -f breach.log' : 'Live feed') + '</h3>' + ((s.feed || []).slice().reverse().map(function (e) { return '<div class="fe ' + esc(e.k) + '">' + (cy ? (e.k === 'hack' || e.k === 'steal' ? '<b>ACCESS GRANTED</b> ' : '<b class="ok">&gt;</b> ') : '') + esc(e.t) + '</div>'; }).join('') || '<p class="mini" style="color:rgba(255,255,255,.6)">' + (s.mode === 'gold' ? 'Steals and swaps appear here…' : s.mode === 'hack' ? 'Hacks appear here…' : s.mode === 'mine' ? 'Gold and diamonds appear here…' : 'Big catches appear here…') + '</p>') + '</div></div>';
       if (host) h += '<div class="ctrl" style="justify-content:flex-end">' + (race ? '<button class="btn ghost sm" id="endnow">End race now</button>' : '<button class="btn big" id="nextq">' + (s.i + 1 >= s.n ? 'Final results →' : 'Next question →') + '</button><button class="btn ghost sm" id="endnow">End game</button>') + '</div>';
     } else if (s.phase === 'match') {
       h += '<div class="board" style="max-width:1000px"><h2>🤝 ' + esc(s.title) + '</h2><div style="text-align:center;margin-bottom:8px"><span class="pill" style="font-size:22px">⏱ <span id="rtime">' + fmt(s.left) + '</span></span> <span class="pill">First team to ' + s.goal + ' right in a row wins</span></div>';
