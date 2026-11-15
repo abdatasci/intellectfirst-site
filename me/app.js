@@ -559,6 +559,7 @@
     var opens = hm(new Date(Date.parse(l.at) - (d.early || 5) * 60000).toISOString()), h = '<div class="clockbox"><div class="row" style="gap:10px;align-items:center;flex-wrap:wrap"><b>Clock in and attendance</b><span class="spacer"></span>' + lessonLine(l) + '</div>';
     if (l.state === 'upcoming') h += '<button class="btn primary" disabled style="margin-top:10px">⏰ Clock in</button><p class="small" style="margin:6px 0 0">Clock-in opens ' + (l.date === today ? 'today' : 'on ' + fmtD(l.date)) + ' at <b>' + opens + '</b>, 5 minutes before the lesson.</p>';
     else if ((l.state === 'open' || l.state === 'overdue') && own) h += '<button class="btn primary" id="clockin" style="margin-top:10px">✅ Clock in: I\'m here</button>' + (l.state === 'overdue' ? '<p class="small" style="margin:6px 0 0;color:#b0372f">The lesson has started: this clock-in counts as late.</p>' : '');
+    else if (admin && !own && !e.checkIn && !l.auto && l.state !== 'upcoming' && l.state !== 'cancelled' && l.state !== 'moved') h += '<div class="forteacher" style="margin-top:10px;padding:10px 12px;border-radius:12px;background:#fff7e6;border:1px solid #f0d9a8"><b>Clock in for ' + esc(l.teacher || 'the teacher') + '</b> <span class="small">(for teachers without an account — entered by the administrator)</span><div class="row" style="gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap"><label class="small">Arrived at</label><input class="inp" type="time" id="arrt" value="' + esc(l.start) + '" style="max-width:130px"><button class="btn primary" id="clockfor">✅ Clock in</button></div></div>';
     else if (l.state === 'missed' && !admin) h += '<p class="small" style="margin:8px 0 0">This lesson ended without a clock-in. If it took place, ask the administrator to correct it.</p>';
     var canReg = (e.checkIn || l.auto || admin) && !e.cancelled && (admin || l.date === today);
     if (canReg) h += '<p class="small" style="margin:10px 0 6px">Mark each student — it goes to IF Admin automatically.</p><div class="reg" id="calreg" hidden></div>';
@@ -567,6 +568,15 @@
   function wireClock(l, d) {
     var b = $('#clockin');
     if (b) b.onclick = async function () { b.disabled = true; try { await api('teach/checkin', { method: 'POST', body: { key: l.key } }); toast('Clocked in ✓ Now mark attendance.'); vCalendar(CAL.from); } catch (e) { b.disabled = false; toast(e.message === 'early' ? 'Clock-in opens 5 minutes before the lesson.' : e.message === 'over' ? 'This lesson has already ended.' : 'Could not clock in. Try again.'); } };
+    var cf = $('#clockfor');
+    if (cf) cf.onclick = async function () {
+      var t = ($('#arrt').value || l.start).split(':'), st = l.start.split(':'), late = (+t[0] * 60 + +t[1]) - (+st[0] * 60 + +st[1]);
+      cf.disabled = true;
+      try {
+        await api('admin/lesson', { method: 'POST', body: { key: l.key, set: late > (d.grace || 2) ? 'late' : 'on', lateMin: Math.max(0, late), note: 'Clocked in by the administrator for ' + (l.teacher || 'the teacher') } });
+        toast('Clocked in for ' + (l.teacher || 'the teacher') + ' ✓ Now mark attendance.'); vCalendar(CAL.from);
+      } catch (e) { cf.disabled = false; toast('Could not save. Try again.'); }
+    };
     var box = $('#calreg'); if (box) register(box, l, function () { vCalendar(CAL.from); });
   }
   function told(r) { return r && r.told ? r.told.students + ' student' + (r.told.students === 1 ? '' : 's') + ' told.' : ''; }
