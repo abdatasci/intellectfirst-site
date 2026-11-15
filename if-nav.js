@@ -20,6 +20,7 @@
     '.ifnav a:hover{background:rgba(255,255,255,.14)}' +
     '.ifnav a.home{background:linear-gradient(135deg,#d7b47d,#b8895a);color:#1a1208!important}' +
     '.ifnav a.home:hover{filter:brightness(1.07)}' +
+    '.ifnav a.kq{background:linear-gradient(135deg,#7c4dff,#ff5ca8);font-weight:700}.ifnav a.kq b{font-size:17px;line-height:1}' +
     '.ifnav svg{width:16px;height:16px;flex:none}' +
     '@media (max-width:520px){.ifnav a{padding:10px 12px}.ifnav a span{display:none}}' +
     '@media print{.ifnav{display:none}}' +
@@ -49,6 +50,12 @@
     bar.innerHTML =
       '<a href="#" class="back" aria-label="' + T[0] + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg><span>' + T[0] + '</span></a>' +
       '<a href="/" class="home" aria-label="' + T[1] + '"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h5v-6h4v6h5V10"/></svg><span>' + T[1] + '</span></a>';
+    // Young Learners pages: a one-tap way into the IF Kids Quest story game
+    if (/^\/a\/(young-learners|yl-centre|kids-english|starters-tests|movers-tests|flyers-tests|flyers-arcade|yl-tests|kids-[a-z-]+|starters-[a-z-]+|movers-[a-z-]+|flyers-[a-z-]+)(\/|$)/.test(path) && !/^\/a\/kids-quest/.test(path)) {
+      var kq = document.createElement('a'); kq.href = '/a/kids-quest/'; kq.className = 'kq';
+      kq.innerHTML = '<b aria-hidden="true">🏎️</b><span>Kids Quest</span>';
+      bar.appendChild(kq);
+    }
     document.body.appendChild(bar);
     /* apps that redraw the whole page (IF English) would remove the buttons: put them back */
     setInterval(function () { if (!document.body.contains(bar)) document.body.appendChild(bar); }, 800);

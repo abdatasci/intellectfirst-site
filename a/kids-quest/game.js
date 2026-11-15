@@ -13,7 +13,8 @@
   var landDone = function (id) { return SAVE.done[id] || (SAVE.done[id] = {}); };
   var feathersIn = function (id) { var d = SAVE.done[id] || {}; return ['story', 'kart', 'mine'].filter(function (k) { return d[k]; }).length; };
   var feathers = function () { return LANDS.reduce(function (s, l) { return s + feathersIn(l.id); }, 0); };
-  var unlocked = function (i) { return SAVE.all || i === 0 || feathersIn(LANDS[i - 1].id) >= 2; };
+  var unlocked = function (i) { return SAVE.all || i === 0 || LANDS[i - 1].level !== LANDS[i].level || feathersIn(LANDS[i - 1].id) >= 2; };
+  var LEVELS = []; LANDS.forEach(function (l) { if (LEVELS.indexOf(l.level) < 0) LEVELS.push(l.level); });
 
   /* ---------- voice (real recorded voices plug in here later: window.KQ_AUDIO = { 'text': 'url.mp3' }) ---------- */
   var voice = null;
@@ -115,7 +116,8 @@
   });
 
   /* ================= MAP ================= */
-  var NODES = [[180, 380], [330, 190], [560, 150], [770, 250], [700, 430]];
+  var COLX = [110, 295, 480, 665, 850];
+  var NODES = LANDS.map(function (l, i) { var c = LEVELS.indexOf(l.level), k = LANDS.filter(function (x, j) { return j < i && x.level === l.level; }).length, top = (c % 2 === 0) ? k === 1 : k === 0; return [COLX[c] || 480, top ? 230 : 420]; });
   var MapScene = new Phaser.Class({
     Extends: Phaser.Scene, initialize: function () { Phaser.Scene.call(this, 'map'); },
     create: function () {
@@ -126,11 +128,17 @@
       g.fillStyle(0x9fdc8a, 1).fillEllipse(W / 2, H / 2 + 20, 860, 430);
       g.fillStyle(0x8fd07a, 1).fillEllipse(W / 2 - 160, H / 2 + 80, 380, 220);
       // land patches
-      var tint = [0xffd7ec, 0xfff1b8, 0xd9e2ff, 0xf4f8ff, 0x3a2f7a];
-      NODES.forEach(function (p, i) { g.fillStyle(tint[i], 0.95).fillEllipse(p[0], p[1] + 6, 190, 120); });
-      s.add.image(NODES[3][0] + 10, NODES[3][1] - 34, 'c_mountain').setScale(0.75).setAlpha(0.9);
-      s.add.image(NODES[1][0] - 70, NODES[1][1] + 6, 'c_farm').setScale(0.42);
-      [[90, 300], [120, 460], [420, 470], [470, 330], [600, 330], [880, 380], [250, 300]].forEach(function (p) { s.add.image(p[0], p[1], 'c_tree').setScale(0.28); });
+      var tint = [0xffd7ec, 0xfff1b8, 0xd9e2ff, 0xf4f8ff, 0x3a2f7a, 0xe9d8b4, 0xdfe5ec, 0xffd9ea, 0xfff0c0, 0xcfe3f2];
+      NODES.forEach(function (p, i) { g.fillStyle(tint[i % tint.length], 0.95).fillEllipse(p[0], p[1] + 6, 160, 104); });
+      // level columns: Starters → Movers → Flyers → KET → PET
+      var LVC = ['#ff5ca8', '#ff9a3c', '#3d8bfd', '#2f9a68', '#7c4dff'];
+      LEVELS.forEach(function (lv, c) {
+        var x = COLX[c] || 480, chip = s.add.graphics();
+        chip.fillStyle(0x13294b, 0.2).fillRoundedRect(x - 66, 116, 132, 40, 20);
+        chip.fillStyle(Phaser.Display.Color.HexStringToColor(LVC[c] || '#7c4dff').color, 1).fillRoundedRect(x - 66, 112, 132, 40, 20);
+        txt(s, x, 132, lv === 'KET' ? 'A2 Key' : lv === 'PET' ? 'B1 PET' : lv, 21, '#fff', { stroke: '#13294b', strokeThickness: 4 });
+      });
+      [[200, 330], [390, 330], [570, 330], [760, 330], [40, 500], [930, 500]].forEach(function (p) { s.add.image(p[0], p[1], 'c_tree').setScale(0.22); });
       // dashed path
       var pg = s.add.graphics().lineStyle(6, 0xffffff, 1);
       for (var k = 0; k < NODES.length - 1; k++) {
@@ -140,46 +148,49 @@
       // egg in the middle
       var f = feathers(), total = LANDS.length * 3;
       if (f >= total) {
-        var pip = s.add.image(480, 330, 'c_pip').setScale(0.7);
-        s.tweens.add({ targets: pip, y: 300, yoyo: true, repeat: -1, duration: 500, ease: 'Sine.easeOut' });
-        txt(s, 480, 400, 'Pip hatched!', 24, '#fff', { stroke: '#7c4dff', strokeThickness: 6 });
+        var pip = s.add.image(70, 60, 'c_pip').setScale(0.4);
+        s.tweens.add({ targets: pip, y: 46, yoyo: true, repeat: -1, duration: 500, ease: 'Sine.easeOut' });
+        txt(s, 70, 104, 'Pip hatched!', 16, '#fff', { stroke: '#7c4dff', strokeThickness: 5 });
       } else {
-        var egg = s.add.image(480, 330, 'c_egg').setScale(0.55);
-        if (f >= 5) s.add.image(480, 330, 'c_crack').setScale(0.55);
-        if (f >= 10) s.add.image(480, 312, 'c_crack').setScale(0.42).setAngle(14);
+        var egg = s.add.image(64, 58, 'c_egg').setScale(0.36);
+        if (f >= total / 3) s.add.image(64, 58, 'c_crack').setScale(0.36);
+        if (f >= total * 2 / 3) s.add.image(64, 46, 'c_crack').setScale(0.28).setAngle(14);
         s.tweens.add({ targets: egg, angle: { from: -4, to: 4 }, yoyo: true, repeat: -1, duration: 700 });
-        s.add.graphics().fillStyle(0xc9b6ff, 1).fillRoundedRect(430, 370, 100, 18, 9);
       }
       // nodes
       LANDS.forEach(function (l, i) {
         var p = NODES[i], open = unlocked(i), c = s.add.container(p[0], p[1]);
         var ring = s.add.graphics();
-        ring.fillStyle(0x000000, 0.18).fillCircle(0, 8, 52);
-        ring.fillStyle(open ? 0xffffff : 0x3b2f7a, 1).fillCircle(0, 0, 52);
-        ring.fillStyle(open ? [0xff7ab8, 0xffc23d, 0x6c8cff, 0x7fd3ff, 0x7c4dff][i] : 0x4d3f99, 1).fillCircle(0, 0, 44);
+        ring.fillStyle(0x000000, 0.18).fillCircle(0, 8, 46);
+        ring.fillStyle(open ? 0xffffff : 0x3b2f7a, 1).fillCircle(0, 0, 46);
+        ring.fillStyle(open ? [0xff7ab8, 0xffc23d, 0x6c8cff, 0x7fd3ff, 0x7c4dff, 0xc9a66b, 0x8aa0b8, 0xff8fc8, 0x3d8bfd, 0x4fa3c7][i % 10] : 0x4d3f99, 1).fillCircle(0, 0, 38);
         c.add(ring);
-        c.add(s.add.image(0, 0, 'p_' + l.words[0][1]).setScale(0.3).setAlpha(open ? 1 : 0.35));
+        c.add(s.add.image(0, 0, 'p_' + l.words[0][1]).setScale(0.26).setAlpha(open ? 1 : 0.35));
         if (!open) c.add(txt(s, 0, 2, '🔒', 40, '#fff'));
-        c.add(txt(s, 0, 72, l.name, 24, '#fff', { stroke: INK, strokeThickness: 6 }));
+        c.add(txt(s, 0, 64, l.name, 19, '#fff', { stroke: INK, strokeThickness: 5 }));
         var fi = feathersIn(l.id);
-        for (var q = 0; q < 3; q++) c.add(s.add.image(-26 + q * 26, -58, 'c_feather').setScale(0.28).setAlpha(q < fi ? 1 : 0.25));
-        var z = s.add.zone(0, 0, 120, 120).setInteractive({ useHandCursor: true }); c.add(z);
+        for (var q = 0; q < 3; q++) c.add(s.add.image(-22 + q * 22, -52, 'c_feather').setScale(0.24).setAlpha(q < fi ? 1 : 0.25));
+        var z = s.add.zone(0, 0, 104, 104).setInteractive({ useHandCursor: true }); c.add(z);
         z.on('pointerup', function () { sfx('tap'); if (!open) { say('Find two feathers in ' + LANDS[i - 1].name + ' first.'); s.cameras.main.shake(150, 0.004); return; } s.landMenu(i); });
         if (open && fi < 3) s.tweens.add({ targets: c, scale: 1.06, yoyo: true, repeat: -1, duration: 650 });
       });
       // Mia stands by the newest open land
-      var cur = 0; LANDS.forEach(function (l, i) { if (unlocked(i)) cur = i; });
-      var mia = s.add.image(NODES[cur][0] - 70, NODES[cur][1] - 10, 'c_mia').setScale(0.26);
+      var cur = Math.min(LANDS.length - 1, +SAVE.lastLand || 0);
+      var mia = s.add.image(NODES[cur][0] - 58, NODES[cur][1] - 8, 'c_mia').setScale(0.2);
       s.tweens.add({ targets: mia, y: mia.y - 8, yoyo: true, repeat: -1, duration: 500 });
       // header
       txt(s, W / 2, 34, 'IF Kids Quest', 40, '#fff', { stroke: '#13294b', strokeThickness: 8 });
-      txt(s, W / 2, 72, 'Feathers: ' + f + ' / ' + total, 24, '#fff', { stroke: '#13294b', strokeThickness: 6 });
+      txt(s, W / 2, 74, 'Feathers: ' + f + ' / ' + total + '  ·  choose your level', 20, '#fff', { stroke: '#13294b', strokeThickness: 6 });
       var gear = button(s, W - 46, 40, 60, 60, '', { fill: 0x13294b, shadow: 0x0a1630, r: 30 }, function () { s.teacherMenu(); });
       gear.add(txt(s, 0, 0, '⚙️', 28, '#fff'));
-      if (!SAVE.seen) { SAVE.seen = 1; persist(); s.time.delayedCall(500, function () { say('Hello! Tap Rainbow Valley to start.'); }); }
+      // opened for one level (?level=KET): go straight to that level's first land, once
+      var QL = new URLSearchParams(location.search).get('level');
+      if (QL && !window.__kqLv) { window.__kqLv = 1; var qi = LANDS.findIndex(function (l) { return l.level.toLowerCase() === QL.toLowerCase(); }); if (qi >= 0) { s.time.delayedCall(250, function () { s.landMenu(qi); }); return; } }
+      if (!SAVE.seen) { SAVE.seen = 1; persist(); s.time.delayedCall(500, function () { say('Hello! Choose your level and tap a land to start.'); }); }
     },
     landMenu: function (i) {
       var s = this, l = LANDS[i], d = landDone(l.id), layer = s.add.container(0, 0).setDepth(50);
+      SAVE.lastLand = i; persist();
       var dim = s.add.rectangle(W / 2, H / 2, W, H, 0x0b1230, 0.55).setInteractive(); layer.add(dim);
       var g = s.add.graphics(); g.fillStyle(0xffffff, 1).fillRoundedRect(150, 50, 660, 440, 30); g.lineStyle(6, 0x7c4dff, 1).strokeRoundedRect(150, 50, 660, 440, 30); layer.add(g);
       layer.add(txt(s, W / 2, 96, l.name, 40, '#13294b'));
@@ -403,7 +414,7 @@
         g.fillStyle(0xffffff, 1).fillRect(-wide / 2 + 14, 0, 12, 90).fillRect(wide / 2 - 26, 0, 12, 90);
         c.add(g);
         if (q.pics) c.add(s.add.image(0, -hgt / 2, picOf(s.land, o)).setScale(0.75));
-        else c.add(txt(s, 0, -hgt / 2, o, s.mode === 'phrase' ? 28 : 38, '#13294b', { wordWrap: { width: wide - 30 } }));
+        else c.add(txt(s, 0, -hgt / 2, o, s.mode === 'phrase' ? (o.length > 30 ? 22 : 28) : 38, '#13294b', { wordWrap: { width: wide - 30 } }));
         c.ans = o; c.lane = i - 1; c.wide = wide;
         s.gateLayer.add(c);
         return c;

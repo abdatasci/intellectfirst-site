@@ -174,7 +174,7 @@
     next();
     gTimers.push(setInterval(function () { left--; var t = $('#tm'); if (t) t.textContent = left; if (left <= 0) { stopAll(); var best = Math.max(score, ls.get('yl.' + LV.id + '.speed') || 0); ls.set('yl.' + LV.id + '.speed', best); $('#sq').innerHTML = '<div class="done">⏱ ' + score + ' words!<br><small>Your best: ' + best + '</small></div><div class="nav"><button class="btn" id="re">Play again</button></div>'; $('#re').onclick = gSpeed; } }, 1000));
   }
-  var GAMES = [['memory', '🃏', 'Memory pairs', 'Find each picture and its word.', gMemory], ['balloons', '🎈', 'Listen and pop', 'Hear a word and pop the right balloon.', gBalloons], ['spelling', '🐝', 'Spelling bee', 'Build the word with letter tiles.', gSpelling], ['speed', '⏱', 'Speed match', 'How many words in 60 seconds?', gSpeed]];
+  var GAMES = [['kq', '🏎️', 'IF Kids Quest', 'Story adventure with Mia and Bolt: kart race and word mine.', function () { location.href = '/a/kids-quest/'; }], ['memory', '🃏', 'Memory pairs', 'Find each picture and its word.', gMemory], ['balloons', '🎈', 'Listen and pop', 'Hear a word and pop the right balloon.', gBalloons], ['spelling', '🐝', 'Spelling bee', 'Build the word with letter tiles.', gSpelling], ['speed', '⏱', 'Speed match', 'How many words in 60 seconds?', gSpeed]];
 
   /* ---------- home ---------- */
   function home(tab) {

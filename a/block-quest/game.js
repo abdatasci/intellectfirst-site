@@ -321,6 +321,7 @@
 
   /* ---------------- menu ---------------- */
   var MODE = SAVE.mode || 'mine', LEVEL = SAVE.level || 'B1';
+  (function () { var q = new URLSearchParams(location.search); if (LEVELS.indexOf(q.get('level')) >= 0) LEVEL = q.get('level'); if (q.get('mode') === 'obby' || q.get('mode') === 'mine') MODE = q.get('mode'); })();
   function showMenu() {
     paused = true; $('#start').style.display = 'flex';
     $('#levels').innerHTML = LEVELS.map(function (l) { var b1 = SAVE['mine:' + l], b2 = SAVE['obby:' + l]; return '<button data-lv="' + l + '" class="' + (l === LEVEL ? 'on' : '') + '">' + l + (b1 || b2 ? ' <small>★</small>' : '') + '</button>'; }).join('');
