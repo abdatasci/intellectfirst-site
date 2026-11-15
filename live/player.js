@@ -39,7 +39,7 @@
     try {
       var r = L.local ? { pid: saved || 'p-' + Math.random().toString(36).slice(2, 10), token: null, account: null } : await L.api('join', { pin: pin, pid: saved });
       S.pin = pin; S.name = name; S.pid = r.pid; S.uid = r.account && r.account.uid;
-      L.ls.set('live.p.' + pin, r.pid); L.ls.set('live.name', name);
+      L.ls.set('live.p.' + pin, r.pid); L.ls.set('live.name', name); L.ls.set('live.last', pin + '|' + Date.now());
       var first = r.token;
       S.bus = await L.connect({ pin: pin, clientId: r.pid, token: async function () { if (first) { var t = first; first = null; return t; } return (await L.api('join', { pin: pin, pid: S.pid })).token; } });
       S.bus.sub('h', onHost);
@@ -47,10 +47,13 @@
       history.replaceState(null, '', '?pin=' + pin + (L.local ? '&bus=local' : ''));
       meChip(); vWait();
     } catch (e) {
+      if (e.code === 'room') { L.ls.set('live.last', ''); var pi = $('#pin'); if (pi && pi.value === pin) { pi.value = ''; S.pin = ''; } }
       err.textContent = e.code === 'room' ? 'No game with this PIN is open. Check the number.' : e.code === 'not-configured' ? 'Live games are not switched on yet. Tell your teacher.' : 'Could not join. Check your internet and try again.';
     }
   }
   function hello() { S.bus.pub('p', 'join', { pid: S.pid, name: S.name, uid: S.uid || null }); }
+  setInterval(function () { if (S.bus && S.pid && S.st && S.st.phase !== 'end') S.bus.pub('p', 'hb', { pid: S.pid }); }, 5000);   // "still here"
+
   setInterval(function () { if (S.bus && (!S.st || !S.st.roster || !S.st.roster[S.pid])) hello(); }, 4000);
 
   /* ---------- host messages ---------- */
@@ -407,6 +410,8 @@
   }
   if (/[?&]practice\b/.test(location.search)) { vPractice(); return; }
 
+  // opened again without the PIN (closed the tab by accident): go back to the last game from the last 3 hours
+  if (!S.pin) { var last = String(L.ls.get('live.last') || '').split('|'); if (last[0] && Date.now() - +last[1] < 3 * 3600e3) S.pin = last[0]; }
   if (S.pin && L.ls.get('live.p.' + S.pin) && L.ls.get('live.name')) { show('<div class="wait"><div class="pulse"></div><h2>Rejoining…</h2></div>'); vJoin().then(function () { join(S.pin, L.ls.get('live.name')); }); }
   else vJoin();
 })();

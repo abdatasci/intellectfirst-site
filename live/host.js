@@ -188,11 +188,22 @@
     if (!H || !d) return;
     var pid = L.local ? d.pid : from; if (!pid || (!L.local && d.pid && d.pid !== from)) return;
     var p = H.players[pid];
+    if (p) p.seen = Date.now();
     if (name === 'join') {
       if (!p) {
+        // a student who left and came back on a new connection (closed the browser, another phone): same name and the old
+        // player has been silent for a while → they continue with their own score instead of starting from zero
+        var nm = String(d.name || '').trim().toLowerCase(), oldPid = nm && H.order.filter(function (o) { var q = H.players[o]; return q && !q.kicked && q.name.trim().toLowerCase() === nm && Date.now() - (q.seen || 0) > 12000; })[0];
+        if (oldPid) {
+          H.players[pid] = H.players[oldPid]; delete H.players[oldPid]; H.order[H.order.indexOf(oldPid)] = pid; H.players[pid].seen = Date.now();
+          if (H.ans && H.ans[oldPid]) { H.ans[pid] = H.ans[oldPid]; delete H.ans[oldPid]; }
+          feed('↩️ ' + H.players[pid].name + ' is back', pid, null, ''); save();
+          if (H.phase === 'race') sendQs();
+          render(); push(true); return;
+        }
         if (H.order.length >= 120) return;
         var sizes = teamSizes(), team = H.teamsN ? sizes.indexOf(Math.min.apply(null, sizes)) : -1;
-        H.players[pid] = { name: String(d.name || 'Player').slice(0, 24), uid: d.uid || null, team: team, score: 0, correct: 0, answered: 0, streak: 0, gain: 0, ok: null, kicked: false };
+        H.players[pid] = { name: String(d.name || 'Player').slice(0, 24), uid: d.uid || null, team: team, score: 0, correct: 0, answered: 0, streak: 0, gain: 0, ok: null, kicked: false, seen: Date.now() };
         H.order.push(pid); save();
         if (!L.local) L.api('state', { pin: H.pin, players: H.order.length }).catch(function () {});
       } else if (p.kicked) return;
@@ -235,7 +246,7 @@
       // one result per question: ignore repeats (double taps, resent messages) and anything faster than a person can answer
       var nowT = Date.now();
       if (d.n != null && +d.n === p.lastN) return;
-      if (nowT - (p.lastRes || 0) < 700) return;
+      if (nowT - (p.lastRes || 0) < 900) return;
       p.lastRes = nowT; if (d.n != null) p.lastN = +d.n;
       p.answered++; if (d.ok) { p.correct++; p.streak++; } else p.streak = 0;
       // a wrong answer costs money: 10% of what you have (at least 25), never below zero (not in the team games)
