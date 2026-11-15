@@ -20,6 +20,7 @@
     if (/grammar in use/.test(t)) return 'giu';
     return '';
   }
+  var SAME = { A1: ['ef-a1'], A2: ['ef-a2'], B1: ['ef-b1', 'teens-b1'], B2: ['ef-b2', 'teens-b2'], C1: ['ef-c1'], C2: ['ef-c2'] };
   var BL = { 'ef-a1': 'A1', 'ef-a2': 'A2', 'ef-b1': 'B1', 'ef-b2': 'B2', 'ef-c1': 'C1', 'ef-c2': 'C2', 'teens-b1': 'B1', 'teens-b2': 'B2', giu: 'B1' };
   function keys(me) {
     if (!me || !me.profile || me.access === 'staff' || /teacher|admin/.test(me.profile.role || '')) return null;
@@ -38,6 +39,8 @@
     });
     if (lv && !kids) {
       add(biz ? 'be:' + (lv === 'A1' ? 'A2' : lv === 'C2' ? 'C1' : lv) : 'ge:' + lv);
+      // every coursebook of the same level is open too (English File B1 <-> English for Teenagers B1, and so on)
+      (SAME[lv] || []).forEach(function (bk) { add('book:' + bk); });
     }
     return out.length ? out : null;
   }
