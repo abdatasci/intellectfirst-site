@@ -43,6 +43,12 @@
 
   /* ---------- account (optional) ---------- */
   var ME = null, meLoaded = false;
+  /* Inside the Telegram bot: Telegram signs the launch data, and the server uses the chat's bot connection to sign the
+     student in (no password), so their access and progress are the same as on the website. */
+  var TGW = window.Telegram && window.Telegram.WebApp, TGI = '';
+  try { TGI = (TGW && TGW.initData) || sessionStorage.getItem('if.tginit') || ''; if (TGI) sessionStorage.setItem('if.tginit', TGI); } catch (e) { TGI = (TGW && TGW.initData) || ''; }
+  if (TGW && TGW.initData) { try { TGW.ready(); TGW.expand(); } catch (e) {} if (/tgWebApp/.test(location.hash)) history.replaceState(null, '', location.pathname + location.search + '#/'); document.documentElement.classList.add('in-tg'); }
+  var hdrs = function (h) { h = h || {}; if (TGI) h['X-TG-Init'] = TGI; return h; };
   function access() {   // what this person may open
     var p = ME && ME.profile, tier = ME && ME.access;
     var staff = tier === 'staff', member = staff || tier === 'member';
@@ -86,7 +92,7 @@
     return '<div class="gleft' + (n ? '' : ' none') + '">🎮 ' + (n ? n + ' of ' + GAME_LIMIT + ' free games left today' : 'No free games left today — come back tomorrow') + ' · <a href="/me/#/upgrade">Unlimited with full access</a></div>';
   }
   async function loadMe() {
-    try { var r = await fetch('/api/school/me', { credentials: 'same-origin' }); if (r.ok) ME = await r.json(); } catch (e) {}
+    try { var r = await fetch('/api/school/me', { credentials: 'same-origin', headers: hdrs() }); if (r.ok) ME = await r.json(); } catch (e) {}
     var pf = ME && ME.profile;
     if (pf) {   // the account decides: courses chosen at registration or in My account
       if (pf.study && pf.study.length) S.study = pf.study.slice();
@@ -95,7 +101,7 @@
     }
     if (ME && ME.profile) {
       try {   // merge progress from the account
-        var r2 = await fetch('/api/school/app/progress', { credentials: 'same-origin' });
+        var r2 = await fetch('/api/school/app/progress', { credentials: 'same-origin', headers: hdrs() });
         if (r2.ok) { var srv = (await r2.json()).progress; if (srv && srv.done) mergeProgress(srv); }
       } catch (e) {}
     }
@@ -108,7 +114,7 @@
     try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {}
   }
   var pushT;
-  function pushSoon() { if (!ME || !ME.profile) return; clearTimeout(pushT); pushT = setTimeout(function () { fetch('/api/school/app/progress', { method: 'PUT', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(S) }).catch(function () {}); }, 1500); }
+  function pushSoon() { if (!ME || !ME.profile) return; clearTimeout(pushT); pushT = setTimeout(function () { fetch('/api/school/app/progress', { method: 'PUT', credentials: 'same-origin', headers: hdrs({ 'Content-Type': 'application/json' }), body: JSON.stringify(S) }).catch(function () {}); }, 1500); }
 
   /* ---------- small helpers ---------- */
   function toast(m) { var el = $('#toast'); el.textContent = m; el.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(function () { el.classList.remove('on'); }, 2600); }

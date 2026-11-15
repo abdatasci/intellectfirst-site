@@ -6,6 +6,7 @@
 import { getStore } from '@netlify/blobs';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
+import { createHmac, timingSafeEqual } from 'node:crypto';
 import { getUser, refreshSession, admin as idAdmin } from '@netlify/identity';
 import { roleForCode, isStaff, lockKeysFromCode, verifyLockKeys, isPrivateCode } from '../lib/codes.mjs';
 import { listReceipts, decideReceipt, receiptFile } from '../lib/receipts.mjs';
@@ -283,6 +284,46 @@ async function syncTuition(before, after) {
 }
 
 /* ---------- routes ---------- */
+/* IF English app progress (courses, XP, streak): kept with the account so it follows the student. */
+async function appProgress(uid, method, req) {
+  if (method === 'GET') return json({ progress: (await U().get(`u/${uid}/ifx`, { type: 'json' })) || null });
+  if (method === 'PUT') {
+    const raw = await req.text(); if (raw.length > 300000) return fail(413, 'big');
+    let p; try { p = JSON.parse(raw); } catch { return fail(400, 'bad'); }
+    const old = (await U().get(`u/${uid}/ifx`, { type: 'json' })) || { done: {} };
+    const done = { ...(old.done || {}) };
+    for (const [k, v] of Object.entries(p.done || {})) if (/^[\w-]+\/[\w-]+\/[\w-]+$/.test(k) && v && (!done[k] || (+v.at || 0) > (+done[k].at || 0))) done[k] = { score: Math.max(0, Math.min(100, Math.round(+v.score || 0))), at: +v.at || Date.now() };
+    const out = { done, xp: Math.max(+old.xp || 0, Math.min(1e7, Math.round(+p.xp || 0))), streak: Math.min(5000, Math.round(+p.streak || 0)), last: String(p.last || '').slice(0, 10),
+      goal: String(p.goal || '').slice(0, 20), level: String(p.level || '').slice(0, 4), at: Date.now() };
+    await U().setJSON(`u/${uid}/ifx`, out);
+    return json({ ok: true });
+  }
+  return null;
+}
+
+/* IF English inside Telegram (Mini App). Telegram signs the launch data with the bot token; the chat's connection to
+   the bot (bot/chat/<telegram id>) says who it is. Only used for the profile and the app's progress, nothing else. */
+function tgInitUser(init) {
+  const tok = tgToken(); if (!init || !tok) return null;
+  const p = new URLSearchParams(init), hash = p.get('hash'); if (!hash || !/^[0-9a-f]{64}$/.test(hash)) return null; p.delete('hash');
+  const check = [...p.entries()].map(([k, v]) => k + '=' + v).sort().join('\n');
+  const h = createHmac('sha256', createHmac('sha256', 'WebAppData').update(tok).digest()).update(check).digest('hex');
+  if (!timingSafeEqual(Buffer.from(h), Buffer.from(hash))) return null;
+  if (Date.now() / 1000 - (+p.get('auth_date') || 0) > 7 * 86400) return null;
+  try { const u = JSON.parse(p.get('user') || 'null'); return u && u.id ? u : null; } catch { return null; }
+}
+/** Students and teachers connected to the bot only by phone (no website account): a light profile from their record. */
+async function tgLite(link, path, method, req) {
+  const [kind, id] = link.split(':');
+  let profile = null;
+  if (kind === 'sid') { const st = (await doc('students')).find(x => x.id === id); if (st) profile = { role: 'student', studentId: st.id, name: `${st.first || ''} ${st.last || ''}`.trim(), track: 'if', via: 'telegram', ...(st.status === 'withdrawn' ? { leftUntil: st.leftAt || new Date(0).toISOString() } : {}) }; }
+  if (kind === 'tid') { const t = (await doc('teachers')).find(x => x.id === id); if (t) profile = { role: 'teacher', teacherId: t.id, name: t.name, via: 'telegram' }; }
+  if (!profile) return fail(401, 'signin');
+  if (path === 'me' && method === 'GET') return json({ user: { id: link, email: '', name: profile.name }, profile, access: tier(profile), membership: await membership(), telegram: true });
+  if (path === 'app/progress') return (await appProgress(link, method, req)) || fail(405, 'method');
+  return fail(404, 'nf');
+}
+
 export default async (req) => {
   await runMigrations();
   const url = new URL(req.url);
@@ -327,8 +368,18 @@ export default async (req) => {
     return json(isStaff(role) && k.kt ? { ks: k.ks, kt: k.kt, role: 'teacher' } : { ks: k.ks, role: 'student' });
   }
 
-  try { await refreshSession(); } catch {}   // an expired 1-hour token is renewed from the refresh cookie: people stay signed in
-  let user; try { user = await getUser(); } catch { user = null; }
+  let tgAs = null;
+  if ((path === 'me' || path === 'app/progress') && req.headers.get('x-tg-init')) {   // IF English opened inside the Telegram bot
+    const tu = tgInitUser(req.headers.get('x-tg-init')), link = tu && await S().get(`bot/chat/${tu.id}`);
+    if (!link) return fail(401, 'signin');
+    if (/^(sid|tid):/.test(link)) return tgLite(link, path, method, req);
+    tgAs = link;
+  }
+  let user = tgAs ? { id: tgAs, email: '' } : null;
+  if (!user) {
+    try { await refreshSession(); } catch {}   // an expired 1-hour token is renewed from the refresh cookie: people stay signed in
+    try { user = await getUser(); } catch { user = null; }
+  }
   if (!user) return fail(401, 'signin');
   const uid = user.id;
   let profile = await getProfile(uid);
@@ -435,18 +486,7 @@ export default async (req) => {
   if (path === 'feedback' && method === 'DELETE') { await removeFeedback(uid); return json({ ok: true }); }
 
   /* ---------- IF English app progress (courses, XP, streak): kept with the account so it follows the student ---------- */
-  if (path === 'app/progress' && method === 'GET') return json({ progress: (await U().get(`u/${uid}/ifx`, { type: 'json' })) || null });
-  if (path === 'app/progress' && method === 'PUT') {
-    const raw = await req.text(); if (raw.length > 300000) return fail(413, 'big');
-    let p; try { p = JSON.parse(raw); } catch { return fail(400, 'bad'); }
-    const old = (await U().get(`u/${uid}/ifx`, { type: 'json' })) || { done: {} };
-    const done = { ...(old.done || {}) };
-    for (const [k, v] of Object.entries(p.done || {})) if (/^[\w-]+\/[\w-]+\/[\w-]+$/.test(k) && v && (!done[k] || (+v.at || 0) > (+done[k].at || 0))) done[k] = { score: Math.max(0, Math.min(100, Math.round(+v.score || 0))), at: +v.at || Date.now() };
-    const out = { done, xp: Math.max(+old.xp || 0, Math.min(1e7, Math.round(+p.xp || 0))), streak: Math.min(5000, Math.round(+p.streak || 0)), last: String(p.last || '').slice(0, 10),
-      goal: String(p.goal || '').slice(0, 20), level: String(p.level || '').slice(0, 4), at: Date.now() };
-    await U().setJSON(`u/${uid}/ifx`, out);
-    return json({ ok: true });
-  }
+  if (path === 'app/progress') { const r = await appProgress(uid, method, req); if (r) return r; }
 
   // study PDFs (IELTS Studio vocabulary and writing language banks): students and teachers only
   if (path.startsWith('download/') && method === 'GET') {

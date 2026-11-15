@@ -10,7 +10,8 @@ import { U } from '../lib/bot-core.mjs';
 
 const SITE = 'https://intellectfirst.com/me/#/assistant';
 const PHONE_KB = lang => ({ keyboard: [[{ text: { en: '📱 Connect with my phone number', ru: '📱 Подключиться по номеру телефона', kk: '📱 Телефон нөмірі арқылы қосылу' }[lang] || '📱 Connect with my phone number', request_contact: true }]], resize_keyboard: true, one_time_keyboard: true });
-const KB = { keyboard: [[{ text: '📅 Next lessons' }, { text: '📝 Homework & tests' }], [{ text: '📊 My results' }, { text: '💳 Payment' }], [{ text: '📎 Send receipt' }, { text: '❓ Help' }]], resize_keyboard: true, is_persistent: true };
+const APP_URL = (process.env.URL || 'https://intellectfirst.com').replace(/\/$/, '') + '/app/?tg=1';   // IF English as a Telegram Mini App
+const KB = { keyboard: [[{ text: '📚 IF English', web_app: { url: APP_URL } }], [{ text: '📅 Next lessons' }, { text: '📝 Homework & tests' }], [{ text: '📊 My results' }, { text: '💳 Payment' }], [{ text: '📎 Send receipt' }, { text: '❓ Help' }]], resize_keyboard: true, is_persistent: true };
 const L = {
   en: {
     hello: n => `Hi ${n}! 👋 Your IF Academy account is connected.\nI'll remind you about lessons (the evening before and 2 hours before), homework, tests and tuition payments. After paying, send the receipt here.\nAsk me anything about your classes, or practise English with me.`,
@@ -22,7 +23,7 @@ const L = {
     stopped: 'Disconnected. You will not get reminders here any more. You can reconnect from the website at any time.',
     busy: 'You have reached today\'s message limit. Please try again tomorrow.',
     error: 'Sorry, I could not answer just now. Please try again in a minute.',
-    help: 'I can:\n- show your next lessons (📅)\n- show your homework and tests (📝)\n- show your test results (📊)\n- show your tuition status (💳) and take your payment receipt (📎: just send the photo or PDF)\n- answer questions about your classes, results and the school\n- help with English: grammar, words, corrections, speaking practice\n/stop disconnects this chat.',
+    help: 'I can:\n- open IF English right here: courses, vocabulary, grammar, games and tests (📚)\n- show your next lessons (📅)\n- show your homework and tests (📝)\n- show your test results (📊)\n- show your tuition status (💳) and take your payment receipt (📎: just send the photo or PDF)\n- answer questions about your classes, results and the school\n- help with English: grammar, words, corrections, speaking practice\n/stop disconnects this chat.',
     hwNone: 'No homework or tests set for the next days. 🎉', receiptHow: '📎 Send the payment receipt here as a photo or PDF (Kaspi or bank). AI reads it and the school confirms it.',
     none: 'No lessons with a set time in the next 7 days.', nopay: 'No payment plan is recorded for you on the website. Please ask the administrator.',
     unlinkedRecord: 'Your account is not linked to a school record yet. Add the phone number the school has for you in your website profile.'
@@ -37,7 +38,7 @@ const L = {
     stopped: 'Чат отключён, напоминания сюда больше не придут. Подключиться снова можно на сайте.',
     busy: 'Дневной лимит сообщений исчерпан. Попробуйте завтра.',
     error: 'Не получилось ответить. Попробуйте ещё раз через минуту.',
-    help: 'Я умею:\n- показывать ближайшие занятия (📅)\n- показывать домашние задания и тесты (📝)\n- показывать результаты тестов (📊)\n- показывать статус оплаты (💳) и принимать чек (📎: просто отправьте фото или PDF)\n- отвечать на вопросы о занятиях, результатах и школе\n- помогать с английским: грамматика, слова, исправления, разговорная практика\n/stop — отключить этот чат.',
+    help: 'Я умею:\n- открывать IF English прямо здесь: курсы, лексика, грамматика, игры и тесты (📚)\n- показывать ближайшие занятия (📅)\n- показывать домашние задания и тесты (📝)\n- показывать результаты тестов (📊)\n- показывать статус оплаты (💳) и принимать чек (📎: просто отправьте фото или PDF)\n- отвечать на вопросы о занятиях, результатах и школе\n- помогать с английским: грамматика, слова, исправления, разговорная практика\n/stop — отключить этот чат.',
     hwNone: 'На ближайшие дни нет домашних заданий и тестов. 🎉', receiptHow: '📎 Отправьте сюда чек об оплате фото или PDF (Kaspi или банк). ИИ прочитает его, а школа подтвердит.',
     none: 'В ближайшие 7 дней нет занятий с указанным временем.', nopay: 'План оплаты на сайте не указан. Уточните у администратора.',
     unlinkedRecord: 'Ваш аккаунт ещё не связан с записью в школе. Укажите в профиле на сайте номер телефона, который есть у школы.'
@@ -85,12 +86,12 @@ async function resultsText(ctx, uid, lang) {
 
 /* The bot's "Menu" (command list). Students get the general list; teachers get their own list in their chat.
    Updated automatically when the list changes (CMDV), so nobody has to press "Connect bot" again. */
-const CMDV = '2026-11-15c';
+const CMDV = '2026-11-15d';
 const CMDS = {
-  en: [['next', 'Next lessons'], ['homework', 'Homework & tests'], ['results', 'My test results'], ['pay', 'Tuition status'], ['help', 'What I can do'], ['stop', 'Disconnect this chat']],
-  ru: [['next', 'Ближайшие занятия'], ['homework', 'Домашние задания и тесты'], ['results', 'Мои результаты'], ['pay', 'Статус оплаты'], ['help', 'Что я умею'], ['stop', 'Отключить чат']]
+  en: [['app', 'Open IF English'], ['next', 'Next lessons'], ['homework', 'Homework & tests'], ['results', 'My test results'], ['pay', 'Tuition status'], ['help', 'What I can do'], ['stop', 'Disconnect this chat']],
+  ru: [['app', 'Открыть IF English'], ['next', 'Ближайшие занятия'], ['homework', 'Домашние задания и тесты'], ['results', 'Мои результаты'], ['pay', 'Статус оплаты'], ['help', 'Что я умею'], ['stop', 'Отключить чат']]
 };
-const STAFF_CMDS = [['today', "Today's lessons: clock in, register"], ['task', 'Class task: quiz, poll, writing or speaking'], ['sendhw', 'Send homework or a test to a class'], ['next', 'Next lessons'], ['help', 'Help for teachers'], ['stop', 'Disconnect this chat']];
+const STAFF_CMDS = [['app', 'Open IF English (Teach mode too)'], ['today', "Today's lessons: clock in, register"], ['task', 'Class task: quiz, poll, writing or speaking'], ['sendhw', 'Send homework or a test to a class'], ['next', 'Next lessons'], ['help', 'Help for teachers'], ['stop', 'Disconnect this chat']];
 const asCmds = l => l.map(([command, description]) => ({ command, description }));
 async function syncCommands(chatId, staff) {
   try {
@@ -216,6 +217,7 @@ export default async (req) => {
     const me = await getProfile(uid).catch(() => null);
     await syncCommands(chatId, isStaff(me));
     if (isStaff(me) && /^📝 Send homework|^\/sendhw\b|^\/sethw\b/i.test(text)) { await startHomework(chatId, me); return new Response('ok'); }
+    if (/^\/app\b|^\/english\b/i.test(text)) { await tgSend(chatId, lang === 'en' ? '📚 IF English: courses, vocabulary, grammar, games and tests — right here in Telegram. Your progress is saved to your account.' : '📚 IF English: курсы, лексика, грамматика, игры и тесты — прямо в Telegram. Прогресс сохраняется в вашем аккаунте.', { reply_markup: { inline_keyboard: [[{ text: '📚 Open IF English', web_app: { url: APP_URL } }]] } }); return new Response('ok'); }
     if (isStaff(me) && /^🎯 Class task|^\/task\b|^\/classtask\b/i.test(text)) { await startTask(chatId, me); return new Response('ok'); }
     if (isStaff(me) && await hwMessage(chatId, me, m)) return new Response('ok');
     if (isStaff(me) && await ctMessage(chatId, me, m)) return new Response('ok');
