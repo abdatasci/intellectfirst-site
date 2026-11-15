@@ -83,6 +83,8 @@
   var COLORS = { vocab: 'var(--c-vocab)', grammar: 'var(--c-grammar)', skill: 'var(--c-skill)', reading: 'var(--c-reading)', check: 'var(--c-check)', look: '#0ea5e9', maths: '#f59e0b' };
   var ICONS = { vocab: '🔤', grammar: '🧠', skill: '🛠️', reading: '📖', check: '🏁', look: '👀', maths: '🔢' };
   var TYPE = { vocab: 'Vocabulary', grammar: 'Grammar', skill: 'Skills', reading: 'Reading', check: 'Unit check', look: 'Look and choose', maths: 'Maths' };
+  var UNIT_DOODLE = { 'ge-a2/u1': 'clock', 'ge-a2/u2': 'coffee', 'ge-a2/u3': 'suitcase', 'ge-b1/u1': 'laptop', 'ge-b1/u2': 'phone', 'be-b1/u1': 'talk', 'be-b1/u2': 'envelope', 'ielts/u1': 'chart', 'ielts/u2': 'pen', 'ielts/u3': 'book' };
+  var DOODLE = function (c, u, cls) { var n = UNIT_DOODLE[c + '/' + u]; return n && window.IFX_DOODLE ? IFX_DOODLE(n, cls || 'doodle') : ''; };
   var PIC = function (n, c) { return window.IFX_PIC ? IFX_PIC(n, c) : ''; };
   function scene(sc) {   // pictures to count: n things, or n + m / n − m
     var row = function (k, gone) { var h = ''; for (var i = 0; i < k; i++) h += '<span class="sc-i' + (gone ? ' gone' : '') + '">' + PIC(sc.pic, 'pic') + '</span>'; return '<span class="sc-g">' + h + '</span>'; };
@@ -118,7 +120,8 @@
     ['General English', '🌍', [['ge:A1', 'A1'], ['ge:A2', 'A2'], ['ge:B1', 'B1'], ['ge:B2', 'B2'], ['ge:C1', 'C1']]],
     ['Business English', '💼', [['be:B1', 'B1'], ['be:B2', 'B2']]],
     ['Exams', '🎯', [['ielts', 'IELTS'], ['ket', 'KET (A2 Key)'], ['pet', 'PET (B1 Preliminary)']]],
-    ['Young learners (6–12)', '🧸', [['yl:starters', 'Starters'], ['yl:movers', 'Movers'], ['yl:flyers', 'Flyers'], ['maths', 'Maths in English']]]
+    ['Young learners (6–12)', '🧸', [['yl:starters', 'Starters'], ['yl:movers', 'Movers'], ['yl:flyers', 'Flyers'], ['maths', 'Maths in English']]],
+    ['Coursebooks (up to 2)', '📗', [['book:ef-a1', 'English File Elementary'], ['book:ef-a2', 'English File Pre-intermediate'], ['book:ef-b1', 'English File Intermediate'], ['book:ef-b2', 'English File Upper-intermediate'], ['book:ef-c1', 'English File Advanced'], ['book:teens-b1', 'English for Teenagers B1–B2'], ['book:teens-b2', 'English for Teenagers B2–C1'], ['book:giu', 'Grammar in Use']]]
   ];
   var SNAME = {}, SICON = {};
   STUDY.forEach(function (g) { g[2].forEach(function (x) { SNAME[x[0]] = /^ge:/.test(x[0]) ? 'General English ' + x[1] : /^be:/.test(x[0]) ? 'Business English ' + x[1] : /^yl:/.test(x[0]) ? x[1] : x[1]; SICON[x[0]] = g[1]; }); });
@@ -134,6 +137,11 @@
     else if (k === 'pet') { P.voc = byId('voc-pet'); P.game = byId('pet-arcade'); P.test = byId('pet-tests'); P.level = 'B1'; }
     else if (/^yl:/.test(k)) { var y = k.split(':')[1]; P.course = BY['yl-' + y]; P.voc = byId('voc-' + y) || byId('yl'); P.game = byId('yl-games'); P.test = byId(y + '-t'); P.kids = true; }
     else if (k === 'maths') { P.course = BY.maths; P.game = byId('yl-games'); P.kids = true; }
+    else if (/^book:/.test(k)) { var bk = k.slice(5), BL = { 'ef-a1': 'A1', 'ef-a2': 'A2', 'ef-b1': 'B1', 'ef-b2': 'B2', 'ef-c1': 'C1', 'teens-b1': 'B1', 'teens-b2': 'B2', giu: 'B1' }; P.level = BL[bk]; P.book = true;
+      if (/^ef-/.test(bk)) { P.test = byId(bk); P.voc = byId('voc-' + bk.slice(3)); P.game = byId('g-skill'); }
+      else if (/^teens-/.test(bk)) { P.test = byId(bk); P.voc = byId(bk === 'teens-b1' ? 'voc-tb1' : 'voc-tb2'); P.game = byId('gameroom'); }
+      else { P.voc = byId('gram-centre'); P.game = byId('giu-quest'); P.test = byId('test-centre'); }
+      P.course = BY['ge-' + (P.level || '').toLowerCase()]; }
     if (!P.game) P.game = IFX_DIR.filter(function (x) { return x.s === 'games' && fitsKey(x, k); })[0];
     return P;
   }
@@ -146,6 +154,7 @@
     if (k === 'ket') return /ket/.test(tags) || (it.tr === 'general' && (it.lv || []).indexOf('A2') >= 0 && it.s === 'grammar');
     if (k === 'pet') return /pet/.test(tags) || (it.tr === 'general' && (it.lv || []).indexOf('B1') >= 0 && it.s === 'grammar');
     if (/^yl:|^maths$/.test(k)) return it.tr === 'kids';
+    if (/^book:/.test(k)) { var bk = k.slice(5); return it.id === bk || (/^teens/.test(bk) && /teens/.test(tags)) || (bk === 'giu' && /gram|giu/.test(it.id)) || (/^ef-/.test(bk) && it.id === 'voc-' + bk.slice(3)); }
     return false;
   }
   function fits(it) { var m = mine(); return !m.length || S.teacher || m.some(function (k) { return fitsKey(it, k); }); }
@@ -155,7 +164,7 @@
     return out;
   }
   function pickerHTML(sel, kidsFirst) {
-    var gs = kidsFirst ? [STUDY[3]].concat(STUDY.slice(0, 3)) : STUDY;
+    var gs = kidsFirst ? [STUDY[3]].concat(STUDY.slice(0, 3), STUDY.slice(4)) : STUDY;
     return gs.map(function (g) { return '<div class="sg"><h3>' + g[1] + ' ' + esc(g[0]) + '</h3><div class="chips">' + g[2].map(function (x) { return '<button class="chip' + (sel.indexOf(x[0]) >= 0 ? ' on' : '') + '" data-s="' + x[0] + '">' + esc(x[1]) + '</button>'; }).join('') + '</div></div>'; }).join('');
   }
   function vOnboard(step) {
@@ -167,9 +176,11 @@
       return;
     }
     var sel = (S.study || []).slice(), kid = S.who === 'child';
-    view().innerHTML = '<div class="onb" style="text-align:left"><p class="h-eyebrow" style="text-align:center">Step 2 of 2</p><h1 style="text-align:center">' + (kid ? 'What should your child study?' : 'What do you want to study?') + '</h1><p class="lead" style="text-align:center">Choose one or more courses and levels. You can change them any time.</p><div class="study-pick">' + pickerHTML(sel, kid) + '</div>' +
+    view().innerHTML = '<div class="onb" style="text-align:left"><p class="h-eyebrow" style="text-align:center">Step 2 of 2</p><h1 style="text-align:center">' + (kid ? 'What should your child study?' : 'What do you want to study?') + '</h1><p class="lead" style="text-align:center">Choose up to <b>3 courses</b> and up to <b>2 coursebooks</b>. You can change them any time.</p><div class="study-pick">' + pickerHTML(sel, kid) + '</div>' +
       '<p style="text-align:center;margin-top:22px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap"><a class="btn ghost" href="/a/placement-test/index.html">🧭 Not sure? Placement test</a><button class="btn gold" id="ok">Save →</button></p></div>';
-    $$('[data-s]').forEach(function (b) { b.onclick = function () { var k = b.dataset.s, i = sel.indexOf(k); if (i >= 0) sel.splice(i, 1); else sel.push(k); b.classList.toggle('on', i < 0); }; });
+    $$('[data-s]').forEach(function (b) { b.onclick = function () { var k = b.dataset.s, i = sel.indexOf(k), book = /^book:/.test(k);
+      if (i < 0 && sel.filter(function (x) { return /^book:/.test(x) === book; }).length >= (book ? 2 : 3)) return toast(book ? 'Up to 2 coursebooks.' : 'Up to 3 courses — untick one first.');
+      if (i >= 0) sel.splice(i, 1); else sel.push(k); b.classList.toggle('on', i < 0); }; });
     $('#ok').onclick = function () { if (!sel.length) return toast('Choose at least one.'); S.study = sel; S.active = sel[0]; save(); saveStudy(sel); go('#/'); };
   }
   function saveStudy(sel) {   // keep the account in step (My account shows the same choices)
@@ -238,7 +249,7 @@
     var html = '<div class="course-head"><span class="ic">' + c.icon + '</span><div class="grow"><p class="h-eyebrow">' + esc(c.level) + ' · ' + esc(c.track === 'exam' ? 'Exam' : c.track === 'business' ? 'Business English' : c.track === 'kids' ? 'Young learners' : 'General English') + '</p><h1 style="font-size:28px">' + esc(c.title) + '</h1><p style="margin:4px 0 8px;color:var(--soft)">' + esc(c.blurb) + '</p><div class="bar" style="height:12px"><i style="width:' + s.p + '%"></i></div><p style="margin:6px 0 0;font-size:13.5px;color:var(--soft)">' + s.d + ' / ' + s.n + ' lessons · ' + s.p + '%' + (c.next ? ' · then: ' + esc(c.next) : '') + '</p></div></div>';
     c.units.forEach(function (u, ui) {
       var open = unlocked(ui);
-      html += '<section class="unit"><div class="unit-h"><div><small>' + esc(t('unit')) + ' ' + (ui + 1) + ' · ' + esc(u.topic) + '</small><h3>' + esc(u.title) + '</h3></div>' + (open ? '' : '<a class="btn sm gold" href="/me/#/upgrade">🔒 ' + esc(t('locked')) + '</a>') + '</div><div class="path">' +
+      html += '<section class="unit"><div class="unit-h">' + DOODLE(c.id, u.id, 'doodle uh') + '<div style="flex:1"><small>' + esc(t('unit')) + ' ' + (ui + 1) + ' · ' + esc(u.topic) + '</small><h3>' + esc(u.title) + '</h3></div>' + (open ? '' : '<a class="btn sm gold" href="/me/#/upgrade">🔒 ' + esc(t('locked')) + '</a>') + '</div><div class="path">' +
         u.lessons.map(function (l) {
           var done = isDone(c.id, u.id, l.id), isNext = nx && nx.u.id === u.id && nx.l.id === l.id;
           return '<a class="node' + (done ? ' done' : '') + (isNext ? ' next' : '') + (open ? '' : ' locked') + '" style="--c:' + COLORS[l.type] + '" href="' + (open ? '#/lesson/' + c.id + '/' + u.id + '/' + l.id : '/me/#/upgrade') + '"><span class="b">' + (open ? ICONS[l.type] : '🔒') + '</span><span>' + esc(l.title) + '</span><em>' + esc(TYPE[l.type]) + (done ? ' · ' + S.done[key3(c.id, u.id, l.id)].score + '%' : '') + '</em></a>';
@@ -297,7 +308,7 @@
     var v = view();
     if (it.k === 'learn') {
       var w = L.l.words[L.card];
-      v.innerHTML = '<div class="player">' + pTop() + '<div class="learn-card">' + (w.pic ? '<div class="qpic">' + PIC(w.pic, 'pic big') + '</div>' : '') + '<button class="say" id="sy" aria-label="Listen">🔊</button><div class="w">' + esc(w.w) + '</div><div class="pos">' + esc(w.p) + '</div><div class="d">' + esc(w.d) + '</div><div class="e">“' + esc(w.e) + '”</div>' + (w.ru ? '<span class="ru">🇷🇺 ' + esc(w.ru) + '</span>' : '') + '</div>' +
+      v.innerHTML = '<div class="player">' + pTop() + '<div class="learn-card">' + (w.pic ? '<div class="qpic">' + PIC(w.pic, 'pic big') + '</div>' : L.card === 0 ? '<div class="qpic">' + DOODLE(L.c.id, L.u.id, 'doodle lc') + '</div>' : '') + '<button class="say" id="sy" aria-label="Listen">🔊</button><div class="w">' + esc(w.w) + '</div><div class="pos">' + esc(w.p) + '</div><div class="d">' + esc(w.d) + '</div><div class="e">“' + esc(w.e) + '”</div>' + (w.ru ? '<span class="ru">🇷🇺 ' + esc(w.ru) + '</span>' : '') + '</div>' +
         '<div class="dots">' + L.l.words.map(function (_, k) { return '<i class="' + (k === L.card ? 'on' : '') + '"></i>'; }).join('') + '</div>' +
         '<div style="display:flex;gap:10px;justify-content:center"><button class="btn ghost" id="pv"' + (L.card ? '' : ' disabled') + '>‹</button><button class="btn" id="nx">' + (L.card < L.l.words.length - 1 ? t('next') + ' ›' : 'Practise →') + '</button></div></div>';
       bindTop(); say(w.w);
@@ -307,7 +318,7 @@
       return;
     }
     if (it.k === 'rule') {
-      v.innerHTML = '<div class="player">' + pTop() + '<h2 class="qh">' + esc(L.l.title) + '</h2><div class="rule">' + L.l.rule + '</div><p style="text-align:center;margin-top:18px"><button class="btn" id="nx">Practise →</button></p></div>';
+      v.innerHTML = '<div class="player">' + pTop() + '<div class="rulehead"><h2 class="qh">' + esc(L.l.title) + '</h2>' + DOODLE(L.c.id, L.u.id, 'doodle rh') + '</div><div class="rule">' + L.l.rule + '</div><p style="text-align:center;margin-top:18px"><button class="btn" id="nx">Practise →</button></p></div>';
       bindTop(); $('#nx').onclick = function () { L.i++; drawStep(); }; return;
     }
     if (it.k === 'read') {

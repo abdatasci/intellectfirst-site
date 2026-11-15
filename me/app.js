@@ -46,14 +46,17 @@
     ['General English', [['ge:A1', 'A1 Beginner'], ['ge:A2', 'A2 Elementary'], ['ge:B1', 'B1 Intermediate'], ['ge:B2', 'B2 Upper-intermediate'], ['ge:C1', 'C1 Advanced']]],
     ['Business English', [['be:B1', 'Business B1'], ['be:B2', 'Business B2']]],
     ['Exams', [['ielts', 'IELTS'], ['ket', 'KET (A2 Key)'], ['pet', 'PET (B1 Preliminary)']]],
-    ['Young learners (6–12)', [['yl:starters', 'Starters'], ['yl:movers', 'Movers'], ['yl:flyers', 'Flyers'], ['maths', 'Maths in English']]]
+    ['Young learners (6–12)', [['yl:starters', 'Starters'], ['yl:movers', 'Movers'], ['yl:flyers', 'Flyers'], ['maths', 'Maths in English']]],
+    ['Coursebooks (optional, up to 2)', [['book:ef-a1', 'English File Elementary'], ['book:ef-a2', 'English File Pre-intermediate'], ['book:ef-b1', 'English File Intermediate'], ['book:ef-b2', 'English File Upper-intermediate'], ['book:ef-c1', 'English File Advanced'], ['book:teens-b1', 'English for Teenagers B1–B2'], ['book:teens-b2', 'English for Teenagers B2–C1'], ['book:giu', 'Grammar in Use (Intermediate)']]]
   ];
   var STUDY_NAME = {}; STUDY.forEach(function (g) { g[1].forEach(function (x) { STUDY_NAME[x[0]] = (g[0] === 'General English' ? 'General English ' : g[0] === 'Young learners (6–12)' && x[0] !== 'maths' ? 'Young Learners ' : '') + x[1]; }); });
   function studyPicker(sel, kidsFirst) {
-    sel = sel || []; var gs = kidsFirst ? [STUDY[3]].concat(STUDY.slice(0, 3)) : STUDY;
+    sel = sel || []; var gs = kidsFirst ? [STUDY[3]].concat(STUDY.slice(0, 3), STUDY.slice(4)) : STUDY;
     return '<div class="study" id="study">' + gs.map(function (g) { return '<div class="sg"><b>' + esc(g[0]) + '</b><div>' + g[1].map(function (x) { return '<label class="schip"><input type="checkbox" value="' + x[0] + '"' + (sel.indexOf(x[0]) >= 0 ? ' checked' : '') + '><span>' + esc(x[1]) + '</span></label>'; }).join('') + '</div></div>'; }).join('') +
-      '<label class="schip ns"><input type="checkbox" value="placement"><span>🧭 Not sure of my level: I\'ll take the placement test</span></label></div>';
+      '<p class="hint" style="margin:0">Up to <b>3 courses</b> and <b>2 coursebooks</b>.</p><label class="schip ns"><input type="checkbox" value="placement"><span>🧭 Not sure of my level: I\'ll take the placement test</span></label></div>';
   }
+  /* keep to 3 courses and 2 coursebooks */
+  document.addEventListener('change', function (e) { var i = e.target; if (!i.closest || !i.closest('#study') || !i.checked || i.value === 'placement') return; var book = /^book:/.test(i.value), n = [].slice.call(document.querySelectorAll('#study input:checked')).filter(function (x) { return x.value !== 'placement' && /^book:/.test(x.value) === book; }).length; if (n > (book ? 2 : 3)) { i.checked = false; toast(book ? 'You can choose up to 2 coursebooks.' : 'You can choose up to 3 courses. Untick one first.'); } });
   function studyValue() { return [].slice.call(document.querySelectorAll('#study input:checked')).map(function (i) { return i.value; }).filter(function (v) { return v !== 'placement'; }); }
   function studySummary(a) { return (a || []).map(function (k) { return STUDY_NAME[k] || k; }).join(', '); }
   function goalBox(p) {
@@ -517,9 +520,9 @@
           return '<button class="cl ' + stCls(l) + '" data-k="' + k + '"><span class="ct">' + esc(l.start) + (l.end ? '–' + esc(l.end) : '') + '</span><span class="cn">' + esc(l.label) + '</span>' + (l.teacher && CAL.teacher === 'all' ? '<span class="cx">' + esc(l.teacher) + '</span>' : '') + (l.room ? '<span class="cx">' + esc(l.room) + '</span>' : '') + (tag(l) ? '<span class="cs">' + esc(tag(l)) + '</span>' : '') + '</button>';
         }).join('') : '<p class="small cnone">No lessons</p>') + '</div>';
       }).join('') + '</div><div id="cpanel"></div>';
-    $('#cprev').onclick = function () { CAL.from = addDays(CAL.from, -7); vCalendar(CAL.from); };
-    $('#cnext').onclick = function () { CAL.from = addDays(CAL.from, 7); vCalendar(CAL.from); };
-    $('#ctoday').onclick = function () { CAL.from = null; vCalendar(); };
+    $('#cprev').onclick = function () { CAL.openKey = null; CAL.from = addDays(CAL.from, -7); vCalendar(CAL.from); };
+    $('#cnext').onclick = function () { CAL.openKey = null; CAL.from = addDays(CAL.from, 7); vCalendar(CAL.from); };
+    $('#ctoday').onclick = function () { CAL.openKey = null; CAL.from = null; vCalendar(); };
     if ($('#cteach')) $('#cteach').onchange = function () { CAL.teacher = this.value; vCalendar(CAL.from); };
     $('#cadd').onclick = function () {
       $('#cform').innerHTML = '<div class="panel wide calform"><h3>Add an extra lesson</h3><div class="row" style="gap:10px;flex-wrap:wrap"><select class="inp" id="xc">' + d.classes.map(function (c) { return '<option value="' + esc(c.id) + '">' + esc(c.label) + '</option>'; }).join('') + '</select><input class="inp" type="date" id="xd" value="' + today + '"><input class="inp" type="time" id="xs" value="16:00"><input class="inp" type="time" id="xe" value="17:00"></div><input class="inp" id="xn" placeholder="Note for students (optional)" maxlength="160" style="margin-top:8px"><label class="small" style="display:block;margin:8px 0"><input type="checkbox" id="xt" checked> Tell the students</label><button class="btn" id="xsave">Add lesson</button> <button class="btn ghost" id="xcancel">Close</button></div>';
@@ -530,7 +533,9 @@
       b.onclick = function () {
         var l = d.lessons[+b.dataset.k], off = l.movedTo || l.state === 'cancelled';
         view.querySelectorAll('.cl.sel').forEach(function (x) { x.classList.remove('sel'); }); b.classList.add('sel');
+        CAL.openKey = l.key;
         $('#cpanel').innerHTML = '<div class="panel wide calform"><h3>' + esc(l.label) + ' · ' + DN[(new Date(l.date + 'T00:00:00Z').getUTCDay() + 6) % 7] + ' ' + fmtD(l.date) + ' ' + esc(l.start) + (l.end ? '–' + esc(l.end) : '') + '</h3>' + (tag(l) ? '<p class="small">' + esc(tag(l)) + (l.note ? ' · ' + esc(l.note) : '') + '</p>' : '') +
+          (off ? '' : clockBox(l, d)) +
           (off ? '<button class="btn" id="crest">↩ Bring the lesson back</button>' :
             '<div class="calacts"><div><b>Move to</b><div class="row" style="gap:8px;flex-wrap:wrap;margin-top:6px"><input class="inp" type="date" id="md" value="' + l.date + '"><input class="inp" type="time" id="ms" value="' + l.start + '"><input class="inp" type="time" id="me" value="' + (l.end || '') + '"><button class="btn" id="cmove">🔁 Move</button></div></div>' +
             '<div><b>Cancel</b><div class="row" style="gap:8px;margin-top:6px"><button class="btn ghost" id="ccan" style="color:#b0372f">❌ Cancel this lesson</button></div></div></div>') +
@@ -540,9 +545,28 @@
         if ($('#crest')) $('#crest').onclick = function () { send({ action: 'restore' }, 'Lesson back on.'); };
         if ($('#cmove')) $('#cmove').onclick = function () { send({ action: 'move', date: $('#md').value, start: $('#ms').value, end: $('#me').value }, 'Lesson moved.'); };
         if ($('#ccan')) $('#ccan').onclick = function () { if (confirm('Cancel ' + l.label + ' on ' + fmtD(l.date) + ' at ' + l.start + '?')) send({ action: 'cancel' }, 'Lesson cancelled.'); };
+        wireClock(l, d);
         $('#cpanel').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       };
     });
+    if (CAL.openKey) { var again = d.lessons.findIndex(function (x) { return x.key === CAL.openKey; }); var bb = again >= 0 && view.querySelector('.cl[data-k="' + again + '"]'); if (bb) bb.click(); }
+  }
+  /* clock in from the calendar (from 5 minutes before the start), then mark attendance — saved to IF Admin */
+  function clockBox(l, d) {
+    var own = l.teacherId && l.teacherId === d.me, admin = role() === 'admin', e = l.entry || {}, today = new Date(Date.now() + 5 * 3600e3).toISOString().slice(0, 10);
+    if (!own && !admin) return '';
+    var opens = hm(new Date(Date.parse(l.at) - (d.early || 5) * 60000).toISOString()), h = '<div class="clockbox"><div class="row" style="gap:10px;align-items:center;flex-wrap:wrap"><b>Clock in and attendance</b><span class="spacer"></span>' + lessonLine(l) + '</div>';
+    if (l.state === 'upcoming') h += '<button class="btn primary" disabled style="margin-top:10px">⏰ Clock in</button><p class="small" style="margin:6px 0 0">Clock-in opens ' + (l.date === today ? 'today' : 'on ' + fmtD(l.date)) + ' at <b>' + opens + '</b>, 5 minutes before the lesson.</p>';
+    else if ((l.state === 'open' || l.state === 'overdue') && own) h += '<button class="btn primary" id="clockin" style="margin-top:10px">✅ Clock in: I\'m here</button>' + (l.state === 'overdue' ? '<p class="small" style="margin:6px 0 0;color:#b0372f">The lesson has started: this clock-in counts as late.</p>' : '');
+    else if (l.state === 'missed' && !admin) h += '<p class="small" style="margin:8px 0 0">This lesson ended without a clock-in. If it took place, ask the administrator to correct it.</p>';
+    var canReg = (e.checkIn || l.auto || admin) && !e.cancelled && (admin || l.date === today);
+    if (canReg) h += '<p class="small" style="margin:10px 0 6px">Mark each student — it goes to IF Admin automatically.</p><div class="reg" id="calreg" hidden></div>';
+    return h + '</div>';
+  }
+  function wireClock(l, d) {
+    var b = $('#clockin');
+    if (b) b.onclick = async function () { b.disabled = true; try { await api('teach/checkin', { method: 'POST', body: { key: l.key } }); toast('Clocked in ✓ Now mark attendance.'); vCalendar(CAL.from); } catch (e) { b.disabled = false; toast(e.message === 'early' ? 'Clock-in opens 5 minutes before the lesson.' : e.message === 'over' ? 'This lesson has already ended.' : 'Could not clock in. Try again.'); } };
+    var box = $('#calreg'); if (box) register(box, l, function () { vCalendar(CAL.from); });
   }
   function told(r) { return r && r.told ? r.told.students + ' student' + (r.told.students === 1 ? '' : 's') + ' told.' : ''; }
 
@@ -573,7 +597,7 @@
       b.onclick = async function () {
         b.disabled = true;
         try { await api('teach/checkin', { method: 'POST', body: { key: b.dataset.k } }); toast('Checked in ✓'); todayBox(el, onlyClass); }
-        catch (e) { b.disabled = false; toast(e.message === 'early' ? 'Check-in opens 30 minutes before the lesson.' : e.message === 'over' ? 'This lesson has already ended.' : 'Could not check in. Try again.'); }
+        catch (e) { b.disabled = false; toast(e.message === 'early' ? 'Check-in opens 5 minutes before the lesson.' : e.message === 'over' ? 'This lesson has already ended.' : 'Could not check in. Try again.'); }
       };
     });
     el.querySelectorAll('.regbtn').forEach(function (b) { b.onclick = function () { register(el.querySelector('#reg' + b.dataset.i), L[+b.dataset.i], function () { todayBox(el, onlyClass); }); }; });
@@ -585,11 +609,11 @@
   function register(box, l, done) {
     if (!box) return; box.hidden = !box.hidden; if (box.hidden) return;
     var e = l.entry || {}, M = e.marks || {}, LB = e.lateBy || {};
-    var opts = [['on', 'On time'], ['late', 'Late'], ['abs', 'Absent'], ['exc', 'Excused']];
+    var opts = [['on', 'Present'], ['late', 'Late'], ['exc', 'Absent'], ['abs', 'Late cancellation (UA)']];
     box.innerHTML = (l.students.length ? '<div class="regrows">' + l.students.map(function (s) {
       var m = M[s.sid] || (e.takenAt ? '' : s.frozen ? '' : 'on');
       return '<div class="regrow" data-sid="' + esc(s.sid) + '"><span class="rn">' + esc(s.name) + (s.frozen ? ' <span class="small">(frozen)</span>' : '') + '</span><span class="seg2">' + opts.map(function (o) { return '<button type="button" data-m="' + o[0] + '" class="' + (m === o[0] ? 'on ' + o[0] : '') + '">' + o[1] + '</button>'; }).join('') + '</span><input class="inp lm" type="number" min="1" max="180" placeholder="min" value="' + (LB[s.sid] || '') + '" ' + (m === 'late' ? '' : 'hidden') + ' title="Minutes late"></div>';
-    }).join('') + '</div><div class="row" style="gap:10px;margin-top:10px"><button class="btn primary savereg">Save the register</button><span class="small">Saved to IF Admin attendance (on time and late = present).</span></div>' : '<p class="small">No students in this class.</p>');
+    }).join('') + '</div><div class="row" style="gap:10px;margin-top:10px"><button class="btn primary savereg">Save the register</button><span class="small">Saved to IF Admin attendance straight away: present and late = P, absent = EA, late cancellation = UA.</span></div>' : '<p class="small">No students in this class.</p>');
     box.querySelectorAll('.regrow').forEach(function (r) {
       r.querySelectorAll('[data-m]').forEach(function (b) {
         b.onclick = function () { r.querySelectorAll('[data-m]').forEach(function (x) { x.className = ''; }); b.className = 'on ' + b.dataset.m; r.querySelector('.lm').hidden = b.dataset.m !== 'late'; if (b.dataset.m === 'late') r.querySelector('.lm').focus(); };
@@ -612,7 +636,7 @@
     el.innerHTML = '<h3 style="margin:22px 0 8px">Attendance</h3>' + (rows.length && dates.length ?
       '<div class="attwrap"><table class="attgrid"><thead><tr><th>Student</th>' + dates.map(function (x) { return '<th>' + x.slice(8) + '.' + x.slice(5, 7) + '</th>'; }).join('') + '<th>Present</th><th>Late</th><th>Absent</th></tr></thead><tbody>' +
       rows.map(function (r) { var st = r.stats; return '<tr><td>' + esc(r.name) + '</td>' + dates.map(function (x) { var m = r.marks[x] || ''; return '<td class="m ' + m + '" title="' + (m === 'L' && r.lateMins[x] > 0 ? r.lateMins[x] + ' min late' : '') + '">' + (lab[m] || '') + '</td>'; }).join('') + '<td><b>' + (st.rate == null ? '–' : st.rate + '%') + '</b></td><td>' + st.late + '</td><td>' + st.absent + (st.excused ? ' <span class="small">+' + st.excused + ' exc.</span>' : '') + '</td></tr>'; }).join('') +
-      '</tbody></table></div><p class="small">✓ on time · L late · ✗ absent · E excused · last ' + dates.length + ' lessons. Present % counts on time and late.</p>' : '<p class="small">No attendance marked for this class yet.</p>') +
+      '</tbody></table></div><p class="small">✓ present · L late · E absent · ✗ late cancellation (UA) · last ' + dates.length + ' lessons. Present % counts on time and late.</p>' : '<p class="small">No attendance marked for this class yet.</p>') +
       (d.lessons.length ? '<details class="more" style="margin-top:10px"><summary>Teacher check-ins (' + d.lessons.length + ')</summary><table class="t small"><tr><th>Date</th><th>Lesson</th><th>Check-in</th><th>Register</th></tr>' + d.lessons.slice(0, 30).map(function (x) { return '<tr><td>' + x.date.slice(8) + '.' + x.date.slice(5, 7) + '</td><td>' + esc(x.start) + '</td><td>' + (x.cancelled ? 'Cancelled' : x.checkIn ? esc(x.by) + ' ' + hm(x.checkIn) + (x.lateMin > 2 ? ' <span style="color:#b0372f">(' + x.lateMin + ' min late)</span>' : ' ✓') : '<span style="color:#b0372f">No check-in</span>') + '</td><td>' + (x.register ? '✓' : '–') + '</td></tr>'; }).join('') + '</table></details>' : '');
   }
 

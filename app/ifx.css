@@ -165,3 +165,7 @@ body.teach .side{display:none}body.teach .shell{grid-template-columns:1fr}
 @media (max-width:520px){.sc-i{width:40px;height:40px}}
 .numgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:10px}.numgrid div{background:var(--sand);border-radius:12px;padding:8px;text-align:center}.numgrid b{display:block;font-size:26px;font-family:Fraunces,Georgia,serif}.numgrid span{font-size:14px;color:var(--soft)}
 .sg h3{font-family:Inter,sans-serif;font-size:15px;margin:16px 0 8px}.study-pick .chips{margin:0}.mycourses{margin-top:-4px}
+
+/* doodles */
+.doodle{display:block}.doodle.uh{width:64px;height:64px;flex:none;margin-right:12px;background:#fffdf7;border-radius:14px;padding:4px}.unit-h{justify-content:flex-start}
+.rulehead{display:flex;align-items:center;justify-content:space-between;gap:12px}.doodle.rh{width:92px;height:92px;flex:none}.doodle.lc{width:120px;height:120px}

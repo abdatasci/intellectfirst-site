@@ -39,7 +39,7 @@ async function lessonWatch(classes, links) {
   const entry = l => L[l.key] || (L[l.key] = { classId: l.classId, label: l.label, date: l.date, start: l.start, end: l.end, teacherId: l.teacherId });
   for (const l of soon) {
     const e = entry(l); if (e.checkIn || e.cancelled || e.pinged) continue;
-    for (const s of staff.filter(x => x.teacherId && x.teacherId === l.teacherId)) { try { await tgSend(s.chatId, `🕑 ${l.label} starts at ${l.start}${l.room ? ' (' + l.room + ')' : ''}.\nCheck in on the website when you arrive: intellectfirst.com/me → Today. Then take the register.`); n++; } catch (x) {} }
+    for (const s of staff.filter(x => x.teacherId && x.teacherId === l.teacherId)) { try { await tgSend(s.chatId, `🕑 ${l.label} starts at ${l.start}${l.room ? ' (' + l.room + ')' : ''}.\nCheck in on the website (from 5 minutes before the start): intellectfirst.com/me → Calendar or Today. Then take the register.`); n++; } catch (x) {} }
     e.pinged = true; dirty = true;
   }
   for (const l of late) {

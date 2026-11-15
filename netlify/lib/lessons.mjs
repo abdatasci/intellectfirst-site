@@ -1,8 +1,8 @@
 // Lesson check-in and registers.
-// A teacher checks in on the website at the start of each lesson (from 30 minutes before the start until the end);
+// A teacher checks in on the website at the start of each lesson (from 5 minutes before the start until the end);
 // the time is kept, and a check-in more than GRACE_MIN minutes after the start counts as late. Only after checking in
-// can the teacher take the register: on time / late (+ minutes) / absent / excused. The register is written to IF Admin
-// attendance (on time and late = P, absent = UA, excused = EA); lateness is kept here because IF Admin has no "late" mark.
+// can the teacher take the register: present / late (+ minutes) / absent / late cancellation. The register is written to IF Admin
+// attendance (present and late = P, absent = EA, late cancellation = UA); lateness is kept here because IF Admin has no "late" mark.
 //   store "school": lessonlog/<YYYY-MM> → { "<classId>|<date>|<HH:MM>": entry }
 //   entry: { classId, label, date, start, end, teacherId, checkIn, lateMin, by:{uid,name}, marks:{sid:'on'|'late'|'abs'|'exc'},
 //            lateBy:{sid:min}, takenAt, takenBy, cancelled, note, alerted }
@@ -12,7 +12,7 @@ import { run } from './ifadmin-ai.mjs';
 
 const S = () => getStore({ name: 'school', consistency: 'strong' });
 const A = () => getStore({ name: 'ifadmin', consistency: 'strong' });
-export const EARLY_MIN = 30, GRACE_MIN = 2, LESSON_MIN = 90;
+export const EARLY_MIN = 5, GRACE_MIN = 2, LESSON_MIN = 90;
 const err = code => { const e = new Error(code); e.code = code; return e; };
 export const today = () => ymd(new Date());
 

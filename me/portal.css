@@ -262,3 +262,5 @@ tr.regrow-admin td{background:#fbf8f1}
 .schip span{display:inline-block;border:1.5px solid var(--line,#e6dfd2);border-radius:999px;padding:7px 13px;font-size:14px;font-weight:600;background:#fff;transition:.15s}
 .schip input:checked+span{background:#0B2545;color:#fff;border-color:#0B2545}.schip input:checked+span::before{content:"✓ "}
 .schip input:focus-visible+span{outline:2px solid #C9A227;outline-offset:2px}.schip.ns span{border-style:dashed}
+
+.clockbox{border:2px solid #C9A227;background:#fffaf0;border-radius:14px;padding:12px 14px;margin:6px 0 14px}.clockbox .spacer{flex:1}

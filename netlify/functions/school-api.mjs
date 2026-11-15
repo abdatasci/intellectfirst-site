@@ -97,8 +97,9 @@ async function ieltsSummary(uid) {
   return { writing: pick('writing'), speaking: pick('speaking'), recent: idx.slice(-8).reverse() };
 }
 /** What a person studies, chosen at registration and changeable any time: 'ge:B1', 'be:B1', 'ielts', 'ket', 'pet', 'yl:starters', 'yl:movers', 'yl:flyers', 'maths'. */
-const STUDY = /^(ge:(A1|A2|B1|B2|C1)|be:(B1|B2)|ielts|ket|pet|yl:(starters|movers|flyers)|maths)$/;
-function cleanStudy(a) { return [...new Set(a.map(x => String(x || '').trim()).filter(x => STUDY.test(x)))].slice(0, 12); }
+const STUDY = /^(ge:(A1|A2|B1|B2|C1)|be:(B1|B2)|ielts|ket|pet|yl:(starters|movers|flyers)|maths|book:(ef-a1|ef-a2|ef-b1|ef-b2|ef-c1|teens-b1|teens-b2|giu))$/;
+/** At most 3 courses and 2 coursebooks. */
+function cleanStudy(a) { const all = [...new Set(a.map(x => String(x || '').trim()).filter(x => STUDY.test(x)))]; return [...all.filter(x => !x.startsWith('book:')).slice(0, 3), ...all.filter(x => x.startsWith('book:')).slice(0, 2)]; }
 function publicStudent(s) { return s && { id: s.id, first: s.first, last: s.last, classes: s.classes || [], status: s.status, level: s.level || '', tests: s.tests || [], uid: s.uid || null }; }
 
 /** Link an account to its school record by phone (students) or name/phone (teachers). */
@@ -580,7 +581,7 @@ export default async (req) => {
     if (!isStaff(profile.role)) return fail(403, 'staff');
     const from = /^\d{4}-\d{2}-\d{2}$/.test(url.searchParams.get('from') || '') ? url.searchParams.get('from') : todayStr();
     const days = Math.max(1, Math.min(31, +url.searchParams.get('days') || 7));
-    const [mine, teachers] = await Promise.all([classesForTeacher(profile), doc('teachers')]);
+    const [mine, teachers, students] = await Promise.all([classesForTeacher(profile), doc('teachers'), doc('students')]);
     const who = url.searchParams.get('teacher') || '';
     let list = profile.role === 'admin' ? (who === 'all' ? mine : mine.filter(c => c.teacherId === (who || profile.teacherId))) : mine;
     const CH = await loadChanges(), now = new Date(), cutoff = await checkSince(), out = [];
@@ -589,7 +590,8 @@ export default async (req) => {
       const date = new Date(d0.getTime() + i * 864e5).toISOString().slice(0, 10);
       out.push(...withEntry(lessonsOn(list, date, CH), await loadLog(date.slice(0, 7)), now, cutoff));
     }
-    return json({ from, days, lessons: out.map(l => ({ ...l, teacher: (teachers.find(t => t.id === l.teacherId) || {}).name || '' })), classes: list.map(c => ({ id: c.id, label: c.label, schedule: c.schedule || '', room: c.room || '' })),
+    const roster = l => students.filter(s => inClass(list.find(c => c.id === l.classId), s) && !/withdrawn|finished/i.test(s.status || '')).map(s => ({ sid: s.id, name: `${s.first} ${s.last}`.trim(), frozen: s.status === 'frozen' })).sort((a, b) => a.name.localeCompare(b.name));
+    return json({ from, days, early: EARLY_MIN, grace: GRACE_MIN, now: now.toISOString(), me: profile.teacherId || '', lessons: out.map(l => ({ ...l, teacher: (teachers.find(t => t.id === l.teacherId) || {}).name || '', students: roster(l) })), classes: list.map(c => ({ id: c.id, label: c.label, schedule: c.schedule || '', room: c.room || '' })),
       teachers: profile.role === 'admin' ? teachers.filter(t => mine.some(c => c.teacherId === t.id)).map(t => ({ id: t.id, name: t.name })) : [] });
   }
   if (path === 'teach/lesson-change' && method === 'POST') {
