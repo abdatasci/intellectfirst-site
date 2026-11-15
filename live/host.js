@@ -218,6 +218,7 @@
   }
 
   /* ---------- power modes: Treasure Hunt, Cyber Heist, Fishing Frenzy ---------- */
+  var ROWC = ['#e8513d', '#f28c1b', '#d9a90f', '#2fa65a', '#1aa3b8', '#3f6fe0', '#8a4fd6', '#d6449a', '#16a085', '#c0392b'];
   var M_UNIT = function () { return L.mode(H.mode).cur || ''; };
   function feed(text, a, b, k, extra) {
     var e = Object.assign({ id: ++H.evn, t: text, a: a || null, b: b || null, k: k || '' }, extra || {});
@@ -484,7 +485,7 @@
       if (MM.power) h += '<div class="pgrid">';
       h += '<div class="board"><h2>' + (race ? (MM.power ? MM.icon + ' ' : '') + esc(s.title) : 'Scoreboard') + '</h2>' + (race ? '<div style="text-align:center;margin-bottom:6px"><span class="pill" style="font-size:22px">⏱ <span id="rtime">' + fmt(s.left) + '</span></span>' + (s.mode === 'fish' ? ' <span class="pill fz" id="fzbar"' + (s.fz ? '' : ' hidden') + '>🌊 FRENZY ×2</span>' : '') + '</div>' : '');
       if (s.tboard.length) { var tm = Math.max(1, s.tboard[0][1]); h += s.tboard.map(function (t, i) { return '<div class="brow t" style="--c:' + L.HEX[t[2]] + '"><span class="fill" style="width:' + (t[1] / tm * 100) + '%;background:' + L.HEX[t[2]] + '40"></span><span class="r">' + (i + 1) + '</span><span class="n">' + esc(t[0]) + ' <small style="opacity:.6">· ' + t[3] + ' players · average</small></span><span class="s">' + t[1] + '</span></div>'; }).join('') + '<div style="height:8px"></div>'; }
-      h += top.map(function (p, i) { return '<div class="brow"><span class="fill" style="width:' + (p[1] / max * 100) + '%"></span><span class="r">' + (i + 1) + '</span><span class="n">' + esc(p[0]) + (p[2] >= 0 && s.teams.length ? ' <small style="color:' + teamColor(p[2]) + '">●</small>' : '') + '</span><span class="s">' + (MM.power ? L.fmtN(p[1]) + cur : p[1]) + '</span></div>'; }).join('') + '</div>';
+      h += top.map(function (p, i) { return '<div class="brow' + (i === 0 ? ' first' : '') + '" style="--k:' + ROWC[i % ROWC.length] + '"><span class="fill" style="width:' + (p[1] / max * 100) + '%"></span><span class="r">' + (i + 1) + '</span><span class="n">' + esc(p[0]) + (p[2] >= 0 && s.teams.length ? ' <small style="color:' + teamColor(p[2]) + '">●</small>' : '') + '</span><span class="s">' + (MM.power ? L.fmtN(p[1]) + cur : p[1]) + '</span></div>'; }).join('') + '</div>';
       if (MM.power) h += '<div class="feed"><h3>Live feed</h3>' + ((s.feed || []).slice().reverse().map(function (e) { return '<div class="fe ' + esc(e.k) + '">' + esc(e.t) + '</div>'; }).join('') || '<p class="mini" style="color:rgba(255,255,255,.6)">' + (s.mode === 'gold' ? 'Steals and swaps appear here…' : s.mode === 'hack' ? 'Hacks appear here…' : s.mode === 'mine' ? 'Gold and diamonds appear here…' : 'Big catches appear here…') + '</p>') + '</div></div>';
       if (host) h += '<div class="ctrl" style="justify-content:flex-end">' + (race ? '<button class="btn ghost sm" id="endnow">End race now</button>' : '<button class="btn big" id="nextq">' + (s.i + 1 >= s.n ? 'Final results →' : 'Next question →') + '</button><button class="btn ghost sm" id="endnow">End game</button>') + '</div>';
     } else if (s.phase === 'match') {
