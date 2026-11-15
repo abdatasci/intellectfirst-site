@@ -172,9 +172,9 @@ export default async (req, context) => {
         const me = await tg('getMe');
         const hookUrl = `${url.origin}/.netlify/functions/telegram-background`;
         await tg('setWebhook', { url: hookUrl, secret_token: await tgSecret(), allowed_updates: ['message', 'callback_query'], drop_pending_updates: true });
-        const cmds = [['next', 'Next lessons'], ['pay', 'Tuition status'], ['help', 'What I can do'], ['stop', 'Disconnect this chat']];
+        const cmds = [['next', 'Next lessons'], ['homework', 'Homework & tests'], ['results', 'My test results'], ['pay', 'Tuition status'], ['help', 'What I can do'], ['stop', 'Disconnect this chat']];
         await tg('setMyCommands', { commands: cmds.map(([command, description]) => ({ command, description })) });
-        await tg('setMyCommands', { commands: [['next', 'Ближайшие занятия'], ['pay', 'Статус оплаты'], ['help', 'Что я умею'], ['stop', 'Отключить чат']].map(([command, description]) => ({ command, description })), language_code: 'ru' });
+        await tg('setMyCommands', { commands: [['next', 'Ближайшие занятия'], ['homework', 'Домашние задания и тесты'], ['results', 'Мои результаты'], ['pay', 'Статус оплаты'], ['help', 'Что я умею'], ['stop', 'Отключить чат']].map(([command, description]) => ({ command, description })), language_code: 'ru' });
         await tg('setMyDescription', { description: 'IF Academy assistant: lesson and payment reminders, your timetable and results, and help with English. Connect from intellectfirst.com → My account → Assistant.' }).catch(() => {});
         const info = { username: me.username, name: me.first_name, id: me.id, hook: hookUrl, at: new Date().toISOString() };
         await S().setJSON('bot/info', info);

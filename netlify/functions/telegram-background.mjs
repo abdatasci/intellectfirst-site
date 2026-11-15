@@ -82,6 +82,29 @@ async function resultsText(ctx, uid, lang) {
   return out.join('\n');
 }
 
+/* The bot's "Menu" (command list). Students get the general list; teachers get their own list in their chat.
+   Updated automatically when the list changes (CMDV), so nobody has to press "Connect bot" again. */
+const CMDV = '2026-11-15b';
+const CMDS = {
+  en: [['next', 'Next lessons'], ['homework', 'Homework & tests'], ['results', 'My test results'], ['pay', 'Tuition status'], ['help', 'What I can do'], ['stop', 'Disconnect this chat']],
+  ru: [['next', 'Ближайшие занятия'], ['homework', 'Домашние задания и тесты'], ['results', 'Мои результаты'], ['pay', 'Статус оплаты'], ['help', 'Что я умею'], ['stop', 'Отключить чат']]
+};
+const STAFF_CMDS = [['today', "Today's lessons: clock in, register"], ['sendhw', 'Send homework or a test to a class'], ['next', 'Next lessons'], ['help', 'Help for teachers'], ['stop', 'Disconnect this chat']];
+const asCmds = l => l.map(([command, description]) => ({ command, description }));
+async function syncCommands(chatId, staff) {
+  try {
+    if ((await S().get('bot/cmdsv')) !== CMDV) {
+      await tg('setMyCommands', { commands: asCmds(CMDS.en) });
+      await tg('setMyCommands', { commands: asCmds(CMDS.ru), language_code: 'ru' });
+      await S().set('bot/cmdsv', CMDV);
+    }
+    if (staff && chatId && (await S().get(`bot/cmds/${chatId}`)) !== CMDV) {
+      await tg('setMyCommands', { commands: asCmds(STAFF_CMDS), scope: { type: 'chat', chat_id: chatId } });
+      await S().set(`bot/cmds/${chatId}`, CMDV);
+    }
+  } catch (e) { console.error('bot commands', e.message); }
+}
+
 function payText(ctx, lang) {
   if (!ctx.pay) return L[lang].nopay;
   const p = localise(ctx.pay, lang);
@@ -183,6 +206,7 @@ export default async (req) => {
       await tgSend(chatId, L[lang].stopped, { reply_markup: { remove_keyboard: true } }); return new Response('ok');
     }
     const me = await getProfile(uid).catch(() => null);
+    await syncCommands(chatId, isStaff(me));
     if (isStaff(me) && /^📝 Send homework|^\/sendhw\b|^\/sethw\b/i.test(text)) { await startHomework(chatId, me); return new Response('ok'); }
     if (isStaff(me) && await hwMessage(chatId, me, m)) return new Response('ok');
     if (m.photo || m.document) { tg('sendChatAction', { chat_id: chatId, action: 'typing' }).catch(() => {}); await handleReceipt({ chatId, uid, msg: m, lang }); return new Response('ok'); }
