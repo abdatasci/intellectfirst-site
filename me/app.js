@@ -43,8 +43,8 @@
   function goalSelect(id, val) { return '<select class="inp" id="' + id + '"><option value="">Choose…</option>' + GOALS.map(function (g) { return '<option' + (String(val || '').indexOf(g[0]) === 0 ? ' selected' : '') + '>' + esc(g[0]) + '</option>'; }).join('') + '</select>'; }
   /* what to study: one or more courses and levels (changeable later in My account and in IF English) */
   var STUDY = [
-    ['General English', [['ge:A1', 'A1 Beginner'], ['ge:A2', 'A2 Elementary'], ['ge:B1', 'B1 Intermediate'], ['ge:B2', 'B2 Upper-intermediate'], ['ge:C1', 'C1 Advanced']]],
-    ['Business English', [['be:B1', 'Business B1'], ['be:B2', 'Business B2']]],
+    ['General English', [['ge:A1', 'A1 Beginner'], ['ge:A2', 'A2 Elementary'], ['ge:B1', 'B1 Intermediate'], ['ge:B2', 'B2 Upper-intermediate'], ['ge:C1', 'C1 Advanced'], ['ge:C2', 'C2 Proficiency']]],
+    ['Business English', [['be:A2', 'Business A2'], ['be:B1', 'Business B1'], ['be:B2', 'Business B2'], ['be:C1', 'Business C1']]],
     ['Exams', [['ielts', 'IELTS'], ['ket', 'KET (A2 Key)'], ['pet', 'PET (B1 Preliminary)']]],
     ['Young learners (6–12)', [['yl:starters', 'Starters'], ['yl:movers', 'Movers'], ['yl:flyers', 'Flyers'], ['maths', 'Maths in English']]],
     ['Coursebooks (optional, up to 2)', [['book:ef-a1', 'English File Elementary'], ['book:ef-a2', 'English File Pre-intermediate'], ['book:ef-b1', 'English File Intermediate'], ['book:ef-b2', 'English File Upper-intermediate'], ['book:ef-c1', 'English File Advanced'], ['book:teens-b1', 'English for Teenagers B1–B2'], ['book:teens-b2', 'English for Teenagers B2–C1'], ['book:giu', 'Grammar in Use (Intermediate)']]]

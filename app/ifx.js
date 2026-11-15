@@ -6,7 +6,7 @@
   var $$ = function (s, r) { return [].slice.call((r || document).querySelectorAll(s)); };
   var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
   var shuffle = function (a) { a = a.slice(); for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; } return a; };
-  var LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1'];
+  var LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
   var COURSES = [], BY = {};
   var IFX = window.IFX = { course: function (c) { COURSES.push(c); BY[c.id] = c; } };
 
@@ -83,7 +83,7 @@
   var COLORS = { vocab: 'var(--c-vocab)', grammar: 'var(--c-grammar)', skill: 'var(--c-skill)', reading: 'var(--c-reading)', check: 'var(--c-check)', look: '#0ea5e9', maths: '#f59e0b' };
   var ICONS = { vocab: '🔤', grammar: '🧠', skill: '🛠️', reading: '📖', check: '🏁', look: '👀', maths: '🔢' };
   var TYPE = { vocab: 'Vocabulary', grammar: 'Grammar', skill: 'Skills', reading: 'Reading', check: 'Unit check', look: 'Look and choose', maths: 'Maths' };
-  var UNIT_DOODLE = { 'ge-a2/u1': 'clock', 'ge-a2/u2': 'coffee', 'ge-a2/u3': 'suitcase', 'ge-b1/u1': 'laptop', 'ge-b1/u2': 'phone', 'be-b1/u1': 'talk', 'be-b1/u2': 'envelope', 'ielts/u1': 'chart', 'ielts/u2': 'pen', 'ielts/u3': 'book' };
+  var UNIT_DOODLE = { 'ge-a2/u1': 'clock', 'ge-a2/u2': 'coffee', 'ge-a2/u3': 'suitcase', 'ge-b1/u1': 'laptop', 'ge-b1/u2': 'phone', 'be-b1/u1': 'talk', 'be-b1/u2': 'envelope', 'ielts/u1': 'chart', 'ielts/u2': 'pen', 'ielts/u3': 'book', 'ge-a1/u1': 'talk', 'ge-a1/u2': 'clock', 'ge-b2/u1': 'bulb', 'ge-b2/u2': 'phone', 'ge-c1/u1': 'talk', 'ge-c1/u2': 'laptop', 'ge-c2/u1': 'book', 'ge-c2/u2': 'globe', 'be-a2/u1': 'coffee', 'be-a2/u2': 'envelope', 'be-b2/u1': 'talk', 'be-b2/u2': 'chart', 'be-c1/u1': 'bulb', 'be-c1/u2': 'globe' };
   var DOODLE = function (c, u, cls) { var n = UNIT_DOODLE[c + '/' + u]; return n && window.IFX_DOODLE ? IFX_DOODLE(n, cls || 'doodle') : ''; };
   var PIC = function (n, c) { return window.IFX_PIC ? IFX_PIC(n, c) : ''; };
   function scene(sc) {   // pictures to count: n things, or n + m / n − m
@@ -117,8 +117,8 @@
 
   /* ---------- what each person studies: one or more courses and levels (from registration, changeable here) ---------- */
   var STUDY = [
-    ['General English', '🌍', [['ge:A1', 'A1'], ['ge:A2', 'A2'], ['ge:B1', 'B1'], ['ge:B2', 'B2'], ['ge:C1', 'C1']]],
-    ['Business English', '💼', [['be:B1', 'B1'], ['be:B2', 'B2']]],
+    ['General English', '🌍', [['ge:A1', 'A1'], ['ge:A2', 'A2'], ['ge:B1', 'B1'], ['ge:B2', 'B2'], ['ge:C1', 'C1'], ['ge:C2', 'C2']]],
+    ['Business English', '💼', [['be:A2', 'A2'], ['be:B1', 'B1'], ['be:B2', 'B2'], ['be:C1', 'C1']]],
     ['Exams', '🎯', [['ielts', 'IELTS'], ['ket', 'KET (A2 Key)'], ['pet', 'PET (B1 Preliminary)']]],
     ['Young learners (6–12)', '🧸', [['yl:starters', 'Starters'], ['yl:movers', 'Movers'], ['yl:flyers', 'Flyers'], ['maths', 'Maths in English']]],
     ['Coursebooks (up to 2)', '📗', [['book:ef-a1', 'English File Elementary'], ['book:ef-a2', 'English File Pre-intermediate'], ['book:ef-b1', 'English File Intermediate'], ['book:ef-b2', 'English File Upper-intermediate'], ['book:ef-c1', 'English File Advanced'], ['book:teens-b1', 'English for Teenagers B1–B2'], ['book:teens-b2', 'English for Teenagers B2–C1'], ['book:giu', 'Grammar in Use']]]
@@ -447,7 +447,7 @@
   /* ---------- directory sections (vocabulary, grammar, games, tests, IELTS) ---------- */
   var SEC = {
     vocab: { h: 'Vocabulary', p: 'Words by level, by coursebook and for exams — with audio, games and progress.', f: [['fit', 'For you'], ['level', 'By level'], ['general', 'General'], ['business', 'Business'], ['exam', 'Exams'], ['book', 'Coursebooks'], ['kids', 'Kids'], ['all', 'All']] },
-    grammar: { h: 'Grammar', p: 'Grammar from A2 to C1: short explanations, then practice and games.', f: [['fit', 'For you'], ['A2', 'A2'], ['B1', 'B1'], ['B2', 'B2'], ['C1', 'C1'], ['all', 'All']] },
+    grammar: { h: 'Grammar', p: 'Grammar from A1 to C2: short explanations, then practice and games.', f: [['fit', 'For you'], ['A1', 'A1'], ['A2', 'A2'], ['B1', 'B1'], ['B2', 'B2'], ['C1', 'C1'], ['C2', 'C2'], ['all', 'All']] },
     games: { h: 'Games', p: 'Learn by playing — alone, or with your class on the big screen.', f: [['fit', 'For you'], ['vocabulary', 'Vocabulary'], ['grammar', 'Grammar'], ['ket', 'KET'], ['pet', 'PET'], ['kids', 'Kids'], ['class', 'Class games'], ['all', 'All']] },
     tests: { h: 'Tests', p: 'Find your level, check your progress and prepare for exams. Results are saved to your account.', f: [['fit', 'For you'], ['book', 'Coursebook tests'], ['cambridge', 'Cambridge'], ['ielts', 'IELTS'], ['kids', 'Kids'], ['all', 'All']] }
   };
