@@ -7,6 +7,7 @@
 //   DELETE /api/assistant/telegram      → unlink
 //   admin: GET bot/status, POST bot/setup, GET bot/preview, POST bot/test
 import { getUser, refreshSession } from '@netlify/identity';
+import { tgAccount } from '../lib/tgauth.mjs';
 import Anthropic from '@anthropic-ai/sdk';
 import { waReady, waSend, waState, waNumber } from '../lib/whatsapp.mjs';
 import KB from '../lib/public-kb.json';
@@ -73,7 +74,7 @@ export default async (req, context) => {
   const path = url.pathname.replace(/^\/api\/assistant\/?/, '').replace(/\/$/, '');
   const method = req.method;
   if (path.startsWith('public/')) { const r = await publicRoute(req, path, context); if (r) return r; return fail(404, 'route'); }
-  let user; try { user = (await refreshSession().catch(() => null), await getUser()); } catch { user = null; }
+  let user; try { user = (await tgAccount(req)) || (await refreshSession().catch(() => null), await getUser()); } catch { user = null; }
   if (!user) return fail(401, 'signin');
   const profile = await getProfile(user.id);
   if (!profile?.role) return fail(403, 'activate');

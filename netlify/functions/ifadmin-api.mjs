@@ -10,6 +10,7 @@
 //   GET all · GET/PUT/DELETE doc/<c>/<id> · POST backup
 // Data lives in the private Blobs store "ifadmin", one document per collection (key c/<name>) holding {id: doc}.
 import { getStore } from '@netlify/blobs';
+import { tgAccount } from '../lib/tgauth.mjs';
 import { getUser, refreshSession } from '@netlify/identity';
 import enc from '../lib/ifadmin-app.json';
 import { chat, run } from '../lib/ifadmin-ai.mjs';
@@ -108,7 +109,7 @@ export default async (req) => {
     }
     return fail(404, 'route');
   }
-  let user; try { user = (await refreshSession().catch(() => null), await getUser()); } catch { user = null; }
+  let user; try { user = (await tgAccount(req)) || (await refreshSession().catch(() => null), await getUser()); } catch { user = null; }
   if (!user) return fail(401, 'signin');
   const profile = (await U().get(`u/${user.id}/profile`, { type: 'json' })) || null;
   if (profile?.role !== 'admin') return fail(403, 'admin');

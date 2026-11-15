@@ -4,9 +4,9 @@
 //   store "school" – students, classes, teachers, books (one JSON document each)
 //   store "photos" – profile photos by account id
 import { getStore } from '@netlify/blobs';
+import { tgAccount } from '../lib/tgauth.mjs';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { createHmac, timingSafeEqual } from 'node:crypto';
 import { getUser, refreshSession, admin as idAdmin } from '@netlify/identity';
 import { roleForCode, isStaff, lockKeysFromCode, verifyLockKeys, isPrivateCode } from '../lib/codes.mjs';
 import { listReceipts, decideReceipt, receiptFile } from '../lib/receipts.mjs';
@@ -301,29 +301,6 @@ async function appProgress(uid, method, req) {
   return null;
 }
 
-/* IF English inside Telegram (Mini App). Telegram signs the launch data with the bot token; the chat's connection to
-   the bot (bot/chat/<telegram id>) says who it is. Only used for the profile and the app's progress, nothing else. */
-function tgInitUser(init) {
-  const tok = tgToken(); if (!init || !tok) return null;
-  const p = new URLSearchParams(init), hash = p.get('hash'); if (!hash || !/^[0-9a-f]{64}$/.test(hash)) return null; p.delete('hash');
-  const check = [...p.entries()].map(([k, v]) => k + '=' + v).sort().join('\n');
-  const h = createHmac('sha256', createHmac('sha256', 'WebAppData').update(tok).digest()).update(check).digest('hex');
-  if (!timingSafeEqual(Buffer.from(h), Buffer.from(hash))) return null;
-  if (Date.now() / 1000 - (+p.get('auth_date') || 0) > 7 * 86400) return null;
-  try { const u = JSON.parse(p.get('user') || 'null'); return u && u.id ? u : null; } catch { return null; }
-}
-/** Students and teachers connected to the bot only by phone (no website account): a light profile from their record. */
-async function tgLite(link, path, method, req) {
-  const [kind, id] = link.split(':');
-  let profile = null;
-  if (kind === 'sid') { const st = (await doc('students')).find(x => x.id === id); if (st) profile = { role: 'student', studentId: st.id, name: `${st.first || ''} ${st.last || ''}`.trim(), track: 'if', via: 'telegram', ...(st.status === 'withdrawn' ? { leftUntil: st.leftAt || new Date(0).toISOString() } : {}) }; }
-  if (kind === 'tid') { const t = (await doc('teachers')).find(x => x.id === id); if (t) profile = { role: 'teacher', teacherId: t.id, name: t.name, via: 'telegram' }; }
-  if (!profile) return fail(401, 'signin');
-  if (path === 'me' && method === 'GET') return json({ user: { id: link, email: '', name: profile.name }, profile, access: tier(profile), membership: await membership(), telegram: true });
-  if (path === 'app/progress') return (await appProgress(link, method, req)) || fail(405, 'method');
-  return fail(404, 'nf');
-}
-
 export default async (req) => {
   await runMigrations();
   const url = new URL(req.url);
@@ -368,14 +345,7 @@ export default async (req) => {
     return json(isStaff(role) && k.kt ? { ks: k.ks, kt: k.kt, role: 'teacher' } : { ks: k.ks, role: 'student' });
   }
 
-  let tgAs = null;
-  if ((path === 'me' || path === 'app/progress') && req.headers.get('x-tg-init')) {   // IF English opened inside the Telegram bot
-    const tu = tgInitUser(req.headers.get('x-tg-init')), link = tu && await S().get(`bot/chat/${tu.id}`);
-    if (!link) return fail(401, 'signin');
-    if (/^(sid|tid):/.test(link)) return tgLite(link, path, method, req);
-    tgAs = link;
-  }
-  let user = tgAs ? { id: tgAs, email: '' } : null;
+  let user = await tgAccount(req);   // inside the Telegram bot (Mini App): signed in through the bot connection
   if (!user) {
     try { await refreshSession(); } catch {}   // an expired 1-hour token is renewed from the refresh cookie: people stay signed in
     try { user = await getUser(); } catch { user = null; }

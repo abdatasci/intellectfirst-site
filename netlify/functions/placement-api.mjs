@@ -4,6 +4,7 @@
 // Grammar, vocabulary, reading and listening are scored in the browser from a fixed, level-tagged item bank,
 // so every candidate is measured against the same items. AI is used only where human judgement is needed.
 import Anthropic from '@anthropic-ai/sdk';
+import { tgAccount } from '../lib/tgauth.mjs';
 import { getStore } from '@netlify/blobs';
 import { getUser, refreshSession } from '@netlify/identity';
 import bank from '../../a/placement-test/bank.json';
@@ -62,7 +63,7 @@ async function rate(writing, speaking) {
 }
 
 async function whoami() {
-  let user = null; try { user = (await refreshSession().catch(() => null), await getUser()); } catch { user = null; }
+  let user = null; try { user = (await tgAccount(req)) || (await refreshSession().catch(() => null), await getUser()); } catch { user = null; }
   if (!user) return { user: null, profile: null };
   const profile = (await U().get(`u/${user.id}/profile`, { type: 'json' })) || null;
   return { user, profile };

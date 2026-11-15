@@ -3,6 +3,7 @@
 // (profile, role, attempts, daily AI quota) lives in Netlify Blobs, store "ielts".
 // AI scoring goes through Netlify AI Gateway with the Anthropic SDK (no API key in code).
 import Anthropic from '@anthropic-ai/sdk';
+import { tgAccount } from '../lib/tgauth.mjs';
 import { getStore } from '@netlify/blobs';
 import { getUser, refreshSession } from '@netlify/identity';
 import bank from '../../a/ielts/data/writing.json';
@@ -175,7 +176,7 @@ export default async (req) => {
   if (path === 'health') return json({ ok: true, ai: !!process.env.ANTHROPIC_BASE_URL || !!process.env.ANTHROPIC_API_KEY });
 
   let user;
-  try { user = (await refreshSession().catch(() => null), await getUser()); } catch { user = null; }
+  try { user = (await tgAccount(req)) || (await refreshSession().catch(() => null), await getUser()); } catch { user = null; }
   if (!user) return fail(401, 'signin');
   const uid = user.id;
   let profile = await getProfile(uid);

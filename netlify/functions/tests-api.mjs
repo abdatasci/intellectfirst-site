@@ -7,6 +7,7 @@
 //   GET  /api/tests/mine      my tests and results
 // Store "tests": t/<code>, r/<code>/<rid>, u/<uid> (index), quota/<uid>/<day>
 import { getStore } from '@netlify/blobs';
+import { tgAccount } from '../lib/tgauth.mjs';
 import { getUser, refreshSession } from '@netlify/identity';
 import { randomInt } from 'node:crypto';
 import { isStaff } from '../lib/codes.mjs';
@@ -74,7 +75,7 @@ async function addRecent(row, key) {
   await T().setJSON('recent', list.slice(0, 600));
 }
 async function who() {
-  let user = null; try { user = (await refreshSession().catch(() => null), await getUser()); } catch {}
+  let user = null; try { user = (await tgAccount(req)) || (await refreshSession().catch(() => null), await getUser()); } catch {}
   const profile = user ? (await U().get(`u/${user.id}/profile`, { type: 'json' })) || null : null;
   if (user && profile && await ensureTrial(user.id, profile)) await U().setJSON(`u/${user.id}/profile`, profile);
   return { user, profile, staff: isStaff(profile?.role), free: !!profile && !isMember(profile) };

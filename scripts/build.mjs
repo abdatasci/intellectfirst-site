@@ -48,6 +48,8 @@ let navCount = 0, voiceCount = 0;
     let s = readFileSync(p, 'utf8');
     // Real voices: every page that speaks gets /voice.js in <head> (before any page script runs).
     if (!s.includes('/voice.js') && /<head(\s[^>]*)?>/i.test(s)) { s = s.replace(/<head(\s[^>]*)?>/i, m => m + `\n<script src="/voice.js?v=${V}"></script>`); writeFileSync(p, s); voiceCount++; }
+    // Inside the Telegram bot (Mini App): /tg.js signs people in through the bot connection; first in <head>, before any sign-in check.
+    if (!s.includes('/tg.js') && /<head(\s[^>]*)?>/i.test(s)) { s = s.replace(/<head(\s[^>]*)?>/i, m => m + `\n<script src="/tg.js?v=${V}"></script>`); writeFileSync(p, s); }
     if (s.includes('if-nav.js') || s.includes('data-no-nav') || !/<\/body>/i.test(s)) continue;
     s = s.replace(/<\/body>(?![\s\S]*<\/body>)/i, `<script src="/if-nav.js?v=${V}" defer></script>\n</body>`);
     writeFileSync(p, s); navCount++;

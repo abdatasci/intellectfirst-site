@@ -6,6 +6,7 @@
 // Players may only publish on :p and listen on :h, so they cannot fake the host.
 // Store "live": r/<PIN> room, res/<date>-<PIN> finished game summaries.
 import { getStore } from '@netlify/blobs';
+import { tgAccount } from '../lib/tgauth.mjs';
 import { getUser, refreshSession } from '@netlify/identity';
 import { isStaff } from '../lib/codes.mjs';
 import { createHmac, randomBytes, randomInt } from 'node:crypto';
@@ -28,7 +29,7 @@ function tokenRequest(clientId, capability) {
   return { keyName, ttl, capability: cap, clientId, timestamp, nonce, mac };
 }
 async function who() {
-  let user = null; try { user = (await refreshSession().catch(() => null), await getUser()); } catch {}
+  let user = null; try { user = (await tgAccount(req)) || (await refreshSession().catch(() => null), await getUser()); } catch {}
   if (!user) return { user: null, profile: null };
   const profile = (await U().get(`u/${user.id}/profile`, { type: 'json' })) || null;
   if (user && profile && await ensureTrial(user.id, profile)) await U().setJSON(`u/${user.id}/profile`, profile);
