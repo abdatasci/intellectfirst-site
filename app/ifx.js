@@ -218,7 +218,21 @@
   }
   /* full view: staff, teachers, or anyone who hasn't chosen goals yet. Everyone else sees only what fits their goals. */
   function fullView() { var a = access(); return a.staff || a.teacher || S.teacher || !mine().length; }
-  function goalBar() { return '<div class="goalbar">🎯 <span>For your goals: <b>' + esc(mine().map(function (k) { return SNAME[k]; }).join(' · ')) + '</b></span><a href="#/onboard">Change goals</a></div>'; }
+  function addOns() {
+    var m = mine(), hasGE = m.some(function (k) { return /^ge:/.test(k); }), hasBE = m.some(function (k) { return /^be:/.test(k); }), hasI = m.indexOf('ielts') >= 0;
+    var lvOf = function (k) { var B = { 'ef-b2': 'B2', 'ef-c1': 'C1', 'ef-c2': 'C2', 'teens-b2': 'B2' }; return /^(ge|be):/.test(k) ? k.split(':')[1] : /^book:/.test(k) ? B[k.slice(5)] || '' : ''; };
+    var top = m.map(lvOf).filter(function (l) { return /^(B2|C1|C2)$/.test(l); }).sort().pop(), out = [];
+    if (top && !hasI) out.push(['ielts', 'IELTS']);
+    if ((top || hasI) && !hasBE) out.push(['be:' + (top === 'C1' || top === 'C2' ? 'C1' : 'B2'), 'Business English ' + (top === 'C1' || top === 'C2' ? 'C1' : 'B2')]);
+    if (hasI && !hasGE) ['B2', 'C1', 'C2'].forEach(function (l) { out.push(['ge:' + l, 'General English ' + l]); });
+    return out;
+  }
+  function addOnHTML() { var a = addOns(); return a.length ? '<span class="addons">' + a.map(function (x) { return '<button class="addon" data-add="' + x[0] + '">+ ' + esc(x[1]) + '</button>'; }).join('') + '</span>' : ''; }
+  function wireAddOns() { $$('[data-add]').forEach(function (b) { b.onclick = function () { var k = b.dataset.add, sel = mine().slice(), courses = sel.filter(function (x) { return !/^book:/.test(x); });
+    if (sel.indexOf(k) >= 0) return; if (courses.length >= 3) { toast('Up to 3 courses — remove one first.'); return go('#/onboard'); }
+    if (/^ge:/.test(k)) sel = sel.filter(function (x) { return !/^ge:/.test(x); });
+    sel.push(k); S.study = sel; save(); saveStudy(sel); toast('Added: ' + SNAME[k]); route(); }; }); }
+  function goalBar() { return '<div class="goalbar">🎯 <span>For your goals: <b>' + esc(mine().map(function (k) { return SNAME[k]; }).join(' · ')) + '</b></span>' + addOnHTML() + '<a href="#/onboard">Change goals</a></div>'; }
   function secCount(k) { if (k === 'ielts') return mine().indexOf('ielts') >= 0 ? 1 : 0; var n = IFX_DIR.filter(function (x) { return x.s === k && fits(x); }).length; if (k === 'grammar' || k === 'vocab') n += lessonsOf([k === 'grammar' ? 'grammar' : 'vocab']).filter(function (x) { return myCourses().indexOf(x.c) >= 0; }).length; return n; }
   function focusNav() { var full = fullView(); $$('a[data-k]').forEach(function (a) { var k = a.dataset && a.dataset.k; if (!k || ['vocab', 'grammar', 'games', 'tests', 'ielts'].indexOf(k) < 0) return; a.style.display = full || secCount(k) ? '' : 'none'; }); }
   function fits(it) { var m = mine(); return !m.length || S.teacher || m.some(function (k) { return fitsKey(it, k); }); }
@@ -277,6 +291,7 @@
       '</div>' +
       (S.teacher || a.teacher ? teacherBox(a) : '') +
       '<div class="sec"><h2>' + esc(t('forYou')) + '</h2><a href="#/courses">' + esc(t('all')) + ' →</a></div><div class="grid">' + myCourses().slice(0, 6).map(courseCard).join('') + '</div>';
+    if (!S.teacher && addOns().length) html = '<div class="goalbar">✨ <span>Ready for more?</span>' + addOnHTML() + '</div>' + html;
     view().innerHTML = html;
     $$('[data-a]').forEach(function (b) { b.onclick = function () { S.active = b.dataset.a; save(); vHome(); }; });
   }
@@ -703,6 +718,7 @@
     var p = location.hash.replace(/^#\/?/, '').split('?')[0].split('/'), qs = new URLSearchParams(location.hash.split('?')[1] || '');
     window.scrollTo(0, 0);
     try { focusNav(); } catch (e) {}
+    setTimeout(function () { try { wireAddOns(); } catch (e) {} }, 0);
     switch (p[0]) {
       case '': return vHome();
       case 'onboard': return vOnboard();

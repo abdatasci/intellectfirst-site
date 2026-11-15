@@ -256,3 +256,4 @@ body.in-lesson .ifnav{display:none!important}
 
 /* focused view for students: their goals instead of filter chips */
 .goalbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 16px;padding:10px 14px;border-radius:14px;background:var(--card);border:1px solid var(--line);font-size:14px;color:var(--soft)}.goalbar b{color:var(--ink,inherit)}.goalbar a{margin-left:auto;font-weight:600;color:var(--gold2,#a8824a);text-decoration:none}
+.goalbar .addons{display:flex;gap:6px;flex-wrap:wrap}.addon{border:1px dashed var(--gold2,#a8824a);background:transparent;color:var(--gold2,#a8824a);border-radius:99px;padding:4px 11px;font:inherit;font-size:13px;font-weight:600;cursor:pointer}.addon:hover{background:#a8824a14}
