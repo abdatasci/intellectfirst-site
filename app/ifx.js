@@ -8,7 +8,7 @@
   var shuffle = function (a) { a = a.slice(); for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; } return a; };
   var LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
   var COURSES = [], BY = {};
-  var IFX = window.IFX = { course: function (c) { COURSES.push(c); BY[c.id] = c; },
+  var IFX = window.IFX = { course: function (c) { COURSES.push(c); BY[c.id] = c; }, get: function (id) { return BY[id]; }, all: function () { return COURSES; },
     /** Add more units to a course (full courses are written in parts). */
     units: function (cid, list) { var c = BY[cid]; if (c) list.forEach(function (u) { if (!c.units.some(function (x) { return x.id === u.id; })) c.units.push(u); }); },
     /** Add a listening lesson to a unit (before the unit check). */
@@ -306,9 +306,11 @@
     var c = BY[id]; if (!c) return go('#/courses');
     var s = courseStats(c), nx = nextLesson(c), a = access();
     var html = '<div class="course-head"><span class="ic">' + c.icon + '</span><div class="grow"><p class="h-eyebrow">' + esc(c.level) + ' · ' + esc(c.track === 'exam' ? 'Exam' : c.track === 'business' ? 'Business English' : c.track === 'kids' ? 'Young learners' : 'General English') + '</p><h1 style="font-size:28px">' + esc(c.title) + '</h1><p style="margin:4px 0 8px;color:var(--soft)">' + esc(c.blurb) + '</p><div class="bar" style="height:12px"><i style="width:' + s.p + '%"></i></div><p style="margin:6px 0 0;font-size:13.5px;color:var(--soft)">' + s.d + ' / ' + s.n + ' lessons · ' + s.p + '%' + (c.next ? ' · then: ' + esc(c.next) : '') + '</p></div></div>';
+    var sd = window.IFStd && IFStd.course(c.id);
+    if (sd) html += '<div class="std"><div class="std-l"><b>' + esc(sd.level) + '</b><span>Standard</span></div><div class="grow"><p class="std-ref">📐 Referenced to the ' + esc(sd.ref) + '</p><p>' + esc(sd.desc) + '</p><div class="std-m">' + sd.modes.map(function (m) { return '<span>' + esc(m) + '</span>'; }).join('') + '</div></div></div>';
     c.units.forEach(function (u, ui) {
       var open = unlocked(ui);
-      html += '<section class="unit"><div class="unit-h">' + DOODLE(c.id, u.id, 'doodle uh') + '<div style="flex:1"><small>' + esc(t('unit')) + ' ' + (ui + 1) + ' · ' + esc(u.topic) + '</small><h3>' + esc(u.title) + '</h3></div>' + (open ? '' : '<a class="btn sm gold" href="/me/#/upgrade">🔒 ' + esc(t('locked')) + '</a>') + '</div><div class="path">' +
+      html += '<section class="unit"><div class="unit-h">' + DOODLE(c.id, u.id, 'doodle uh') + '<div style="flex:1"><small>' + esc(t('unit')) + ' ' + (ui + 1) + ' · ' + esc(u.topic) + '</small><h3>' + esc(u.title) + '</h3>' + (window.IFStd && IFStd.unit(c.id, u.id) ? '<p class="cando">🎯 ' + esc(IFStd.unit(c.id, u.id)) + '</p>' : '') + '</div>' + (open ? '' : '<a class="btn sm gold" href="/me/#/upgrade">🔒 ' + esc(t('locked')) + '</a>') + '</div><div class="path">' +
         u.lessons.map(function (l) {
           var done = isDone(c.id, u.id, l.id), isNext = nx && nx.u.id === u.id && nx.l.id === l.id;
           return '<a class="node' + (done ? ' done' : '') + (isNext ? ' next' : '') + (open ? '' : ' locked') + '" style="--c:' + COLORS[l.type] + '" href="' + (open ? '#/lesson/' + c.id + '/' + u.id + '/' + l.id : '/me/#/upgrade') + '"><span class="b">' + (open ? ICONS[l.type] : '🔒') + '</span><span>' + esc(l.title) + '</span><em>' + esc(TYPE[l.type]) + (done ? ' · ' + S.done[key3(c.id, u.id, l.id)].score + '%' : '') + '</em></a>';
@@ -548,7 +550,7 @@
     if (L.l.words) L.l.words.forEach(function (w) { S.words[w.w] = 1; });
     addXP(xp);
     var nx = nextLesson(L.c), st = courseStats(L.c);
-    view().innerHTML = '<div class="player done-box"><div class="big">' + (score >= 80 ? '🏆' : score >= 50 ? '⭐' : '💪') + '</div><h2>' + (score >= 80 ? 'Excellent!' : score >= 50 ? 'Well done!' : 'Good effort!') + '</h2><p style="color:var(--soft)">' + esc(L.l.title) + ' · ' + esc(L.c.title) + '</p>' +
+    view().innerHTML = '<div class="player done-box"><div class="big">' + (score >= 80 ? '🏆' : score >= 50 ? '⭐' : '💪') + '</div><h2>' + (score >= 80 ? 'Excellent!' : score >= 50 ? 'Well done!' : 'Good effort!') + '</h2><p style="color:var(--soft)">' + esc(L.l.title) + ' · ' + esc(L.c.title) + '</p>' + (window.IFStd && IFStd.unit(L.c.id, L.u.id) ? '<p class="cando done">🎯 Unit goal · ' + esc(IFStd.unit(L.c.id, L.u.id)) + '</p>' : '') +
       '<div class="kpis"><div class="kpi"><b>+' + xp + '</b><span>XP</span></div><div class="kpi"><b>' + score + '%</b><span>accuracy</span></div><div class="kpi"><b>🔥 ' + S.streak + '</b><span>' + esc(t('streak')) + '</span></div></div>' +
       '<div class="bar" style="max-width:420px;margin:0 auto 6px;height:12px;background:var(--line)"><i style="width:' + st.p + '%"></i></div><p style="color:var(--soft);font-size:14px">' + esc(L.c.title) + ': ' + st.p + '%</p>' +
       '<p style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:20px"><a class="btn ghost" href="#/course/' + L.c.id + '">Course map</a>' +
