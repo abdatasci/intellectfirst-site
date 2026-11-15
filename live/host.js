@@ -6,7 +6,7 @@
   var BANKS = null, ROOMS = null, H = null, BUS = null, ST = null, WATCH = null, timers = {};
   var CFG = Object.assign({ source: 'gen', level: 'B1', focus: 'mix', topic: '', ai: true, bank: 'v-A2', units: [], qtype: 'def', count: '15', mode: 'classic', time: 20, race: 5, teams: 0, custom: '', title: '' }, L.ls.get('live.cfg') || {});
 
-  if (qsp.get('bank')) { var pb = qsp.get('bank'); CFG.bank = pb; CFG.source = /^y-/.test(pb) ? 'y' : /^g-/.test(pb) ? 'g' : 'v'; CFG.units = []; if (CFG.source === 'y' && ['classic', 'race', 'tug', 'boss', 'balloon'].indexOf(CFG.mode) < 0) CFG.mode = 'tug'; }
+  if (qsp.get('bank')) { var pb = qsp.get('bank'); CFG.bank = pb; CFG.source = /^y-/.test(pb) ? 'y' : /^g-/.test(pb) ? 'g' : 'v'; CFG.units = []; if (CFG.source === 'y' && ['classic', 'race', 'tug', 'boss', 'balloon', 'kart'].indexOf(CFG.mode) < 0) CFG.mode = 'tug'; }
   function stage(on) { document.body.classList.toggle('light', !on); $('#fs').hidden = !on; $('#back').hidden = !!on; }
   $('#fs').onclick = function () { if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen().catch(function () {}); };
   function joinUrl(pin) { return location.origin + '/live/?pin=' + pin + (L.local ? '&bus=local' : ''); }
@@ -31,6 +31,7 @@
       '<label class="f">Questions from</label><div class="seg" id="src">' + [['gen', 'General English ✨'], ['v', 'Book vocabulary'], ['g', 'Grammar'], ['y', 'Young Learners 🧸'], ['custom', 'My own questions']].map(function (s) { return '<button data-v="' + s[0] + '" class="' + (CFG.source === s[0] ? 'on' : '') + '">' + s[1] + '</button>'; }).join('') + '</div>' +
       '<div id="srcbox"></div>' +
       '<label class="f">Game mode</label><div class="modes" id="mode">' + Object.keys(L.MODES).map(function (k) { var m = L.MODES[k]; return '<button data-v="' + k + '" class="' + (CFG.mode === k ? 'on' : '') + '"><span class="mi">' + m.icon + '</span><b>' + esc(m.name) + '</b><small>' + esc(m.tag) + '</small></button>'; }).join('') + '</div>' +
+      '<p class="mini" style="margin:6px 0 0">Full 3D games to play on their own (homework or a free lesson): <a href="/a/kids-quest/" target="_blank" rel="noopener">🏎️ IF Kids Quest</a> (Young Learners) · <a href="/a/block-quest/" target="_blank" rel="noopener">⛏️ IF Block Quest</a> (teens and adults).</p>' +
       '<p class="mini" id="modehelp" style="margin-top:6px"></p>' +
       '<div id="timebox"></div>' +
       '<label class="f">Teams</label><div class="seg" id="teams">' + [[0, 'Everyone for themselves'], [2, '2 teams'], [3, '3 teams'], [4, '4 teams']].map(function (s) { return '<button data-v="' + s[0] + '" class="' + (+CFG.teams === s[0] ? 'on' : '') + '">' + s[1] + '</button>'; }).join('') + '</div>' +
@@ -232,7 +233,7 @@
     if (name === 'res') {
       p.answered++; if (d.ok) { p.correct++; p.streak++; } else p.streak = 0;
       // a wrong answer costs money: 10% of what you have (at least 25), never below zero (not in the team games)
-      if (!d.ok && H.mode !== 'tug' && H.mode !== 'boss') { var fine = Math.min(p.score, Math.max(25, Math.round(p.score * 0.1))); p.score -= fine; p.lost = (p.lost || 0) + fine; }
+      if (!d.ok && H.mode !== 'tug' && H.mode !== 'boss') { var fine = Math.min(p.score, H.mode === 'balloon' || H.mode === 'kart' ? 1 : Math.max(25, Math.round(p.score * 0.1))); p.score -= fine; p.lost = (p.lost || 0) + fine; }
       if (d.ok && H.mode === 'tug' && p.team >= 0 && H.tug) {
         H.tug[p.team]++; p.score++;
         if (Math.abs(H.tug[0] - H.tug[1]) >= H.tugGoal) { H.tugWin = H.tug[0] > H.tug[1] ? 0 : 1; feed('🪢 ' + L.TEAMS[H.tugWin] + ' pulled the rope over the line!', null, null, 'big'); save(); return finish(); }
@@ -244,6 +245,7 @@
         if (H.boss.hp <= 0) { H.bossWin = true; feed('🏆 The class beat Mumbleclaw!', null, null, 'big'); save(); return finish(); }
       }
       if (d.ok && H.mode === 'balloon') { p.score += p.streak >= 3 ? 2 : 1; }
+      if (d.ok && H.mode === 'kart') { p.score += p.streak >= 3 ? 2 : 1; if (p.streak === 3 || p.streak === 6) feed('🚀 ' + p.name + ' got a turbo boost!', pid, null, 'big'); if (p.score >= H.kartGoal && !H.kartWin) { H.kartWin = p.name; feed('🏁 ' + p.name + ' crossed the finish line first!', pid, null, 'big'); save(); return finish(); } }
       scheduleRender(); return;
     }
     if (name === 'spend' && H.mode === 'cash') { var c = Math.round(+d.v || 0); if (c > 0 && c <= p.score) { p.score -= c; if (d.item) feed(p.name + ' bought ' + String(d.item).slice(0, 30) + '!', pid, null, ''); } scheduleRender(); return; }
@@ -256,6 +258,7 @@
       p.score = Math.max(0, Math.min(Math.round(p.score), 9999999));
       if (d.k === 'mul' && v === 3 && p.score > 0) feed(p.name + ' tripled to ' + L.fmtN(p.score) + ' ' + cur + '!', pid, null, 'big');
       if (d.k === 'lose' && before > 0) feed(p.name + ' lost ' + L.fmtN(before - p.score) + ' ' + cur, pid, null, 'bad');
+      if (H.mode === 'mine' && d.ore && v >= 60) feed(p.name + ' mined ' + String(d.ore).slice(0, 30) + ' (+' + Math.round(v) + ' 💎)!', pid, null, 'big');
       if (H.mode === 'fish' && d.fish && v >= 25) feed(p.name + ' caught ' + String(d.fish).slice(0, 30) + ' (' + Math.round(v) + ' kg)!', pid, null, 'big');
       scheduleRender(); return;
     }
@@ -333,6 +336,7 @@
       s.all = rk.map(function (p) { return [p.pid, p.name, p.score, p.team, H.mode === 'hack' ? (p.pwo || pwOptions(L.PASSWORDS[p.name.length % L.PASSWORDS.length])) : 0]; });
       s.feed = H.feed.slice(-6); if (H.mode === 'hack') s.haspw = rk.filter(function (p) { return p.pw; }).map(function (p) { return p.pid; });
       if (H.mode === 'fish') s.fz = Math.max(0, H.fzEnd - Date.now());
+      if (H.mode === 'kart') s.kartGoal = H.kartGoal;
     }
     if (H.tug) { s.tug = H.tug; s.tugGoal = H.tugGoal; s.tugWin = H.tugWin; }
     if (H.boss) { s.boss = H.boss; s.bossWin = !!H.bossWin; }
@@ -358,6 +362,7 @@
       if (H.teamsN !== 2) { H.teamsN = 2; L.shuffle(act0).forEach(function (pid, i) { H.players[pid].team = i % 2; }); }
       H.tug = [0, 0]; H.tugGoal = Math.max(12, Math.min(40, act0.length * 3));
     }
+    if (H.mode === 'kart') { H.kartGoal = Math.max(20, Math.round(H.race * 4)); H.kartWin = null; }
     if (H.mode === 'boss') { var hp = Math.max(30, act0.length * 14); H.boss = { hp: hp, max: hp }; }
     if (L.mode(H.mode).self) { H.phase = 'race'; H.raceId = Date.now(); H.raceEnd = Date.now() + H.race * 60000; save(); sendQs(); render(); push(true); raceLoop(); }
     else next();
@@ -454,7 +459,7 @@
         }).join('') + '</div>' +
         '<div class="expl">' + (rv && rv.x ? esc(rv.x) : '') + '</div>';
       if (host) h += '<div class="ctrl" style="justify-content:flex-end">' + (s.phase === 'q' ? '<button class="btn ghost sm" id="skip">Show answer now</button>' : '<button class="btn big" id="toboard">Scores →</button>') + '</div>';
-    } else if (s.phase === 'race' && (s.mode === 'tug' || s.mode === 'boss' || s.mode === 'balloon')) {
+    } else if (s.phase === 'race' && (s.mode === 'tug' || s.mode === 'boss' || s.mode === 'balloon' || s.mode === 'kart')) {
       var M2 = L.mode(s.mode);
       h += '<div class="board kid"><h2>' + M2.icon + ' ' + esc(s.title) + '</h2><div style="text-align:center;margin-bottom:10px"><span class="pill" style="font-size:22px">⏱ <span id="rtime">' + fmt(s.left) + '</span></span></div>';
       if (s.mode === 'tug' && s.tug) {
@@ -464,6 +469,9 @@
         var pc = Math.round(s.boss.hp / s.boss.max * 100);
         h += '<div class="bosswrap"><div class="monster' + (pc < 35 ? ' weak' : '') + '">👾</div><div class="bossname">Mumbleclaw the Word Monster</div><div class="hpbar"><i style="width:' + pc + '%"></i><span>' + s.boss.hp + ' / ' + s.boss.max + ' HP</span></div></div>';
         h += '<div class="hitters">' + s.board.slice(0, 8).map(function (p, i) { return '<span>' + (i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '⚔️') + ' ' + esc(p[0]) + ' <b>' + p[1] + '</b></span>'; }).join('') + '</div>';
+      } else if (s.mode === 'kart') {
+        var goal = s.kartGoal || 30, kk = s.board.slice(0, 10);
+        h += '<div class="kart2"><div class="kflag">🏁</div>' + kk.map(function (p, i) { return '<div class="klane"><span class="kn">' + esc(p[0]) + '</span><span class="kcar" style="left:calc(' + Math.min(100, p[1] / goal * 100) + '% * .86);--h:' + (i * 41) + 'deg">🏎️</span><span class="kl">' + p[1] + ' / ' + goal + '</span></div>'; }).join('') + '</div>';
       } else {
         var top2 = s.board.slice(0, 10), mx = Math.max(10, top2.length ? top2[0][1] : 10);
         h += '<div class="sky2">' + top2.map(function (p, i) { return '<div class="bl" style="left:' + (4 + i * 9.5) + '%;bottom:' + (4 + p[1] / mx * 72) + '%;--h:' + (i * 37) + 'deg"><span class="bb">🎈</span><b>' + esc(p[0]) + '</b><small>' + p[1] + ' m</small></div>'; }).join('') + '<div class="clouds">☁️ ☁️ ☁️</div></div>';
@@ -477,7 +485,7 @@
       h += '<div class="board"><h2>' + (race ? (MM.power ? MM.icon + ' ' : '') + esc(s.title) : 'Scoreboard') + '</h2>' + (race ? '<div style="text-align:center;margin-bottom:6px"><span class="pill" style="font-size:22px">⏱ <span id="rtime">' + fmt(s.left) + '</span></span>' + (s.mode === 'fish' ? ' <span class="pill fz" id="fzbar"' + (s.fz ? '' : ' hidden') + '>🌊 FRENZY ×2</span>' : '') + '</div>' : '');
       if (s.tboard.length) { var tm = Math.max(1, s.tboard[0][1]); h += s.tboard.map(function (t, i) { return '<div class="brow t" style="--c:' + L.HEX[t[2]] + '"><span class="fill" style="width:' + (t[1] / tm * 100) + '%;background:' + L.HEX[t[2]] + '40"></span><span class="r">' + (i + 1) + '</span><span class="n">' + esc(t[0]) + ' <small style="opacity:.6">· ' + t[3] + ' players · average</small></span><span class="s">' + t[1] + '</span></div>'; }).join('') + '<div style="height:8px"></div>'; }
       h += top.map(function (p, i) { return '<div class="brow"><span class="fill" style="width:' + (p[1] / max * 100) + '%"></span><span class="r">' + (i + 1) + '</span><span class="n">' + esc(p[0]) + (p[2] >= 0 && s.teams.length ? ' <small style="color:' + teamColor(p[2]) + '">●</small>' : '') + '</span><span class="s">' + (MM.power ? L.fmtN(p[1]) + cur : p[1]) + '</span></div>'; }).join('') + '</div>';
-      if (MM.power) h += '<div class="feed"><h3>Live feed</h3>' + ((s.feed || []).slice().reverse().map(function (e) { return '<div class="fe ' + esc(e.k) + '">' + esc(e.t) + '</div>'; }).join('') || '<p class="mini" style="color:rgba(255,255,255,.6)">' + (s.mode === 'gold' ? 'Steals and swaps appear here…' : s.mode === 'hack' ? 'Hacks appear here…' : 'Big catches appear here…') + '</p>') + '</div></div>';
+      if (MM.power) h += '<div class="feed"><h3>Live feed</h3>' + ((s.feed || []).slice().reverse().map(function (e) { return '<div class="fe ' + esc(e.k) + '">' + esc(e.t) + '</div>'; }).join('') || '<p class="mini" style="color:rgba(255,255,255,.6)">' + (s.mode === 'gold' ? 'Steals and swaps appear here…' : s.mode === 'hack' ? 'Hacks appear here…' : s.mode === 'mine' ? 'Gold and diamonds appear here…' : 'Big catches appear here…') + '</p>') + '</div></div>';
       if (host) h += '<div class="ctrl" style="justify-content:flex-end">' + (race ? '<button class="btn ghost sm" id="endnow">End race now</button>' : '<button class="btn big" id="nextq">' + (s.i + 1 >= s.n ? 'Final results →' : 'Next question →') + '</button><button class="btn ghost sm" id="endnow">End game</button>') + '</div>';
     } else if (s.phase === 'match') {
       h += '<div class="board" style="max-width:1000px"><h2>🤝 ' + esc(s.title) + '</h2><div style="text-align:center;margin-bottom:8px"><span class="pill" style="font-size:22px">⏱ <span id="rtime">' + fmt(s.left) + '</span></span> <span class="pill">First team to ' + s.goal + ' right in a row wins</span></div>';

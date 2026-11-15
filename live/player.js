@@ -137,7 +137,7 @@
         if (ok) { R.ok++; R.streak++; R.s += 100 + Math.min(R.streak - 1, 5) * 20; flash(true); L.sfx('ok'); }
         else {
           R.streak = 0; R.lock = Date.now() + 1500; flash(false); L.sfx('no');
-          var fine = power ? (S.st.mode === 'tug' || S.st.mode === 'boss' ? 0 : Math.min(myScore(), Math.max(25, Math.round(myScore() * 0.1)))) : Math.min(R.s, 50);
+          var fine = power ? (S.st.mode === 'tug' || S.st.mode === 'boss' ? 0 : S.st.mode === 'balloon' || S.st.mode === 'kart' ? Math.min(myScore(), 1) : Math.min(myScore(), Math.max(25, Math.round(myScore() * 0.1)))) : Math.min(R.s, 50);
           if (!power) R.s -= fine;
           b.classList.add('dim'); var right = view.querySelector('[data-k="' + L.unhide(q.h, R.salt) + '"]'); if (right) right.classList.add('pick');
           var lk = $('#lk'); if (lk) lk.textContent = fine ? 'Wrong! −' + L.fmtN(fine) + ' ' + (power ? L.mode(S.st.mode).cur : 'points') : 'Wait a moment…';
@@ -162,15 +162,42 @@
   function reward() {
     var m = S.st.mode;
     if (m === 'gold') chests('gold'); else if (m === 'hack') chests('hack'); else if (m === 'fish') cast(); else if (m === 'cash') cashEarn();
-    else if (m === 'tug' || m === 'boss' || m === 'balloon') quickHit(m);
+    else if (m === 'tug' || m === 'boss' || m === 'balloon' || m === 'kart') quickHit(m);
+    else if (m === 'mine') blocks();
     else vPlay();
   }
   function quickHit(m) {
     var streak = S.race ? S.race.streak : 0;
-    var t = m === 'tug' ? ['💪', 'Pull!', 'Your team pulls the rope'] : m === 'boss' ? ['⚔️', streak >= 6 ? 'Triple hit!' : streak >= 3 ? 'Double hit!' : 'Hit!', 'Mumbleclaw says ouch'] : ['🎈', streak >= 3 ? 'Up, up, up! +2 m' : 'Up you go! +1 m', 'Your balloon rises'];
+    var t = m === 'kart' ? ['🏎️', streak >= 3 ? 'Turbo! +2' : 'Vroom! +1', 'Your kart races ahead'] : m === 'tug' ? ['💪', 'Pull!', 'Your team pulls the rope'] : m === 'boss' ? ['⚔️', streak >= 6 ? 'Triple hit!' : streak >= 3 ? 'Double hit!' : 'Hit!', 'Mumbleclaw says ouch'] : ['🎈', streak >= 3 ? 'Up, up, up! +2 m' : 'Up you go! +1 m', 'Your balloon rises'];
     show('<div class="res good"><div class="fishbig">' + t[0] + '</div><div class="big">' + t[1] + '</div><p>' + t[2] + (streak >= 3 ? ' · 🔥 ' + streak + ' in a row' : '') + '</p></div>');
     L.sfx(m === 'boss' ? 'hack' : 'coin'); if (navigator.vibrate) navigator.vibrate(30);
     setTimeout(vPlay, 650);
+  }
+  /* Block Mine: pick one of three blocks; what is inside is only revealed when you dig */
+  var ORES = [['🪨', 'stone', 5, 30], ['⬛', 'coal', 10, 24], ['🔩', 'iron', 25, 18], ['🟨', 'gold', 60, 10], ['💎', 'a diamond', 150, 5], ['🧨', 'TNT', -1, 9], ['🎁', 'a treasure chest', 0, 4]];
+  function ore() {
+    var lvl = 1 + Math.floor((S.race ? S.race.ok : 0) / 8), tot = ORES.reduce(function (a, o) { return a + o[3]; }, 0), r = Math.random() * tot;
+    for (var i = 0; i < ORES.length; i++) { r -= ORES[i][3]; if (r <= 0) break; }
+    var o = ORES[Math.min(i, ORES.length - 1)];
+    return { ic: o[0], name: o[1], v: o[2] > 0 ? o[2] * lvl : o[2] };
+  }
+  function blocks() {
+    var opts = [ore(), ore(), ore()], skins = ['🟫', '🟩', '⬜'];
+    show('<div class="pw"><h2>⛏️ Mine a block!</h2><div class="chests">' + opts.map(function (o, i) { return '<button class="chest" data-i="' + i + '"><span class="ci">' + skins[i] + '</span><span class="cl"></span></button>'; }).join('') + '</div></div>');
+    view.querySelectorAll('.chest').forEach(function (b) {
+      b.onclick = function () {
+        if (view.querySelector('.chest.open')) return;
+        var o = opts[+b.dataset.i];
+        view.querySelectorAll('.chest').forEach(function (x, i) { x.classList.add('open'); if (x !== b) x.classList.add('dim'); x.querySelector('.ci').textContent = opts[i].ic; x.querySelector('.cl').textContent = opts[i].v > 0 ? '+' + opts[i].v : opts[i].v < 0 ? 'Boom! −25%' : 'Double!'; });
+        L.sfx(o.v < 0 ? 'bad' : 'coin'); if (navigator.vibrate) navigator.vibrate(o.v < 0 ? [60, 40, 60] : 40);
+        setTimeout(function () {
+          if (o.v > 0) S.bus.pub('p', 'gain', { pid: S.pid, k: 'add', v: o.v, ore: o.name });
+          else if (o.v < 0) S.bus.pub('p', 'gain', { pid: S.pid, k: 'lose', v: .25 });
+          else S.bus.pub('p', 'gain', { pid: S.pid, k: 'mul', v: 2 });
+          cont(250);
+        }, 1000);
+      };
+    });
   }
   /* Cash Climb: coins per answer with upgrades bought in the shop */
   var CASH = {
