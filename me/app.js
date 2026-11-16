@@ -190,6 +190,8 @@
     view.innerHTML = panel(isStaff ? 'Staff registration' : 'Create your account', isStaff ? 'For IF Academy teachers and staff. Your classes are linked to your account automatically by your name; if not, the administrator links them for you.' : 'For IF Academy students, Abdoulie\'s individual students, IF Alumni, parents, teachers and anyone learning English. Use the phone number you gave the school, so we can find your record.',
       '<form id="f" novalidate><div class="grid2"><div><label class="f">First name</label><input class="inp" id="fn" autocomplete="given-name"></div><div><label class="f">Surname</label><input class="inp" id="ln" autocomplete="family-name"></div></div>' +
       '<label class="f">Phone number</label><input class="inp" id="ph" type="tel" autocomplete="tel" placeholder="+7 7__ ___ __ __">' + (isStaff ? '' : '<p class="hint">Students: your own number or your parent\'s, as given to the school.</p>') +
+      '<div class="grid2"><div><label class="f">Date of birth</label><input class="inp" id="bd" type="date" autocomplete="bday" max="' + new Date().toISOString().slice(0, 10) + '"></div><div><label class="f">City</label><input class="inp" id="ct" autocomplete="address-level2" value="Kostanay"></div></div>' +
+      (isStaff ? '' : '<div id="parw" style="display:none"><div class="grid2"><div><label class="f">Parent / guardian</label><input class="inp" id="pn" autocomplete="off" placeholder="Name"></div><div><label class="f">Parent\'s phone</label><input class="inp" id="pp" type="tel" placeholder="+7 7__ ___ __ __"></div></div><p class="hint">For students under 18.</p></div>') +
       (isStaff ? '' : whoPicker(as === 'teacher' ? 'tutor' : as === 'parent' ? 'parent' : 'if') +
         '<div id="chw"><label class="f">Your child\'s name</label><input class="inp" id="ch" autocomplete="off" placeholder="e.g. Amina"></div>' +
         '<div id="stw"><label class="f" id="stl">What do you want to study? <span style="font-weight:400;color:var(--muted)">Choose one or more</span></label>' + studyPicker([], as === 'parent') + '<p class="hint">You can change your courses and levels any time.</p></div>' +
@@ -202,6 +204,7 @@
     function syncWho() {
       if (isStaff) return; var t = track();
       if ($('#posw')) $('#posw').style.display = t === 'staff' ? '' : 'none';
+      if ($('#parw')) { var bd = $('#bd').value, age = bd ? (Date.now() - Date.parse(bd)) / 31557600000 : 99; $('#parw').style.display = (t !== 'parent' && t !== 'staff' && t !== 'tutor' && age < 18) ? '' : 'none'; }
       $('#clw').style.display = t === 'if' ? '' : 'none'; $('#clh').style.display = t === 'if' ? '' : 'none';
       $('#ccw').style.display = t === 'outside' || t === 'tutor' || t === 'parent' || t === 'staff' ? 'none' : '';
       $('#stw').style.display = t === 'tutor' || t === 'staff' ? 'none' : '';
@@ -209,7 +212,7 @@
       $('#stl').firstChild.textContent = t === 'parent' ? 'What should your child study? ' : 'What do you want to study? ';
       $('#clw').closest('.grid2').style.display = t === 'if' ? '' : 'none';
     }
-    view.querySelectorAll('input[name=trk]').forEach(function (r) { r.onchange = syncWho; }); syncWho();
+    view.querySelectorAll('input[name=trk]').forEach(function (r) { r.onchange = syncWho; }); if ($('#bd')) $('#bd').addEventListener('change', syncWho); syncWho();
     if ($('#cl')) fetch('/api/school/classes').then(function (r) { return r.json(); }).then(function (d) {
       $('#cl').innerHTML = '<option value="">Choose…</option>' + (d.classes || []).filter(function (c) { return c.kind !== 'alumni'; }).map(function (c) { return '<option value="' + esc(c.label) + '">' + esc(c.label) + (c.schedule ? ' · ' + esc(c.schedule) : '') + '</option>'; }).join('') + '<option value="New student">New student (no class yet)</option>';
     }).catch(function () { $('#cl').innerHTML = '<option value="New student">New student (no class yet)</option>'; });
@@ -240,7 +243,7 @@
           }
           if (!u) throw new Error('This phone number already has accounts. Sign in instead, or add an email.');
         } else u = await ID.signup(em, pw, { full_name: name });
-        var actBody = { code: cc, name: name, phone: ph, level: lv, classChoice: cl, track: trk || undefined, staffPos: trk === 'staff' && $('#pos') ? $('#pos').value : undefined, study: study, child: $('#ch') ? $('#ch').value.trim() : '', goals: studySummary(study) || (notSure ? 'Placement test first' : '') };
+        var actBody = { code: cc, name: name, phone: ph, level: lv, classChoice: cl, birth: $('#bd') ? $('#bd').value : '', city: $('#ct') ? $('#ct').value.trim() : '', parent: $('#pn') ? $('#pn').value.trim() : '', parentPhone: $('#pp') ? $('#pp').value.trim() : '', track: trk || undefined, staffPos: trk === 'staff' && $('#pos') ? $('#pos').value : undefined, study: study, child: $('#ch') ? $('#ch').value.trim() : '', goals: studySummary(study) || (notSure ? 'Placement test first' : '') };
         lsSet('if.pending', actBody);
         if (u && !u.confirmedAt && u.id) {   // confirm straight away so the student can sign in now
           try { var cr = await fetch('/api/school/confirm', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: u.id, email: em }) }); if (cr.ok) u.confirmedAt = new Date().toISOString(); } catch (e3) {}

@@ -407,6 +407,7 @@ export default async (req) => {
       goals: str(b.goals, 600) || profile?.goals || '',
       study: Array.isArray(b.study) ? cleanStudy(b.study) : (profile?.study || []),
       ...(b.child || profile?.child ? { child: str(b.child, 80) || profile?.child } : {}),
+      ...(/^\d{4}-\d{2}-\d{2}$/.test(b.birth || '') ? { birth: b.birth } : {}), ...(b.city ? { city: str(b.city, 60) } : {}), ...(b.parent ? { parent: str(b.parent, 80) } : {}), ...(b.parentPhone ? { parentPhone: str(b.parentPhone, 40) } : {}),
       alumni: track === 'alumni' || b.classChoice === 'IF Alumni' ? true : !!profile?.alumni, since: profile?.since || new Date().toISOString(), attempts: profile?.attempts || 0 };
     // IF Academy staff: a request with their position; the director or manager approves it (Admin → Accounts)
     const POS = ['teacher', 'manager', 'smm', 'reception', 'other'];
