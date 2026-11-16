@@ -311,3 +311,45 @@ body.cyber .feed .fe b{color:var(--hot);text-shadow:0 0 8px var(--hot);letter-sp
 body.cyber .feed .fe b.ok{color:var(--neon);text-shadow:none}
 body.cyber .feed .fe.hack,body.cyber .feed .fe.steal{border-left-color:var(--hot);background:rgba(255,43,214,.07)}
 body.cyber .btn.ghost{border-color:rgba(0,255,156,.6);color:var(--neon);font-family:var(--mono)}
+
+/* ---------- Fishing Frenzy lagoon (host screen) ---------- */
+.lake{position:relative;height:min(64vh,560px);min-height:380px;border-radius:22px;overflow:hidden;box-shadow:0 20px 50px -20px rgba(0,0,0,.6),inset 0 0 0 1px rgba(255,255,255,.08);isolation:isolate}
+.lk-sky{position:absolute;inset:0 0 auto 0;height:26%;background:linear-gradient(#ff9a6b 0%,#ffc489 55%,#ffe2a8 100%)}
+.lk-sun{position:absolute;left:72%;bottom:-34px;width:96px;height:96px;border-radius:50%;background:radial-gradient(circle,#fff6c9 0 40%,#ffd36b 62%,rgba(255,211,107,0) 72%)}
+.lk-cloud{position:absolute;height:22px;border-radius:20px;background:rgba(255,255,255,.75);animation:lkdrift linear infinite}
+.lk-cloud.c1{top:18%;width:120px;animation-duration:70s}.lk-cloud.c2{top:44%;width:80px;opacity:.6;animation-duration:95s}
+.lk-cloud::before{content:"";position:absolute;left:22%;top:-11px;width:44%;height:24px;border-radius:50%;background:inherit}
+.lk-gull{position:absolute;top:22%;font-size:20px;color:#5b4a52;animation:lkdrift 28s linear infinite reverse}
+@keyframes lkdrift{from{transform:translateX(-160px)}to{transform:translateX(calc(100vw + 40px))}}
+.lk-water{position:absolute;inset:26% 0 0 0;background:linear-gradient(#2bb3c9 0%,#1386a6 18%,#0b5f86 50%,#073f63 78%,#052a46 100%)}
+.lk-wave{position:absolute;left:-50%;width:200%;height:24px;top:-12px;background:radial-gradient(14px 10px at 14px 0,transparent 92%,#46c8dc 96%) 0 0/28px 12px repeat-x;animation:lkwave linear infinite}
+.lk-wave.w1{animation-duration:9s}.lk-wave.w2{top:-4px;opacity:.55;animation-duration:13s;animation-direction:reverse}
+@keyframes lkwave{to{transform:translateX(28%)}}
+.lk-water::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(100deg,rgba(255,255,255,.07) 0 2px,transparent 2px 60px);mix-blend-mode:screen;pointer-events:none}
+.lk-deco span{position:absolute;left:-40px;font-size:22px;opacity:.35;filter:saturate(.6);animation:lkswim linear infinite}
+.lk-deco span:nth-child(even){animation-direction:reverse;transform:scaleX(-1)}
+@keyframes lkswim{to{left:calc(100% + 40px)}}
+.lk-weed{position:absolute;bottom:0;width:60px;height:120px;background:radial-gradient(ellipse at bottom,#1f8a5b 0 30%,transparent 31%) 0 100%/20px 120px repeat-x;opacity:.7}
+.lk-weed.l{left:2%}.lk-weed.r{right:4%;transform:scaleX(-1)}
+.lk-sand{position:absolute;left:0;right:0;bottom:0;height:7%;background:linear-gradient(#c9a86a,#a8844a);border-radius:50% 50% 0 0/40% 40% 0 0}
+.lk-lanes{position:absolute;inset:0;display:grid;grid-template-columns:repeat(var(--n),minmax(0,1fr));padding:0 1.5%}
+.lk-lane{position:relative}
+.lk-boat{position:absolute;left:50%;top:calc(26% - 30px);width:min(110px,92%);transform:translateX(-50%);animation:lkbob 3.4s ease-in-out infinite;z-index:3;text-align:center}
+.lk-boat svg{display:block;width:100%;filter:drop-shadow(0 4px 3px rgba(0,0,0,.25))}
+@keyframes lkbob{0%,100%{transform:translateX(-50%) translateY(0) rotate(-1.5deg)}50%{transform:translateX(-50%) translateY(4px) rotate(1.5deg)}}
+.lk-who{position:absolute;left:50%;top:-30px;transform:translateX(-40%);font-size:28px;line-height:1}
+.lk-crown{position:absolute;left:50%;top:-58px;transform:translateX(-50%);font-size:24px;animation:lkcrown 1.6s ease-in-out infinite}
+@keyframes lkcrown{50%{transform:translateX(-50%) translateY(-4px)}}
+.lk-name{position:absolute;left:50%;top:calc(100% + 4px);transform:translateX(-50%);white-space:nowrap;max-width:140%;overflow:hidden;text-overflow:ellipsis;font:800 clamp(12px,1.4vw,17px)/1.2 var(--disp,system-ui);color:#fff;text-shadow:0 2px 6px rgba(0,0,0,.55)}
+.lk-kg{position:absolute;left:50%;top:calc(100% + 26px);transform:translateX(-50%);white-space:nowrap;padding:3px 10px;border-radius:99px;background:rgba(4,30,52,.72);border:1px solid rgba(255,255,255,.25);color:#ffe08a;font:800 clamp(12px,1.3vw,16px)/1.2 var(--disp,system-ui)}
+.lk-lane.lead .lk-kg{background:linear-gradient(135deg,#f6c453,#e09a2d);color:#3a2600;border-color:#ffe6a6}
+.lk-line{position:absolute;left:calc(50% + min(42px,36%));top:calc(26% - 44px);width:2px;background:linear-gradient(rgba(255,255,255,.9),rgba(255,255,255,.55));height:var(--to);animation:lkdrop .9s cubic-bezier(.3,1.4,.5,1) both;z-index:2;transform-origin:top}
+@keyframes lkdrop{from{height:var(--from)}to{height:var(--to)}}
+.lk-hook{position:absolute;left:50%;bottom:-6px;transform:translate(-50%,50%);font-size:clamp(22px,3vw,36px);filter:drop-shadow(0 3px 4px rgba(0,0,0,.4));animation:lkwiggle 2.2s ease-in-out infinite}
+@keyframes lkwiggle{0%,100%{transform:translate(-50%,50%) rotate(-8deg)}50%{transform:translate(-50%,50%) rotate(8deg)}}
+.lake.fz .lk-water{background:linear-gradient(#36d6c3 0%,#18a7a8 20%,#0d7a8f 55%,#08506e 100%)}
+.lake.fz::after{content:"";position:absolute;inset:26% 0 0 0;background:radial-gradient(circle at 20% 30%,rgba(255,236,150,.35) 0 3px,transparent 4px) 0 0/90px 70px,radial-gradient(circle at 60% 70%,rgba(255,255,255,.3) 0 2px,transparent 3px) 0 0/70px 90px;animation:lkspark 1.2s linear infinite;pointer-events:none;z-index:1}
+.lake.fz .lk-wave.w1{animation-duration:4s}
+@keyframes lkspark{to{background-position:0 -70px,0 -90px}}
+@media (prefers-reduced-motion:reduce){.lake *{animation:none!important}}
+@media (max-width:700px){.lake{height:58vh}.lk-who{font-size:20px;top:-22px}}

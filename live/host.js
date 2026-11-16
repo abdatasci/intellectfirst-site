@@ -288,6 +288,7 @@
       if (d.k === 'mul' && v === 3 && p.score > 0) feed(p.name + ' tripled to ' + L.fmtN(p.score) + ' ' + cur + '!', pid, null, 'big');
       if (d.k === 'lose' && before > 0) feed(p.name + ' lost ' + L.fmtN(before - p.score) + ' ' + cur, pid, null, 'bad');
       if (H.mode === 'mine' && d.ore && v >= 60) feed(p.name + ' mined ' + String(d.ore).slice(0, 30) + ' (+' + Math.round(v) + ' 💎)!', pid, null, 'big');
+      if (H.mode === 'fish' && d.fish) p.lf = String(d.fish).slice(0, 30);
       if (H.mode === 'fish' && d.fish && v >= 25) feed(p.name + ' caught ' + String(d.fish).slice(0, 30) + ' (' + Math.round(v) + ' kg)!', pid, null, 'big');
       scheduleRender(); return;
     }
@@ -364,7 +365,7 @@
     var rk = ranked().filter(function (p) { return !p.kicked; }), you = {}, roster = {};
     rk.forEach(function (p, i) { you[p.pid] = [p.score, i + 1, p.gain, p.ok, p.streak]; roster[p.pid] = [p.name, p.team]; });
     var s = { phase: H.phase, mode: H.mode, title: H.title, pin: H.pin, i: H.i, n: H.qs.length, teams: L.TEAMS.slice(0, H.teamsN), roster: roster, you: you,
-      board: rk.slice(0, full ? 40 : 10).map(function (p) { return [p.name, p.score, p.team, p.correct, p.answered]; }), tboard: teamBoard(), count: rk.length };
+      board: rk.slice(0, full ? 40 : 10).map(function (p) { return [p.name, p.score, p.team, p.correct, p.answered, p.lf || '']; }), tboard: teamBoard(), count: rk.length };
     var q = H.qs[H.i];
     if (H.phase === 'q') { s.q = { p: q.p, o: q.o }; s.left = Math.max(0, H.time * 1000 - (Date.now() - H.qStart)); s.dur = H.time * 1000; s.answered = Object.keys(H.ans).length; }
     if (H.phase === 'reveal' || H.phase === 'board') {
@@ -476,6 +477,30 @@
     if (L.Music) { L.Music.ui($('#back')); L.Music.follow(H.phase, H.mode, H.phase === 'q' ? H.qStart + H.time * 1000 - Date.now() : snap.left); }
     renderStage(snap, true);
   }
+  /* Fishing Frenzy: a lagoon at sunset. Every student has a boat; the more kilos they catch, the deeper their line goes,
+     with their latest catch on the hook. Animations keep their phase across re-draws (negative delays from the clock). */
+  var LAKE_PREV = {};
+  var FISHE = { 'an old boot': '👢', 'a sardine': '🐟', 'a clownfish': '🐠', 'a pufferfish': '🐡', 'a squid': '🦑', 'an octopus': '🐙', 'a dolphin': '🐬', 'a shark': '🦈', 'a whale': '🐋', 'a crab': '🦀', 'a lobster': '🦞', 'a turtle': '🐢', 'a golden mermaid': '🧜' };
+  function fishIcon(n) { n = String(n || '').toLowerCase(); if (FISHE[n]) return FISHE[n]; for (var k in FISHE) if (n.indexOf(k.replace(/^an? /, '')) >= 0) return FISHE[k]; return n ? '🐟' : ''; }
+  function lake(s, top) {
+    var n = Math.max(1, top.length), mx = Math.max(1, top.length ? top[0][1] : 1), t = Date.now() / 1000, ph = function (p) { return '-' + (t % p).toFixed(2) + 's'; };
+    var h = '<div class="lake' + (s.fz ? ' fz' : '') + '" style="--n:' + n + '">' +
+      '<div class="lk-sky"><i class="lk-sun"></i><i class="lk-cloud c1" style="animation-delay:' + ph(70) + '"></i><i class="lk-cloud c2" style="animation-delay:' + ph(95) + '"></i><span class="lk-gull" style="animation-delay:' + ph(28) + '">〰</span></div>' +
+      '<div class="lk-water"><i class="lk-wave w1" style="animation-delay:' + ph(9) + '"></i><i class="lk-wave w2" style="animation-delay:' + ph(13) + '"></i>' +
+      '<div class="lk-deco">' + ['🐟', '🐠', '🐡', '🐟', '🦑'].map(function (e, i) { return '<span style="top:' + (30 + i * 13) + '%;animation-duration:' + (18 + i * 5) + 's;animation-delay:' + ph(18 + i * 5) + '">' + e + '</span>'; }).join('') + '</div>' +
+      '<i class="lk-weed l"></i><i class="lk-weed r"></i><div class="lk-sand"></div></div>' +
+      '<div class="lk-lanes">';
+    h += top.map(function (p, i) {
+      var key = p[0], d = Math.round(12 + 52 * Math.sqrt(p[1] / mx)), from = LAKE_PREV[key] == null ? d : LAKE_PREV[key]; LAKE_PREV[key] = d;
+      var fishE = fishIcon(p[5]) || '🪝', hue = (i * 47 + 8) % 360;
+      return '<div class="lk-lane' + (i === 0 && p[1] > 0 ? ' lead' : '') + '">' +
+        '<div class="lk-boat" style="--h:' + hue + 'deg;animation-delay:' + ph(3.2 + (i % 3) * .4) + '">' + (i === 0 && p[1] > 0 ? '<span class="lk-crown">👑</span>' : '') +
+        '<span class="lk-who">🎣</span><svg viewBox="0 0 120 44" aria-hidden="true"><path d="M4 12h112l-14 26a8 8 0 0 1-7 4H25a8 8 0 0 1-7-4z" fill="hsl(var(--h) 70% 52%)"/><path d="M4 12h112l-3 6H7z" fill="#fff" opacity=".85"/><rect x="52" y="2" width="16" height="10" rx="2" fill="hsl(var(--h) 45% 35%)"/></svg>' +
+        '<b class="lk-name">' + esc(p[0]) + '</b><span class="lk-kg">' + L.fmtN(p[1]) + ' kg</span></div>' +
+        '<div class="lk-line" style="--from:' + from + '%;--to:' + d + '%"><span class="lk-hook">' + fishE + '</span></div></div>';
+    }).join('');
+    return h + '</div></div>';
+  }
   function teamColor(t) { return t >= 0 ? L.HEX[t] : 'rgba(255,255,255,.4)'; }
   /* Cyber Heist: a sci-fi hacking screen (digital rain of letters, scanlines, neon nodes, terminal feed) */
   var RAIN = null;
@@ -546,6 +571,7 @@
       if (MM.power) h += '<div class="pgrid">';
       h += '<div class="board"><h2' + (cy ? ' class="glitch" data-t="' + esc('> ' + s.title.toUpperCase()) + '"' : '') + '>' + (cy ? esc('> ' + s.title.toUpperCase()) : (race ? (MM.power ? MM.icon + ' ' : '') + esc(s.title) : 'Scoreboard')) + '</h2>' + (race ? '<div style="text-align:center;margin-bottom:6px"><span class="pill" style="font-size:22px">⏱ <span id="rtime">' + fmt(s.left) + '</span></span>' + (s.mode === 'fish' ? ' <span class="pill fz" id="fzbar"' + (s.fz ? '' : ' hidden') + '>🌊 FRENZY ×2</span>' : '') + '</div>' : '');
       if (s.tboard.length) { var tm = Math.max(1, s.tboard[0][1]); h += s.tboard.map(function (t, i) { return '<div class="brow t" style="--c:' + L.HEX[t[2]] + '"><span class="fill" style="width:' + (t[1] / tm * 100) + '%;background:' + L.HEX[t[2]] + '40"></span><span class="r">' + (i + 1) + '</span><span class="n">' + esc(t[0]) + ' <small style="opacity:.6">· ' + t[3] + ' players · average</small></span><span class="s">' + t[1] + '</span></div>'; }).join('') + '<div style="height:8px"></div>'; }
+      if (race && s.mode === 'fish') h += lake(s, s.board.slice(0, 10)); else
       h += top.map(function (p, i) { return '<div class="brow' + (i === 0 ? ' first' : '') + '" style="--k:' + ROWC[i % ROWC.length] + '"><span class="fill" style="width:' + (p[1] / max * 100) + '%"></span><span class="r">' + (cy ? ('0' + (i + 1)).slice(-2) : i + 1) + '</span><span class="n">' + (cy ? esc(p[0].toUpperCase().replace(/\s+/g, '_')) + '<small class="ip">' + ip(p[0]) + '</small>' : esc(p[0])) + (p[2] >= 0 && s.teams.length ? ' <small style="color:' + teamColor(p[2]) + '">●</small>' : '') + '</span><span class="s">' + (MM.power ? L.fmtN(p[1]) + cur : p[1]) + '</span></div>'; }).join('') + '</div>';
       if (MM.power) h += '<div class="feed"><h3>' + (cy ? 'root@if-net:~$ tail -f breach.log' : 'Live feed') + '</h3>' + ((s.feed || []).slice().reverse().map(function (e) { return '<div class="fe ' + esc(e.k) + '">' + (cy ? (e.k === 'hack' || e.k === 'steal' ? '<b>ACCESS GRANTED</b> ' : '<b class="ok">&gt;</b> ') : '') + esc(e.t) + '</div>'; }).join('') || '<p class="mini" style="color:rgba(255,255,255,.6)">' + (s.mode === 'gold' ? 'Steals and swaps appear here…' : s.mode === 'hack' ? 'Hacks appear here…' : s.mode === 'mine' ? 'Gold and diamonds appear here…' : 'Big catches appear here…') + '</p>') + '</div></div>';
       if (host) h += '<div class="ctrl" style="justify-content:flex-end">' + (race ? '<button class="btn ghost sm" id="endnow">End race now</button>' : '<button class="btn big" id="nextq">' + (s.i + 1 >= s.n ? 'Final results →' : 'Next question →') + '</button><button class="btn ghost sm" id="endnow">End game</button>') + '</div>';
