@@ -65,5 +65,12 @@
     window.IFR.__as = true;
     return true;
   }
+  // for test pages without the result box: IFAutosave.run(container, p) — speaking examiner (if a speaking section is unmarked), then save
+  window.IFAutosave = { save: save, run: function (container, p) {
+    var sp = p && Array.isArray(p.s) && p.s.some(function (x) { return x && /speak/i.test(x[0]) && x[1] == null && x[2] > 0; });
+    if (sp && !p.sp) examiner().then(function (E) { return E ? E.run(container, { lv: p.lv, title: [p.t, p.c].filter(Boolean).join(' ') }) : null; })
+      .then(function (ans) { if (ans) p.sp = ans; save(container, p); }).catch(function () { save(container, p); });
+    else save(container, p);
+  } };
   if (!hook()) { var n = 0, t = setInterval(function () { if (hook() || ++n > 100) clearInterval(t); }, 200); }
 })();
