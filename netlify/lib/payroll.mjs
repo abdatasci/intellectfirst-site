@@ -12,8 +12,8 @@
 //    in for the lesson, or confirmed "at school" when the cancellation came 30 minutes or less before the start.
 //    Otherwise it is recorded (the student is charged) but the teacher is not paid for it.
 //  • Nobody came (teacher clocked in, every student marked absent / late cancellation): half the lesson.
-//  • Individual students with a "share" rule: the teacher gets that share of the student's fee per lesson
-//    (fee for the month ÷ lessons in the package or, if not stated, the lessons on the timetable that month).
+//  • Individual students with a "share" rule: the teacher gets that share of the lesson price (tuition ÷ 12 lessons)
+//    for every lesson taught in the pay period — 12 lessons = half the tuition, however they fall across months.
 import { getStore } from '@netlify/blobs';
 import { lessonsOn, loadLog, withEntry, since, today } from './lessons.mjs';
 import { doc, loadChanges } from './bot-core.mjs';
@@ -58,18 +58,19 @@ const fmt = n => Math.round(n).toLocaleString('en-US').replace(/,/g, ' ');
 export const ruleText = r => !r ? 'No rate set yet' : `${fmt(r.amount)} ₸ per ${r.per || 60} min` + ((r.per || 60) === 60 ? ` (90 min = ${fmt(r.amount * 1.5)} ₸)` : ` (60 min = ${fmt(r.amount * 60 / r.per)} ₸)`) + (r.solo === 'share' ? ` · individual students: ${Math.round((r.share || 0.5) * 100)}% of the student's fee per lesson` : '');
 
 /** Per-lesson fee of an individual student in a month, from IF Admin payments. */
-function soloFee(sid, month, D, timetableN) {
-  const months = Object.keys(D.payments || {}).filter(m => m <= month).sort().reverse();
+const PACKAGE = 12;   // an individual student's tuition is for a package of 12 lessons
+/** Price of one lesson of an individual student: the full tuition (the highest monthly amount in the last 6 months, so
+    a part-payment does not lower it) ÷ 12 lessons. The teacher gets their share of it for every lesson taught in the
+    pay period: 12 lessons = half the tuition, however the lessons fall across months. */
+function soloFee(sid, month, D) {
+  const months = Object.keys(D.payments || {}).filter(m => m <= month).sort().reverse().slice(0, 6);
+  let best = null;
   for (const m of months) {
     const r = D.payments[m]?.rows?.[sid]; if (!r) continue;
     const net = Math.max(0, (+r.due || 0) - (+r.disc || 0));
-    if (!net) continue;   // package paid in an earlier month: look further back
-    const note = String(r.note || '') + ' ' + String(D.students?.[sid]?.note || '');
-    const pk = note.match(/(\d{1,2})\s*(?:lessons|уроков|занятий)|\b(\d{1,2})\s*[×x]\s*\d{2}\s*min|of\s+(\d{1,2})\b/i);
-    const n = pk ? +(pk[1] || pk[2] || pk[3]) : timetableN;
-    if (n > 0) return { fee: net, n, each: net / n, from: m, stated: !!pk };
+    if (net && (!best || net > best.fee)) best = { fee: net, from: m };
   }
-  return null;
+  return best ? { ...best, n: PACKAGE, each: best.fee / PACKAGE } : null;
 }
 
 /** Pay for one month: { month, teachers: [{teacherId, name, rule, total, hours, lessons, items, late}], fixed: [...] } */
@@ -98,9 +99,9 @@ export async function payroll(month, only = null, now = new Date()) {
     let full = per(r, mm), how = `${mm} min`;
     if (r.solo === 'share' && isSolo(cls) && (cls.studentIds || []).length) {
       const sid = cls.studentIds[0], set = (rates.solo || {})[sid];
-      const f = set ? { each: set, fee: set, n: 1, set: true } : soloFee(sid, month, D, countFor(cls));
+      const f = set ? { each: set, fee: set, n: 1, set: true } : soloFee(sid, month, D);
       if (!soloList[sid]) soloList[sid] = { sid, label: cls.label, teacherId: tid, each: f ? Math.round(f.each) : 0, set: !!set };
-      if (f) { full = Math.round(f.each * (r.share || 0.5)); how = `${Math.round((r.share || 0.5) * 100)}% of the lesson price ${fmt(f.each)} ₸` + (f.set ? '' : ` (${fmt(f.fee)} ₸ ÷ ${f.n} lessons, from IF Admin)`); }
+      if (f) { full = Math.round(f.each * (r.share || 0.5)); how = `${Math.round((r.share || 0.5) * 100)}% of the lesson price ${fmt(f.each)} ₸` + (f.set ? '' : ` (tuition ${fmt(f.fee)} ₸ ÷ ${f.n} lessons)`); }
       else how += ' · no fee found in IF Admin: hourly rate used';
     }
     const T = byT[tid] || (byT[tid] = { teacherId: tid, items: [], total: 0, minutes: 0, lessons: 0, late: { n: 0, min: 0 }, unpaidLate: 0 });
@@ -149,6 +150,7 @@ export const RULES = [
   'No clock-in = missed, not paid. Lessons cancelled on time or by the teacher/school are not paid (a make-up is arranged).',
   `Late cancellation by the student (less than 8 hours before): you get half the lesson only if you were at school waiting for the student — you clocked in, or the cancellation came ${WAIT_MIN} minutes or less before the start and you tapped “📍 I’m at school” in the bot. Otherwise it is recorded (the student is charged) but not paid to you.`,
   'Nobody came (you clocked in and every student is marked absent): half the lesson.',
+  'Individual students (where your rate says so): half of the student\'s tuition for 12 lessons, paid for the lessons you taught this pay period. Example: tuition 80 000 ₸ → 6 667 ₸ a lesson → you get 3 334 ₸ per lesson.',
   'The total updates automatically as you teach. The director checks it before paying.'
 ];
 
