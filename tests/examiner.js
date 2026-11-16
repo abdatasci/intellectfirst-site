@@ -64,6 +64,7 @@
     var lv = lvOf(opt.lv + ' ' + (opt.title || '')), kid = lv === 'YL';
     var qs = opt.qs && opt.qs.length ? opt.qs.slice(0, 5) : pick(BANK[lv] || BANK.B1, 3), g = kid ? 'f' : (Math.random() < 0.5 ? 'f' : 'm'), name = g === 'm' ? 'ATLAS' : 'NOVA';
     var SR = window.SpeechRecognition || window.webkitSpeechRecognition, answers = [];
+    var canRec = !!(window.MediaRecorder && navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
     var deps = [window.IFBots ? null : load('/robots.js'), window.IFVoice ? null : load('/voice.js')].filter(Boolean);
     return Promise.all(deps).then(function () {
       css();
@@ -83,7 +84,7 @@
         }
         function intro() {
           frame(-1, '<p class="q">' + (kid ? 'Hello! I am ' + name + '. Let’s talk! I will ask you ' + (qs.length === 1 ? 'one question' : qs.length + ' questions') + '.' : 'Hello, I’m ' + name + ', your speaking examiner. ' + (qs.length === 1 ? 'I’ll give you one task — talk about it for about ' + (opt.mins || 2) + ' minutes.' : 'I’ll ask you ' + qs.length + ' questions.') + ' Answer in full sentences — about 30 to 60 seconds each.') + '</p>' +
-            '<p style="margin:0;color:#9fb3e6;font-size:14px">' + (SR ? 'Press the microphone and speak. Allow the microphone when the browser asks.' : 'This browser cannot hear you, so type your answers instead.') + '</p>' +
+            '<p style="margin:0;color:#9fb3e6;font-size:14px">' + (SR || canRec ? 'Press the microphone and speak, then press Stop. Allow the microphone when you are asked.' : 'This browser cannot hear you, so type your answers instead.') + '</p>' +
             '<div class="row"><button class="nx" id="ifx-go">Start speaking</button><button class="sk" id="ifx-sk">' + (opt.skip || 'Skip — my teacher will mark speaking') + '</button></div>');
           box.querySelector('#ifx-go').onclick = function () { ask(0); };
           box.querySelector('#ifx-sk').onclick = function () { end(null); };
@@ -91,13 +92,56 @@
         }
         function ask(i) {
           if (i >= qs.length) return wrap();
-          var q = qs[i], text = '', rec = null, t0 = 0, timer = null, speechStart = 0;
-          frame(i, '<p class="q">' + esc(q) + '</p>' + (SR ? '<div class="tr" id="ifx-tr">…</div>' : '<textarea id="ifx-ta" placeholder="Type your answer"></textarea>') +
-            '<div class="row">' + (SR ? '<button class="mic" id="ifx-mic">🎙 Answer</button><span class="tm" id="ifx-tm"></span>' : '') + '<button class="nx" id="ifx-nx" ' + (SR ? 'disabled' : '') + '>' + (i === qs.length - 1 ? 'Finish' : 'Next question') + '</button></div>');
-          var nx = box.querySelector('#ifx-nx'), mic = box.querySelector('#ifx-mic'), tr = box.querySelector('#ifx-tr'), tm = box.querySelector('#ifx-tm');
+          // SR: the browser hears speech itself (Chrome). REC: record and turn it into text on the server (Telegram mini-app, Safari).
+          var REC = !SR && canRec, q = qs[i], text = '', rec = null, t0 = 0, timer = null, speechStart = 0, mr = null, chunks = [], stream = null, busy = false;
+          frame(i, '<p class="q">' + esc(q) + '</p>' + (SR || REC ? '<div class="tr" id="ifx-tr">…</div><textarea id="ifx-ta" placeholder="Type your answer" style="display:none"></textarea>' : '<textarea id="ifx-ta" placeholder="Type your answer"></textarea>') +
+            '<div class="row">' + (SR || REC ? '<button class="mic" id="ifx-mic">🎙 Answer</button><span class="tm" id="ifx-tm"></span>' : '') + '<button class="nx" id="ifx-nx" ' + (SR || REC ? 'disabled' : '') + '>' + (i === qs.length - 1 ? 'Finish' : 'Next question') + '</button>' +
+            (REC ? '<button class="sk" id="ifx-type">Type instead</button>' : '') + '</div>');
+          var nx = box.querySelector('#ifx-nx'), mic = box.querySelector('#ifx-mic'), tr = box.querySelector('#ifx-tr'), tm = box.querySelector('#ifx-tm'), ta = box.querySelector('#ifx-ta'), ty = box.querySelector('#ifx-type');
           say((i === 0 ? '' : ACK[i % ACK.length] + ' ') + q, g);
-          function stop() { if (rec) { try { rec.stop(); } catch (e) {} } clearInterval(timer); if (mic) { mic.classList.remove('on'); mic.textContent = '🎙 Answer again'; } }
-          if (mic) mic.onclick = function () {
+          function typing(msg) {
+            if (mic) mic.style.display = 'none'; if (ty) ty.style.display = 'none'; if (tm) tm.textContent = '';
+            if (tr) tr.textContent = msg || 'Type your answer below.';
+            ta.style.display = ''; ta.value = text; ta.oninput = function () { nx.disabled = !ta.value.trim(); }; nx.disabled = !ta.value.trim(); try { ta.focus(); } catch (e) {}
+          }
+          if (ty) ty.onclick = function () { stop(); typing(); };
+          function stop() {
+            clearInterval(timer);
+            if (rec) { try { rec.stop(); } catch (e) {} }
+            if (mr && mr.state !== 'inactive') { try { mr.stop(); } catch (e) {} }
+            if (mic) { mic.classList.remove('on'); mic.textContent = '🎙 Answer again'; }
+          }
+          function send(blob) {
+            busy = true; nx.disabled = true; if (mic) mic.disabled = true; tr.textContent = 'Listening to your answer…';
+            fetch('/api/stt', { method: 'POST', headers: { 'Content-Type': blob.type || 'audio/webm' }, body: blob })
+              .then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); })
+              .then(function (d) {
+                var got = String(d.text || '').trim();
+                if (!got) { tr.textContent = 'I didn’t catch that. Press the microphone and try again, a bit louder.'; return; }
+                text = (text ? text + ' ' : '') + got; tr.textContent = text; nx.disabled = false;
+              })
+              .catch(function () { typing('Sorry, I couldn’t hear the recording. Please type your answer.'); })
+              .then(function () { busy = false; if (mic) mic.disabled = false; });
+          }
+          if (mic && REC) mic.onclick = function () {
+            if (busy) return;
+            if (mic.classList.contains('on')) return stop();
+            try { speechSynthesis.cancel(); } catch (e) {}
+            navigator.mediaDevices.getUserMedia({ audio: true }).then(function (s) {
+              stream = s; chunks = [];
+              var type = ['audio/mp4', 'audio/webm;codecs=opus', 'audio/webm', 'audio/ogg'].filter(function (t) { try { return MediaRecorder.isTypeSupported(t); } catch (e) { return false; } })[0];
+              mr = type ? new MediaRecorder(s, { mimeType: type }) : new MediaRecorder(s);
+              mr.ondataavailable = function (e) { if (e.data && e.data.size) chunks.push(e.data); };
+              mr.onstop = function () {
+                try { stream.getTracks().forEach(function (t) { t.stop(); }); } catch (e) {}
+                var blob = new Blob(chunks, { type: (mr.mimeType || type || 'audio/webm').split(';')[0] });
+                if (blob.size > 800) send(blob); else tr.textContent = 'That was too short. Press the microphone and answer again.';
+              };
+              mr.start(); t0 = t0 || Date.now(); var r0 = Date.now(); mic.classList.add('on'); mic.textContent = '■ Stop'; tr.textContent = 'Recording… speak now, then press Stop.';
+              timer = setInterval(function () { var sec = Math.round((Date.now() - r0) / 1000); tm.textContent = sec + 's'; if (sec >= (opt.mins ? opt.mins * 60 + 30 : 120)) stop(); }, 500);
+            }).catch(function () { typing('The microphone isn’t available here. Please type your answer.'); });
+          };
+          if (mic && SR) mic.onclick = function () {
             if (mic.classList.contains('on')) return stop();
             try { speechSynthesis.cancel(); } catch (e) {}
             rec = new SR(); rec.lang = 'en-GB'; rec.continuous = true; rec.interimResults = true;
@@ -107,12 +151,13 @@
             rec.onend = function () { if (mic.classList.contains('on')) { try { rec.start(); } catch (e) { stop(); } } };
             try { rec.start(); } catch (e) {}
             t0 = t0 || Date.now(); mic.classList.add('on'); mic.textContent = '■ Stop';
-            timer = setInterval(function () { var s = Math.round((Date.now() - t0) / 1000); tm.textContent = s + 's'; if (s >= (opt.mins ? opt.mins * 60 + 30 : 120)) stop(); }, 500);
+            timer = setInterval(function () { var s2 = Math.round((Date.now() - t0) / 1000); tm.textContent = s2 + 's'; if (s2 >= (opt.mins ? opt.mins * 60 + 30 : 120)) stop(); }, 500);
           };
           nx.onclick = function () {
+            if (busy) return;
             stop();
-            var ta = box.querySelector('#ifx-ta'); if (ta) text = ta.value.trim();
-            answers.push({ q: q, text: text, typed: !SR, secs: t0 ? Math.round((Date.now() - t0) / 1000) : 0 });
+            var typed = ta && ta.style.display !== 'none'; if (typed) text = ta.value.trim();
+            answers.push({ q: q, text: text, typed: typed, secs: t0 ? Math.round((Date.now() - t0) / 1000) : 0 });
             ask(i + 1);
           };
         }
