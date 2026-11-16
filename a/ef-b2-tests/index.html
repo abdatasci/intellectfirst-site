@@ -1601,7 +1601,7 @@ function speakScript(t,rate){
     const pitch=(pool.length>si)?1:pitches[si%pitches.length];
     (ln[1].match(/[^.!?…]+[.!?…]*[”"’']?\s*/g)||[ln[1]]).forEach(s=>{s=s.trim();if(!s)return;
       const u=new SpeechSynthesisUtterance(s);if(v){u.voice=v;u.lang=v.lang}else u.lang='en-GB';
-      u.rate=rate;u.pitch=pitch;u.onstart=()=>markLine(li);q.push(u)});
+      u.rate=rate;u.pitch=pitch;u.ifVoice=si%2?"female":"male";u.onstart=()=>markLine(li);q.push(u)});
   });
   if(!q.length)return;
   playing=true;paused=false;$('#lstatus').textContent='Playing…';
