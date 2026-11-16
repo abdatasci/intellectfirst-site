@@ -249,3 +249,6 @@ h1,h2,h3{font-family:var(--h);letter-spacing:.03em;margin:0}
 .cb:hover{border-color:var(--pk);background:rgba(244,114,182,.25)}
 .cb.junk{border-color:#fb7185;background:repeating-linear-gradient(45deg,#3f1d38,#3f1d38 5px,#1f1030 5px,#1f1030 10px);color:#fb7185;cursor:default}
 .cb.fall{position:absolute;display:grid;place-items:center;padding:0 3px;border-color:#fbbf24;background:linear-gradient(180deg,rgba(251,191,36,.35),rgba(244,114,182,.25));box-shadow:0 0 18px rgba(251,191,36,.5);box-sizing:border-box;background-clip:content-box}
+
+#lvrow:empty,#trks:empty{display:none}
+@media (max-width:560px){#lvrow{overflow-x:auto;justify-content:flex-start}#lvrow button{flex:none;padding:6px 10px}}

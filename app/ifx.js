@@ -661,6 +661,13 @@
   }
   /* Games play inside IF App: the game opens in the app frame, with a way back and a full-screen option. */
   var OLD_IDS = { 'skill-games': 'mind-lab', 'g-skill': 'mind-lab', 'g-gram': 'gram-centre', 'ielts-tests': 'ielts-centre', 'mind-lab-ielts': 'mind-lab' };
+  /* the student's level from their class or goals: A0 (Beginner), A1 … C2, or PA1/A1/A2 for Starters/Movers/Flyers */
+  function myLevel() {
+    var m = mine(), BLV = { 'ef-a0': 'A0', 'ef-a1': 'A1', 'ef-a2': 'A2', 'ef-b1': 'B1', 'ef-b2': 'B2', 'ef-c1': 'C1', 'ef-c2': 'C2', 'teens-b1': 'B1', 'teens-b2': 'B2' }, Y = { 'yl:starters': 'PA1', 'yl:movers': 'A1', 'yl:flyers': 'A2' };
+    for (var i = 0; i < m.length; i++) { var k = m[i]; if (/^book:/.test(k) && BLV[k.slice(5)]) return BLV[k.slice(5)]; }
+    for (i = 0; i < m.length; i++) { k = m[i]; if (/^(ge|be):/.test(k)) return k.split(':')[1]; if (Y[k]) return Y[k]; if (k === 'ket') return 'A2'; if (k === 'pet') return 'B1'; }
+    return '';
+  }
   function vPlay(id) {
     if (OLD_IDS[id]) id = OLD_IDS[id];
     var it = IFX_DIR.filter(function (x) { return x.id === id; })[0];
@@ -682,6 +689,7 @@
         '<a class="chip" href="#/' + (SEC[it.s] ? it.s : 'more') + '">← Back</a></div>';
       return;
     }
+    if (/^mind-lab/.test(it.id)) { var mlv = myLevel(); if (mlv) it = Object.assign({}, it, { href: it.href + (it.href.indexOf('?') >= 0 ? '&' : '?') + 'lv=' + mlv }); }   // Mind Lab opens at the student's level
     view().innerHTML = '<div class="playbar"><a class="chip" href="#/' + (SEC[it.s] ? it.s : 'more') + '">← ' + esc(SEC[it.s] ? t(it.s) : t('more')) + '</a><b>' + it.icon + ' ' + esc(it.t) + '</b><a class="chip" href="' + esc(it.href) + '"' + (window.IF_TG ? '' : ' target="_blank" rel="noopener"') + ' data-gf="1">⛶ Full screen</a></div>' +
       '<div class="playwrap" id="pw"><iframe src="' + esc(it.href) + '" title="' + esc(it.t) + '" allow="autoplay; fullscreen; microphone" allowfullscreen></iframe>' +
       '<div class="gfx"><button type="button" id="gx" aria-label="Exit game">✕</button><button type="button" id="gf" aria-label="Full screen">⛶</button></div></div>';

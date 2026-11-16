@@ -9,7 +9,10 @@
   var view = $('#view');
   var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
   var shuffle = function (a) { a = a.slice(); for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)), t = a[i]; a[i] = a[j]; a[j] = t; } return a; };
-  var LEVELS = ['B1', 'B2', 'C1', 'C2'];
+  // ?kids=1: IF Mind Lab for young learners (Pre A1 Starters, A1 Movers, A2 Flyers). Teens and adults: A1–C2 (A0 Beginners start at A1).
+  var KIDS = /[?&]kids=1/.test(location.search);
+  var LEVELS = KIDS ? ['PA1', 'A1', 'A2'] : ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
+  var SPD = function (lv) { return Math.max(0, ['B1', 'B2', 'C1', 'C2'].indexOf(lv)); };   // speed steps start at B1
   // General English (by level), Business English and IELTS (their own words, texts and sentences; the level sets the speed)
   var TRACKS = { general: 'General', business: 'Business', ielts: 'IELTS' };
   var T = window.ML_TRACKS || {};
@@ -17,14 +20,18 @@
   var trk = function () { return S.tr === 'general' ? '' : TRACKS[S.tr] + ' · '; };
   var gkey = function (id) { return (S.tr === 'general' ? '' : S.tr + ':') + id; };
   // every game keeps its own level and moves it with the answers (3 right in a row: up · 2 wrong in a row: down)
-  var glevel = function (id) { var v = S.glv[gkey(id)], g = byId(id); if (v != null) return v; return g && g.words ? 3 : Math.max(0, LEVELS.indexOf(S.lv)); };
+  var glevel = function (id) { var v = S.glv[gkey(id)], g = byId(id); if (v != null) return v; return g && g.words ? Math.max(0, ['PA1', 'A1', 'A2', 'B1', 'B2', 'C1', 'C2'].indexOf(S.lv)) : Math.max(0, LEVELS.indexOf(S.lv)); };
   var bkey = function (lv, id) { return (S.tr === 'general' ? '' : S.tr + ':') + lv + ':' + id; };
   var day = function () { return new Date(Date.now() + 5 * 3600e3).toISOString().slice(0, 10); };
 
   /* ---------- saved state ---------- */
-  var KEY = 'ifml.v1', S;
+  var KEY = KIDS ? 'ifml.kids.v1' : 'ifml.v1', S;
   try { S = JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { S = {}; }
-  S.lv = LEVELS.indexOf(S.lv) >= 0 ? S.lv : 'B1'; S.tr = TRACKS[S.tr] ? S.tr : 'general';
+  (function () { var q = ((location.search.match(/[?&]lv=([A-Za-z0-9]+)/) || [])[1] || '').toUpperCase(); if (q === 'A0' || q === 'PREA1') q = KIDS ? 'PA1' : 'A1'; if (LEVELS.indexOf(q) >= 0 && !S.lvSet) S.lv = q; })();   // opened from IF App with the student's level
+  // saved game levels from before A1/A2 existed (B1 was the first level): move them up two places, once
+  if (!KIDS && S.glv && !S.lv2) { Object.keys(S.glv).forEach(function (k) { if (!/:w:|^w:/.test(k)) S.glv[k] = S.glv[k] + 2; }); }
+  S.lv2 = 1;
+  S.lv = LEVELS.indexOf(S.lv) >= 0 ? S.lv : (KIDS ? 'PA1' : 'B1'); S.tr = KIDS ? 'general' : TRACKS[S.tr] ? S.tr : 'general';
   (function () { var q = (location.search.match(/[?&]track=([a-z]+)/) || [])[1]; if (q && TRACKS[q]) S.tr = q; })();   // opened from IF App IELTS / Business
   S.best = S.best || {}; S.rate = S.rate || {}; S.days = S.days || {}; S.plays = S.plays || 0; S.glv = S.glv || {}; S.wlv = S.wlv || {};
   function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
@@ -43,7 +50,7 @@
   (window.ML_EXT_GAMES || []).forEach(function (g) { GAMES.push(g); });
   var byId = function (id) { return GAMES.filter(function (g) { return g.id === id; })[0]; };
   var LVS = function (g) { return g && g.words ? ['PA1', 'A1', 'A2', 'B1', 'B2', 'C1', 'C2'] : LEVELS; };
-  var LVN = function (x) { return x === 'PA1' ? 'Pre A1' : x; };
+  var LVN = function (x) { return KIDS ? ({ PA1: 'Starters', A1: 'Movers', A2: 'Flyers' }[x] || x) : x === 'PA1' ? 'Pre A1' : x; };
 
   /* neon emblems, one per game (original line art) */
   function emblem(id, c1, c2) {
@@ -81,7 +88,11 @@
   function flash(el, ok) { el.classList.remove('flash-ok', 'flash-bad'); void el.offsetWidth; el.classList.add(ok ? 'flash-ok' : 'flash-bad'); }
 
   /* ---------- level picker ---------- */
+  var LVNAME = KIDS ? { PA1: 'Starters', A1: 'Movers', A2: 'Flyers' } : { A1: 'A0–A1', A2: 'A2', B1: 'B1', B2: 'B2', C1: 'C1', C2: 'C2' };
   function drawLevels() {
+    var lr = $('#lvrow'); if (lr) { lr.innerHTML = LEVELS.map(function (l) { return '<button data-l="' + l + '" class="' + (l === S.lv ? 'on' : '') + '" aria-pressed="' + (l === S.lv) + '">' + LVNAME[l] + '</button>'; }).join('');
+      $$('#lvrow button').forEach(function (b) { b.onclick = function () { S.lv = b.dataset.l; S.lvSet = 1; S.glv = {}; S.wlv = {}; save(); drawLevels(); toast('Every game now starts at ' + LVNAME[S.lv] + ' and adapts as you play.'); if (!RUN) route(); }; }); }
+    if (KIDS) { $('#trks').innerHTML = ''; return; }
     $('#trks').innerHTML = Object.keys(TRACKS).map(function (k) { return '<button data-t="' + k + '" class="' + (k === S.tr ? 'on' : '') + '" aria-pressed="' + (k === S.tr) + '">' + TRACKS[k] + '</button>'; }).join('');
     $$('#trks button').forEach(function (b) { b.onclick = function () { S.tr = b.dataset.t; save(); drawLevels(); if (!RUN) route(); else toast('The new content starts with your next game.'); }; });
   }
@@ -89,7 +100,7 @@
   /* ---------- WORD GAMES: the IF Arcade games, with words chosen for you ----------
      Every word from every IF App course (words.js, Pre A1–C2). No units to pick: each game has its own level.
      After each round the level moves: 80% or more right → up, under 50% → down. */
-  var WL = ['PA1', 'A1', 'A2', 'B1', 'B2', 'C1', 'C2'], WLN = { PA1: 'Pre A1', A1: 'A1', A2: 'A2', B1: 'B1', B2: 'B2', C1: 'C1', C2: 'C2' };
+  var WL = ['PA1', 'A1', 'A2', 'B1', 'B2', 'C1', 'C2'], WMAX = KIDS ? 2 : 6, WLN = { PA1: 'Pre A1', A1: 'A1', A2: 'A2', B1: 'B1', B2: 'B2', C1: 'C1', C2: 'C2' };
   var WG = [
     { id: 'learn', t: 'LEARN', e: '🧠', sk: 'vocab', n: 8, p: 'Meet new words: choose the meaning, then type the word until you master it.' },
     { id: 'write', t: 'WRITE', e: '✍️', sk: 'write', n: 10, p: 'Read the meaning and write the word.' },
@@ -111,7 +122,7 @@
   ];
   var wgById = function (id) { return WG.filter(function (g) { return g.id === id; })[0]; };
   var wkey = function (id) { return (S.tr === 'general' ? '' : S.tr + ':') + 'w:' + id; };
-  var wlevel = function (id) { var v = S.wlv[wkey(id)]; return v == null ? 3 : v; };   // teens and adults start at B1; it adapts from the first round
+  var wlevel = function (id) { var v = S.wlv[wkey(id)]; return v == null ? Math.max(0, WL.indexOf(S.lv)) : Math.min(v, WMAX); };   // teens and adults start at B1; it adapts from the first round
   function wordsFor(id, lvi) {
     var B = window.ML_WORDS || { levels: {} }, L = B.levels[WL[lvi]] || [], pick = shuffle(L).slice(0, 60);
     if (S.tr === 'ielts' && lvi >= 3) pick = shuffle((B.ielts || []).concat(lvi >= 5 ? L : [])).slice(0, 60);
@@ -132,7 +143,7 @@
       '<div class="num lvl"><b>' + WLN[WL[lvi]] + '</b><small>LEVEL</small></div></div><div id="wres"></div><div class="glass ifs-host" id="wg"></div>';
     window.IFResults = { report: function (r) {
       if (reported || !r || !(r.total > 0)) return; reported = true;
-      var acc = Math.max(0, Math.min(1, r.score / r.total)), nl = acc >= .8 ? Math.min(WL.length - 1, lvi + 1) : acc < .5 ? Math.max(0, lvi - 1) : lvi;
+      var acc = Math.max(0, Math.min(1, r.score / r.total)), nl = acc >= .8 ? Math.min(WMAX, lvi + 1) : acc < .5 ? Math.max(0, lvi - 1) : lvi;
       S.wlv[wkey(id)] = nl;
       var k = wkey(id), sc = Math.round(acc * 100), rec = sc > (S.best[k] || 0); if (rec) S.best[k] = sc;
       var target = acc * (300 + lvi * 120), old = S.rate[g.sk] || 0; S.rate[g.sk] = old ? old * .75 + target * .25 : target;
@@ -281,7 +292,7 @@
     function spawn() {
       var it = pool(); it.ok = set.y.indexOf(it.w) >= 0; lane = (lane + 1 + Math.floor(Math.random() * 2)) % 3;
       var el = document.createElement('button'); el.className = 'drop'; el.textContent = it.w; el.style.left = ((lane + .5) / 3 * 100) + '%';
-      var d = { el: el, y: -50, v: 0.05 + (performance.now() - t0) / 45000 * .05 + LEVELS.indexOf(A.lv) * .006, ok: it.ok, w: it.w, gone: false };
+      var d = { el: el, y: -50, v: 0.05 + (performance.now() - t0) / 45000 * .05 + SPD(A.lv) * .006, ok: it.ok, w: it.w, gone: false };
       el.onpointerdown = function (ev) { ev.preventDefault(); if (d.gone) return; d.gone = true; var r = el.getBoundingClientRect(), ar2 = ar.getBoundingClientRect();
         if (d.ok) { el.classList.add('hit'); A.add(10, ar, r.left - ar2.left + r.width / 2, r.top - ar2.top); A.log(true, d.w); }
         else { el.classList.add('miss'); A.miss(5, ar, r.left - ar2.left + r.width / 2, r.top - ar2.top); flash(ar, false); A.log(false, '<b>' + esc(d.w) + '</b> does not fit “' + esc(set.r) + '”'); }
@@ -304,7 +315,7 @@
 
   /* ===== 2. HYPERREAD — reading speed ===== */
   function hyper(ar, A) {
-    var N = 4, i = 0, wpm = 220 + LEVELS.indexOf(A.lv) * 30;
+    var N = 4, i = 0, wpm = (KIDS ? 120 : A.lv === 'A1' ? 150 : A.lv === 'A2' ? 185 : 220) + SPD(A.lv) * 30;
     function next() {
       if (i >= N) return A.end();
       A.steps(i, N);
@@ -526,5 +537,6 @@
     vHome();
   }
   addEventListener('hashchange', route);
+  if (KIDS) { var bs = $('.brand small'); if (bs) bs.textContent = 'Kids · Starters, Movers, Flyers'; var ex = $('.exit'); if (ex) ex.href = '/app/#/games'; }
   drawLevels(); route();
 })();
