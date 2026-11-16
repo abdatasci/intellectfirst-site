@@ -3,7 +3,7 @@
 import { S, getProfile, contextFor, reply, publicReply, allow, tgSecret, tgSend, tg, getLinks, saveLinks, linkChat, matchPhone, local, money, langOf, localise } from '../lib/bot-core.mjs';
 import { handleReceipt, decideReceipt } from '../lib/receipts.mjs';
 import { loadHomework, forClasses, isUpcoming } from '../lib/homework.mjs';
-import { isStaff, STAFF_KB, STAFF_HELP, staffHello, sendToday, staffCallback } from '../lib/teachbot.mjs';
+import { isStaff, STAFF_KB, STAFF_HELP, staffHello, sendToday, staffCallback, ensureStaffKb } from '../lib/teachbot.mjs';
 import { startCover, coverCallback } from '../lib/cover.mjs';
 import { startHomework, hwCallback, hwMessage } from '../lib/teachhw.mjs';
 import { startTask, ctCallback, ctMessage, ctAnswer, ctPollAnswer } from '../lib/classtask.mjs';
@@ -224,6 +224,7 @@ export default async (req) => {
     }
     const me = await getProfile(uid).catch(() => null);
     await syncCommands(chatId, isStaff(me));
+    if (isStaff(me) && await ensureStaffKb(chatId, me.name) && /^\/start\b|^\/help\b|^❓|^💳|^📎|^📝 Homework/i.test(text)) return new Response('ok');
     if (isStaff(me) && /^📝 Send homework|^\/sendhw\b|^\/sethw\b/i.test(text)) { await startHomework(chatId, me); return new Response('ok'); }
     // Apps opened from the reply keyboard get no sign-in data from Telegram, so these buttons answer with buttons
     // under the message (which do), and the bot's Menu button (next to the text box) opens My account directly.

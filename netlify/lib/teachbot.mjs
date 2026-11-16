@@ -11,6 +11,15 @@ export const isStaff = p => !!p && (p.role === 'teacher' || p.role === 'admin');
 const canAll = p => p.role === 'admin' || !!p.manager;
 const APP_URL = (process.env.URL || 'https://intellectfirst.com').replace(/\/$/, '') + '/app/?tg=1';
 export const STAFF_KB = { keyboard: [[{ text: '📚 IF English' }, { text: '👤 My account' }], [{ text: '🕑 Today\'s lessons' }, { text: '🎯 Class task' }], [{ text: '📝 Send homework' }, { text: '📅 Next lessons' }], [{ text: '🔁 Cover a lesson' }, { text: '❓ Help' }]], resize_keyboard: true, is_persistent: true };
+// Telegram keeps the old keyboard until the bot sends a new one: when the teacher menu changes, bump KBV and every
+// teacher gets the new keyboard (at once from the reminder job, or with their next message).
+export const KBV = '2026-11-16b';
+export async function ensureStaffKb(chatId, name, force) {
+  if (!force && (await S().get(`bot/kbv/${chatId}`)) === KBV) return false;
+  await tgSend(chatId, staffHello(String(name || '').split(' ')[0] || 'there'), { reply_markup: STAFF_KB });
+  await S().set(`bot/kbv/${chatId}`, KBV);
+  return true;
+}
 export const staffHello = n => `Hi ${n}! 👋 You are connected to the IF Academy bot as a teacher.\n\n` + STAFF_HELP;
 export const STAFF_HELP = '👩‍🏫 For teachers:\n• 🕑 Today\'s lessons — clock in (from 5 minutes before the start) and take the register with buttons.\n• Before each lesson I send you a reminder with a "✅ Clock in" button, and after it a "📋 Take register" button.\n• 🔁 Cover a lesson — can\'t teach a lesson? Choose it and ask a colleague (or all teachers). When someone accepts, the timetable changes and the admin is told.\n• 📚 IF English — the whole app inside Telegram, with Teach mode for the projector.\n• 👤 My account — your classes, registers, students\' results and (for the director and manager) Admin, inside Telegram.\n• 🎯 Class task — during the lesson, send a quiz (yours, or ✨ written by AI from a topic), a poll, a writing or a speaking task to the class. Students answer on their phones; your message shows who has answered and their scores, live.\n• 📝 Send homework — choose the class, homework or test, the date, then type the task (or send a photo of the worksheet). Every student in the class gets it at once, and it appears on the website.\n• Everything you press here is saved in the school system and shows on the admin pages straight away.\n• /stop disconnects this chat.';
 

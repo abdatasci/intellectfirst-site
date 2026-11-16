@@ -9,7 +9,7 @@ import { migrate } from '../lib/migrate.mjs';
 import { lessonsOn, loadLog, today as todayStr } from '../lib/lessons.mjs';
 import { getStore } from '@netlify/blobs';
 import { chaseManager } from '../lib/tasks.mjs';
-import { lessonButtons } from '../lib/teachbot.mjs';
+import { lessonButtons, isStaff, ensureStaffKb, KBV } from '../lib/teachbot.mjs';
 
 /** Once: let the existing webhook also receive button presses (receipt Confirm / Not right). */
 async function upgradeWebhook() {
@@ -62,6 +62,15 @@ async function lessonWatch(classes, links) {
 }
 
 export default async () => {
+  // teachers still showing the students' keyboard (connected before the teacher menu existed): send them the teacher menu once
+  try {
+    if (tgToken() && (await S().get('bot/kbv-all')) !== KBV) {
+      const links = await getLinks();
+      for (const [uid, l] of Object.entries(links)) { if (!l || !l.chatId || uid.startsWith('sid:')) continue; const p = await getProfile(uid).catch(() => null); if (isStaff(p)) await ensureStaffKb(l.chatId, p.name).catch(e => console.error('staff kb', e.message)); }
+      await S().set('bot/kbv-all', KBV);
+    }
+  } catch (e) { console.error('staff kb', e.message); }
+
   await migrate();
   await upgradeWebhook();
   try { const [cl, lk] = await Promise.all([doc('classes'), getLinks()]); await lessonWatch(cl, lk); } catch (e) { console.error('lesson watch', e.message); }
