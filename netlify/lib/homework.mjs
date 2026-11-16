@@ -20,7 +20,11 @@ export function clean(b, cls, by) {
   const time = /^\d{1,2}:\d{2}$/.test(b.time || '') ? b.time.padStart(5, '0') : '';
   return { id: 'h' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), classId: cls.id, classLabel: cls.label, kind, text, due, time, by: str(by, 80), at: new Date().toISOString() };
 }
-export async function addHomework(item) { const l = await loadHomework(); l.push(item); await saveHomework(l); return item; }
+export async function addHomework(item) {
+  const l = await loadHomework(); l.push(item); await saveHomework(l);
+  const { activity } = await import('./activity.mjs'); await activity(`📝 ${item.by || 'A teacher'} set ${item.kind === 'test' ? 'a test' : 'homework'} for ${item.classLabel || item.classId} (due ${item.due.slice(8)}.${item.due.slice(5, 7)}${item.time ? ' ' + item.time : ''}): ${String(item.text || '').slice(0, 120)}`);
+  return item;
+}
 export async function removeHomework(id, canRemove) {
   const l = await loadHomework(); const h = l.find(x => x.id === id);
   if (!h || !canRemove(h)) return false;

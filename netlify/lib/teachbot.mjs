@@ -223,7 +223,7 @@ async function doCancel(chatId, uid, p, st, f, why, typed, tell) {
   if (why === 'son' || why === 'slate') {
     try {
       const marks = {}; (await doc('students')).filter(s => inClass(f.cls, s) && !/withdrawn|finished|frozen/i.test(s.status || '')).forEach(s => { marks[s.id] = why === 'son' ? 'exc' : 'abs'; });
-      const r = await saveRegister(l, marks, {}, { uid, name: p.name || '', role: 'admin' });
+      const r = await saveRegister(l, marks, {}, { uid, name: p.name || '', role: 'admin', quiet: true });
       const month = l.date.slice(0, 7), Lg = await loadLog(month), e = Lg[l.key]; if (e) { e.cancelled = true; e.cancelReason = why; e.note = note; const { saveLog } = await import('./lessons.mjs'); await saveLog(month, Lg); }
       reg = r.ifadmin ? `\nIF Admin: ${why === 'son' ? 'EA (excused)' : 'UA (late cancellation)'} saved.` : '';
     } catch (x) { console.error('cancel register', x.message); }

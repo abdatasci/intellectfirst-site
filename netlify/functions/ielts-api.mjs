@@ -45,6 +45,7 @@ async function addAttempt(uid, attempt) {
   await s.setJSON(`u/${uid}/index`, idx.slice(-500));
   const p = await getProfile(uid);
   if (p) { p.lastActive = attempt.at; p.attempts = (p.attempts || 0) + 1; await putProfile(uid, p); }
+  if (p && (p.role === 'student' || p.role === 'guest')) { const { activity } = await import('../lib/activity.mjs'); const b = attempt.result?.overall; await activity(`🎓 ${p.name || 'A student'} finished IELTS ${attempt.skill || ''}${attempt.title ? ' — ' + attempt.title : ''}${b != null ? ': band ' + b : attempt.score != null ? ': ' + attempt.score + '/' + attempt.total : ''}`, uid); }
 }
 async function removeAttempts(uid, ids) {
   const s = store();

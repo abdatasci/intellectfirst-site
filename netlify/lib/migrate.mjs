@@ -148,7 +148,22 @@ async function cover20261116() {
   return [`${c.id} 16 Nov 10:00 → covered by t-alina for t-olya, clocked in on time`];
 }
 
-const MIGRATIONS = [['timetable-2026-11-14', () => applyTimetable(TT_2026_11_14)], ['timetable-2026-11-14-pending', () => applyPending(PENDING_2026_11_14), true], ['private-2026-11-15', () => grantPrivate(PRIVATE_2026_11_15)], ['schedule-2026-11-15', schedule20261115], ['ontime-2026-11-15', onTime20261115], ['teacher-phones-2026-11-15', teacherPhones], ['cover-2026-11-16', cover20261116]];
+/* 16 Nov 2026: the new SMM's account (registered as "learning on my own") → staff account with the SMM duty.
+   Found by a fingerprint of the phone number (last 10 digits); then she gets the SMM menu in the Telegram bot. */
+async function smm20261116() {
+  const U = getStore({ name: 'ielts', consistency: 'strong' }), dir = (await U.get('directory', { type: 'json' })) || {};
+  const fpPhone = ph => createHash('sha256').update(String(ph || '').replace(/\D/g, '').slice(-10)).digest('hex').slice(0, 16);
+  const uid = Object.keys(dir).find(u => fpPhone(dir[u].phone) === '6da1e5f76a61388e');
+  if (!uid) return null;   // not registered yet: try again later
+  const p = (await U.get(`u/${uid}/profile`, { type: 'json' })) || null; if (!p) return null;
+  p.role = p.role === 'admin' ? 'admin' : 'teacher'; p.smm = true; p.staffPos = 'smm'; p.track = ''; delete p.request; delete p.declined;
+  await U.setJSON(`u/${uid}/profile`, p);
+  dir[uid] = { ...dir[uid], role: p.role, duty: 'smm', staffPos: 'smm', track: '', request: null }; await U.setJSON('directory', dir);
+  try { const links = (await S().get('bot/links', { type: 'json' })) || {}, l = links[uid]; if (l && l.chatId) { const { ensureStaffKb } = await import('./teachbot.mjs'); await ensureStaffKb(l.chatId, p, true); } } catch (e) { console.error('smm menu', e.message); }
+  return [uid + ' → SMM staff account'];
+}
+
+const MIGRATIONS = [['timetable-2026-11-14', () => applyTimetable(TT_2026_11_14)], ['timetable-2026-11-14-pending', () => applyPending(PENDING_2026_11_14), true], ['private-2026-11-15', () => grantPrivate(PRIVATE_2026_11_15)], ['schedule-2026-11-15', schedule20261115], ['ontime-2026-11-15', onTime20261115], ['teacher-phones-2026-11-15', teacherPhones], ['cover-2026-11-16', cover20261116], ['smm-2026-11-16', smm20261116]];
 let running = null;
 /** Run any migration that has not run yet. Safe to call on every request (cached per instance). */
 let checkedAt = 0;

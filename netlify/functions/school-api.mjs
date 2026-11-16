@@ -414,9 +414,11 @@ export default async (req) => {
     if (track === 'staff') profile.staffPos = POS.includes(b.staffPos) ? b.staffPos : 'other';
     if (finalRole === 'guest' && !['outside', 'tutor', 'parent'].includes(track)) profile.request = { track, ...(track === 'staff' ? { position: profile.staffPos } : {}), at: new Date().toISOString() };
     else if (finalRole !== 'guest') delete profile.request;
+    const wasNew = !(await U().get(`u/${uid}/profile`, { type: 'json' }).catch(() => null))?.since;
     profile = await linkByPhone(uid, profile);
     await ensureTrial(uid, profile);
     await putProfile(uid, profile);
+    { const { activity } = await import('../lib/activity.mjs'); const TL = { if: 'IF Academy student', private: 'individual student', alumni: 'IF Alumni', outside: 'learning on their own', tutor: 'outside teacher', parent: 'parent', staff: 'staff — ' + (profile.staffPos || '') }; await activity(`👤 ${wasNew ? 'New account' : 'Account updated'}: ${profile.name}${profile.phone ? ' · ' + profile.phone : ''} — ${TL[profile.track] || profile.role}${profile.request ? ' (waiting for your approval)' : ''}`, uid); }
     if (role && isStaff(role) && !(await S().get('contentKey', { type: 'json' }))) await storeKeyFrom(code);
     if (role) await keepLockKeys(await lockKeysFromCode(code));
     return json({ profile, access: tier(profile) });

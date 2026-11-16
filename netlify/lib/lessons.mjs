@@ -44,7 +44,9 @@ export async function checkIn(lesson, who, now = new Date()) {
   const e = L[lesson.key] || (L[lesson.key] = { classId: lesson.classId, label: lesson.label, date: lesson.date, start: lesson.start, end: lesson.end, teacherId: lesson.teacherId });
   if (e.checkIn) return e;
   e.checkIn = now.toISOString(); e.lateMin = Math.round((now - at) / 60000); e.by = { uid: who.uid, name: who.name };
-  await saveLog(month, L); return e;
+  await saveLog(month, L);
+  if (!who.quiet) { const { activity } = await import('./activity.mjs'); await activity(`${e.lateMin > GRACE_MIN ? '⏰' : '✅'} ${who.name || 'A teacher'} clocked in: ${lesson.label}, ${lesson.start}${e.lateMin > GRACE_MIN ? ' — ' + e.lateMin + ' min late' : ' — on time'}`, who.uid); }
+  return e;
 }
 
 const TO_IFA = { on: 'P', late: 'P', abs: 'UA', exc: 'EA' };
@@ -58,6 +60,7 @@ export async function saveRegister(lesson, marks, lateBy, who) {
   for (const [sid, m] of Object.entries(marks || {})) if (TO_IFA[m]) { clean[sid] = m; if (m === 'late') late[sid] = Math.max(1, Math.min(180, Math.round(+(lateBy || {})[sid] || 0))) || null; }
   e.marks = clean; e.lateBy = late; e.takenAt = new Date().toISOString(); e.takenBy = { uid: who.uid, name: who.name };
   await saveLog(month, L);
+  if (!who.quiet) { const n = k => Object.values(clean).filter(m => m === k).length, { activity } = await import('./activity.mjs'); await activity(`📋 Register — ${lesson.label}, ${lesson.date.slice(8)}.${lesson.date.slice(5, 7)} ${lesson.start} (by ${who.name || 'a teacher'}): ${n('on')} present${n('late') ? ', ' + n('late') + ' late' : ''}${n('abs') ? ', ' + n('abs') + ' absent' : ''}${n('exc') ? ', ' + n('exc') + ' excused' : ''}`, who.uid); }
   // IF Admin attendance (website class "c-<groupId>" ↔ IF Admin group)
   let saved = null;
   try {

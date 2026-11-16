@@ -27,7 +27,9 @@ export async function submit(uid, profile, studentName, b) {
   if (!f) { f = { id: 'f' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), uid, at: now }; list.push(f); } else f.editedAt = now;
   Object.assign(f, { studentId: profile.studentId || null, name: shortName(studentName || profile.name), course: str(b.course, 80), rating, text, lang: ['en', 'ru', 'kk'].includes(b.lang) ? b.lang : 'en', consent: true, status: 'pending' });
   delete f.decidedAt;
-  await save(list); return f;
+  await save(list);
+  { const { activity } = await import('./activity.mjs'); await activity(`💬 Feedback from ${f.name} (${rating}★) waiting for approval: “${text.slice(0, 120)}${text.length > 120 ? '…' : ''}”`, uid); }
+  return f;
 }
 export async function removeMine(uid) { const list = await loadFeedback(); await save(list.filter(f => f.uid !== uid)); }
 
