@@ -15,6 +15,7 @@ import { getUser, refreshSession } from '@netlify/identity';
 import enc from '../lib/ifadmin-app.json';
 import { chat, run } from '../lib/ifadmin-ai.mjs';
 import { applyTimetable } from '../lib/migrate.mjs';
+import { saveRegister } from '../lib/lessons.mjs';
 
 const COLLS = ['students', 'groups', 'attendance', 'payments', 'expenses', 'settings', 'staff', 'results', 'access', 'mine'];
 const A = () => getStore({ name: 'ifadmin', consistency: 'strong' });
@@ -133,6 +134,13 @@ export default async (req) => {
       const k = ll[2] && decodeURIComponent(ll[2]);
       if (method === 'PATCH' && k) {
         const b = await req.json().catch(() => ({})), m = k.match(/^([^|]+)\|(\d{4}-\d{2}-\d{2})\|(\d{2}):(\d{2})$/);
+        // the director corrects a register (e.g. a student marked late by mistake): {marks:{sid:'on'|'late'|…}, lateBy:{sid:min}}
+        if (m && b.marks && typeof b.marks === 'object' && !b.checkIn) {
+          const e0 = L[k] || {};
+          const lesson = { key: k, classId: m[1], label: e0.label || '', date: m[2], start: `${m[3]}:${m[4]}`, end: e0.end, teacherId: e0.teacherId };
+          const r = await saveRegister(lesson, b.marks, b.lateBy || {}, { uid: 'director', name: 'Director (via Claude)', role: 'admin', quiet: true });
+          return json({ ok: true, ...r });
+        }
         if (!m || !b.checkIn || isNaN(Date.parse(b.checkIn))) return fail(400, 'bad');
         const at = Date.parse(`${m[2]}T${m[3]}:${m[4]}:00+05:00`);
         const e = L[k] || (L[k] = { classId: m[1], label: String(b.label || ''), date: m[2], start: `${m[3]}:${m[4]}` });
