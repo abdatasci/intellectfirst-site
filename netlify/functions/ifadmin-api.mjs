@@ -113,6 +113,10 @@ export default async (req) => {
       }
       if (method === 'DELETE') { delete map[id]; await putColl(c, map); return json({ ok: true }); }
     }
+    if (path === 'lockstatus' && method === 'GET') {   // are the page keys for the encrypted test pages on the site? (yes/no only)
+      const k = (await getStore({ name: 'school', consistency: 'strong' }).get('lockKeys', { type: 'json' })) || {};
+      return json({ ks: !!k.ks, kt: !!k.kt });
+    }
     if (path === 'alerts' && method === 'GET') {
       const today = /^\d{4}-\d{2}-\d{2}$/.test(url.searchParams.get('date') || '') ? url.searchParams.get('date') : new Date(Date.now() + 5 * 3600e3).toISOString().slice(0, 10);
       const [G, S, Att, P] = await Promise.all(['groups', 'students', 'attendance', 'payments'].map(getColl));
