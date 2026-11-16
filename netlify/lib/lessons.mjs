@@ -19,7 +19,7 @@ export const today = () => ymd(new Date());
 /** Lessons of these classes on a local date (YYYY-MM-DD): timetable + cancellations, moves and extra lessons. */
 export const lessonsOn = (classes, date, CH) => dayLessons(classes, date, CH || NO_CHANGES);
 export const loadLog = async month => (await S().get('lessonlog/' + month, { type: 'json' })) || {};
-const saveLog = (month, L) => S().setJSON('lessonlog/' + month, L);
+export const saveLog = (month, L) => S().setJSON('lessonlog/' + month, L);
 
 /** What a lesson looks like now: upcoming / open (check-in possible) / late (started, no check-in) / missed / done. */
 export function status(lesson, e, now = new Date(), cutoff = null) {
