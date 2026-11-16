@@ -130,6 +130,40 @@ const CSS = `
 .ifs-sky .ground{position:absolute;left:0;right:0;bottom:0;height:8px;background:var(--s-bad)}
 .ifs-rock{position:absolute;left:50%;transform:translateX(-50%);width:min(520px,88%);background:var(--s-gold);color:#14213D;border-radius:16px;padding:12px 16px;font-weight:800;text-align:center;font-size:18px;box-shadow:0 6px 20px rgba(0,0,0,.35)}
 .ifs-rock small{display:block;font-weight:700;opacity:.75;letter-spacing:.2em;margin-top:4px}
+.gv-hud{display:grid;grid-template-columns:1fr auto auto 1fr;align-items:center;gap:14px;margin:4px 0 10px}
+.gv-hud small{display:block;font-size:11px;font-weight:800;letter-spacing:.14em;color:var(--s-muted)}
+.gv-hud b{font-size:30px;line-height:1;font-weight:800;font-variant-numeric:tabular-nums}
+.gv-best{text-align:right}.gv-best b{font-size:20px;opacity:.7}
+.gv-lv{padding:6px 14px;border-radius:99px;background:#e9f7f6;color:#0f766e;font-weight:800;font-size:14px}
+.gv-lives{display:flex;gap:6px}.gv-lives i{width:12px;height:12px;border-radius:50%;background:#e5e7eb}.gv-lives i.on{background:#f43f5e;box-shadow:0 0 0 3px #f43f5e22}
+.ifs-sky.gv{height:380px;border-radius:24px;background:radial-gradient(120% 80% at 50% 0%,#2b2f77 0%,#151a44 55%,#0b0e29 100%)}
+.gv-stars{position:absolute;inset:0;opacity:.7;background:radial-gradient(1.5px 1.5px at 12% 18%,#fff 50%,transparent 51%),radial-gradient(1px 1px at 72% 12%,#fff 50%,transparent 51%),radial-gradient(1.5px 1.5px at 40% 40%,#c7d2fe 50%,transparent 51%),radial-gradient(1px 1px at 88% 52%,#fff 50%,transparent 51%),radial-gradient(1px 1px at 22% 66%,#e0e7ff 50%,transparent 51%),radial-gradient(1.5px 1.5px at 60% 76%,#fff 50%,transparent 51%);animation:gvtw 4s ease-in-out infinite alternate}
+@keyframes gvtw{to{opacity:.35}}
+.gv-haze{position:absolute;left:0;right:0;bottom:0;height:45%;background:linear-gradient(transparent,rgba(251,113,133,.35));opacity:0;pointer-events:none}
+.ifs-sky.gv .ground{height:4px;background:linear-gradient(90deg,#2dd4bf,#f472b6,#fb7185);box-shadow:0 0 18px 4px rgba(251,113,133,.45)}
+.gv-card.ifs-rock{display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto auto;column-gap:14px;row-gap:10px;align-items:center;text-align:left;width:min(560px,90%);padding:16px 20px;border-radius:20px;background:#fff;color:#111827;font-weight:700;font-size:clamp(16px,2.2vw,20px);line-height:1.35;box-shadow:0 18px 40px -12px rgba(0,0,0,.55),0 0 0 2px color-mix(in srgb,#2dd4bf calc((1 - var(--y,0)) * 100%),#fb7185)}
+.gv-card.ifs-rock{z-index:1;animation:gvin .35s ease-out}@keyframes gvin{from{opacity:0;transform:translateX(-50%) translateY(-14px)}}
+.gv-ring{grid-row:1/3;width:40px;height:40px;transform:rotate(-90deg)}
+.gv-ring circle{fill:none;stroke:#eef2f7;stroke-width:4}.gv-ring .r{stroke:color-mix(in srgb,#14b8a6 calc((1 - var(--y,0)) * 100%),#f43f5e);stroke-linecap:round;stroke-dasharray:100;stroke-dashoffset:0}
+.gv-tiles{display:flex;flex-wrap:wrap;gap:5px}
+.gv-tiles i{width:24px;height:30px;border-radius:7px;background:#f1f5f9;border-bottom:3px solid #cbd5e1;font:800 16px/30px system-ui,sans-serif;font-style:normal;text-align:center;color:#0f766e;text-transform:lowercase}
+.gv-tiles i.on{background:#ccfbf1;border-color:#14b8a6}.gv-tiles i.gp{width:10px!important;background:transparent!important;border:0!important}
+.gv-ghost{z-index:3;position:absolute;left:50%;transform:translateX(-50%);padding:14px 22px;border-radius:20px;background:#14b8a6;color:#fff;font-weight:800;font-size:22px;animation:gvhit .7s ease-out forwards;pointer-events:none}
+@keyframes gvhit{0%{transform:translateX(-50%) scale(1);opacity:1}100%{transform:translateX(-50%) scale(1.25);opacity:0;filter:blur(2px)}}
+.gv-pts{z-index:3;position:absolute;left:calc(50% + min(260px,40%));color:#5eead4;font-weight:900;font-size:26px;animation:gvup .9s ease-out forwards;pointer-events:none;text-shadow:0 2px 10px rgba(0,0,0,.4)}
+@keyframes gvup{to{transform:translateY(-60px);opacity:0}}
+.ifs-sky.gv.crash{animation:gvshake .45s ease-in-out}
+.ifs-sky.gv.crash .ground{animation:gvflash .8s ease-out}
+@keyframes gvshake{20%{transform:translateX(-8px)}40%{transform:translateX(7px)}60%{transform:translateX(-5px)}80%{transform:translateX(3px)}}
+@keyframes gvflash{0%{box-shadow:0 0 40px 18px rgba(244,63,94,.9);height:10px}100%{box-shadow:0 0 18px 4px rgba(251,113,133,.45)}}
+.gv-type{align-items:center}
+.ifs-w .gv-type input{border-radius:99px;text-align:center;font-weight:700;padding:14px 22px;width:min(460px,78%)}
+.ifs-w .gv-type input:focus{outline:0;border-color:#14b8a6;box-shadow:0 0 0 4px #14b8a633}
+.ifs-w .gv-type input.bad{animation:gvshake .35s}
+.ifs-w .gv-type button{width:54px;height:54px;border-radius:50%;padding:0;font-size:22px;background:#14b8a6;border-color:#14b8a6;color:#fff}
+.gv-msg{min-height:24px;text-align:center;font-weight:700;font-size:16px;letter-spacing:0;color:#0f766e;margin-top:8px}.gv-msg.bad{color:#e11d48}
+@media (prefers-reduced-motion:reduce){.gv-stars,.ifs-sky.gv.crash,.gv-ghost,.gv-pts{animation:none}}
+
 .ifs-sky .msg{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;text-align:center;padding:16px;gap:8px}
 @media (max-width:640px){.ifs-opts,.ifs-tq .ch{grid-template-columns:1fr}.ifs-row.big button{min-width:0;flex:1}.ifs-w .ifs-slots button{width:38px;height:46px;font-size:20px}.ifs-w .ifs-tiles button{width:42px;height:48px;font-size:20px}}
 @media (prefers-reduced-motion:reduce){.ifs-in,.ifs-bar i{transition:none}}
@@ -542,22 +576,28 @@ function gravity(){
     C.keys = null; return;
   }
   const x = S.cur, hint = hintOf(x.w, 1);
-  shell(how, `<div class="ifs-stats"><span>Score: ${S.score}</span><span>Level: ${S.level}</span><span style="color:var(--s-bad);letter-spacing:3px" aria-label="${S.lives} lives">${'♥'.repeat(S.lives)}${'♡'.repeat(3 - S.lives)}</span><span>Best: ${best}</span></div>
-    <div class="ifs-sky" id="sky"><div class="ifs-rock" id="rock" style="top:0">${esc(x.d)}<small>${esc(hint.split('').join(' '))}</small></div><div class="ground"></div></div>
-    <form class="ifs-type" id="tf" autocomplete="off"><input id="ans" placeholder="Type the word…" aria-label="Your answer" autocapitalize="off" spellcheck="false"><button class="ifs-gold" type="submit">Enter</button></form>
-    <div class="ifs-hintline" id="gmsg" style="letter-spacing:0;font-family:inherit;font-size:16px">${esc(S.msg)}</div>`);
+  const tiles = hint.split('').map(ch => ch === ' ' ? '<i class="gp"></i>' : ch === '_' ? '<i></i>' : `<i class="on">${esc(ch)}</i>`).join('');
+  const fx = S.fx || null; S.fx = null;
+  shell(how, `<div class="gv-hud"><div class="gv-sc"><small>SCORE</small><b>${S.score}</b></div><div class="gv-lv">Level ${S.level}</div><div class="gv-lives" aria-label="${S.lives} lives">${[0,1,2].map(i => `<i class="${i < S.lives ? 'on' : ''}"></i>`).join('')}</div><div class="gv-best"><small>BEST</small><b>${best}</b></div></div>
+    <div class="ifs-sky gv${fx && fx.k === 'miss' ? ' crash' : ''}" id="sky"><div class="gv-stars"></div><div class="gv-haze" id="haze"></div>
+      ${fx && fx.k === 'hit' ? `<div class="gv-ghost" style="top:${fx.top}px">${esc(fx.d)}</div><div class="gv-pts" style="top:${fx.top}px">+${fx.pts}</div>` : ''}
+      <div class="ifs-rock gv-card" id="rock" style="top:0"><svg class="gv-ring" viewBox="0 0 36 36" aria-hidden="true"><circle cx="18" cy="18" r="15.5"/><circle id="ring" class="r" cx="18" cy="18" r="15.5" pathLength="100"/></svg><span class="gv-d">${esc(x.d)}</span><span class="gv-tiles">${tiles}</span></div>
+      <div class="ground"></div></div>
+    <form class="ifs-type gv-type" id="tf" autocomplete="off"><input id="ans" placeholder="Type the word…" aria-label="Your answer" autocapitalize="off" spellcheck="false"><button class="ifs-gold" type="submit" aria-label="Enter">↵</button></form>
+    <div class="gv-msg${fx && fx.k === 'miss' ? ' bad' : ''}" id="gmsg">${esc(S.msg)}</div>`);
   const inp = $('#ans'); inp.focus();
   $('#tf').onsubmit = e => { e.preventDefault(); if (!inp.value.trim()) return;
-    if (isRight(inp.value, x.w)){ S.score += 10 + Math.round((1 - S.y) * 10) + (S.level - 1) * 2; S.solved++; if (S.score >= S.level * 50){ S.level++; S.dur = Math.max(6, S.dur - 2); S.msg = `Level ${S.level}! Faster now…`; } else S.msg = 'Correct!'; gvNext(S); gravity(); }
-    else { inp.value = ''; inp.classList.add('bad'); $('#gmsg').textContent = 'Not quite. Try again!'; } };
+    if (isRight(inp.value, x.w)){ const pts = 10 + Math.round((1 - S.y) * 10) + (S.level - 1) * 2, rk = $('#rock'); S.fx = { k: 'hit', pts, d: x.w, top: rk ? rk.offsetTop : 0 }; S.score += pts; S.solved++; if (S.score >= S.level * 50){ S.level++; S.dur = Math.max(6, S.dur - 2); S.msg = `Level ${S.level}! Faster now…`; } else S.msg = 'Correct!'; gvNext(S); gravity(); }
+    else { inp.value = ''; inp.classList.remove('bad'); void inp.offsetWidth; inp.classList.add('bad'); $('#gmsg').textContent = 'Not quite. Try again!'; } };
   cancelAnimationFrame(C.raf);
-  const sky = $('#sky'), rock = $('#rock');
+  const sky = $('#sky'), rock = $('#rock'), ring = $('#ring'), haze = $('#haze');
   const step = now => {
     if (!C || C.mode !== 'gravity' || S.phase !== 'play' || !alive()) return;
     if (S.paused){ S.t0 += now - S.paused; S.paused = 0; }
     S.y = Math.min(1, (now - S.t0) / (S.dur * 1000));
     rock.style.top = (S.y * (sky.clientHeight - rock.offsetHeight - 10)) + 'px';
-    if (S.y >= 1){ S.lives--; S.msg = `Missed! The word was “${x.w}”.`; if (S.lives <= 0){ S.phase = 'over'; S.msg = `The last word was “${x.w}”.`; } else gvNext(S); gravity(); return; }
+    rock.style.setProperty('--y', S.y.toFixed(3)); if (ring) ring.style.strokeDashoffset = (S.y * 100).toFixed(1); if (haze) haze.style.opacity = Math.max(0, (S.y - .45) / .55).toFixed(2);
+    if (S.y >= 1){ S.lives--; S.fx = { k: 'miss' }; S.msg = `Missed! The word was “${x.w}”.`; if (S.lives <= 0){ S.phase = 'over'; S.msg = `The last word was “${x.w}”.`; } else gvNext(S); gravity(); return; }
     C.raf = requestAnimationFrame(step);
   };
   C.raf = requestAnimationFrame(step);

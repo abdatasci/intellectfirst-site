@@ -252,3 +252,11 @@ h1,h2,h3{font-family:var(--h);letter-spacing:.03em;margin:0}
 
 #lvrow:empty,#trks:empty{display:none}
 @media (max-width:560px){#lvrow{overflow-x:auto;justify-content:flex-start}#lvrow button{flex:none;padding:6px 10px}}
+
+/* Gravity in Mind Lab: Elevate-style night sky */
+.ifs-host .gv-hud b{color:#fff}.ifs-host .gv-hud small{color:#9fb0d0}
+.ifs-host .gv-lv{background:rgba(45,212,191,.15);color:#5eead4}
+.ifs-host .gv-lives i{background:rgba(255,255,255,.15)}
+.ifs-host .ifs-sky.gv{box-shadow:inset 0 0 0 1px rgba(148,178,255,.18)}
+.ifs-host .gv-type input{background:rgba(255,255,255,.06)!important;color:#fff!important;border-color:rgba(148,178,255,.3)!important}
+.ifs-host .gv-msg{color:#5eead4}.ifs-host .gv-msg.bad{color:#fb7185}
