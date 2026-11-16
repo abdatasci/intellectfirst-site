@@ -113,6 +113,17 @@ export default async (req) => {
       }
       if (method === 'DELETE') { delete map[id]; await putColl(c, map); return json({ ok: true }); }
     }
+    // website school records (students, classes, books): read, or merge fields into one record
+    const sd = path.match(/^school\/(students|classes|books|teachers)(?:\/([A-Za-z0-9_-]+))?$/);
+    if (sd) {
+      const st = getStore({ name: 'school', consistency: 'strong' }), list = (await st.get(sd[1], { type: 'json' })) || [];
+      if (method === 'GET') return json(sd[2] ? (list.find(x => x.id === sd[2]) || null) : list);
+      if (method === 'PATCH' && sd[2]) {
+        const b = await req.json().catch(() => null), r = list.find(x => x.id === sd[2]);
+        if (!r || !b || typeof b !== 'object' || Array.isArray(b)) return fail(400, 'bad');
+        delete b.id; Object.assign(r, b); await st.setJSON(sd[1], list); return json({ ok: true, record: r });
+      }
+    }
     // lesson clock-in log: read a month, or correct one lesson's clock-in time (the director's corrections)
     const ll = path.match(/^lessonlog\/(\d{4}-\d{2})(?:\/(.+))?$/);
     if (ll) {

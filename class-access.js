@@ -34,7 +34,7 @@
     // individual students (with a local or a native teacher) may use every level A1–C1
     var indiv = function (c) { return /^c-ind-/.test(c.id || '') || /individual|1[- ]?(to|on)[- ]?1/i.test(c.label || ''); };
     var books = me.books || [], out = [], add = function (k) { if (k && out.indexOf(k) < 0) out.push(k); };
-    var lv = levelIn(st.level), kids = false, biz = false;
+    var lv = '', kids = false, biz = false;   // the class decides the level (its coursebook, then its name); the student's own level only if the class has none
     cls.forEach(function (c) {
       var b = books.filter(function (x) { return x.id === c.bookId; })[0], text = ((b && b.title) || '') + ' ' + (c.label || ''), t = text.toLowerCase();
       var bk = bookKey(b && b.title); if (bk) { add('book:' + bk); if (!lv) lv = BL[bk]; }
@@ -45,6 +45,7 @@
       if (/business/.test(t)) biz = true;
       if (!lv) lv = levelIn(text);
     });
+    if (!lv) lv = levelIn(st.level);
     if (cls.some(indiv)) {
       add('book:ef-a0'); ['A1', 'A2', 'B1', 'B2', 'C1'].forEach(function (l) { add('ge:' + l); (SAME[l] || []).forEach(function (bk) { add('book:' + bk); }); });
       if (lv === 'C2') { add('ge:C2'); add('book:ef-c2'); }
