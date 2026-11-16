@@ -17,7 +17,7 @@ const KB = { keyboard: [[{ text: '📚 IF English' }, { text: '👤 My account' 
 const L = {
   en: {
     hello: n => `Hi ${n}! 👋 Your IF Academy account is connected.\nI'll remind you about lessons (the evening before and 2 hours before), homework, tests and tuition payments. After paying, send the receipt here.\nAsk me anything about your classes, or practise English with me.`,
-    unlinked: `Hi! 👋 This is the IF Academy assistant. Ask me anything about the school: courses, prices, the timetable, the placement test.\n\nIF Academy students and parents: press "📱 Connect with my phone number" below to get lesson, homework and payment reminders here. Use the number the school has for you.`,
+    unlinked: `Hi! 👋 This is the IF Academy assistant. Ask me anything about the school: courses, prices, the timetable, the placement test. 💰 Prices: /prices\n\nIF Academy students and parents: press "📱 Connect with my phone number" below to get lesson, homework and payment reminders here. Use the number the school has for you.`,
     phoneOwn: 'Please share your own number with the button below (not someone else\'s contact).',
     phoneNone: n => `I couldn't find the number ${n} in IF Academy's records. Please send the school the number you use (@abliem or WhatsApp +7 707 381 0988), or connect from the website: ${SITE}`,
     phonePick: 'This number belongs to more than one student. Who are you connecting?',
@@ -32,7 +32,7 @@ const L = {
   },
   ru: {
     hello: n => `Здравствуйте, ${n}! 👋 Ваш аккаунт IF Academy подключён.\nЯ буду напоминать о занятиях (накануне вечером и за 2 часа), домашних заданиях, тестах и оплате. После оплаты отправьте чек сюда.\nСпрашивайте о своих занятиях или практикуйте английский со мной.`,
-    unlinked: `Здравствуйте! 👋 Это помощник IF Academy. Спрашивайте о школе: курсы, цены, расписание, тест уровня.\n\nУченикам и родителям IF Academy: нажмите «📱 Подключиться по номеру телефона» ниже, чтобы получать здесь напоминания о занятиях, домашних заданиях и оплате. Используйте номер, который есть у школы.`,
+    unlinked: `Здравствуйте! 👋 Это помощник IF Academy. Спрашивайте о школе: курсы, цены, расписание, тест уровня. 💰 Цены: /prices\n\nУченикам и родителям IF Academy: нажмите «📱 Подключиться по номеру телефона» ниже, чтобы получать здесь напоминания о занятиях, домашних заданиях и оплате. Используйте номер, который есть у школы.`,
     phoneOwn: 'Пожалуйста, отправьте свой номер кнопкой ниже (а не чужой контакт).',
     phoneNone: n => `Номер ${n} не найден в базе IF Academy. Сообщите школе номер, которым пользуетесь (@abliem или WhatsApp +7 707 381 0988), или подключитесь на сайте: ${SITE}`,
     phonePick: 'Этот номер указан у нескольких учеников. Кого подключаем?',
@@ -50,7 +50,7 @@ L.kk = { ...L.ru,
   hello: n => `Сәлем, ${n}! 👋 IF Academy аккаунтыңыз қосылды.\nСабақтар (алдыңғы күні кешке және 2 сағат бұрын), үй тапсырмасы, тесттер мен төлем туралы еске саламын. Төлегеннен кейін түбіртекті осында жіберіңіз.\nСабақтарыңыз туралы сұраңыз немесе менімен ағылшын тілін жаттықтырыңыз.`,
   stopped: 'Чат ажыратылды, енді еске салулар келмейді. Сайттан қайта қосуға болады.',
   none: 'Алдағы 7 күнде уақыты көрсетілген сабақ жоқ.',
-  unlinked: `Сәлем! 👋 Бұл IF Academy көмекшісі. Мектеп туралы сұраңыз: курстар, бағалар, кесте, деңгей тесті.\n\nIF Academy оқушылары мен ата-аналары: сабақ, үй тапсырмасы және төлем туралы еске салуларды алу үшін төмендегі «📱 Телефон нөмірі арқылы қосылу» батырмасын басыңыз. Мектепте тіркелген нөмірді пайдаланыңыз.`,
+  unlinked: `Сәлем! 👋 Бұл IF Academy көмекшісі. Мектеп туралы сұраңыз: курстар, бағалар, кесте, деңгей тесті. 💰 Бағалар: /prices\n\nIF Academy оқушылары мен ата-аналары: сабақ, үй тапсырмасы және төлем туралы еске салуларды алу үшін төмендегі «📱 Телефон нөмірі арқылы қосылу» батырмасын басыңыз. Мектепте тіркелген нөмірді пайдаланыңыз.`,
   phoneOwn: 'Төмендегі батырма арқылы өз нөміріңізді жіберіңіз (басқа біреудің контактісін емес).',
   phoneNone: n => `${n} нөмірі IF Academy базасынан табылмады. Пайдаланатын нөміріңізді мектепке хабарлаңыз (@abliem немесе WhatsApp +7 707 381 0988) немесе сайт арқылы қосылыңыз: ${SITE}`,
   phonePick: 'Бұл нөмір бірнеше оқушыда көрсетілген. Кімді қосамыз?', hwNone: 'Алдағы күндерге үй тапсырмасы мен тест жоқ. 🎉', receiptHow: '📎 Төлем түбіртегін осында фото немесе PDF ретінде жіберіңіз (Kaspi немесе банк). ЖИ оқиды, мектеп растайды.' };
@@ -88,10 +88,10 @@ async function resultsText(ctx, uid, lang) {
 
 /* The bot's "Menu" (command list). Students get the general list; teachers get their own list in their chat.
    Updated automatically when the list changes (CMDV), so nobody has to press "Connect bot" again. */
-const CMDV = '2026-11-16d';
+const CMDV = '2026-11-16e';
 const CMDS = {
-  en: [['app', 'Open IF English'], ['account', 'My account: results, attendance, payments'], ['next', 'Next lessons'], ['homework', 'Homework & tests'], ['results', 'My test results'], ['pay', 'Tuition status'], ['help', 'What I can do'], ['stop', 'Disconnect this chat']],
-  ru: [['app', 'Открыть IF English'], ['account', 'Мой аккаунт: результаты, посещаемость, оплаты'], ['next', 'Ближайшие занятия'], ['homework', 'Домашние задания и тесты'], ['results', 'Мои результаты'], ['pay', 'Статус оплаты'], ['help', 'Что я умею'], ['stop', 'Отключить чат']]
+  en: [['app', 'Open IF English'], ['account', 'My account: results, attendance, payments'], ['next', 'Next lessons'], ['homework', 'Homework & tests'], ['results', 'My test results'], ['pay', 'Tuition status'], ['prices', 'Prices and packages'], ['help', 'What I can do'], ['stop', 'Disconnect this chat']],
+  ru: [['app', 'Открыть IF English'], ['account', 'Мой аккаунт: результаты, посещаемость, оплаты'], ['next', 'Ближайшие занятия'], ['homework', 'Домашние задания и тесты'], ['results', 'Мои результаты'], ['pay', 'Статус оплаты'], ['prices', 'Цены и пакеты'], ['help', 'Что я умею'], ['stop', 'Отключить чат']]
 };
 const STAFF_CMDS = [['app', 'Open IF English (Teach mode too)'], ['account', 'My account: classes, registers, admin'], ['today', "Today's lessons: clock in, register"], ['register', 'Take or correct a register'], ['cover', 'Ask a colleague to cover a lesson'], ['task', 'Class task: quiz, poll, writing or speaking'], ['sendhw', 'Send homework or a test to a class'], ['next', 'Next lessons'], ['help', 'Help for teachers'], ['stop', 'Disconnect this chat']];
 const asCmds = l => l.map(([command, description]) => ({ command, description }));
@@ -203,6 +203,11 @@ export default async (req) => {
       await S().setJSON(`bot/phonepick/${chatId}`, { cands: cands.slice(0, 8), lang, exp: Date.now() + 30 * 60e3 });
       await tgSend(chatId, L[lang].phonePick, { reply_markup: { inline_keyboard: cands.slice(0, 8).map((c, i) => [{ text: c.name + (c.classes ? ' · ' + c.classes : ''), callback_data: 'ph:' + i }]) } });
       return new Response('ok');
+    }
+    // prices (2026–27 brochure + individual lesson packages): for everyone, connected or not
+    if (/^\/prices?\b|^💰|^\/цены?\b/i.test(text || '')) {
+      const { priceText, priceButtons } = await import('../lib/prices.mjs');
+      await tgSend(chatId, priceText(lang), { reply_markup: priceButtons(lang) }); return new Response('ok');
     }
     if (!uid) {   // not connected: answer questions about the school, and explain how to connect
       if (!text || /^\/start\b/i.test(text)) { await tgSend(chatId, L[lang].unlinked, { reply_markup: PHONE_KB(lang) }); return new Response('ok'); }
