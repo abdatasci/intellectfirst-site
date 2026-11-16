@@ -25,25 +25,29 @@
       '<ellipse class="halo" cx="100" cy="95" rx="92" ry="92" fill="url(#' + id('gl') + ')"/>' +
       '<g class="ring" fill="none" stroke="' + p.b + '" stroke-opacity=".35"><circle cx="100" cy="92" r="84" stroke-dasharray="3 9"/><circle cx="100" cy="92" r="74" stroke-dasharray="40 14 4 14" stroke-opacity=".5"/></g>' +
       '<g class="body">' +
-        // white crew-neck tee and taupe knit blazer with lapels and buttons
-        '<path d="M22 230c4-40 30-58 78-60 48 2 74 20 78 60z" fill="url(#' + id('akn') + ')"/>' +
-        '<path d="M76 176c6 22 14 40 24 54 10-14 18-32 24-54-8-3-16-4-24-4s-16 1-24 4z" fill="#f7f7f5"/>' +
-        '<path d="M86 172c4 5 9 7 14 7s10-2 14-7" fill="none" stroke="#dcdcd6" stroke-width="3"/>' +
-        '<path d="M76 176l-14 6 10 16-8 6 26 26c-6-16-12-36-14-54z" fill="#b7a294"/><path d="M124 176l14 6-10 16 8 6-26 26c6-16 12-36 14-54z" fill="#b7a294"/>' +
-        '<path d="M76 176l-14 6 10 16-8 6 26 26M124 176l14 6-10 16 8 6-26 26" fill="none" stroke="#8b7466" stroke-width="1"/>' +
-        '<circle cx="106" cy="222" r="2.6" fill="#3b2a22"/>' +
+        // tailored taupe suit jacket (structured shoulders, notch lapels, breast pocket) over a white crew-neck tee
+        '<path d="M18 230c2-30 8-44 22-52 16-8 36-10 60-10s44 2 60 10c14 8 20 22 22 52z" fill="url(#' + id('akn') + ')"/>' +
+        '<path d="M40 178c-8 4-14 14-17 30M160 178c8 4 14 14 17 30" fill="none" stroke="#8d7668" stroke-opacity=".6" stroke-width="1.2"/>' +
+        '<path d="M80 172c5 20 12 40 20 58 8-18 15-38 20-58-6-2-13-3-20-3s-14 1-20 3z" fill="#f7f7f5"/>' +
+        '<path d="M88 170c3 5 7 7 12 7s9-2 12-7" fill="none" stroke="#dcdcd6" stroke-width="3"/>' +
+        '<path d="M80 172l-16 8 9 15-9 5 28 30c-6-18-10-38-12-58z" fill="#b39d8f"/><path d="M120 172l16 8-9 15 9 5-28 30c6-18 10-38 12-58z" fill="#b39d8f"/>' +
+        '<path d="M80 172l-16 8 9 15-9 5 28 30M120 172l16 8-9 15 9 5-28 30" fill="none" stroke="#7d6658" stroke-width="1.1"/>' +
+        '<path d="M73 195l-9 5" stroke="#7d6658" stroke-width="1.1"/><path d="M127 195l9 5" stroke="#7d6658" stroke-width="1.1"/>' +
+        '<path d="M126 208h20l-1 4h-18z" fill="#8d7668" fill-opacity=".6"/><path d="M130 208l3-5 3 5 3-4 2 4" fill="#f7f7f5"/>' +
+        '<circle cx="100" cy="226" r="2.6" fill="#3b2a22"/>' +
         // lapel pin: the speaking light
-        '<circle class="core" cx="138" cy="196" r="5" fill="' + p.a + '"/><circle class="core" cx="138" cy="196" r="5" fill="' + p.a + '" filter="url(#' + id('bl') + ')"/><circle cx="138" cy="196" r="2" fill="#fff" fill-opacity=".9"/>' +
+        '<circle class="core" cx="66" cy="196" r="4.5" fill="' + p.a + '"/><circle class="core" cx="66" cy="196" r="4.5" fill="' + p.a + '" filter="url(#' + id('bl') + ')"/><circle cx="66" cy="196" r="1.8" fill="#fff" fill-opacity=".9"/>' +
         // neck
         '<path d="M88 138h24v38c-4 3-8 4-12 4s-8-1-12-4z" fill="' + skin + '"/><path d="M88 150c8 6 16 6 24 0" fill="none" stroke="#2c170c" stroke-opacity=".35"/>' +
         '<g class="head">' +
           // ears with a soft light inside
-          '<ellipse cx="57" cy="95" rx="7" ry="11" fill="#5a331e"/><circle class="ear" cx="57" cy="96" r="2.4" fill="' + p.b + '"/>' +
-          '<ellipse cx="143" cy="95" rx="7" ry="11" fill="#5a331e"/><circle class="ear" cx="143" cy="96" r="2.4" fill="' + p.b + '"/>' +
+          '<ellipse cx="60" cy="95" rx="6.5" ry="11" fill="#5a331e"/><circle class="ear" cx="60" cy="96" r="2.2" fill="' + p.b + '"/>' +
+          '<ellipse cx="140" cy="95" rx="6.5" ry="11" fill="#5a331e"/><circle class="ear" cx="140" cy="96" r="2.2" fill="' + p.b + '"/>' +
           // face
-          '<path d="M59 86c0-38 18-60 41-60s41 22 41 60c0 20-5 38-14 50-8 10-17 15-27 15s-19-5-27-15c-9-12-14-30-14-50z" fill="' + skin + '"/>' +
+          '<path d="M62 84c0-37 17-58 38-58s38 21 38 58c0 22-4 40-12 52-7 10-16 16-26 16s-19-6-26-16c-8-12-12-30-12-52z" fill="' + skin + '"/>' +
+          '<path d="M70 104c3 4 7 6 11 6M130 104c-3 4-7 6-11 6" fill="none" stroke="#8a5636" stroke-opacity=".55" stroke-width="2"/>' +
           // short black hair with a soft top
-          '<path d="M59 84c-2-34 16-60 41-60s43 26 41 60c-3-12-7-20-13-26-9 3-18 4-28 4s-19-1-28-4c-6 6-10 14-13 26z" fill="#151110"/>' +
+          '<path d="M62 80c-1-32 15-56 38-56s39 24 38 56c-3-10-6-17-11-22-8 2-17 3-27 3s-19-1-27-3c-5 5-8 12-11 22z" fill="#151110"/>' +
           '<path d="M66 60c10-12 22-18 34-18s24 6 34 18" fill="none" stroke="#2b2420" stroke-width="2" stroke-dasharray="1.5 3"/>' +
           // android seam on the temple
           '<path d="M138 72c3 8 3 16 1 24" fill="none" stroke="' + p.b + '" stroke-opacity=".55" stroke-width="1.2"/>' +
@@ -57,18 +61,20 @@
           '<rect class="lid lid2" x="75" y="89" width="18" height="0" rx="4" fill="#5e3620"/><rect class="lid lid2" x="107" y="89" width="18" height="0" rx="4" fill="#5e3620"/>' +
           // thin round gold glasses (blue-light lenses)
           '<g fill="rgba(150,140,255,.13)" stroke="#d4b265" stroke-width="1.8"><circle cx="84" cy="95" r="13"/><circle cx="116" cy="95" r="13"/></g>' +
-          '<path d="M97 93c2-2 4-2 6 0M71 92l-12-2M129 92l12-2" fill="none" stroke="#d4b265" stroke-width="1.6"/>' +
+          '<path d="M97 93c2-2 4-2 6 0M71 92l-10-2M129 92l10-2" fill="none" stroke="#d4b265" stroke-width="1.6"/>' +
           '<path d="M77 88c3-2 6-2 8-1" fill="none" stroke="#fff" stroke-opacity=".5" stroke-width="1.2"/>' +
           // nose
           '<path d="M100 98c-1 8-3 13-6 16 3 2 9 2 12 0-3-3-5-8-6-16z" fill="#4a2817" fill-opacity=".55"/>' +
           '<path d="M92 114c3 2 13 2 16 0" fill="none" stroke="#2c170c" stroke-opacity=".6" stroke-width="1.4"/>' +
-          // short beard along the jaw and chin, moustache
-          '<path d="M64 106c2 18 8 32 18 40 6 5 12 7 18 7s12-2 18-7c10-8 16-22 18-40-4 10-9 18-15 22-6-3-13-5-21-5s-15 2-21 5c-6-4-11-12-15-22z" fill="#161110" fill-opacity=".92"/>' +
-          '<path d="M86 121c4-3 9-4 14-3 5-1 10 0 14 3-3 2-8 2-14 1-6 1-11 1-14-1z" fill="#161110"/>' +
+          // his beard: a neat moustache joined to a short chin beard, fine stubble along the jaw, clear cheeks
+          '<path d="M64 104c2 16 7 28 15 36 6 6 13 10 21 10s15-4 21-10c8-8 13-20 15-36" fill="none" stroke="#1a1311" stroke-opacity=".55" stroke-width="2.4"/>' +
+          '<path d="M86 132c2 8 7 14 14 15 7-1 12-7 14-15-4 3-9 4-14 4s-10-1-14-4z" fill="#161110"/>' +
+          '<path d="M85 122c4-3 9-4 15-3 6-1 11 0 15 3l1 5c-2-1-4-2-6-2-3 1-6 1-10 1s-7 0-10-1c-2 0-4 1-6 2z" fill="#161110"/>' +
+          '<path d="M85 125c-1 3-1 6 1 8M115 125c1 3 1 6-1 8" fill="none" stroke="#161110" stroke-opacity=".75" stroke-width="1.3" stroke-linecap="round"/>' +
           // mouth (opens while speaking) and a warm smile
-          '<g class="mouth"><rect class="m0" x="89" y="128" width="22" height="3" rx="1.5" fill="#2a1010"/></g>' +
-          '<path d="M86 127c8 6 20 6 28 0" fill="none" stroke="#f3ede4" stroke-width="2.2" stroke-linecap="round"/>' +
-          '<path d="M85 126c9 9 21 9 30 0" fill="none" stroke="#3a1c10" stroke-width="1.4" stroke-linecap="round"/>' +
+          '<g class="mouth"><rect class="m0" x="92" y="128" width="16" height="1" rx="1" fill="#2a1010"/></g>' +
+          '<path d="M89 129c6 3.5 16 3.5 22 0" fill="#8b4a3a" stroke="#3a1c10" stroke-width="1.4" stroke-linecap="round"/>' +
+          
         '</g>' +
       '</g></svg>';
   }
