@@ -60,7 +60,7 @@
   function run(container, opt) {
     opt = opt || {};
     var lv = lvOf(opt.lv + ' ' + (opt.title || '')), kid = lv === 'YL';
-    var qs = pick(BANK[lv] || BANK.B1, 3), g = kid ? 'f' : (Math.random() < 0.5 ? 'f' : 'm'), name = g === 'm' ? 'ATLAS' : 'NOVA';
+    var qs = opt.qs && opt.qs.length ? opt.qs.slice(0, 5) : pick(BANK[lv] || BANK.B1, 3), g = kid ? 'f' : (Math.random() < 0.5 ? 'f' : 'm'), name = g === 'm' ? 'ATLAS' : 'NOVA';
     var SR = window.SpeechRecognition || window.webkitSpeechRecognition, answers = [];
     var deps = [window.IFBots ? null : load('/robots.js'), window.IFVoice ? null : load('/voice.js')].filter(Boolean);
     return Promise.all(deps).then(function () {
@@ -77,9 +77,9 @@
           if (window.IFBots) IFBots.talk(box.querySelector('.ifbot'));
         }
         function intro() {
-          frame(-1, '<p class="q">' + (kid ? 'Hello! I am ' + name + '. Let’s talk! I will ask you three questions.' : 'Hello, I’m ' + name + ', your speaking examiner. I’ll ask you three questions. Answer in full sentences — about 30 to 60 seconds each.') + '</p>' +
+          frame(-1, '<p class="q">' + (kid ? 'Hello! I am ' + name + '. Let’s talk! I will ask you ' + (qs.length === 1 ? 'one question' : qs.length + ' questions') + '.' : 'Hello, I’m ' + name + ', your speaking examiner. ' + (qs.length === 1 ? 'I’ll give you one task — talk about it for about ' + (opt.mins || 2) + ' minutes.' : 'I’ll ask you ' + qs.length + ' questions.') + ' Answer in full sentences — about 30 to 60 seconds each.') + '</p>' +
             '<p style="margin:0;color:#9fb3e6;font-size:14px">' + (SR ? 'Press the microphone and speak. Allow the microphone when the browser asks.' : 'This browser cannot hear you, so type your answers instead.') + '</p>' +
-            '<div class="row"><button class="nx" id="ifx-go">Start speaking</button><button class="sk" id="ifx-sk">Skip — my teacher will mark speaking</button></div>');
+            '<div class="row"><button class="nx" id="ifx-go">Start speaking</button><button class="sk" id="ifx-sk">' + (opt.skip || 'Skip — my teacher will mark speaking') + '</button></div>');
           box.querySelector('#ifx-go').onclick = function () { ask(0); };
           box.querySelector('#ifx-sk').onclick = function () { end(null); };
           say((kid ? 'Hello! I am ' + name + '. Let\'s talk!' : 'Hello, I\'m ' + name + ', your speaking examiner. When you are ready, press start.'), g);
@@ -102,7 +102,7 @@
             rec.onend = function () { if (mic.classList.contains('on')) { try { rec.start(); } catch (e) { stop(); } } };
             try { rec.start(); } catch (e) {}
             t0 = t0 || Date.now(); mic.classList.add('on'); mic.textContent = '■ Stop';
-            timer = setInterval(function () { var s = Math.round((Date.now() - t0) / 1000); tm.textContent = s + 's'; if (s >= 120) stop(); }, 500);
+            timer = setInterval(function () { var s = Math.round((Date.now() - t0) / 1000); tm.textContent = s + 's'; if (s >= (opt.mins ? opt.mins * 60 + 30 : 120)) stop(); }, 500);
           };
           nx.onclick = function () {
             stop();

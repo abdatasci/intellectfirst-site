@@ -30,7 +30,7 @@
       if (x.ok) {
         var d = x.d;
         note(container, '', '<b>\u2713 Saved to your profile and your teacher\u2019s results</b>Score ' + d.score + ' / ' + d.max +
-          (d.aiSpeak ? '. Your speaking was marked by AI' + (d.aiMarked ? ', and your writing too.' : '.') + (d.comment ? ' ' + d.comment : '') : d.aiMarked ? '. Your writing was marked by AI.' : d.pending ? '. Your teacher will mark the writing.' : '.') + ' No need to send anything.');
+          (p.spAuto ? '. Speaking: 8 out of 10 for each task (your teacher can change it)' : '') + (d.aiSpeak ? '. Your speaking was marked by AI' + (d.aiMarked ? ', and your writing too.' : '.') + (d.comment ? ' ' + d.comment : '') : d.aiMarked ? '. Your writing was marked by AI.' : d.pending ? '. Your teacher will mark the writing.' : '.') + ' No need to send anything.');
         var box = container.querySelector('.ifr'); if (box) box.classList.add('ifas-done');
       } else if (x.status === 401) {
         delete sent[key];
@@ -41,36 +41,39 @@
       }
     }).catch(function () { delete sent[key]; note(container, 'no', '<b>No internet?</b> Send the message below to your teacher, or try again.'); });
   }
+  // Class B1 C (16 Nov 2026 test): speaking not marked yet → each speaking task gets 8 out of 10 (80% of the section) so they can submit now.
+  // A mark from the AI examiner or the teacher replaces it. Other classes keep the examiner-then-save flow.
+  var B1C = /\bb1\s*[-\s]?\s*c\b/i;
+  function isB1C(p) { var c = (p && p.cl) || ''; var f = document.getElementById('sclass'); return B1C.test(c) || !!(f && B1C.test(f.value)); }
+  function fill(p) {
+    if (p && Array.isArray(p.s) && isB1C(p)) p.s.forEach(function (x) { if (x && /speak/i.test(x[0]) && x[1] == null && x[2] > 0) { x[1] = Math.round(x[2] * 0.8 * 2) / 2; p.spAuto = 1; } });
+    return p;
+  }
   function examiner() {
     if (window.IFExaminer) return Promise.resolve(window.IFExaminer);
-    return new Promise(function (ok) { var x = document.createElement('script'); x.src = '/tests/examiner.js?v=1'; x.onload = function () { ok(window.IFExaminer || null); }; x.onerror = function () { ok(null); }; document.head.appendChild(x); });
+    return new Promise(function (ok) { var x = document.createElement('script'); x.src = '/tests/examiner.js?v=2'; x.onload = function () { ok(window.IFExaminer || null); }; x.onerror = function () { ok(null); }; document.head.appendChild(x); });
   }
   function hook() {
     if (!window.IFR || window.IFR.__as) return !!window.IFR;
     var orig = window.IFR.box;
     window.IFR.box = function (container, p) {
       var r = orig.apply(this, arguments);
-      try {
-        // Speaking not marked yet: the IF examiner (NOVA/ATLAS) runs the speaking part first; AI marks it with the result
-        var sp = p && Array.isArray(p.s) && p.s.some(function (x) { return x && /speak/i.test(x[0]) && x[1] == null && x[2] > 0; });
-        if (sp && !p.sp && !p.__spk) {
-          p.__spk = 1;
-          examiner().then(function (E) { return E ? E.run(container, { lv: p.lv, title: [p.t, p.c].filter(Boolean).join(' ') }) : null; })
-            .then(function (ans) { if (ans) p.sp = ans; delete p.__spk; save(container, p); })
-            .catch(function () { delete p.__spk; save(container, p); });
-        } else save(container, p);
-      } catch (e) {}
+      try { go2(container, fill(p)); } catch (e) {}
       return r;
     };
     window.IFR.__as = true;
     return true;
   }
-  // for test pages without the result box: IFAutosave.run(container, p) — speaking examiner (if a speaking section is unmarked), then save
-  window.IFAutosave = { save: save, run: function (container, p) {
+  // for test pages without the result box: IFAutosave.run(container, p)
+  function go2(container, p) {
     var sp = p && Array.isArray(p.s) && p.s.some(function (x) { return x && /speak/i.test(x[0]) && x[1] == null && x[2] > 0; });
-    if (sp && !p.sp) examiner().then(function (E) { return E ? E.run(container, { lv: p.lv, title: [p.t, p.c].filter(Boolean).join(' ') }) : null; })
-      .then(function (ans) { if (ans) p.sp = ans; save(container, p); }).catch(function () { save(container, p); });
-    else save(container, p);
-  } };
+    if (sp && !p.sp && !p.__spk) {
+      p.__spk = 1;
+      examiner().then(function (E) { return E ? E.run(container, { lv: p.lv, title: [p.t, p.c].filter(Boolean).join(' ') }) : null; })
+        .then(function (ans) { if (ans) p.sp = ans; delete p.__spk; save(container, p); })
+        .catch(function () { delete p.__spk; save(container, p); });
+    } else save(container, p);
+  }
+  window.IFAutosave = { save: save, run: function (container, p) { go2(container, fill(p)); } };
   if (!hook()) { var n = 0, t = setInterval(function () { if (hook() || ++n > 100) clearInterval(t); }, 200); }
 })();
