@@ -102,13 +102,14 @@ export const scheduleText = slots => slots.map(s => DAY_NAMES[s.dow] + (s.start 
    extra: [{ id, classId, date, start, end, note, by, at }] }. A lesson key is "<classId>|<date>|<HH:MM>"; a moved lesson
    shows on its new day as "<classId>|<newDate>|<newStart>|m~<oldDate>~<oldStart>", an extra one as "…|x<id>". The website
    calendar, check-in, registers, the bot's answers and every reminder read the same changes. */
-export const NO_CHANGES = { cancel: {}, moves: {}, extra: [] };
-export async function loadChanges() { const c = (await S().get('lessonchanges', { type: 'json' })) || {}; return { cancel: c.cancel || {}, moves: c.moves || {}, extra: c.extra || [] }; }
+export const NO_CHANGES = { cancel: {}, moves: {}, extra: [], cover: {} };
+export async function loadChanges() { const c = (await S().get('lessonchanges', { type: 'json' })) || {}; return { cancel: c.cancel || {}, moves: c.moves || {}, extra: c.extra || [], cover: c.cover || {} }; }
 export async function saveChanges(CH) {
   const cut = ymd(new Date(Date.now() - 120 * 864e5));   // keep four months
   for (const k of Object.keys(CH.cancel)) if (k.split('|')[1] < cut) delete CH.cancel[k];
   for (const k of Object.keys(CH.moves)) if (k.split('|')[1] < cut && CH.moves[k].date < cut) delete CH.moves[k];
   CH.extra = CH.extra.filter(x => x.date >= cut);
+  for (const k of Object.keys(CH.cover || {})) if (k.split('|')[1] < cut) delete CH.cover[k];
   await S().setJSON('lessonchanges', CH);
 }
 const mkLesson = (c, date, start, end, key, extra) => {
@@ -135,6 +136,9 @@ export function dayLessons(classes, date, CH = NO_CHANGES) {
     }
     for (const x of CH.extra) if (x.classId === c.id && x.date === date) out.push(mkLesson(c, date, x.start, x.end, `${c.id}|${date}|${x.start}|x${x.id}`, { kind: 'extra', extraId: x.id, note: x.note || '' }));
   }
+  // cover: another teacher takes this one lesson (agreed in the bot or set by the admin) — they get the reminders,
+  // the clock-in and the teaching hours; coverFor keeps the class's own teacher
+  for (const l of out) { const cv = CH.cover && CH.cover[l.key]; if (cv && cv.teacherId && cv.teacherId !== l.teacherId) { l.coverFor = l.teacherId; l.teacherId = cv.teacherId; l.cover = { by: cv.by || '', at: cv.at || '' }; } }
   return out.sort((a, b) => a.at.localeCompare(b.at));
 }
 /** Upcoming lessons that will take place (cancelled and moved-away ones left out), from `from` for `days` days. */

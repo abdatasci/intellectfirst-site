@@ -12,6 +12,7 @@ import { lessonsOn, loadLog, withEntry, since, today } from './lessons.mjs';
 import { listReceipts } from './receipts.mjs';
 import { loadFeedback } from './feedback.mjs';
 import { waReady, waSend } from './whatsapp.mjs';
+import { openCoverRequests } from './cover.mjs';
 
 const S = () => getStore({ name: 'school', consistency: 'strong' });
 const U = () => getStore({ name: 'ielts', consistency: 'strong' });
@@ -45,6 +46,8 @@ export async function openTasks(now = new Date()) {
     const cl = classes.find(x => x.id === cid); if (!cl) continue;
     out.push({ key: `rs:${k}`, kind: 'reschedule', text: `Arrange a make-up lesson: ${cl.label} — the lesson on ${dshort(date)} was cancelled${c.note ? ' (' + c.note + ')' : ''}`, link: '/me/#/calendar' });
   }
+  // cover requests nobody has accepted yet
+  for (const r of await openCoverRequests()) out.push({ key: `cov:${r.id}`, kind: 'reschedule', text: `Find a cover teacher: ${r.label}, ${r.when} (${tName(r.from)} can't teach it)`, link: '/me/#/calendar' });
   // payments overdue
   for (const s of students) {
     if (/withdrawn|finished|frozen/i.test(s.status || '')) continue;

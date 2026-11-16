@@ -159,6 +159,13 @@ async function classesForTeacher(profile) {
   const t = teachers.find(x => x.id === profile.teacherId);
   return classes.filter(c => t && (c.teacherId === t.id));
 }
+/** Classes where this teacher covers at least one lesson (Telegram bot cover requests, or set by the admin). */
+async function coverClasses(teacherId, CH) {
+  if (!teacherId) return [];
+  const ids = new Set(Object.entries(CH.cover || {}).filter(([, v]) => v && v.teacherId === teacherId).map(([k]) => k.split('|')[0]));
+  return ids.size ? (await doc('classes')).filter(c => ids.has(c.id) && c.teacherId !== teacherId) : [];
+}
+const plusCover = (list, extra) => list.concat(extra.filter(c => !list.some(x => x.id === c.id)));
 async function canSeeStudent(profile, student) {
   if (profile.role === 'admin') return true;
   if (profile.role !== 'teacher') return false;
@@ -559,9 +566,10 @@ export default async (req) => {
     if (!isStaff(profile.role)) return fail(403, 'staff');
     const date = /^\d{4}-\d{2}-\d{2}$/.test(url.searchParams.get('date') || '') ? url.searchParams.get('date') : todayStr();
     const [mine, students, teachers] = await Promise.all([classesForTeacher(profile), doc('students'), doc('teachers')]);
-    const own = profile.role === 'admin' && url.searchParams.get('all') !== '1' ? mine.filter(c => c.teacherId === profile.teacherId) : mine;
-    const L = await loadLog(date.slice(0, 7)), now = new Date(), cutoff = await checkSince(), CH = await loadChanges();
-    const lessons = withEntry(lessonsOn(own, date, CH), L, now, cutoff).map(l => ({ ...l, teacher: (teachers.find(t => t.id === l.teacherId) || {}).name || '',
+    const CH = await loadChanges(), own0 = profile.role === 'admin' && url.searchParams.get('all') !== '1' ? mine.filter(c => c.teacherId === profile.teacherId) : mine;
+    const extraC = await coverClasses(profile.teacherId, CH), own = plusCover(own0, extraC), ownIds = new Set(own0.map(c => c.id));
+    const L = await loadLog(date.slice(0, 7)), now = new Date(), cutoff = await checkSince();
+    const lessons = withEntry(lessonsOn(own, date, CH), L, now, cutoff).filter(l => ownIds.has(l.classId) || l.teacherId === profile.teacherId).map(l => ({ ...l, coverForName: l.coverFor ? (teachers.find(t => t.id === l.coverFor) || {}).name || '' : '' })).map(l => ({ ...l, teacher: (teachers.find(t => t.id === l.teacherId) || {}).name || '',
       students: students.filter(s => inClass(own.find(c => c.id === l.classId), s) && !/withdrawn|finished/i.test(s.status || '')).map(s => ({ sid: s.id, name: `${s.first} ${s.last}`.trim(), frozen: s.status === 'frozen' })).sort((a, b) => a.name.localeCompare(b.name)) }));
     const month = await monthLessons(profile.role === 'admin' ? mine.filter(c => c.teacherId === profile.teacherId) : mine, date.slice(0, 7), now);
     return json({ date, now: now.toISOString(), grace: GRACE_MIN, early: EARLY_MIN, lessons, me: punctuality(month, teachers)[0] || null });
@@ -570,8 +578,8 @@ export default async (req) => {
     if (!isStaff(profile.role)) return fail(403, 'staff');
     const b = await req.json().catch(() => ({}));
     const [cid, date] = String(b.key || '').split('|');
-    const c = (await classesForTeacher(profile)).find(x => x.id === cid); if (!c || !/^\d{4}-\d{2}-\d{2}$/.test(date || '')) return fail(404, 'lesson');
-    const lesson = lessonsOn([c], date, await loadChanges()).find(l => l.key === b.key); if (!lesson) return fail(404, 'lesson');
+    const CH = await loadChanges(), c = plusCover(await classesForTeacher(profile), await coverClasses(profile.teacherId, CH)).find(x => x.id === cid); if (!c || !/^\d{4}-\d{2}-\d{2}$/.test(date || '')) return fail(404, 'lesson');
+    const lesson = lessonsOn([c], date, CH).find(l => l.key === b.key); if (!lesson) return fail(404, 'lesson');
     const who = { uid, name: profile.name || '', role: profile.role };
     try {
       if (path === 'teach/checkin') return json({ entry: await checkIn(lesson, who) });
@@ -594,13 +602,15 @@ export default async (req) => {
     const who = url.searchParams.get('teacher') || '';
     let list = profile.role === 'admin' ? (who === 'all' ? mine : mine.filter(c => c.teacherId === (who || profile.teacherId))) : mine;
     const CH = await loadChanges(), now = new Date(), cutoff = await checkSince(), out = [];
+    const viewT = profile.role === 'admin' ? (who === 'all' ? '' : who || profile.teacherId) : profile.teacherId, listIds = new Set(list.map(c => c.id));
+    if (viewT) list = plusCover(list, await coverClasses(viewT, CH));
     const d0 = new Date(from + 'T00:00:00Z');
     for (let i = 0; i < days; i++) {
       const date = new Date(d0.getTime() + i * 864e5).toISOString().slice(0, 10);
-      out.push(...withEntry(lessonsOn(list, date, CH), await loadLog(date.slice(0, 7)), now, cutoff));
+      out.push(...withEntry(lessonsOn(list, date, CH), await loadLog(date.slice(0, 7)), now, cutoff).filter(l => !viewT || listIds.has(l.classId) || l.teacherId === viewT));
     }
     const roster = l => students.filter(s => inClass(list.find(c => c.id === l.classId), s) && !/withdrawn|finished/i.test(s.status || '')).map(s => ({ sid: s.id, name: `${s.first} ${s.last}`.trim(), frozen: s.status === 'frozen' })).sort((a, b) => a.name.localeCompare(b.name));
-    return json({ from, days, early: EARLY_MIN, grace: GRACE_MIN, now: now.toISOString(), me: profile.teacherId || '', lessons: out.map(l => ({ ...l, teacher: (teachers.find(t => t.id === l.teacherId) || {}).name || '', students: roster(l) })), classes: list.map(c => ({ id: c.id, label: c.label, schedule: c.schedule || '', room: c.room || '' })),
+    return json({ from, days, early: EARLY_MIN, grace: GRACE_MIN, now: now.toISOString(), me: profile.teacherId || '', lessons: out.map(l => ({ ...l, teacher: (teachers.find(t => t.id === l.teacherId) || {}).name || '', coverForName: l.coverFor ? (teachers.find(t => t.id === l.coverFor) || {}).name || '' : '', students: roster(l) })), classes: list.map(c => ({ id: c.id, label: c.label, schedule: c.schedule || '', room: c.room || '' })),
       teachers: profile.role === 'admin' ? teachers.filter(t => mine.some(c => c.teacherId === t.id)).map(t => ({ id: t.id, name: t.name })) : [] });
   }
   /* ---- working hours: teaching hours from lessons that took place; administrative hours from shifts ---- */
@@ -640,6 +650,17 @@ export default async (req) => {
     const okD = d => /^\d{4}-\d{2}-\d{2}$/.test(d || ''), okT = t => /^\d{1,2}:\d{2}$/.test(t || ''), pad = t => t ? t.padStart(5, '0') : '';
     const note = String(b.note || '').replace(/\s+/g, ' ').trim().slice(0, 160), by = profile.name || '';
     const CH = await loadChanges();
+    if (b.action === 'cover') {   // the admin chooses who teaches this one lesson ('' = the class's own teacher again)
+      if (profile.role !== 'admin') return fail(403, 'admin');
+      const { setCover, tellAdmins } = await import('../lib/cover.mjs');
+      const teachers = await doc('teachers'), t = b.teacherId ? teachers.find(x => x.id === b.teacherId) : null; if (b.teacherId && !t) return fail(404, 'teacher');
+      const l = await setCover(String(b.key || ''), t ? t.id : null, by); if (!l) return fail(404, 'lesson');
+      const nm = id => (teachers.find(x => x.id === id) || {}).name || '';
+      const day = `${l.date.slice(8)}.${l.date.slice(5, 7)} ${l.start}`;
+      await tellAdmins(t ? `🔁 ${by} set a cover: ${t.name} teaches ${l.label}, ${day} instead of ${nm(l.coverFor)}.` : `↩ ${by} removed the cover: ${nm(l.teacherId)} teaches ${l.label}, ${day}.`, null, uid);
+      if (t) { const links = await getLinks(); for (const [u, lk] of Object.entries(links)) { if (u.startsWith('sid:') || !lk.chatId) continue; const pp = u.startsWith('tid:') ? { teacherId: u.slice(4) } : await U().get(`u/${u}/profile`, { type: 'json' }).catch(() => null); if (pp && pp.teacherId === t.id) await tgSend(lk.chatId, `🔁 You are covering ${l.label}${l.room ? ' (' + l.room + ')' : ''}, ${day} (set by ${by}). I'll remind you before the lesson.`).catch(() => {}); } }
+      return json({ ok: true, lesson: l });
+    }
     if (b.action === 'extra') {
       const c = (await classesForTeacher(profile)).find(x => x.id === b.classId); if (!c) return fail(404, 'class');
       if (!okD(b.date) || !okT(b.start)) return fail(400, 'time');
@@ -680,7 +701,7 @@ export default async (req) => {
     const now = new Date(), L = await loadLog(date.slice(0, 7)), cutoff = await checkSince(), CH = await loadChanges();
     const count = cid => students.filter(s => inClass(classes.find(c => c.id === cid), s) && s.status === 'active').length;
     const roster = cid => students.filter(s => inClass(classes.find(c => c.id === cid), s) && !/withdrawn|finished/i.test(s.status || '')).map(s => ({ sid: s.id, name: `${s.first} ${s.last}`.trim(), frozen: s.status === 'frozen' })).sort((a, b) => a.name.localeCompare(b.name));
-    const lessons = withEntry(lessonsOn(classes, date, CH), L, now, cutoff).map(l => ({ ...l, teacher: (teachers.find(t => t.id === l.teacherId) || {}).name || '', size: count(l.classId), students: roster(l.classId) }));
+    const lessons = withEntry(lessonsOn(classes, date, CH), L, now, cutoff).map(l => ({ ...l, teacher: (teachers.find(t => t.id === l.teacherId) || {}).name || '', coverForName: l.coverFor ? (teachers.find(t => t.id === l.coverFor) || {}).name || '' : '', size: count(l.classId), students: roster(l.classId) }));
     const month = await monthLessons(classes, date.slice(0, 7), now);
     return json({ date, now: now.toISOString(), grace: GRACE_MIN, since: cutoff, lessons, teachers: punctuality(month, teachers), missedList: month.filter(l => l.state === 'missed').map(l => ({ key: l.key, date: l.date, start: l.start, label: l.label, teacher: (teachers.find(t => t.id === l.teacherId) || {}).name || '' })).slice(-40).reverse() });
   }
