@@ -785,7 +785,7 @@
       (staff() ? 'Start a video lesson for any of your classes, and present your lesson slides from here.' : 'Join your class video lesson at lesson time. Your teacher opens the room first.') + '</p></section>';
     var online = '<h3 style="margin:' + (staff() ? '34px' : '18px') + ' 0 10px">Online lessons</h3>' + (cl.length ? (staff()
       ? '<p class="small" style="margin-bottom:10px">Opens a Jitsi video room for the class in a new tab. Share this tab from the call to present your slides.</p><div class="mrows">' + cl.map(function (c) {
-          return '<div class="mrow"><div><b>' + esc(c.label) + '</b><small>' + esc(c.schedule || '') + '</small></div><a class="btn sm" target="_blank" rel="noopener" href="' + esc(meetUrl(c)) + '">Start ↗</a><button class="btn ghost sm" data-copy="' + esc('https://meet.jit.si/' + c.meet) + '">Copy link</button></div>';
+          return '<div class="mrow"><div><b>' + esc(c.label) + '</b><small>' + esc(c.schedule || (/individual/i.test(c.label) ? 'Timetable not set yet' + (role() === 'admin' ? ' · add it in Admin → Classes' : '') : '')) + '</small></div><a class="btn sm" target="_blank" rel="noopener" href="' + esc(meetUrl(c)) + '">Start ↗</a><button class="btn ghost sm" data-copy="' + esc('https://meet.jit.si/' + c.meet) + '">Copy link</button></div>';
         }).join('') + '</div>'
       : '<div class="grid">' + cl.map(function (c) {
           return '<div class="card"><span class="tag">' + esc(c.schedule || 'Online room') + '</span><h3>' + esc(c.label) + '</h3><p>Video lesson room for your class.</p><div class="row" style="margin-top:10px"><a class="btn sm" target="_blank" rel="noopener" href="' + esc(meetUrl(c)) + '">Join lesson ↗</a></div></div>';

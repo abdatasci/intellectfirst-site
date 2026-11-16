@@ -165,6 +165,39 @@ async function coverClasses(teacherId, CH) {
   const ids = new Set(Object.entries(CH.cover || {}).filter(([, v]) => v && v.teacherId === teacherId).map(([k]) => k.split('|')[0]));
   return ids.size ? (await doc('classes')).filter(c => ids.has(c.id) && c.teacherId !== teacherId) : [];
 }
+/** Individual students (in an IF Admin "individual" group, or with a private-student account) who have no class of
+    their own yet get one, so they show in IF Classroom with a video room. The director's private students
+    (account track "private") are his; otherwise the group's teacher. The timetable can be added in Admin → Classes. */
+const SOLO_RX = /individ|индив|private|1[-:]1|one[- ]to[- ]one/i;
+async function soloRooms(profile, mine) {
+  const [classes, students, groups] = await Promise.all([doc('classes'), doc('students'), getStore({ name: 'ifadmin', consistency: 'strong' }).get('c/groups', { type: 'json' }).then(g => g || {})]);
+  const dir = (await U().get('directory', { type: 'json' })) || {};
+  const privateSid = new Set(Object.values(dir).filter(d => d.track === 'private' && d.studentId).map(d => d.studentId));
+  const own = new Set(classes.flatMap(c => Array.isArray(c.studentIds) ? c.studentIds : []));
+  const isSoloGroup = gid => SOLO_RX.test(gid) || gid === 'ind' || SOLO_RX.test((groups[gid] || {}).n || '') || SOLO_RX.test((classes.find(c => c.id === 'c-' + gid) || {}).label || '');
+  const add = [];
+  for (const s of students) {
+    if (own.has(s.id) || /withdrawn|finished/i.test(s.status || '')) continue;
+    const gs = s.groups || [], gid = gs.find(isSoloGroup);
+    if (!gid && !privateSid.has(s.id)) continue;
+    const g = gid || gs[0] || 'ind', gc = classes.find(c => c.id === 'c-' + g);
+    const teacherId = privateSid.has(s.id) ? DIRECTOR_ID : (gc && gc.teacherId) || '';
+    add.push({ id: 'c-' + g + '-' + s.id, label: `${`${s.first} ${s.last}`.trim()} (individual)`, group: g, studentIds: [s.id], teacherId, schedule: '', room: '' });
+  }
+  // private-student accounts not yet matched to an IF Admin record (no phone match): the director's
+  for (const [uid, d] of Object.entries(dir)) {
+    if (d.track !== 'private' || d.studentId || d.role !== 'student') continue;
+    const id = 'c-pv-' + uid;
+    if (!classes.some(c => c.id === id)) add.push({ id, label: `${d.name || 'Student'} (individual)`, uids: [uid], teacherId: DIRECTOR_ID, schedule: '', room: '' });
+    else add.push(classes.find(c => c.id === id));
+  }
+  if (!add.length) return [];
+  const fresh = add.filter(a => !classes.some(c => c.id === a.id));
+  if (fresh.length) { const all = await doc('classes'); for (const a of fresh) if (!all.some(c => c.id === a.id)) all.push(a); await save('classes', all); }
+  const mineIds = new Set(mine.map(c => c.id));
+  return add.filter(a => !mineIds.has(a.id) && (profile.role === 'admin' || profile.smm || a.teacherId === profile.teacherId));
+}
+const DIRECTOR_ID = 't-abdoulie';
 const plusCover = (list, extra) => list.concat(extra.filter(c => !list.some(x => x.id === c.id)));
 async function canSeeStudent(profile, student) {
   if (profile.role === 'admin') return true;
@@ -790,12 +823,19 @@ export default async (req) => {
       const s = (await doc('students')).find(x => x.id === profile.studentId);
       mine = (await doc('classes')).filter(c => inClass(c, s));
     }
+    else if (profile.track === 'private') mine = (await doc('classes')).filter(c => Array.isArray(c.uids) && c.uids.includes(user.id));
+    // individual students who have no class of their own yet (no timetable given): one room each, so every
+    // teacher (the director included) sees all their private students here
+    if (isStaff(profile.role)) mine = mine.concat(await soloRooms(profile, mine));
     if (mine.some(c => !c.meet)) {
       const all = await doc('classes');
       for (const c of all) if (mine.some(m => m.id === c.id) && !c.meet) c.meet = roomName(c);
       await save('classes', all);
       mine = all.filter(c => mine.some(m => m.id === c.id));
     }
+    // the catch-all "Individual (local / native teacher)" groups are not a class anyone teaches together: each student has a row
+    mine = mine.filter(c => !(SOLO_RX.test(c.label || '') && /^individual\b/i.test(c.label || '') && !(c.studentIds || []).length && !(c.uids || []).length));
+    mine.sort((a, b) => (/individual/i.test(a.label) - /individual/i.test(b.label)) || String(a.label).localeCompare(String(b.label)));
     return json({ classes: mine.map(c => ({ id: c.id, label: c.label, schedule: c.schedule || '', room: c.room || '', bookId: c.bookId || '', teacherId: c.teacherId || '', meet: c.meet })) });
   }
 
