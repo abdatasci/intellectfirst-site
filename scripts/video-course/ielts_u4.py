@@ -1,4 +1,4 @@
-# IF IELTS Video Course — Unit 1: Writing Task 1, describing trends.
+# IF IELTS Video Course — Unit 4: Writing Task 1, describing trends.
 # Three video lessons. Each slide carries its narration in the speaker notes, marked for the mixed format:
 #   [AVATAR]  the presenter on screen (HeyGen / Synthesia avatar, full frame on the left half)
 #   [VOICE]   slides with the AI voice; the avatar is a small circle bottom-right or hidden

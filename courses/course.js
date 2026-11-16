@@ -4,7 +4,7 @@
 (function () {
   var C = window.COURSE, app = document.getElementById('app'), who = document.getElementById('who');
   var S = { level: 'none', videos: {}, locked: [], progress: null, subs: {}, staff: false, free: 1, signedFree: 2, name: '' };
-  var cur = { unit: 'u1', video: null, tab: 'files' };
+  var cur = { unit: C.units[0].id, video: null, tab: 'files' };
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   function $(s) { return document.querySelector(s); }
   function toast(t) { var d = document.createElement('div'); d.className = 'toast'; d.textContent = t; document.body.appendChild(d); setTimeout(function () { d.remove(); }, 2600); }
@@ -23,18 +23,18 @@
   function lockBox(u) {
     var n = unitNo(u);
     if (S.level === 'none' && n <= S.signedFree) return '<div class="lock"><span class="big">🔓</span><div style="flex:1"><b>Unit ' + n + ' is free with an account</b><div class="mini">Sign in or create a free IF Academy account to watch it and save your progress.</div></div><a class="btn" href="' + signin + '">Sign in · Create account</a></div>';
-    return '<div class="lock"><span class="big">🔒</span><div style="flex:1"><b>Units ' + (S.signedFree + 1) + '–' + C.units.length + ' are for IF Academy students and members</b><div class="mini">IF Academy students get the whole course included. Online learners can join with IF Membership.</div></div>' + (S.level === 'none' ? '<a class="btn ghost" href="' + signin + '">Sign in</a>' : '') + '<a class="btn gold" href="' + ASK + '" target="_blank" rel="noopener">Ask about access</a></div>';
+    return '<div class="lock"><span class="big">🔒</span><div style="flex:1"><b>Units ' + (S.signedFree + 1) + '–' + unitNo(C.units[C.units.length - 1]) + ' are for IF Academy students and members</b><div class="mini">IF Academy students get the whole course included. Online learners can join with IF Membership.</div></div>' + (S.level === 'none' ? '<a class="btn ghost" href="' + signin + '">Sign in</a>' : '') + '<a class="btn gold" href="' + ASK + '" target="_blank" rel="noopener">Ask about access</a></div>';
   }
   function render() {
     var u = C.units.filter(function (x) { return x.id === cur.unit; })[0] || C.units[0], ok = open(u);
     var v = u.videos.filter(function (x) { return x.id === cur.video; })[0] || u.videos.filter(function (x) { return !done(x.id); })[0] || u.videos[0]; cur.video = v.id;
-    var h = '<section class="hero"><div class="in"><div class="eyebrow">IF Academy · Video course</div><h1>' + esc(C.title) + '</h1><p>' + esc(C.blurb) + '</p><div class="facts"><span>🎯 ' + esc(C.level) + '</span><span>🎬 ' + C.units.length + ' units · ' + C.units.reduce(function (a, x) { return a + x.videos.length; }, 0) + ' video lessons</span><span>⏱ ' + esc(C.hours) + '</span><span>✅ Unit 1 free</span></div>' +
-      (S.progress ? '<div class="bar"><i style="width:' + pct() + '%"></i></div><div class="mini" style="color:#C9D5E6;margin-top:6px">' + pct() + '% complete</div>' : '<a class="btn gold" href="#u1">▶ Start Unit 1 — free</a>') + '</div></section>';
+    var h = '<section class="hero"><div class="in"><div class="eyebrow">IF Academy · Video course</div><h1>' + esc(C.title) + '</h1><p>' + esc(C.blurb) + '</p><div class="facts"><span>🎯 ' + esc(C.level) + '</span><span>🎬 ' + (C.units.length - (C.units[0].id === 'u0' ? 1 : 0)) + ' units · ' + C.units.reduce(function (a, x) { return a + x.videos.length; }, 0) + ' video lessons</span><span>⏱ ' + esc(C.hours) + '</span><span>✅ Introduction + Unit 1 free</span></div>' +
+      (S.progress ? '<div class="bar"><i style="width:' + pct() + '%"></i></div><div class="mini" style="color:#C9D5E6;margin-top:6px">' + pct() + '% complete</div>' : '<a class="btn gold" href="#' + C.units[0].id + '">▶ ' + (C.units[0].id === 'u0' ? 'Start here' : 'Start Unit 1') + ' — free</a>') + '</div></section>';
     h += '<div class="grid"><aside class="side">' + C.units.map(function (x) {
       var n = unitNo(x), on = x.id === u.id, d = S.progress && unitDone(x);
-      return '<a class="u' + (on ? ' on' : '') + '" href="#' + x.id + '"><span class="n' + (d ? ' done' : '') + '">' + (d ? '✓' : open(x) ? n : '🔒') + '</span><span><b>' + esc(x.title) + '</b><small>' + esc(x.skill) + ' · ' + x.videos.length + ' videos' + (n <= S.free ? ' · free' : '') + '</small></span></a>';
+      return '<a class="u' + (on ? ' on' : '') + '" href="#' + x.id + '"><span class="n' + (d ? ' done' : '') + '">' + (d ? '✓' : !open(x) ? '🔒' : n === 0 ? '▶' : n) + '</span><span><b>' + esc(x.title) + '</b><small>' + esc(x.skill) + ' · ' + x.videos.length + ' videos' + (n <= S.free ? ' · free' : '') + '</small></span></a>';
     }).join('') + (S.staff ? '<a class="u" href="#teacher"><span class="n">🧑‍🏫</span><span><b>Teacher tools</b><small>Videos and homework inbox</small></span></a>' : '') + '</aside><div class="main">';
-    h += '<div class="card unit-h"><div class="eyebrow">Unit ' + unitNo(u) + ' · ' + esc(u.skill) + '</div><h2>' + esc(u.title) + '</h2><p><b>By the end:</b> ' + esc(u.outcome) + '</p></div>';
+    h += '<div class="card unit-h"><div class="eyebrow">' + (unitNo(u) ? 'Unit ' + unitNo(u) + ' · ' : '') + esc(u.skill) + '</div><h2>' + esc(u.title) + '</h2><p><b>By the end:</b> ' + esc(u.outcome) + '</p></div>';
     h += '<div class="card">';
     var yt = S.videos[v.id];
     if (!ok) h += '<div class="player"><div class="soon lockv"><h3>🔒 ' + esc(v.title) + '</h3><p>' + (S.level === 'none' && unitNo(u) <= S.signedFree ? 'Free with an account.' : 'For IF Academy students and members.') + '</p></div></div>';
@@ -93,7 +93,7 @@
   }
   /* ---- teacher tools: YouTube link per lesson, homework inbox ---- */
   async function teacher() {
-    var h = '<section class="hero"><div class="in"><div class="eyebrow">Teacher tools</div><h1>' + esc(C.title) + '</h1><p>Paste each lesson\'s YouTube link (upload as <b>Unlisted</b>, so only the course shows it). Students\' homework arrives below.</p><a class="btn ghost" href="#u1">← Back to the course</a></div></section><div class="grid" style="grid-template-columns:1fr"><div class="main">';
+    var h = '<section class="hero"><div class="in"><div class="eyebrow">Teacher tools</div><h1>' + esc(C.title) + '</h1><p>Paste each lesson\'s YouTube link (upload as <b>Unlisted</b>, so only the course shows it). Students\' homework arrives below.</p><a class="btn ghost" href="#' + C.units[0].id + '">← Back to the course</a></div></section><div class="grid" style="grid-template-columns:1fr"><div class="main">';
     h += '<div class="card"><h2 style="font-size:22px;margin-bottom:12px">🎬 Videos</h2><table class="tt"><tr><th>Lesson</th><th>YouTube link</th><th></th></tr>' + C.units.map(function (u) { return u.videos.map(function (v) { return '<tr><td><b>' + v.id.toUpperCase() + '</b> ' + esc(v.title) + (v.deck ? ' · <a href="' + v.deck + '" download>deck</a>' : '') + '</td><td><input class="inp" data-yt="' + v.id + '" placeholder="https://youtu.be/… or a Shorts link" value="' + (S.videos[v.id] ? (/^s:/.test(S.videos[v.id]) ? 'https://youtube.com/shorts/' + S.videos[v.id].slice(2) : 'https://youtu.be/' + S.videos[v.id]) : '') + '"></td><td><button class="btn sm" data-save="' + v.id + '">Save</button></td></tr>'; }).join(''); }).join('') + '</table></div>';
     h += '<div class="card"><h2 style="font-size:22px;margin-bottom:12px">✍️ Homework inbox</h2><div id="inbox" class="mini">Loading…</div></div></div></div>';
     app.innerHTML = h;
