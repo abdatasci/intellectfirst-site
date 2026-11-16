@@ -58,14 +58,26 @@ export async function setCover(key, teacherId, by) {
   return findLesson(key);
 }
 
-/** "🔁 Cover a lesson": the lessons of the next 7 days (a teacher's own; the admins see everyone's). */
+/** "🔁 Cover a lesson": first, which way round — I need a cover, or I am covering for a colleague. */
 export async function startCover(chatId, uid, p) {
-  const classes = await doc('classes'), CH = await loadChanges(), teachers = await doc('teachers');
-  const all = upcomingLessons(classes, new Date(), 7, CH).filter(l => canAll(p) || l.teacherId === p.teacherId).slice(0, 24);
-  if (!all.length) return tgSend(chatId, 'You have no lessons in the next 7 days.');
-  await S().setJSON(`bot/cover/${chatId}`, { keys: all.map(l => l.key) });
-  const tn = id => (teachers.find(t => t.id === id) || {}).name || '';
-  return tgSend(chatId, '🔁 Which lesson needs a cover teacher?', { reply_markup: { inline_keyboard: all.map((l, i) => [{ text: `${when(l)} · ${l.label}${canAll(p) && l.teacherId !== p.teacherId ? ' · ' + tn(l.teacherId).split(' ')[0] : ''}${l.coverFor ? ' (cover)' : ''}`.slice(0, 60), callback_data: 'cov:' + i }]).concat([[{ text: '✖ Close', callback_data: 'cox' }]]) } });
+  return tgSend(chatId, '🔁 Cover', { reply_markup: { inline_keyboard: [
+    [{ text: '🙋 I need someone to cover my lesson', callback_data: 'com:need' }],
+    [{ text: '🤝 I am covering a colleague\'s lesson', callback_data: 'com:give' }],
+    [{ text: '✖ Close', callback_data: 'cox' }]] } });
+}
+async function lessonsFor(p, mode) {
+  const classes = await doc('classes'), CH = await loadChanges(), { lessonsOn, today } = await import('./lessons.mjs');
+  const todays = lessonsOn(classes, today(), CH).filter(l => !l.cancelled && !l.movedTo);
+  const all = [...todays, ...upcomingLessons(classes, new Date(), 7, CH).filter(l => l.date !== today())];
+  return all.filter(l => mode === 'give' ? l.teacherId !== p.teacherId : (canAll(p) || l.teacherId === p.teacherId)).slice(0, 24);
+}
+async function listLessons(q, chatId, p, mode) {
+  const teachers = await doc('teachers'), tn = id => ((teachers.find(t => t.id === id) || {}).name || '').split(' ')[0];
+  const all = await lessonsFor(p, mode);
+  if (!all.length) { await answer(q); await edit(q, mode === 'give' ? 'No colleague has a lesson today or in the next 7 days.' : 'You have no lessons in the next 7 days.'); return; }
+  await S().setJSON(`bot/cover/${chatId}`, { keys: all.map(l => l.key), mode });
+  await answer(q);
+  await edit(q, mode === 'give' ? '🤝 Which lesson are you covering?' : '🙋 Which lesson needs a cover teacher?', { inline_keyboard: all.map((l, i) => [{ text: `${when(l)} · ${l.label}${mode === 'give' || (canAll(p) && l.teacherId !== p.teacherId) ? ' · ' + tn(l.teacherId) : ''}${l.coverFor ? ' (cover)' : ''}`.slice(0, 60), callback_data: (mode === 'give' ? 'cog:' : 'cov:') + i }]).concat([[{ text: '✖ Close', callback_data: 'cox' }]]) });
 }
 
 /** Buttons: cov:<i> lesson · cow:<i>|all colleague · coa:<id> accept · cod:<id> decline · cou remove the cover · cox close */
@@ -74,6 +86,23 @@ export async function coverCallback(q, uid, p) {
   if (!isStaff(p)) { await answer(q, 'Only teachers and staff can do this.', true); return true; }
   if (data === 'cox') { await S().delete(`bot/cover/${chatId}`).catch(() => {}); await answer(q); await edit(q, 'Closed.'); return true; }
   const st = (await S().get(`bot/cover/${chatId}`, { type: 'json' })) || {};
+  if (data === 'com:need' || data === 'com:give') { await listLessons(q, chatId, p, data.slice(4)); return true; }
+  if (data.startsWith('cog:')) {   // "I am covering this lesson": the class's teacher (or the admin) confirms
+    const key = (st.keys || [])[+data.slice(4)], l = key && await findLesson(key);
+    if (!l) { await answer(q, 'This lesson is not on the timetable any more.', true); return true; }
+    if (!p.teacherId) { await answer(q, 'Your account is not linked to a teacher record.', true); return true; }
+    const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 5), fromName = await tname(l.teacherId);
+    const R = await loadReqs(); R[id] = { id, key: l.key, label: l.label, when: when(l), from: l.teacherId, to: p.teacherId, claim: true, by: p.name || '', byUid: uid, status: 'pending', at: new Date().toISOString(), declined: [] }; await saveReqs(R);
+    await S().delete(`bot/cover/${chatId}`).catch(() => {});
+    const kb = { inline_keyboard: [[{ text: '✅ Confirm', callback_data: 'coa:' + id }, { text: '✖ Not right', callback_data: 'cod:' + id }]] };
+    const msg = `🤝 ${p.name || 'A teacher'} says they are covering your lesson ${l.label}, ${when(l)}. Please confirm.`;
+    const chats = (await staffChats()).filter(c => c.p.teacherId === l.teacherId);
+    for (const c of chats) await tgSend(c.chatId, msg, { reply_markup: kb }).catch(() => {});
+    await answer(q, 'Sent for confirmation');
+    await edit(q, `🤝 Noted: you are covering ${l.label}, ${when(l)} for ${fromName}. ${chats.length ? fromName.split(' ')[0] + ' and the admin' : 'The admin'} will confirm — then it is in the timetable and the lesson counts in your hours.`);
+    await tellAdmins(`🤝 ${p.name || 'A teacher'} is covering ${l.label}, ${when(l)} for ${fromName}. Confirm it here:`, kb, uid);
+    return true;
+  }
   if (data.startsWith('cov:')) {
     const key = (st.keys || [])[+data.slice(4)], l = key && await findLesson(key);
     if (!l) { await answer(q, 'This lesson is not on the timetable any more. Press 🔁 Cover a lesson again.', true); return true; }
@@ -114,19 +143,19 @@ export async function coverCallback(q, uid, p) {
     const R = await loadReqs(), r = R[data.slice(4)];
     if (!r) { await answer(q, 'This request has expired.', true); await edit(q, 'This cover request has expired.'); return true; }
     if (r.status !== 'pending') { await answer(q, r.status === 'accepted' ? `Already covered by ${r.coverName}.` : 'This request was declined.', true); await edit(q, r.status === 'accepted' ? `✅ ${r.label}, ${r.when}: covered by ${r.coverName}.` : `✖ ${r.label}, ${r.when}: declined.`); return true; }
-    const admin = canAll(p), mine = p.teacherId && (r.to === p.teacherId || (r.to === 'all' && p.teacherId !== r.from));
+    const admin = canAll(p), mine = p.teacherId && (r.claim ? p.teacherId === r.from : (r.to === p.teacherId || (r.to === 'all' && p.teacherId !== r.from)));
     if (!admin && !mine) { await answer(q, 'This request is for another teacher.', true); return true; }
     const links = await getLinks(), reqChat = links[r.byUid] && links[r.byUid].chatId;
     if (data.startsWith('cod:')) {
       if (r.to === 'all' && !admin) { r.declined = [...new Set([...(r.declined || []), p.teacherId])]; R[r.id] = r; await saveReqs(R); await answer(q, 'OK'); await edit(q, `✖ You declined: ${r.label}, ${r.when}.`); await tellAdmins(`✖ ${p.name || 'A teacher'} can't cover ${r.label}, ${r.when}.`, null, uid); return true; }
       r.status = 'declined'; r.doneBy = p.name || ''; R[r.id] = r; await saveReqs(R);
       await answer(q, 'Declined'); await edit(q, `✖ Declined: ${r.label}, ${r.when}.`);
-      if (reqChat && r.byUid !== uid) await tgSend(reqChat, `✖ ${p.name || 'The teacher'} can't cover ${r.label}, ${r.when}. Press 🔁 Cover a lesson to ask someone else.`).catch(() => {});
+      if (reqChat && r.byUid !== uid) await tgSend(reqChat, r.claim ? `✖ ${p.name || 'The teacher'} says the cover for ${r.label}, ${r.when} is not right. Please talk to the admin.` : `✖ ${p.name || 'The teacher'} can't cover ${r.label}, ${r.when}. Press 🔁 Cover a lesson to ask someone else.`).catch(() => {});
       await tellAdmins(`✖ Cover declined by ${p.name || 'a teacher'}: ${r.label}, ${r.when}. It still needs a teacher.`, null, uid);
       return true;
     }
     // accept: the covering teacher is the one who pressed (or, for an admin confirming, the teacher asked)
-    const cover = mine ? p.teacherId : r.to !== 'all' ? r.to : null;
+    const cover = r.claim ? r.to : mine ? p.teacherId : r.to !== 'all' ? r.to : null;
     if (!cover) { await answer(q, 'Ask a teacher to accept, or choose one with 🔁 Cover a lesson.', true); return true; }
     const l = await findLesson(r.key); if (!l) { await answer(q, 'This lesson is not on the timetable any more.', true); return true; }
     await setCover(r.key, cover, p.name || '');

@@ -142,11 +142,11 @@ export async function staffCallback(q, uid, p) {
     await tgSend(chatId, `❌ Cancel ${f.lesson.label}, ${f.lesson.date.slice(8)}.${f.lesson.date.slice(5, 7)} ${f.lesson.start}?\nWhy?`, { reply_markup: { inline_keyboard: [
       [{ text: '👥 Only staff attend — not a paid lesson', callback_data: 'lr:staff' }],
       [{ text: '🤒 The teacher can\'t teach (tell students)', callback_data: 'lr:teacher' }],
-      [{ text: '📝 Other reason (tell students)', callback_data: 'lr:other' }],
+      [{ text: '✍️ Write the reason…', callback_data: 'lr:other' }],
       [{ text: '↩ Keep the lesson', callback_data: 'lr:no' }]] } });
     return true;
   }
-  if (data.startsWith('lr:') || data === 'lu') {
+  if (data.startsWith('lr:') || data.startsWith('lt:') || data === 'lu') {
     const st = await S().get(`bot/lx/${chatId}`, { type: 'json' });
     if (data === 'lr:no') { await S().delete(`bot/lx/${chatId}`).catch(() => {}); await answer(q, 'Kept'); await edit(q, '👍 The lesson stays on the timetable.'); return true; }
     if (!st) { await answer(q, 'Expired. Open 🕑 Today\'s lessons again.', true); return true; }
@@ -160,22 +160,41 @@ export async function staffCallback(q, uid, p) {
     const f = await findLesson(st.key);
     if (!f) { await answer(q, 'This lesson is not on the timetable any more.', true); return true; }
     if (!mine(p, f.lesson)) { await answer(q, 'This is another teacher\'s lesson.', true); return true; }
-    const l = f.lesson, why = data.slice(3), note = why === 'staff' ? 'Staff only — not a paid lesson' : why === 'teacher' ? 'The teacher can\'t teach' : '';
+    if (data === 'lr:other') {   // ask for the reason in words; the next message is the reason
+      st.awaiting = true; await S().setJSON(`bot/lx/${chatId}`, st);
+      await answer(q, ''); await edit(q, `✍️ Write the reason for cancelling ${f.lesson.label} (${f.lesson.start}) in one message. It goes to the admin — and to the students if you choose.`);
+      return true;
+    }
+    const why = data.startsWith('lt:') ? 'other' : data.slice(3);
+    const ok = await doCancel(chatId, uid, p, st, f, why, why === 'other' ? st.note || '' : null, why === 'other' ? data === 'lt:yes' : why !== 'staff');
+    await answer(q, 'Cancelled'); await edit(q, ok.text, ok.kb);
+    return true;
+  }
+  return false;
+}
+/** The typed reason for a cancellation (after "✍️ Write the reason…"). Returns true if the message was used. */
+export async function cancelReasonText(chatId, text) {
+  const st = await S().get(`bot/lx/${chatId}`, { type: 'json' });
+  if (!st || !st.awaiting || !text || /^\//.test(text)) return false;
+  st.awaiting = false; st.note = String(text).replace(/\s+/g, ' ').trim().slice(0, 200); await S().setJSON(`bot/lx/${chatId}`, st);
+  await tgSend(chatId, `Reason: “${st.note}”\nShould the students be told?`, { reply_markup: { inline_keyboard: [[{ text: '📣 Yes, tell the students', callback_data: 'lt:yes' }], [{ text: '🤫 No (staff only)', callback_data: 'lt:no' }], [{ text: '↩ Keep the lesson', callback_data: 'lr:no' }]] } });
+  return true;
+}
+async function doCancel(chatId, uid, p, st, f, why, typed, tell) {
+    const CH = await loadChanges(), [cid, date, start] = st.key.split('|');
+    const l = f.lesson, note = typed != null ? typed : why === 'staff' ? 'Staff only — not a paid lesson' : why === 'teacher' ? 'The teacher can\'t teach' : '';
     if (l.kind === 'extra') CH.extra = CH.extra.filter(x => x.id !== l.extraId);
     else { const orig = l.from || l.key; delete CH.moves[orig]; CH.cancel[orig] = { note, by: p.name || '', at: new Date().toISOString(), staffOnly: why === 'staff' || undefined, noMakeup: why === 'staff' || undefined }; }
     await saveChanges(CH);
     const day = `${date.slice(8)}.${date.slice(5, 7)} ${start}`;
     let told = 0;
-    if (why !== 'staff') told = await tellStudents(f.cls, { en: `❌ Lesson cancelled: ${l.label}, ${day}.${note ? ' ' + note + '.' : ''}`, ru: `❌ Урок отменён: ${l.label}, ${day}.` });
+    if (tell) told = await tellStudents(f.cls, { en: `❌ Lesson cancelled: ${l.label}, ${day}.${note ? ' ' + note + '.' : ''}`, ru: `❌ Урок отменён: ${l.label}, ${day}.` });
     st.label = `${l.label}, ${day}`; await S().setJSON(`bot/lx/${chatId}`, st);
-    await answer(q, 'Cancelled');
-    await edit(q, `❌ Cancelled: ${l.label}, ${day}${note ? ' — ' + note : ''}.\n${why === 'staff' ? 'Students were not told (staff only). It is not counted as a missed lesson and needs no make-up.' : `Students told: ${told}.`}\nThe website and the admin pages show it now.`, { inline_keyboard: [[{ text: '↩ Undo', callback_data: 'lu' }]] });
+    const msg = `❌ Cancelled: ${l.label}, ${day}${note ? ' — ' + note : ''}.\n${why === 'staff' ? 'Students were not told (staff only). It is not counted as a missed lesson and needs no make-up.' : tell ? `Students told: ${told}.` : 'Students were not told.'}\nThe website and the admin pages show it now.`;
     if (date === today()) { const { tellSmm } = await import('./daydigest.mjs'); await tellSmm(`❌ Cancelled today: ${l.label} ${start}${note ? ' — ' + note : ''} (by ${p.name || 'a teacher'})`).catch(() => {}); }
     const { tellAdmins } = await import('./cover.mjs');
-    await tellAdmins(`❌ ${p.name || 'A teacher'} cancelled ${l.label}, ${day}${note ? ' — ' + note : ''}.${why === 'staff' ? ' (Staff only: students were not told.)' : ''}`, null, uid);
-    return true;
-  }
-  return false;
+    await tellAdmins(`❌ ${p.name || 'A teacher'} cancelled ${l.label}, ${day}${note ? ' — ' + note : ''}.${why === 'staff' ? ' (Staff only: students were not told.)' : !tell ? ' (Students were not told.)' : ''}`, null, uid);
+    return { text: msg, kb: { inline_keyboard: [[{ text: '↩ Undo', callback_data: 'lu' }]] } };
 }
 /** Tell the students of a class on Telegram (in their language) and on the website. Returns how many were reached. */
 async function tellStudents(cls, text) {

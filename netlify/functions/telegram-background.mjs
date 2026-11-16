@@ -3,7 +3,7 @@
 import { S, getProfile, contextFor, reply, publicReply, allow, tgSecret, tgSend, tg, getLinks, saveLinks, linkChat, matchPhone, local, money, langOf, localise } from '../lib/bot-core.mjs';
 import { handleReceipt, decideReceipt } from '../lib/receipts.mjs';
 import { loadHomework, forClasses, isUpcoming } from '../lib/homework.mjs';
-import { isStaff, STAFF_KB, STAFF_HELP, staffHello, sendToday, staffCallback, ensureStaffKb } from '../lib/teachbot.mjs';
+import { isStaff, STAFF_KB, STAFF_HELP, staffHello, sendToday, staffCallback, ensureStaffKb, cancelReasonText } from '../lib/teachbot.mjs';
 import { startCover, coverCallback } from '../lib/cover.mjs';
 import { startHomework, hwCallback, hwMessage } from '../lib/teachhw.mjs';
 import { startTask, ctCallback, ctMessage, ctAnswer, ctPollAnswer } from '../lib/classtask.mjs';
@@ -151,12 +151,12 @@ export default async (req) => {
       catch (e) { console.error('homework button', e.message); await tg('answerCallbackQuery', { callback_query_id: q.id, text: 'Something went wrong. Try again.' }).catch(() => {}); }
       return new Response('ok');
     }
-    if (/^(cov:|cow:|coa:|cod:|cou$|cox$)/.test(String(q.data || ''))) {
+    if (/^(cov:|cow:|coa:|cod:|cou$|cox$|com:|cog:)/.test(String(q.data || ''))) {
       try { const uid = await S().get(`bot/chat/${q.message?.chat?.id || q.from?.id}`), p = uid && await getProfile(uid); await coverCallback(q, uid, p || null); }
       catch (e) { console.error('cover button', e.message); await tg('answerCallbackQuery', { callback_query_id: q.id, text: 'Something went wrong. Try again.' }).catch(() => {}); }
       return new Response('ok');
     }
-    if (/^(ci:|ro:|rt:\d|ra$|rs$|lx:|lr:|lu$)/.test(String(q.data || ''))) {
+    if (/^(ci:|ro:|rt:\d|ra$|rs$|lx:|lr:|lt:|lu$)/.test(String(q.data || ''))) {
       try { const uid = await S().get(`bot/chat/${q.message?.chat?.id || q.from?.id}`), p = uid && await getProfile(uid); await staffCallback(q, uid, p || null); }
       catch (e) { console.error('staff button', e.message); await tg('answerCallbackQuery', { callback_query_id: q.id, text: 'Something went wrong. Try again.' }).catch(() => {}); }
       return new Response('ok');
@@ -243,6 +243,7 @@ export default async (req) => {
     if (isStaff(me) && await ctMessage(chatId, me, m)) return new Response('ok');
     if (!isStaff(me) && await ctAnswer(chatId, m, lang)) return new Response('ok');
     if (m.photo || m.document) { tg('sendChatAction', { chat_id: chatId, action: 'typing' }).catch(() => {}); await handleReceipt({ chatId, uid, msg: m, lang }); return new Response('ok'); }
+    if (isStaff(me) && await cancelReasonText(chatId, text)) return new Response('ok');
     if (isStaff(me) && /^🔁|^\/cover\b/i.test(text)) { await startCover(chatId, uid, me); return new Response('ok'); }
     if (isStaff(me) && /^\/today\b|^🕑|^\/clock/i.test(text)) { await sendToday(chatId, uid, me); return new Response('ok'); }
     if (isStaff(me) && /^\/start\b|^\/help\b|^❓/i.test(text)) { await tgSend(chatId, STAFF_HELP, { reply_markup: STAFF_KB }); return new Response('ok'); }
