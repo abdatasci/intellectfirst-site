@@ -6,6 +6,7 @@
 import { getStore } from '@netlify/blobs';
 import { tgAccount } from '../lib/tgauth.mjs';
 import { readFile } from 'node:fs/promises';
+import { createHmac, timingSafeEqual } from 'node:crypto';
 import { join } from 'node:path';
 import { getUser, refreshSession, admin as idAdmin } from '@netlify/identity';
 import { roleForCode, isStaff, lockKeysFromCode, verifyLockKeys, isPrivateCode } from '../lib/codes.mjs';
@@ -341,6 +342,19 @@ async function appProgress(uid, method, req) {
   return null;
 }
 
+const PDF_FILES = { 'ielts-vocabulary-bank': 'IF Academy - IELTS Vocabulary Bank.pdf', 'ielts-writing-language-bank': 'IF Academy - IELTS Writing Language Bank.pdf' };
+function pdfSig(id, exp) {
+  const k = (globalThis.Netlify?.env?.get('IFADMIN_SYNC_KEY')) || process.env.IFADMIN_SYNC_KEY || '';
+  return k.length >= 32 ? createHmac('sha256', k).update('pdf|' + id + '|' + exp).digest('hex').slice(0, 32) : '';
+}
+async function pdfResponse(id) {
+  let bytes = null;
+  for (const base of [process.cwd(), process.env.LAMBDA_TASK_ROOT || '', '/var/task']) {
+    try { bytes = await readFile(join(base, 'netlify/files/pdf', id + '.pdf')); break; } catch {}
+  }
+  if (!bytes) return Response.json({ error: 'missing' }, { status: 404 });
+  return new Response(bytes, { headers: { 'Content-Type': 'application/pdf', 'Content-Disposition': `attachment; filename="${PDF_FILES[id]}"`, 'Cache-Control': 'private, no-store' } });
+}
 export default async (req) => {
   await runMigrations();
   const url = new URL(req.url);
@@ -383,6 +397,16 @@ export default async (req) => {
     const k = (await S().get('lockKeys', { type: 'json' })) || {};
     if (!k.ks) return fail(503, 'not-ready');
     return json(isStaff(role) && k.kt ? { ks: k.ks, kt: k.kt, role: 'teacher' } : { ks: k.ks, role: 'student' });
+  }
+
+  // signed PDF link (10 minutes): Telegram's own downloader fetches it without the site's sign-in cookie
+  const sdl = path.match(/^dl\/([a-z-]+)\/(\d+)\.([a-f0-9]{32})\.pdf$/);
+  if (sdl && method === 'GET') {
+    const [, id, exp, sig] = sdl;
+    if (!PDF_FILES[id] || +exp < Date.now() / 1000) return fail(410, 'expired');
+    const want = pdfSig(id, exp);
+    if (!want || !timingSafeEqual(Buffer.from(want), Buffer.from(sig))) return fail(403, 'link');
+    return pdfResponse(id);
   }
 
   let user = await tgAccount(req);   // inside the Telegram bot (Mini App): signed in through the bot connection
@@ -519,16 +543,16 @@ export default async (req) => {
 
   // study PDFs (IELTS Studio vocabulary and writing language banks): students and teachers only
   if (path.startsWith('download/') && method === 'GET') {
-    const FILES = { 'ielts-vocabulary-bank': 'IF Academy - IELTS Vocabulary Bank.pdf', 'ielts-writing-language-bank': 'IF Academy - IELTS Writing Language Bank.pdf' };
     const id = path.slice(9).replace(/\.pdf$/, '');
-    if (!FILES[id]) return fail(404, 'none');
+    if (!PDF_FILES[id]) return fail(404, 'none');
     if (!isMember(profile) && !isStaff(profile.role)) return fail(403, 'members');
-    let bytes = null;
-    for (const base of [process.cwd(), process.env.LAMBDA_TASK_ROOT || '', '/var/task']) {
-      try { bytes = await readFile(join(base, 'netlify/files/pdf', id + '.pdf')); break; } catch {}
+    // ?link=1 → a signed link for the Telegram mini-app (it downloads the file itself; the page cannot save files there)
+    if (new URL(req.url).searchParams.get('link')) {
+      const exp = String(Math.floor(Date.now() / 1000) + 600), sig = pdfSig(id, exp);
+      if (!sig) return fail(503, 'link');
+      return json({ url: `${new URL(req.url).origin}/api/school/dl/${id}/${exp}.${sig}.pdf`, name: PDF_FILES[id] });
     }
-    if (!bytes) return fail(404, 'missing');
-    return new Response(bytes, { headers: { 'Content-Type': 'application/pdf', 'Content-Disposition': `attachment; filename="${FILES[id]}"`, 'Cache-Control': 'private, no-store' } });
+    return pdfResponse(id);
   }
 
   // the student chose their own password: forget the one-time password

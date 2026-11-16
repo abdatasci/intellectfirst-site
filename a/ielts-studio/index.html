@@ -1061,6 +1061,14 @@ document.addEventListener("click",async e=>{
   const msg=$("#pdfMsg"),say=t=>{if(msg)msg.innerHTML=t;};
   b.disabled=true;const was=b.textContent;b.textContent="Preparing…";say("");
   try{
+    // Telegram mini-app: the page can't save files there, so Telegram downloads it (or opens it in the phone's browser)
+    const TG=window.Telegram&&Telegram.WebApp&&Telegram.WebApp.initData?Telegram.WebApp:null;
+    if(TG){const r=await fetch("/api/school/download/"+b.dataset.pdf+"?link=1",{credentials:"same-origin"});
+      if(r.ok){const d=await r.json();
+        if(TG.downloadFile&&TG.isVersionAtLeast&&TG.isVersionAtLeast("8.0")){TG.downloadFile({url:d.url,file_name:d.name});say("Telegram is downloading the PDF. Tap <b>Download</b> if it asks, then open it from the Files app or your Downloads.");}
+        else{TG.openLink(d.url);say("The PDF opened in your phone’s browser. Use Share → Save to Files to keep it.");}
+        b.disabled=false;b.textContent=was;return;}
+    }
     const r=await fetch("/api/school/download/"+b.dataset.pdf,{credentials:"same-origin"});
     if(r.ok){const blob=await r.blob(),u=URL.createObjectURL(blob),a=document.createElement("a");
       a.href=u;a.download=(b.dataset.pdf==="ielts-vocabulary-bank"?"IF Academy - IELTS Vocabulary Bank":"IF Academy - IELTS Writing Language Bank")+".pdf";
