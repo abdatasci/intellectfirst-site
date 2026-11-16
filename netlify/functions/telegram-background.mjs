@@ -65,9 +65,12 @@ function nextText(ctx, lang) {
   if (!ctx.lessons.length) return L[lang].none;
   return ctx.lessons.slice(0, 5).map(x => { const d = local(x.at); return `📅 ${DAY[lang][d.getUTCDay()]} ${x.date.slice(8)}.${x.date.slice(5, 7)} ${x.start}${x.end ? '–' + x.end : ''} — ${x.label}${x.room ? ' · ' + x.room : ''}`; }).join('\n');
 }
-function hwListText(items, lang) {
-  if (!items.length) return L[lang].hwNone;
-  return items.slice(0, 8).map(h => `${h.kind === 'test' ? '🧪' : '📝'} ${h.due.slice(8)}.${h.due.slice(5, 7)}${h.time ? ' ' + h.time : ''} · ${h.classLabel}: ${h.text}`).join('\n');
+const HWS = { en: { done: '✅ checked: done', part: '🟡 checked: partly done', not: '❌ checked: not done', claimed: '⏳ waiting for the teacher to check' }, ru: { done: '✅ проверено: выполнено', part: '🟡 проверено: частично', not: '❌ проверено: не выполнено', claimed: '⏳ ждёт проверки учителя' } };
+function hwListText(items, lang, sid, checked) {
+  const st = h => { const c = sid && h.checks && h.checks[sid]; return c ? ' — ' + ((HWS[lang] || HWS.en)[c.s] || '') : ''; };
+  const all = items.concat((checked || []).filter(h => !items.includes(h)));
+  if (!all.length) return L[lang].hwNone;
+  return all.slice(0, 10).map(h => `${h.kind === 'test' ? '🧪' : '📝'} ${h.due.slice(8)}.${h.due.slice(5, 7)}${h.time ? ' ' + h.time : ''} · ${h.classLabel}: ${h.text}${st(h)}`).join('\n');
 }
 /** "📊 My results": school tests from IF Admin (English File, Cambridge, placement…) and IELTS Centre results. */
 const RES = {
@@ -309,7 +312,8 @@ export default async (req) => {
     if (/^\/next\b|^📅/i.test(text)) { await tgSend(chatId, ctx.student || ctx.classes.length ? nextText(ctx, lang) : L[lang].unlinkedRecord, { reply_markup: isStaff(ctx.profile) ? kbFor(ctx.profile) : KB }); return new Response('ok'); }
     if (/^\/hw\b|^\/homework\b|^📝/i.test(text)) {
       const items = ctx.classes.length ? forClasses(await loadHomework(), ctx.classes.map(c => c.id), { past: 0 }).filter(isUpcoming) : [];
-      await tgSend(chatId, ctx.classes.length ? hwListText(items, lang) : L[lang].unlinkedRecord, { reply_markup: isStaff(ctx.profile) ? kbFor(ctx.profile) : KB });
+      const sid0 = ctx.student && ctx.student.id, checked = sid0 ? forClasses(await loadHomework(), ctx.classes.map(c => c.id), { past: 7 }).filter(h => !isUpcoming(h) && h.checks && h.checks[sid0]) : [];
+      await tgSend(chatId, ctx.classes.length ? hwListText(items, lang, sid0, checked) : L[lang].unlinkedRecord, { reply_markup: isStaff(ctx.profile) ? kbFor(ctx.profile) : KB });
       const online = items.filter(h => h.url).slice(0, 6);   // online tests: open straight from here, signed in
       if (online.length) await tgSend(chatId, { en: '🖥 Online tests', ru: '🖥 Онлайн-тесты', kk: '🖥 Онлайн-тесттер' }[lang] || '🖥 Online tests', { reply_markup: { inline_keyboard: online.map(h => [{ text: '🖥 ' + String(h.text).slice(0, 40), web_app: { url: 'https://intellectfirst.com' + h.url + '?tg=1' } }]) } });
       return new Response('ok');

@@ -427,11 +427,25 @@
   function kzt(n) { return Math.round(n).toLocaleString('ru-RU').replace(/ /g, ' ') + ' ₸'; }
   function plansOf(m) { var P = (m && m.plans) || {}; return [1, 3, 6, 12].filter(function (k) { return +P[k] > 0; }).map(function (k) { return { months: k, total: +P[k], per: +P[k] / k }; }); }
   function fromPrice(m) { var L = plansOf(m); return L.length ? Math.min.apply(null, L.map(function (x) { return x.per; })) : 0; }
+  document.addEventListener('click', async function (ev) {
+    var b = ev.target.closest && ev.target.closest('[data-hwdone]'); if (!b) return;
+    b.disabled = true;
+    try { var r = await api('me/homework/' + b.dataset.hwdone + '/done', { method: 'POST', body: {} }); (ME.homework || []).forEach(function (x) { if (x.id === r.item.id) x.my = r.item.my; });
+      b.outerHTML = '<span class="hwst wait">⏳ Waiting for your teacher to check</span>'; toast('Sent. Your teacher will check it.'); }
+    catch (e) { b.disabled = false; toast('Could not send. Please try again.'); }
+  });
   function hwBox(list) {
     var t = new Date(Date.now() + 5 * 3600e3).toISOString().slice(0, 10);
     var up = list.filter(function (x) { return x.due >= t; }), past = list.filter(function (x) { return x.due < t; }).reverse();
-    var row = function (x) { return '<div class="hwrow' + (x.due < t ? ' past' : '') + '"><span class="hwk">' + (x.url ? '🖥 Online test' : x.kind === 'test' ? '🧪 Test' : '📝 Homework') + '</span><b>' + esc(x.text) + (x.url ? ' <a class="btn sm" style="margin-left:8px" href="' + esc(x.url) + '">Open the test</a>' : '') + '</b><small>' + esc(x.classLabel) + ' · ' + (x.kind === 'test' ? 'on ' : 'due ') + when(x.due) + (x.time ? ' ' + esc(x.time) : '') + '</small></div>'; };
-    return '<div class="box"><h3>Homework and tests</h3>' + (up.length ? up.map(row).join('') : '<p class="small">Nothing set for the coming days.</p>') + (past.length ? '<details style="margin-top:8px"><summary class="small">Last week</summary>' + past.map(row).join('') + '</details>' : '') + '<p class="small" style="margin-top:8px">Reminders come on Telegram the evening before.</p></div>';
+    var HWS = { done: ['ok', '✅ Checked by your teacher: done'], part: ['mid', '🟡 Checked by your teacher: partly done'], not: ['no', '❌ Checked by your teacher: not done'], claimed: ['wait', '⏳ Waiting for your teacher to check'] };
+    var mine = function (x) {
+      if (x.kind !== 'hw' || x.url) return '';
+      var m = x.my && HWS[x.my.s];
+      if (m) return '<span class="hwst ' + m[0] + '">' + m[1] + '</span>';
+      return '<button class="btn ghost sm hwdone" data-hwdone="' + esc(x.id) + '">I’ve done it</button>';
+    };
+    var row = function (x) { return '<div class="hwrow' + (x.due < t && !(x.my && x.my.s !== 'claimed') ? ' past' : '') + '"><span class="hwk">' + (x.url ? '🖥 Online test' : x.kind === 'test' ? '🧪 Test' : '📝 Homework') + '</span><b>' + esc(x.text) + (x.url ? ' <a class="btn sm" style="margin-left:8px" href="' + esc(x.url) + '">Open the test</a>' : '') + '</b><small>' + esc(x.classLabel) + ' · ' + (x.kind === 'test' ? 'on ' : 'due ') + when(x.due) + (x.time ? ' ' + esc(x.time) : '') + '</small>' + mine(x) + '</div>'; };
+    return '<div class="box"><h3>Homework and tests</h3>' + (up.length ? up.map(row).join('') : '<p class="small">Nothing set for the coming days.</p>') + (past.length ? '<details style="margin-top:8px"' + (past.some(function (x) { return x.my; }) ? ' open' : '') + '><summary class="small">Last two weeks</summary>' + past.map(row).join('') + '</details>' : '') + '<p class="small" style="margin-top:8px">Reminders come on Telegram the evening before. Your teacher checks each homework; “I’ve done it” tells them it’s ready.</p></div>';
   }
   function accessBand(p) {
     if (role() !== 'guest') return '';
@@ -744,17 +758,41 @@
         '<h3 style="margin:10px 0">Students (' + act.length + ')</h3>' + (act.length ? '<div class="people">' + act.map(studentCard).join('') + '</div>' : '<div class="empty">No students in this class yet.</div>') +
         (past.length ? '<h3 style="margin:22px 0 10px">Former students</h3><div class="people">' + past.map(studentCard).join('') + '</div>' : '');
       $('#exp').onclick = function () { exportDialog(c.id, [c]); };
-      wireHw(c);
+      wireHw(c, act);
       var tdy = document.createElement('div'); tdy.id = 'ctoday'; var hero = view.querySelector('.hero'); if (hero) hero.after(tdy); todayBox(tdy, c.id);
       var ab = document.createElement('div'); ab.id = 'catt'; var hw = view.querySelector('.hwset'); if (hw) hw.after(ab); else view.appendChild(ab); classAttBox(ab, c.id);
     } catch (e) { view.innerHTML = '<div class="empty" style="margin-top:30px">This class could not be loaded.</div>'; }
   }
   var TCENTRES = [['/a/ef-a1-tests/','English File Elementary (A1)'],['/a/ef-a2-tests/','English File Pre-intermediate (A2)'],['/a/ef-b1-tests/','English File Intermediate (B1)'],['/a/ef-b2-tests/','English File Upper-intermediate (B2)'],['/a/ef-c1-tests/','English File Advanced (C1)'],['/a/teens-b1-tests/','English for Teenagers B1–B2'],['/a/teens-b2-tests/','English for Teenagers B2–C1'],['/a/pet-tests/','PET (B1 Preliminary)'],['/a/yl-tests/','Young Learners (Starters–Flyers)'],['/a/ielts/','IELTS Centre'],['/a/placement-test/','IF Placement Test']];
-  function wireHw(c) {
+  var OPENCK = {};
+  function wireHw(c, studs) {
+    studs = (studs || []).map(function (v) { return v.record; });
     var t = new Date(Date.now() + 5 * 3600e3), d = new Date(t.getTime() + 2 * 864e5); $('#hwd').value = d.toISOString().slice(0, 10);
     function draw(list) {
-      $('#hwl').innerHTML = list.length ? list.slice().reverse().map(function (x) { return '<div class="hwrow"><span class="hwk">' + (x.url ? '🖥 Online test' : x.kind === 'test' ? '🧪 Test' : '📝 Homework') + '</span><b>' + esc(x.text) + (x.url ? ' <a href="' + esc(x.url) + '" target="_blank" rel="noopener">Open ↗</a>' : '') + '</b><small>' + (x.kind === 'test' ? 'on ' : 'due ') + when(x.due) + (x.time ? ' ' + esc(x.time) : '') + ' · ' + esc(x.by || '') + ' <button class="linkbtn" data-del="' + x.id + '">Delete</button></small></div>'; }).join('') : '<p class="small">Nothing set yet.</p>';
+      $('#hwl').innerHTML = list.length ? list.slice().reverse().map(function (x) { return '<div class="hwrow" data-hwrow="' + esc(x.id) + '"><span class="hwk">' + (x.url ? '🖥 Online test' : x.kind === 'test' ? '🧪 Test' : '📝 Homework') + '</span><b>' + esc(x.text) + (x.url ? ' <a href="' + esc(x.url) + '" target="_blank" rel="noopener">Open ↗</a>' : '') + '</b><small>' + (x.kind === 'test' ? 'on ' : 'due ') + when(x.due) + (x.time ? ' ' + esc(x.time) : '') + ' · ' + esc(x.by || '') + ' <button class="linkbtn" data-del="' + x.id + '">Delete</button></small></div>'; }).join('') : '<p class="small">Nothing set yet.</p>';
       view.querySelectorAll('[data-del]').forEach(function (b) { b.onclick = async function () { if (!(await ask('Delete this?'))) return; await api('teach/homework/' + b.dataset.del, { method: 'DELETE' }); load(); }; });
+      // homework check: ✓ done / ½ part / ✗ not for every student; "said done" shows who pressed "I've done it"
+      list.forEach(function (x) {
+        if (x.kind !== 'hw' || x.url || !studs.length) return;
+        var rowEl = $('#hwl').querySelector('[data-hwrow="' + x.id + '"]'); if (!rowEl) return;
+        var ck = x.checks || {}, fin = studs.filter(function (s) { return ck[s.id] && ck[s.id].s !== 'claimed'; }).length, said = studs.filter(function (s) { return ck[s.id] && ck[s.id].s === 'claimed'; }).length;
+        var btn = document.createElement('button'); btn.className = 'btn ghost sm hwckb'; btn.textContent = '✓ Check homework · ' + fin + '/' + studs.length + (said ? ' · ' + said + ' say done' : '');
+        var pan = document.createElement('div'); pan.className = 'hwck'; pan.hidden = !OPENCK[x.id];
+        pan.innerHTML = studs.map(function (s) {
+          var v = ck[s.id] && ck[s.id].s;
+          return '<div class="hwckr"><span>' + esc(s.first + ' ' + s.last) + (v === 'claimed' || (ck[s.id] && ck[s.id].claimed) ? ' <small class="said">said done</small>' : '') + '</span>' +
+            [['done', '✓ Done'], ['part', '½ Part'], ['not', '✗ Not done']].map(function (o) { return '<button class="hwcko ' + o[0] + (v === o[0] ? ' on' : '') + '" data-ck="' + x.id + '|' + s.id + '|' + o[0] + '">' + o[1] + '</button>'; }).join('') + '</div>';
+        }).join('');
+        btn.onclick = function () { pan.hidden = !pan.hidden; OPENCK[x.id] = !pan.hidden; };
+        rowEl.appendChild(btn); rowEl.appendChild(pan);
+      });
+      $('#hwl').querySelectorAll('[data-ck]').forEach(function (b) {
+        b.onclick = async function () {
+          var p = b.dataset.ck.split('|'), off = b.classList.contains('on'); b.disabled = true;
+          try { await api('teach/homework/' + p[0] + '/check', { method: 'POST', body: { sid: p[1], s: off ? '' : p[2] } }); load(); }
+          catch (e) { b.disabled = false; toast('Could not save. Please try again.'); }
+        };
+      });
     }
     async function load() { try { draw((await api('teach/homework/' + c.id)).homework); } catch (e) { $('#hwl').innerHTML = '<p class="small">Could not load.</p>'; } }
     $('#hwk').onchange = function () { var on = this.value === 'online'; $('#hwc').hidden = !on; $('#hwd').hidden = on; $('#hwtm').hidden = on; $('#hwt').placeholder = on ? 'Which test? e.g. File 3 Test A (optional)' : 'e.g. Workbook p.24 ex. 1–3, or Unit 3 test'; };

@@ -11,7 +11,7 @@ import { getUser, refreshSession, admin as idAdmin } from '@netlify/identity';
 import { roleForCode, isStaff, lockKeysFromCode, verifyLockKeys, isPrivateCode } from '../lib/codes.mjs';
 import { listReceipts, decideReceipt, receiptFile, cashInfo, cashClaim } from '../lib/receipts.mjs';
 import { publicFeedback, mine as myFeedback, submit as submitFeedback, removeMine as removeFeedback, decide as decideFeedback, loadFeedback } from '../lib/feedback.mjs';
-import { loadHomework, addHomework, removeHomework, forClasses, clean as cleanHw, hwText } from '../lib/homework.mjs';
+import { loadHomework, addHomework, removeHomework, forClasses, clean as cleanHw, hwText, setCheck, forStudent } from '../lib/homework.mjs';
 import { getLinks, tgSend, tgToken, addNote, uidsByStudent, inClass, loadChanges, saveChanges } from '../lib/bot-core.mjs';
 import { waReady, waSend, waNumber } from '../lib/whatsapp.mjs';
 import { tellClass } from '../lib/hwsend.mjs';
@@ -412,7 +412,7 @@ export default async (req) => {
       const s = (await doc('students')).find(x => x.id === profile.studentId);
       const classes = (await doc('classes')).filter(c => inClass(c, s));
       out.student = publicStudent(s); out.classes = classes; out.attendance = await attendanceOf(profile.studentId);
-      out.homework = forClasses(await loadHomework(), classes.map(c => c.id));
+      out.homework = forClasses(await loadHomework(), classes.map(c => c.id), { past: 14 }).map(h => forStudent(h, profile.studentId));
     }
     if (profile && isStaff(profile.role)) out.teaching = await classesForTeacher(profile);
     if (profile) out.ielts = await ieltsSummary(uid);
@@ -802,6 +802,23 @@ export default async (req) => {
     await addHomework(item);
     const sent = await tellClass(c, item);
     return json({ item, sent, homework: forClasses(await loadHomework(), [c.id], { past: 30 }) });
+  }
+  // the teacher confirms one student's homework: done / part / not (or '' to clear)
+  const hwk = path.match(/^teach\/homework\/([A-Za-z0-9-]+)\/check$/);
+  if (hwk && method === 'POST') {
+    if (!isStaff(profile.role)) return fail(403, 'staff');
+    const b = await req.json().catch(() => ({})), mine = (await classesForTeacher(profile)).map(c => c.id);
+    if (!['done', 'part', 'not', ''].includes(b.s)) return fail(400, 's');
+    const h = await setCheck(hwk[1], str(b.sid, 40), b.s, profile.name || 'Teacher', x => mine.includes(x.classId));
+    return h ? json({ item: h }) : fail(404, 'missing');
+  }
+  // a student says they have done their homework; the teacher still has to confirm it
+  const hwm = path.match(/^me\/homework\/([A-Za-z0-9-]+)\/done$/);
+  if (hwm && method === 'POST') {
+    if (!profile?.studentId) return fail(403, 'student');
+    const s0 = (await doc('students')).find(x => x.id === profile.studentId), cls = (await doc('classes')).filter(c => inClass(c, s0)).map(c => c.id);
+    const h = await setCheck(hwm[1], profile.studentId, 'claimed', '', x => cls.includes(x.classId) && x.kind === 'hw');
+    return h ? json({ item: forStudent(h, profile.studentId) }) : fail(404, 'missing');
   }
   const hwd = path.match(/^teach\/homework\/([A-Za-z0-9-]+)$/);
   if (hwd && method === 'DELETE') {

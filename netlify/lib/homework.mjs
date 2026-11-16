@@ -34,6 +34,22 @@ export async function removeHomework(id, canRemove) {
   if (!h || !canRemove(h)) return false;
   await saveHomework(l.filter(x => x.id !== id)); return true;
 }
+/** Homework check: the student can say "I've done it" (claimed); only the teacher's mark counts — done, part or not.
+    item.checks = { [studentId]: { s: 'claimed'|'done'|'part'|'not', at, by } } */
+export const HW_FINAL = ['done', 'part', 'not'];
+export async function setCheck(id, sid, val, who, can) {
+  const l = await loadHomework(), h = l.find(x => x.id === id);
+  if (!h || !sid || !can(h)) return null;
+  h.checks = h.checks || {};
+  const cur = h.checks[sid];
+  if (val === 'claimed') { if (cur && HW_FINAL.includes(cur.s)) return h; h.checks[sid] = { s: 'claimed', at: new Date().toISOString() }; }
+  else if (HW_FINAL.includes(val)) h.checks[sid] = { s: val, at: new Date().toISOString(), by: str(who, 80), ...(cur && cur.s === 'claimed' ? { claimed: cur.at } : cur && cur.claimed ? { claimed: cur.claimed } : {}) };
+  else if (val === '') delete h.checks[sid];
+  else return null;
+  await saveHomework(l); return h;
+}
+/** What one student may see of an item: their own check only. */
+export const forStudent = (h, sid) => { const { checks, ...rest } = h; return { ...rest, my: (checks || {})[sid] || null }; };
 /** Upcoming (due today or later) and recent (last 7 days) items for these class ids. */
 export function forClasses(list, classIds, { past = 7 } = {}) {
   const from = new Date(Date.now() + 5 * 3600e3 - past * 864e5).toISOString().slice(0, 10);
