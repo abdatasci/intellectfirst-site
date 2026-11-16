@@ -17,6 +17,7 @@
 import { getStore } from '@netlify/blobs';
 import { lessonsOn, loadLog, withEntry, since, today } from './lessons.mjs';
 import { doc, loadChanges } from './bot-core.mjs';
+import { PACKAGES } from './prices.mjs';
 
 const S = () => getStore({ name: 'school', consistency: 'strong' });
 const A = () => getStore({ name: 'ifadmin', consistency: 'strong' });
@@ -70,7 +71,10 @@ function soloFee(sid, month, D) {
     const net = Math.max(0, (+r.due || 0) - (+r.disc || 0));
     if (net && (!best || net > best.fee)) best = { fee: net, from: m };
   }
-  return best ? { ...best, n: PACKAGE, each: best.fee / PACKAGE } : null;
+  if (!best) return null;
+  // a package from the price list (8 lessons 60 000, 12 lessons 80 000, 16 lessons 100 000) divides by its own size
+  const pk = PACKAGES.find(p => p.n > 1 && p.price === best.fee), n = pk ? pk.n : PACKAGE;
+  return { ...best, n, each: best.fee / n };
 }
 
 /** Pay for one month: { month, teachers: [{teacherId, name, rule, total, hours, lessons, items, late}], fixed: [...] } */
