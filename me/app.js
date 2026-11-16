@@ -491,7 +491,7 @@
     var roleLbl = r === 'admin' ? (p.teacherId === 't-abdoulie' ? 'Founder &amp; Director' : 'Administrator') : r === 'teacher' ? 'Teacher' : p.alumni ? '🎓 IF Alumni' : r === 'guest' ? (paidActive(p) ? 'Full access' : trialOn(p) ? 'Full access trial' : 'Free account') : p.track === 'private' ? 'Individual student' : 'Student';
     var h = '<section class="prof"><div style="position:relative">' + avatar(ME.user.id, p.name, p.photo) + '<button class="avbtn" id="ph" style="border-radius:0 0 60px 60px">Change</button></div>' +
       '<div><div class="eyebrow">' + roleLbl + (st ? ' · ' + esc((st.classes || []).join(', ')) : '') + '</div><h1>' + esc(p.name) + '</h1><p class="lead" style="font-size:15.5px">' + (/@students\.intellectfirst\.com$/.test(ME.user.email) ? 'Login: ' + esc(ME.user.email.split('@')[0]) : esc(ME.user.email)) + (p.phone ? ' · ' + esc(p.phone) : '') + '</p>' +
-      '<div class="chips">' + (st ? statusChip(st.status) : '') + (p.goals ? '<span class="chip2">Goal: ' + esc(p.goals) + '</span>' : '') + (p.since ? '<span class="chip2 mute">Member since ' + when(p.since) + '</span>' : '') + '</div></div></section>';
+      '<div class="chips">' + (st ? statusChip(st.status) : '') + (p.goals ? '<span class="chip2">Goal: ' + esc(p.goals) + '</span>' : '') + (p.since ? '<span class="chip2 mute">Member since ' + when(p.since) + '</span>' : '') + '<button class="btn ghost sm" id="editbtn" type="button">✏️ Edit profile</button></div></div></section>';
     if (r === 'admin') { h += '<div id="todo"></div>'; loadTasks().then(drawTasks); }
     if (r === 'teacher' || r === 'admin') { h += '<div id="hrs"><p class="sub"><span class="spin"></span> Loading your hours…</p></div>'; loadHours().then(drawHours); }
     h += accessBand(p);
@@ -516,9 +516,9 @@
       h += ieltsBox(ME.ielts, true);
       h += '<div class="box"><h3>Teaching materials</h3><p class="small" style="margin-bottom:12px">Lesson presentations for every book, with animations: present them full-screen in class.</p><a class="btn sm" href="#/classroom">Open IF Classroom</a></div>';
     }
-    h += '</section>' + (staff() ? '<section class="section">' + proView(p, true) + '</section>' : '') + '<section class="section">' + detailsForm(p) + '<p class="small" style="margin-top:12px">Have a staff or administrator code? <a href="#/activate">Enter it here</a>.</p></section>';
+    h += '</section><details class="editp" id="editp"><summary><span>✏️ Edit profile</span><small>Name, phone, date of birth, city' + (staff() ? ', teaching focus, about me, public teacher page' : '') + '</small></summary>' + (staff() ? '<section class="section">' + proView(p, true) + '</section>' : '') + '<section class="section">' + detailsForm(p) + '<p class="small" style="margin-top:12px">Have a staff or administrator code? <a href="#/activate">Enter it here</a>.</p></section></details>';
     view.innerHTML = h;
-    $('#ph').onclick = photoDialog; wireDetails(); tgBand(); wirePro(); wireGoal();
+    $('#ph').onclick = photoDialog; if ($('#editbtn')) $('#editbtn').onclick = function () { var d = $('#editp'); d.open = true; d.scrollIntoView({ behavior: 'smooth', block: 'start' }); }; wireDetails(); tgBand(); wirePro(); wireGoal();
     if (staff()) todayBox($('#todaybox'));
   }
 
