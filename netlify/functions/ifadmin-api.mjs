@@ -113,6 +113,25 @@ export default async (req) => {
       }
       if (method === 'DELETE') { delete map[id]; await putColl(c, map); return json({ ok: true }); }
     }
+    // lesson clock-in log: read a month, or correct one lesson's clock-in time (the director's corrections)
+    const ll = path.match(/^lessonlog\/(\d{4}-\d{2})(?:\/(.+))?$/);
+    if (ll) {
+      const st = getStore({ name: 'school', consistency: 'strong' }), key = 'lessonlog/' + ll[1];
+      const L = (await st.get(key, { type: 'json' })) || {};
+      if (method === 'GET' && !ll[2]) return json(L);
+      const k = ll[2] && decodeURIComponent(ll[2]);
+      if (method === 'PATCH' && k) {
+        const b = await req.json().catch(() => ({})), m = k.match(/^([^|]+)\|(\d{4}-\d{2}-\d{2})\|(\d{2}):(\d{2})$/);
+        if (!m || !b.checkIn || isNaN(Date.parse(b.checkIn))) return fail(400, 'bad');
+        const at = Date.parse(`${m[2]}T${m[3]}:${m[4]}:00+05:00`);
+        const e = L[k] || (L[k] = { classId: m[1], label: String(b.label || ''), date: m[2], start: `${m[3]}:${m[4]}` });
+        if (b.end) e.end = String(b.end); if (b.teacherId) e.teacherId = String(b.teacherId);
+        e.checkIn = new Date(b.checkIn).toISOString(); e.lateMin = Math.round((Date.parse(b.checkIn) - at) / 60000);
+        if (b.by) e.by = b.by; delete e.noShow; delete e.alerted; e.cancelled = false;
+        e.correctedAt = new Date().toISOString(); e.correctedBy = 'Director (via Claude)'; if (b.note) e.note = String(b.note).slice(0, 200);
+        await st.setJSON(key, L); return json({ ok: true, entry: e });
+      }
+    }
     if (path === 'lockstatus' && method === 'GET') {   // are the page keys for the encrypted test pages on the site? (yes/no only)
       const k = (await getStore({ name: 'school', consistency: 'strong' }).get('lockKeys', { type: 'json' })) || {};
       return json({ ks: !!k.ks, kt: !!k.kt });
