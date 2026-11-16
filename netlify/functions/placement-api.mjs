@@ -62,7 +62,7 @@ async function rate(writing, speaking) {
   return { writing: clean(out.writing, ['task', 'organisation', 'range', 'accuracy']), speaking: clean(out.speaking, ['range', 'accuracy', 'fluency', 'coherence', 'interaction']) };
 }
 
-async function whoami() {
+async function whoami(req) {
   let user = null; try { user = (await tgAccount(req)) || (await refreshSession().catch(() => null), await getUser()); } catch { user = null; }
   if (!user) return { user: null, profile: null };
   const profile = (await U().get(`u/${user.id}/profile`, { type: 'json' })) || null;
@@ -81,7 +81,7 @@ export default async (req, context) => {
   const path = url.pathname.replace(/^\/api\/placement\/?/, '').replace(/\/$/, '');
   if (req.method !== 'POST') return fail(405, 'method');
   const b = await req.json().catch(() => ({}));
-  const { user, profile } = await whoami();
+  const { user, profile } = await whoami(req);
   const staff = profile && (profile.role === 'teacher' || profile.role === 'admin');
 
   if (path === 'score') {

@@ -74,7 +74,7 @@ async function addRecent(row, key) {
   list.unshift({ ...row, key });
   await T().setJSON('recent', list.slice(0, 600));
 }
-async function who() {
+async function who(req) {
   let user = null; try { user = (await tgAccount(req)) || (await refreshSession().catch(() => null), await getUser()); } catch {}
   const profile = user ? (await U().get(`u/${user.id}/profile`, { type: 'json' })) || null : null;
   if (user && profile && await ensureTrial(user.id, profile)) await U().setJSON(`u/${user.id}/profile`, profile);
@@ -155,7 +155,7 @@ JSON shape: {${sec ? '"writing":{"score":6.5,"content":3,"organisation":1.5,"lan
 export default async (req) => {
   const path = new URL(req.url).pathname.replace(/^\/api\/tests\/?/, '');
   const body = req.method === 'POST' ? await req.json().catch(() => ({})) : {};
-  const { user, profile, staff, free } = await who();
+  const { user, profile, staff, free } = await who(req);
 
   if (path.startsWith('t/')) {
     const t = await T().get('t/' + path.slice(2).toUpperCase(), { type: 'json' });

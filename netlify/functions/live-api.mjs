@@ -28,7 +28,7 @@ function tokenRequest(clientId, capability) {
   const mac = createHmac('sha256', secret).update(text).digest('base64');
   return { keyName, ttl, capability: cap, clientId, timestamp, nonce, mac };
 }
-async function who() {
+async function who(req) {
   let user = null; try { user = (await tgAccount(req)) || (await refreshSession().catch(() => null), await getUser()); } catch {}
   if (!user) return { user: null, profile: null };
   const profile = (await U().get(`u/${user.id}/profile`, { type: 'json' })) || null;
@@ -52,12 +52,12 @@ export default async (req) => {
     if (!alive(room)) return fail(404, 'room');
     if (!ready) return fail(503, 'not-configured');
     const pid = /^p-[a-z0-9]{6,16}$/.test(body.pid || '') ? body.pid : 'p-' + randomBytes(5).toString('hex');
-    const { user, profile } = await who();
+    const { user, profile } = await who(req);
     const tr = tokenRequest(pid, { [`live:${pin}:h`]: ['subscribe'], [`live:${pin}:p`]: ['presence', 'publish'] });
     return json({ pid, title: room.title, token: tr, account: user ? { uid: user.id, name: profile?.name || '' } : null });
   }
 
-  const { user, profile } = await who();
+  const { user, profile } = await who(req);
   if (!user) return fail(401, 'login');
 
   // AI writes fresh questions (teachers for live games, signed-in students for solo practice).
