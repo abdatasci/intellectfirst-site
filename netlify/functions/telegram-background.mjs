@@ -156,7 +156,7 @@ export default async (req) => {
       catch (e) { console.error('cover button', e.message); await tg('answerCallbackQuery', { callback_query_id: q.id, text: 'Something went wrong. Try again.' }).catch(() => {}); }
       return new Response('ok');
     }
-    if (/^(ci:|ro:|rt:\d|ra$|rs$)/.test(String(q.data || ''))) {
+    if (/^(ci:|ro:|rt:\d|ra$|rs$|lx:|lr:|lu$)/.test(String(q.data || ''))) {
       try { const uid = await S().get(`bot/chat/${q.message?.chat?.id || q.from?.id}`), p = uid && await getProfile(uid); await staffCallback(q, uid, p || null); }
       catch (e) { console.error('staff button', e.message); await tg('answerCallbackQuery', { callback_query_id: q.id, text: 'Something went wrong. Try again.' }).catch(() => {}); }
       return new Response('ok');

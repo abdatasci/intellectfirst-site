@@ -3,7 +3,7 @@
 // (Admin → Teachers), which links the chat as 'tid:<teacherId>'. Everything is saved in the same lesson log the website
 // uses, so clock-ins and registers appear at once on the admin pages (Admin → Lessons, hours, IF Admin attendance).
 import { getStore } from '@netlify/blobs';
-import { doc, loadChanges, inClass, tg, tgSend, local } from './bot-core.mjs';
+import { doc, loadChanges, saveChanges, inClass, tg, tgSend, local, getLinks, addNote, uidsByStudent } from './bot-core.mjs';
 import { lessonsOn, loadLog, checkIn, saveRegister, today, EARLY_MIN } from './lessons.mjs';
 
 const S = () => getStore({ name: 'school', consistency: 'strong' });
@@ -42,7 +42,7 @@ const mine = (p, l) => canAll(p) || (p.teacherId && p.teacherId === l.teacherId)
 /** Buttons for one lesson, by its state. */
 export function lessonButtons(l, e) {
   if (e?.cancelled) return [];
-  if (!e?.checkIn) return [[{ text: '✅ Clock in', callback_data: 'ci:' + l.key }]];
+  if (!e?.checkIn) return [[{ text: '✅ Clock in', callback_data: 'ci:' + l.key }, { text: '❌ Cancel lesson', callback_data: 'lx:' + l.key }]];
   return [[{ text: e.takenAt ? '📋 Change register' : '📋 Take register', callback_data: 'ro:' + l.key }]];
 }
 function lessonLine(l, e, tName) {
@@ -132,5 +132,54 @@ export async function staffCallback(q, uid, p) {
     }
     return true;
   }
+  /* ❌ Cancel a lesson from the bot: lx:<key> → reason → saved in the timetable (the website, reminders and the admins follow) */
+  if (data.startsWith('lx:')) {
+    const f = await findLesson(data.slice(3));
+    if (!f) { await answer(q, 'This lesson is not on the timetable any more.', true); return true; }
+    if (!mine(p, f.lesson)) { await answer(q, 'This is another teacher\'s lesson.', true); return true; }
+    await S().setJSON(`bot/lx/${chatId}`, { key: f.lesson.key });
+    await answer(q, '');
+    await tgSend(chatId, `❌ Cancel ${f.lesson.label}, ${f.lesson.date.slice(8)}.${f.lesson.date.slice(5, 7)} ${f.lesson.start}?\nWhy?`, { reply_markup: { inline_keyboard: [
+      [{ text: '👥 Only staff attend — not a paid lesson', callback_data: 'lr:staff' }],
+      [{ text: '🤒 The teacher can\'t teach (tell students)', callback_data: 'lr:teacher' }],
+      [{ text: '📝 Other reason (tell students)', callback_data: 'lr:other' }],
+      [{ text: '↩ Keep the lesson', callback_data: 'lr:no' }]] } });
+    return true;
+  }
+  if (data.startsWith('lr:') || data === 'lu') {
+    const st = await S().get(`bot/lx/${chatId}`, { type: 'json' });
+    if (data === 'lr:no') { await S().delete(`bot/lx/${chatId}`).catch(() => {}); await answer(q, 'Kept'); await edit(q, '👍 The lesson stays on the timetable.'); return true; }
+    if (!st) { await answer(q, 'Expired. Open 🕑 Today\'s lessons again.', true); return true; }
+    const CH = await loadChanges(), [cid, date, start] = st.key.split('|');
+    if (data === 'lu') {   // undo
+      delete CH.cancel[st.key]; await saveChanges(CH); await S().delete(`bot/lx/${chatId}`).catch(() => {});
+      await answer(q, 'Back on'); await edit(q, '↩ The lesson is back on the timetable.');
+      const { tellAdmins } = await import('./cover.mjs'); await tellAdmins(`↩ ${p.name || 'A teacher'} put a lesson back on: ${st.label || st.key}.`, null, uid);
+      return true;
+    }
+    const f = await findLesson(st.key);
+    if (!f) { await answer(q, 'This lesson is not on the timetable any more.', true); return true; }
+    if (!mine(p, f.lesson)) { await answer(q, 'This is another teacher\'s lesson.', true); return true; }
+    const l = f.lesson, why = data.slice(3), note = why === 'staff' ? 'Staff only — not a paid lesson' : why === 'teacher' ? 'The teacher can\'t teach' : '';
+    if (l.kind === 'extra') CH.extra = CH.extra.filter(x => x.id !== l.extraId);
+    else { const orig = l.from || l.key; delete CH.moves[orig]; CH.cancel[orig] = { note, by: p.name || '', at: new Date().toISOString(), staffOnly: why === 'staff' || undefined, noMakeup: why === 'staff' || undefined }; }
+    await saveChanges(CH);
+    const day = `${date.slice(8)}.${date.slice(5, 7)} ${start}`;
+    let told = 0;
+    if (why !== 'staff') told = await tellStudents(f.cls, { en: `❌ Lesson cancelled: ${l.label}, ${day}.${note ? ' ' + note + '.' : ''}`, ru: `❌ Урок отменён: ${l.label}, ${day}.` });
+    st.label = `${l.label}, ${day}`; await S().setJSON(`bot/lx/${chatId}`, st);
+    await answer(q, 'Cancelled');
+    await edit(q, `❌ Cancelled: ${l.label}, ${day}${note ? ' — ' + note : ''}.\n${why === 'staff' ? 'Students were not told (staff only). It is not counted as a missed lesson and needs no make-up.' : `Students told: ${told}.`}\nThe website and the admin pages show it now.`, { inline_keyboard: [[{ text: '↩ Undo', callback_data: 'lu' }]] });
+    const { tellAdmins } = await import('./cover.mjs');
+    await tellAdmins(`❌ ${p.name || 'A teacher'} cancelled ${l.label}, ${day}${note ? ' — ' + note : ''}.${why === 'staff' ? ' (Staff only: students were not told.)' : ''}`, null, uid);
+    return true;
+  }
   return false;
+}
+/** Tell the students of a class on Telegram (in their language) and on the website. Returns how many were reached. */
+async function tellStudents(cls, text) {
+  const students = (await doc('students')).filter(s => inClass(cls, s) && !/withdrawn|finished|frozen/i.test(s.status || ''));
+  const links = await getLinks(), bySid = await uidsByStudent(links); let n = 0;
+  for (const s of students) { const uid = s.uid || bySid[s.id], l = uid && links[uid]; if (uid) await addNote(uid, { kind: 'lessonChange', text: text.en }).catch(() => {}); if (l && l.chatId) { await tgSend(l.chatId, l.lang === 'en' ? text.en : text.ru).catch(() => {}); n++; } }
+  return n;
 }
