@@ -38,12 +38,14 @@
     'alumni': ['IF Alumni', 'I finished my course at IF Academy'],
     'outside': ['Learning on my own', 'Free account. Full access is paid'],
     'parent': ['A parent', 'My child (6–12) learns English: Young Learners and Maths in English'],
-    'tutor': ['A teacher', 'I teach English and want IF App for my classes (Teacher plan)']
+    'tutor': ['A teacher from outside IF Academy', 'I teach English and want IF App for my classes (Teacher plan)'],
+    'staff': ['IF Academy staff', 'I work at IF Academy: teacher, manager, SMM, reception…']
   };
+  var STAFF_POS = { teacher: 'Teacher', manager: 'Manager / administrator', smm: 'SMM (social media)', reception: 'Reception', other: 'Other' };
   function whoPicker(sel) {
     return '<label class="f">I am…</label><div class="who4" role="radiogroup">' + Object.keys(TRACKS).map(function (k) {
       return '<label class="who4c"><input type="radio" name="trk" value="' + k + '"' + (k === (sel || 'if') ? ' checked' : '') + '><span><b>' + esc(TRACKS[k][0]) + '</b><small>' + esc(TRACKS[k][1]) + '</small></span></label>';
-    }).join('') + '</div>';
+    }).join('') + '</div><div id="posw" style="display:none;margin:-4px 0 14px"><label class="f">My position at IF Academy</label><select class="inp" id="pos">' + Object.keys(STAFF_POS).map(function (k) { return '<option value="' + k + '">' + STAFF_POS[k] + '</option>'; }).join('') + '</select><p class="small" style="margin:6px 0 0">The director or the manager confirms your staff account.</p></div>';
   }
   // main goal → the apps that fit it (lock = part of full access)
   var GOALS = [
@@ -199,9 +201,10 @@
       '<button class="btn" type="submit">Create account</button></form><p class="alt">Already registered? <a href="#/login">Sign in</a>' + (isStaff ? '' : ' · Teacher? <a href="#/staff">Staff registration</a>') + '</p>');
     function syncWho() {
       if (isStaff) return; var t = track();
+      if ($('#posw')) $('#posw').style.display = t === 'staff' ? '' : 'none';
       $('#clw').style.display = t === 'if' ? '' : 'none'; $('#clh').style.display = t === 'if' ? '' : 'none';
-      $('#ccw').style.display = t === 'outside' || t === 'tutor' || t === 'parent' ? 'none' : '';
-      $('#stw').style.display = t === 'tutor' ? 'none' : '';
+      $('#ccw').style.display = t === 'outside' || t === 'tutor' || t === 'parent' || t === 'staff' ? 'none' : '';
+      $('#stw').style.display = t === 'tutor' || t === 'staff' ? 'none' : '';
       $('#chw').style.display = t === 'parent' ? '' : 'none';
       $('#stl').firstChild.textContent = t === 'parent' ? 'What should your child study? ' : 'What do you want to study? ';
       $('#clw').closest('.grid2').style.display = t === 'if' ? '' : 'none';
@@ -216,11 +219,11 @@
       var trk = isStaff ? '' : track();
       if (cc && cc === pw) cc = '';   // iPhone's password AutoFill can paste the new password into the code box
       if (!name || !ph || (isStaff && !cc)) return err(f, isStaff ? 'Please fill in your name, phone number and staff code.' : 'Please fill in your name and phone number.');
-      if (trk === 'outside' || trk === 'tutor' || trk === 'parent') cc = '';
+      if (trk === 'outside' || trk === 'tutor' || trk === 'parent' || trk === 'staff') cc = '';
       var study = isStaff ? [] : studyValue(), notSure = !!document.querySelector('#study input[value=placement]:checked');
       var lv = (study.filter(function (k) { return /^(ge|be):|^yl:/.test(k); })[0] || '').replace(/^ge:|^be:/, '').replace(/^yl:(\w)/, function (_, c) { return c.toUpperCase(); }) || (notSure ? 'Not sure' : ''), cl = $('#cl') ? $('#cl').value : '';
-      if (trk === 'alumni') cl = 'IF Alumni'; else if (trk === 'private') cl = 'Individual (Abdoulie Manneh)'; else if (trk === 'outside' || trk === 'tutor' || trk === 'parent') cl = '';
-      if (!isStaff && trk !== 'tutor' && !study.length && !notSure) return err(f, trk === 'parent' ? 'Please choose what your child should study.' : 'Please choose at least one course or level.');
+      if (trk === 'alumni') cl = 'IF Alumni'; else if (trk === 'private') cl = 'Individual (Abdoulie Manneh)'; else if (trk === 'outside' || trk === 'tutor' || trk === 'parent' || trk === 'staff') cl = '';
+      if (!isStaff && trk !== 'tutor' && trk !== 'staff' && !study.length && !notSure) return err(f, trk === 'parent' ? 'Please choose what your child should study.' : 'Please choose at least one course or level.');
       if (trk === 'if' && !cl) return err(f, 'Please choose your class, or “New student”.');
       if (ph.replace(/\D/g, '').length < 10) return err(f, 'Please type the full phone number, for example +7 701 234 56 78.');
       if (em && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)) return err(f, 'That email does not look right. Check it, or leave it empty.');
@@ -237,7 +240,7 @@
           }
           if (!u) throw new Error('This phone number already has accounts. Sign in instead, or add an email.');
         } else u = await ID.signup(em, pw, { full_name: name });
-        var actBody = { code: cc, name: name, phone: ph, level: lv, classChoice: cl, track: trk || undefined, study: study, child: $('#ch') ? $('#ch').value.trim() : '', goals: studySummary(study) || (notSure ? 'Placement test first' : '') };
+        var actBody = { code: cc, name: name, phone: ph, level: lv, classChoice: cl, track: trk || undefined, staffPos: trk === 'staff' && $('#pos') ? $('#pos').value : undefined, study: study, child: $('#ch') ? $('#ch').value.trim() : '', goals: studySummary(study) || (notSure ? 'Placement test first' : '') };
         lsSet('if.pending', actBody);
         if (u && !u.confirmedAt && u.id) {   // confirm straight away so the student can sign in now
           try { var cr = await fetch('/api/school/confirm', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: u.id, email: em }) }); if (cr.ok) u.confirmedAt = new Date().toISOString(); } catch (e3) {}
@@ -264,10 +267,11 @@
       '<form id="f" novalidate>' + whoPicker(p.track || (ME && ME.profile && ME.profile.track) || 'if') + '<label class="f">Full name</label><input class="inp" id="nm" value="' + esc(p.name || (ME && ME.profile && ME.profile.name) || USER.name || '') + '">' +
       '<label class="f">Phone number</label><input class="inp" id="ph" type="tel" value="' + esc(p.phone || (ME && ME.profile && ME.profile.phone) || '') + '">' +
       '<label class="f">Code <span style="font-weight:400;color:var(--muted)">(optional: class, individual-student or staff code)</span></label><input class="inp" id="cc" value="' + esc(p.code || '') + '"><button class="btn" type="submit">Continue</button></form>');
+    var syncPos = function () { if ($('#posw')) $('#posw').style.display = track() === 'staff' ? '' : 'none'; }; view.querySelectorAll('input[name=trk]').forEach(function (r) { r.addEventListener('change', syncPos); }); syncPos();
     $('#f').onsubmit = async function (ev) {
       ev.preventDefault(); var f = ev.target, b = $('button', f); b.disabled = true;
       var t = track();
-      try { var act = await api('activate', { method: 'POST', body: Object.assign({}, p, { code: t === 'outside' ? '' : $('#cc').value.trim(), name: $('#nm').value.trim(), phone: $('#ph').value.trim(), track: t, classChoice: t === 'alumni' ? 'IF Alumni' : t === 'private' ? 'Individual (Abdoulie Manneh)' : (p.classChoice || '') }) }); lsSet('if.pending', null); await loadMe(); header(); toast(welcomeMsg(act)); if (!afterAuth()) go('#/'); }
+      try { var act = await api('activate', { method: 'POST', body: Object.assign({}, p, { code: t === 'outside' ? '' : $('#cc').value.trim(), name: $('#nm').value.trim(), phone: $('#ph').value.trim(), track: t, staffPos: t === 'staff' && $('#pos') ? $('#pos').value : undefined, classChoice: t === 'alumni' ? 'IF Alumni' : t === 'private' ? 'Individual (Abdoulie Manneh)' : (p.classChoice || '') }) }); lsSet('if.pending', null); await loadMe(); header(); toast(welcomeMsg(act)); if (!afterAuth()) go('#/'); }
       catch (e) { b.disabled = false; err(f, e.code === 'code' ? 'That code is not right. Check it with your teacher.' : 'Could not check the code. Try again.'); }
     };
   }
@@ -1394,12 +1398,13 @@
     var asked = G.filter(function (a) { return a.request; }), rest = G.filter(function (a) { return !a.request && a.role === 'guest'; });
     var trk = function (t) { return TRACKS[t] ? TRACKS[t][0] : 'Outside learner'; };
     var acts = function (a) {
+      if (a.request && a.request.track === 'staff') return '<div class="accts"><select class="inp" data-spos="' + a.id + '" style="padding:6px 8px">' + Object.keys(STAFF_POS).map(function (k) { return '<option value="' + k + '"' + (k === (a.request.position || a.staffPos) ? ' selected' : '') + '>' + STAFF_POS[k] + '</option>'; }).join('') + '</select><select class="inp" data-stid="' + a.id + '" style="padding:6px 8px"><option value="">Teacher record: —</option>' + (ADMIN.teachers || []).map(function (t) { return '<option value="' + esc(t.id) + '">' + esc(t.name) + '</option>'; }).join('') + '</select><button class="btn sm" data-acc="staff" data-u="' + a.id + '">✓ Approve as staff</button><button class="btn ghost sm" data-acc="decline" data-u="' + a.id + '">Decline</button></div>';
       return '<div class="accts"><button class="btn sm" data-acc="approve" data-trk="if" data-u="' + a.id + '">IF student</button><button class="btn sm" data-acc="approve" data-trk="private" data-u="' + a.id + '">Individual student</button>' +
         '<span class="paybox"><select class="inp" data-mo="' + a.id + '">' + [1, 3, 6, 12].map(function (n) { return '<option value="' + n + '"' + (a.request && +a.request.months === n ? ' selected' : '') + '>' + n + ' mo</option>'; }).join('') + '</select><input class="inp" data-amt="' + a.id + '" placeholder="Plan price" title="Empty = the plan price" inputmode="numeric"><button class="btn ghost sm" data-acc="paid" data-u="' + a.id + '">Paid</button></span>' +
         (a.request ? '<button class="btn ghost sm" data-acc="decline" data-u="' + a.id + '">Decline</button>' : '') + (a.paidUntil ? '<button class="btn ghost sm" data-acc="stop" data-u="' + a.id + '">Stop access</button>' : '') + '</div>';
     };
     var row = function (a) {
-      var rq = a.request, what = rq ? (rq.paid ? '💳 Says they paid · ' + rq.months + ' mo' + (rq.note ? ' · “' + esc(rq.note) + '”' : '') : 'Asks to be confirmed as: ' + esc(trk(rq.track))) : a.paidUntil && Date.parse(a.paidUntil) > Date.now() ? 'Full access until ' + when(a.paidUntil) : a.trialUntil && Date.parse(a.trialUntil) > Date.now() ? 'Trial until ' + when(a.trialUntil) : a.trialUntil ? 'Free account (trial ended)' : 'Free account';
+      var rq = a.request, what = rq ? (rq.paid ? '💳 Says they paid · ' + rq.months + ' mo' + (rq.note ? ' · “' + esc(rq.note) + '”' : '') : (rq.track === 'staff' ? '🏫 Staff sign-up · ' + esc(STAFF_POS[rq.position] || 'Staff') : 'Asks to be confirmed as: ' + esc(trk(rq.track)))) : a.paidUntil && Date.parse(a.paidUntil) > Date.now() ? 'Full access until ' + when(a.paidUntil) : a.trialUntil && Date.parse(a.trialUntil) > Date.now() ? 'Trial until ' + when(a.trialUntil) : a.trialUntil ? 'Free account (trial ended)' : 'Free account';
       return '<tr><td><b>' + esc(a.name) + '</b><div class="small">' + esc([a.phone, a.level, a.goals].filter(Boolean).join(' · ')) + '</div></td><td>' + what + (rq ? '<div class="small">' + when(rq.at) + '</div>' : '') + '</td><td>' + acts(a) + '</td></tr>';
     };
     var M = ADMIN.membership || ME.membership || {};
@@ -1415,10 +1420,10 @@
   }
   function wireOnline() {
     view.querySelectorAll('[data-acc]').forEach(function (b) { b.onclick = async function () {
-      var u = b.dataset.u, body = { uid: u, action: b.dataset.acc, track: b.dataset.trk };
+      var u = b.dataset.u, body = { uid: u, action: b.dataset.acc, track: b.dataset.trk }; if (b.dataset.acc === 'staff') { var ps = view.querySelector('[data-spos="' + u + '"]'), ti = view.querySelector('[data-stid="' + u + '"]'); body.position = ps ? ps.value : ''; body.teacherId = ti ? ti.value : ''; }
       if (body.action === 'paid') { body.months = +$('[data-mo="' + u + '"]').value; body.amount = $('[data-amt="' + u + '"]').value; }
       b.disabled = true;
-      try { await api('admin/access', { method: 'POST', body: body }); toast({ approve: 'Approved: full access', paid: 'Marked paid', decline: 'Request declined', stop: 'Access stopped' }[body.action]); vAdmin('accounts'); }
+      try { await api('admin/access', { method: 'POST', body: body }); toast({ staff: 'Staff account approved', approve: 'Approved: full access', paid: 'Marked paid', decline: 'Request declined', stop: 'Access stopped' }[body.action]); vAdmin('accounts'); }
       catch (e) { b.disabled = false; toast('Could not save'); }
     }; });
     var f = $('#msf'); if (f) f.onsubmit = async function (ev) {

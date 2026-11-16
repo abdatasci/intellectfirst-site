@@ -6,8 +6,8 @@
 // ('tutor' = a teacher from outside IF Academy on the Teacher plan: a guest account that pays, with Teach mode in IF English);
 // profile.paidUntil: ISO date for paid outside learners. profile.alumniUntil: end of an IF Alumni year.
 // profile.leftUntil: a student who left IF Academy keeps full access until this date (a month after leaving).
-export const TRACKS = ['if', 'private', 'alumni', 'outside', 'tutor', 'parent'];
-export const TRACK_LABEL = { if: 'IF Academy student', private: 'Individual student', alumni: 'IF Alumni', outside: 'Outside learner', tutor: 'Teacher (Teacher plan)', parent: 'Parent (Young Learners)' };
+export const TRACKS = ['if', 'private', 'alumni', 'outside', 'tutor', 'parent', 'staff'];
+export const TRACK_LABEL = { if: 'IF Academy student', private: 'Individual student', alumni: 'IF Alumni', outside: 'Outside learner', tutor: 'Teacher (Teacher plan)', staff: 'IF Academy staff', parent: 'Parent (Young Learners)' };
 export function paidActive(p) { return !!(p?.paidUntil && Date.parse(p.paidUntil) > Date.now()); }
 export function trialActive(p) { return !!(p?.trialUntil && Date.parse(p.trialUntil) > Date.now()); }
 /** When full access ends for a free/online account (paid or trial), as an ISO date; null for students and staff. */

@@ -79,7 +79,7 @@ async function getProfile(uid) { return (await U().get(`u/${uid}/profile`, { typ
 async function putProfile(uid, p) {
   await U().setJSON(`u/${uid}/profile`, p);
   const dir = (await U().get('directory', { type: 'json' })) || {};
-  dir[uid] = { duty: p.smm ? 'smm' : p.manager ? 'manager' : '', trialUntil: p.trialUntil || null, goals: p.goals || '', track: p.track || '', request: p.request || null, paidUntil: p.paidUntil || null, alumni: !!p.alumni, name: p.name, email: p.email, role: p.role, studentId: p.studentId || null, teacherId: p.teacherId || null, photo: !!p.photo, phone: p.phone || '', level: p.level || '', classChoice: p.classChoice || '' };
+  dir[uid] = { staffPos: p.staffPos || '', duty: p.smm ? 'smm' : p.manager ? 'manager' : '', trialUntil: p.trialUntil || null, goals: p.goals || '', track: p.track || '', request: p.request || null, paidUntil: p.paidUntil || null, alumni: !!p.alumni, name: p.name, email: p.email, role: p.role, studentId: p.studentId || null, teacherId: p.teacherId || null, photo: !!p.photo, phone: p.phone || '', level: p.level || '', classChoice: p.classChoice || '' };
   await U().setJSON('directory', dir);
 }
 // Online access plans, set against the 2026–27 brochure: the cheapest course is ₸45,000 a month (8 lessons with a teacher),
@@ -408,7 +408,10 @@ export default async (req) => {
       study: Array.isArray(b.study) ? cleanStudy(b.study) : (profile?.study || []),
       ...(b.child || profile?.child ? { child: str(b.child, 80) || profile?.child } : {}),
       alumni: track === 'alumni' || b.classChoice === 'IF Alumni' ? true : !!profile?.alumni, since: profile?.since || new Date().toISOString(), attempts: profile?.attempts || 0 };
-    if (finalRole === 'guest' && !['outside', 'tutor', 'parent'].includes(track)) profile.request = { track, at: new Date().toISOString() };
+    // IF Academy staff: a request with their position; the director or manager approves it (Admin → Accounts)
+    const POS = ['teacher', 'manager', 'smm', 'reception', 'other'];
+    if (track === 'staff') profile.staffPos = POS.includes(b.staffPos) ? b.staffPos : 'other';
+    if (finalRole === 'guest' && !['outside', 'tutor', 'parent'].includes(track)) profile.request = { track, ...(track === 'staff' ? { position: profile.staffPos } : {}), at: new Date().toISOString() };
     else if (finalRole !== 'guest') delete profile.request;
     profile = await linkByPhone(uid, profile);
     await ensureTrial(uid, profile);
@@ -891,6 +894,15 @@ export default async (req) => {
     // free accounts: approve as a school / individual student, mark paid, or decline the request
     if (path === 'admin/access' && method === 'POST') {
       const p = await getProfile(str(b.uid, 60)); if (!p) return fail(404, 'missing');
+      if (b.action === 'staff') {   // approve a staff sign-up: teacher / SMM / reception → staff account; manager → administrator
+        const pos = ['teacher', 'manager', 'smm', 'reception', 'other'].includes(b.position) ? b.position : (p.staffPos || 'other');
+        p.role = pos === 'manager' ? 'admin' : 'teacher'; p.staffPos = pos; p.track = ''; p.manager = pos === 'manager'; p.smm = pos === 'smm';
+        delete p.request; delete p.declined;
+        if (b.teacherId) { const list = await doc('teachers'); list.forEach(t => { if (t.uid === b.uid) t.uid = null; }); const t = list.find(x => x.id === b.teacherId); if (t) { t.uid = b.uid; p.teacherId = t.id; } await save('teachers', list); }
+        await putProfile(b.uid, p);
+        await addNote(b.uid, { kind: 'access', text: `Welcome to the IF Academy team! Your staff account is ready (${{ teacher: 'teacher', manager: 'manager', smm: 'SMM', reception: 'reception', other: 'staff' }[pos]}).` }).catch(() => {});
+        return json({ profile: p });
+      }
       if (isStaff(p.role)) return fail(400, 'staff');
       if (b.action === 'approve') {
         delete p.declined; p.role = 'student'; p.track = TRACKS.includes(b.track) ? b.track : (p.request?.track && p.request.track !== 'outside' ? p.request.track : 'private');
