@@ -53,7 +53,7 @@
 <script src="../if-lock.js"></script>
 <script>
 (function () {
-  var ROOT = '../index.html';
+  var ROOT = '../';
   var next = new URLSearchParams(location.search).get('next') || 'app/index.html';
   if (!/^[a-z0-9.\-\/]*$/i.test(next)) next = 'app/index.html';
   var msg = document.getElementById('msg');

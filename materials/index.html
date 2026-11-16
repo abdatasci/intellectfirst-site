@@ -106,7 +106,7 @@
 <script src="../if-lock.js"></script>
 <script>
 (function () {
-  var ROOT = '../index.html', D = ROOT + 'materials/data/';
+  var ROOT = '../', D = ROOT + 'materials/data/';
   var role = IFLock.role(), view = role === 'teacher' ? 'teacher' : 'student';
   try { if (role === 'teacher' && localStorage.getItem('if.mview') === 'student') view = 'student'; } catch (e) {}
   var CAT = null, filter = 'all', query = '';
