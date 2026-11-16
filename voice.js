@@ -42,6 +42,15 @@
     var rest = queue.splice(0); rest.forEach(function (x) { native.speak(x); });
   }
   player.onplaying = function () { if (current) fire(current, 'start'); };
+  // iPhone/iPad: audio may only start from a tap. Pages often speak a moment after the tap (or the next line after a pause),
+  // so the player is unlocked on the first touch with a silent clip; after that it can play at any time.
+  var unlocked = false, SILENT = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=';
+  function unlock() {
+    if (unlocked || current) return; unlocked = true;
+    try { player.src = SILENT; var q = player.play(); if (q && q.then) q.then(function () { if (!current) player.pause(); }).catch(function () { unlocked = false; }); } catch (e) { unlocked = false; }
+    try { native.speak(new SpeechSynthesisUtterance('')); } catch (e) {}   // the browser voice too (used when the real voice is unavailable)
+  }
+  ['touchend', 'pointerup', 'click', 'keydown'].forEach(function (ev) { document.addEventListener(ev, unlock, true); });
   player.onended = function () { var u = current; if (u) fire(u, 'end'); next(); };
   player.onerror = function () { if (current) fail(current); };
 
