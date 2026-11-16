@@ -41,9 +41,10 @@ export async function ensureStaffKb(chatId, who, force) {
 export const staffHello = n => `Hi ${n}! 👋 You are connected to the IF Academy bot as a teacher.\n\n` + STAFF_HELP;
 export const STAFF_HELP = '👩‍🏫 For teachers:\n• 🕑 Today\'s lessons — clock in (from 5 minutes before the start) and take the register with buttons.\n• Before each lesson I send you a reminder with a "✅ Clock in" button, and after it a "📋 Take register" button.\n• 🔁 Cover a lesson — can\'t teach a lesson? Choose it and ask a colleague (or all teachers). When someone accepts, the timetable changes and the admin is told.\n• 📚 IF English — the whole app inside Telegram, with Teach mode for the projector.\n• 👤 My account — your classes, registers, students\' results and (for the director and manager) Admin, inside Telegram.\n• 🎯 Class task — during the lesson, send a quiz (yours, or ✨ written by AI from a topic), a poll, a writing or a speaking task to the class. Students answer on their phones; your message shows who has answered and their scores, live.\n• 📝 Send homework — choose the class, homework or test, the date, then type the task (or send a photo of the worksheet). Every student in the class gets it at once, and it appears on the website.\n• Everything you press here is saved in the school system and shows on the admin pages straight away.\n• /stop disconnects this chat.';
 
-const MARK = { on: '✅', late: '⏰', abs: '❌', exc: '🟡' };
-const NEXT = { on: 'late', late: 'abs', abs: 'exc', exc: 'on' };
-const MARK_WORD = { on: 'present', late: 'late', abs: 'absent', exc: 'excused' };
+// the same marks as the website: absent = EA (excused), late cancellation = UA (charged). Nobody is marked in advance.
+const MARK = { '': '⬜', on: '✅', late: '⏰', exc: '❌', abs: '🟡' };
+const NEXT = { '': 'on', on: 'late', late: 'exc', exc: 'abs', abs: 'on' };
+const MARK_WORD = { on: 'present', late: 'late', exc: 'absent (EA)', abs: 'late cancellation (UA)' };
 
 async function findLesson(key) {
   const [cid, date, start] = String(key).split('|'); if (!cid || !/^\d{4}-\d{2}-\d{2}$/.test(date || '')) return null;
@@ -88,7 +89,7 @@ function regMarkup(st) {
   rows.push([{ text: '✅ All present', callback_data: 'ra' }, { text: '💾 Save register', callback_data: 'rs' }]);
   return { inline_keyboard: rows };
 }
-const regText = st => `📋 Register — ${st.label}, ${st.start}\nTap a name to change: ✅ present → ⏰ late → ❌ absent → 🟡 excused. Then press 💾 Save register.`;
+const regText = st => `📋 Register — ${st.label}, ${st.start}\nTap each name: ✅ present → ⏰ late → ❌ absent (EA) → 🟡 late cancellation (UA). Or press ✅ All present for everyone not marked yet. Then 💾 Save register.`;
 
 const answer = (q, text, alert) => tg('answerCallbackQuery', { callback_query_id: q.id, text, show_alert: !!alert }).catch(() => {});
 const edit = (q, text, markup) => q.message && tg('editMessageText', { chat_id: q.message.chat.id, message_id: q.message.message_id, text, reply_markup: markup || { inline_keyboard: [] } }).catch(() => {});
@@ -121,7 +122,7 @@ export async function staffCallback(q, uid, p) {
     if (!e.checkIn && !canAll(p)) { await answer(q, 'Clock in first.', true); return true; }
     const list = await roster(f.cls);
     if (!list.length) { await answer(q, 'No students in this class yet. Ask the manager to add them in IF Admin.', true); return true; }
-    const marks = {}; list.forEach(s => { marks[s.sid] = (e.marks || {})[s.sid] || 'on'; });
+    const marks = {}; list.forEach(s => { marks[s.sid] = (e.marks || {})[s.sid] || ''; });
     const st = { key: f.lesson.key, label: f.lesson.label, start: f.lesson.start, list: list.slice(0, 40), marks, lateBy: e.lateBy || {} };
     await S().setJSON(`bot/reg/${chatId}`, st);
     await answer(q, '');
@@ -131,9 +132,11 @@ export async function staffCallback(q, uid, p) {
   if (/^rt:\d+$/.test(data) || data === 'ra' || data === 'rs') {
     const st = await S().get(`bot/reg/${chatId}`, { type: 'json' });
     if (!st) { await answer(q, 'Expired. Open the register again from 🕑 Today\'s lessons.', true); return true; }
-    if (data === 'ra') st.list.forEach(s => { st.marks[s.sid] = 'on'; });
-    else if (data.startsWith('rt:')) { const s = st.list[+data.slice(3)]; if (s) st.marks[s.sid] = NEXT[st.marks[s.sid]] || 'on'; }
+    if (data === 'ra') st.list.forEach(s => { if (!st.marks[s.sid]) st.marks[s.sid] = 'on'; });
+    else if (data.startsWith('rt:')) { const s = st.list[+data.slice(3)]; if (s) st.marks[s.sid] = NEXT[st.marks[s.sid] || ''] || 'on'; }
     if (data !== 'rs') { await S().setJSON(`bot/reg/${chatId}`, st); await answer(q, ''); await tg('editMessageReplyMarkup', { chat_id: chatId, message_id: q.message.message_id, reply_markup: regMarkup(st) }).catch(() => {}); return true; }
+    const left = st.list.filter(x => !st.marks[x.sid]).length;
+    if (left) { await answer(q, `Mark every student first: ${left} not marked yet. Or press ✅ All present.`, true); return true; }
     const f = await findLesson(st.key);
     if (!f) { await answer(q, 'This lesson is not on the timetable any more.', true); return true; }
     try {

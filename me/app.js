@@ -599,7 +599,7 @@
     else if ((l.state === 'open' || l.state === 'overdue') && own) h += '<button class="btn primary" id="clockin" style="margin-top:10px">✅ Clock in: I\'m here</button>' + (l.state === 'overdue' ? '<p class="small" style="margin:6px 0 0;color:#b0372f">The lesson has started: this clock-in counts as late.</p>' : '');
     else if (admin && !own && !e.checkIn && !l.auto && l.state !== 'upcoming' && l.state !== 'cancelled' && l.state !== 'moved') h += '<div class="forteacher" style="margin-top:10px;padding:10px 12px;border-radius:12px;background:#fff7e6;border:1px solid #f0d9a8"><b>Clock in for ' + esc(l.teacher || 'the teacher') + '</b> <span class="small">(for teachers without an account — entered by the administrator)</span><div class="row" style="gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap"><label class="small">Arrived at</label><input class="inp" type="time" id="arrt" value="' + esc(l.start) + '" style="max-width:130px"><button class="btn primary" id="clockfor">✅ Clock in</button></div></div>';
     else if (l.state === 'missed' && !admin) h += '<p class="small" style="margin:8px 0 0">This lesson ended without a clock-in. If it took place, ask the administrator to correct it.</p>';
-    var canReg = (e.checkIn || l.auto || admin) && !e.cancelled && (admin || l.date === today);
+    var canReg = (e.checkIn || l.auto || (admin && l.state !== 'upcoming')) && !e.cancelled && (admin || l.date === today);   // the register opens once the lesson has started
     if (canReg) h += '<p class="small" style="margin:10px 0 6px">Mark each student — it goes to IF Admin automatically.</p><div class="reg" id="calreg" hidden></div>';
     return h + '</div>';
   }
@@ -658,17 +658,23 @@
   function register(box, l, done) {
     if (!box) return; box.hidden = !box.hidden; if (box.hidden) return;
     var e = l.entry || {}, M = e.marks || {}, LB = e.lateBy || {};
-    var opts = [['on', 'Present'], ['late', 'Late'], ['exc', 'Absent'], ['abs', 'Late cancellation (UA)']];
-    box.innerHTML = (l.students.length ? '<div class="regrows">' + l.students.map(function (s) {
-      var m = M[s.sid] || (e.takenAt ? '' : s.frozen ? '' : 'on');
+    var opts = [['on', 'Present'], ['late', 'Late'], ['exc', 'Absent (EA)'], ['abs', 'Late cancellation (UA)']];
+    // nobody is marked in advance: the teacher marks every student (or presses "All present"), so an absent student is never saved as present by mistake
+    box.innerHTML = (l.students.length ? '<div class="row" style="gap:8px;align-items:center;margin-bottom:8px"><button type="button" class="btn ghost sm allp">✅ All present</button><span class="small regcount"></span></div><div class="regrows">' + l.students.map(function (s) {
+      var m = M[s.sid] || '';
       return '<div class="regrow" data-sid="' + esc(s.sid) + '"><span class="rn">' + esc(s.name) + (s.frozen ? ' <span class="small">(frozen)</span>' : '') + '</span><span class="seg2">' + opts.map(function (o) { return '<button type="button" data-m="' + o[0] + '" class="' + (m === o[0] ? 'on ' + o[0] : '') + '">' + o[1] + '</button>'; }).join('') + '</span><input class="inp lm" type="number" min="1" max="180" placeholder="min" value="' + (LB[s.sid] || '') + '" ' + (m === 'late' ? '' : 'hidden') + ' title="Minutes late"></div>';
     }).join('') + '</div><div class="row" style="gap:10px;margin-top:10px"><button class="btn primary savereg">Save the register</button><span class="small">Saved to IF Admin attendance straight away: present and late = P, absent = EA, late cancellation = UA.</span></div>' : '<p class="small">No students in this class.</p>');
     box.querySelectorAll('.regrow').forEach(function (r) {
       r.querySelectorAll('[data-m]').forEach(function (b) {
-        b.onclick = function () { r.querySelectorAll('[data-m]').forEach(function (x) { x.className = ''; }); b.className = 'on ' + b.dataset.m; r.querySelector('.lm').hidden = b.dataset.m !== 'late'; if (b.dataset.m === 'late') r.querySelector('.lm').focus(); };
+        b.onclick = function () { r.querySelectorAll('[data-m]').forEach(function (x) { x.className = ''; }); b.className = 'on ' + b.dataset.m; r.querySelector('.lm').hidden = b.dataset.m !== 'late'; if (b.dataset.m === 'late') r.querySelector('.lm').focus(); count(); };
       });
     });
+    var need = function () { return [].filter.call(box.querySelectorAll('.regrow'), function (r) { return !r.querySelector('[data-m].on') && !/\(frozen\)/.test(r.querySelector('.rn').textContent); }); };
+    var count = function () { var c = box.querySelector('.regcount'), n = need().length, t = box.querySelectorAll('.regrow').length; if (c) c.textContent = n ? (t - n) + ' of ' + t + ' marked — mark everyone before saving' : 'Everyone marked ✓'; var sv0 = box.querySelector('.savereg'); if (sv0) sv0.classList.toggle('ghost', n > 0); };
+    var ap = box.querySelector('.allp'); if (ap) ap.onclick = function () { box.querySelectorAll('.regrow').forEach(function (r) { if (r.querySelector('[data-m].on') || /\(frozen\)/.test(r.querySelector('.rn').textContent)) return; var b = r.querySelector('[data-m="on"]'); r.querySelectorAll('[data-m]').forEach(function (x) { x.className = ''; }); b.className = 'on on'; }); count(); };
+    count();
     var sv = box.querySelector('.savereg'); if (sv) sv.onclick = async function () {
+      var left = need(); if (left.length) { toast('Mark every student first: ' + left.length + ' not marked yet (or press ✅ All present).'); left[0].scrollIntoView({ behavior: 'smooth', block: 'center' }); return; }
       var marks = {}, lateBy = {};
       box.querySelectorAll('.regrow').forEach(function (r) { var on = r.querySelector('[data-m].on'); if (on) { marks[r.dataset.sid] = on.dataset.m; if (on.dataset.m === 'late') lateBy[r.dataset.sid] = +r.querySelector('.lm').value || 0; } });
       sv.disabled = true;
