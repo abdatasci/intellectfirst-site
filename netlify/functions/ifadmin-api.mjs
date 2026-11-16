@@ -120,6 +120,12 @@ export default async (req) => {
     if (sd) {
       const st = getStore({ name: 'school', consistency: 'strong' }), list = (await st.get(sd[1], { type: 'json' })) || [];
       if (method === 'GET') return json(sd[2] ? (list.find(x => x.id === sd[2]) || null) : list);
+      // add a new record (e.g. a new website class): {id, …}; refused if the id exists
+      if (method === 'POST' && !sd[2]) {
+        const b = await req.json().catch(() => null);
+        if (!b || typeof b !== 'object' || !/^[A-Za-z0-9_-]{2,60}$/.test(b.id || '') || list.some(x => x.id === b.id)) return fail(400, 'bad');
+        list.push(b); await st.setJSON(sd[1], list); return json({ ok: true, record: b });
+      }
       if (method === 'PATCH' && sd[2]) {
         const b = await req.json().catch(() => null), r = list.find(x => x.id === sd[2]);
         if (!r || !b || typeof b !== 'object' || Array.isArray(b)) return fail(400, 'bad');
