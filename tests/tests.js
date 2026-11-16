@@ -50,7 +50,7 @@
   /* every IF test centre in one place */
   var CENTRES = [
     ['Start here', [['IF Placement Test', 'Adaptive, free: grammar, vocabulary, reading, listening, writing and speaking, all marked by AI', '/a/placement-test/', 0]]],
-    ['English File', [['Elementary · A1', 'Entry, file, progress and end-of-course tests', '/a/ef-a1-tests/', 1], ['Pre-intermediate · A2', 'Entry, file, progress and end-of-course tests', '/a/ef-a2-tests/', 1], ['Intermediate · B1', 'Entry, file, progress and end-of-course tests', '/a/ef-b1-tests/', 1], ['Upper-intermediate · B2', 'Entry, file, progress and end-of-course tests', '/a/ef-b2-tests/', 1], ['Advanced · C1', 'Entry, file, progress and end-of-course tests', '/a/ef-c1-tests/', 1]]],
+    ['English File', [['Beginner · A0', 'Beginners use the Elementary tests (Entry and File 1–3 first)', '/a/ef-a1-tests/', 1], ['Elementary · A1', 'Entry, file, progress and end-of-course tests', '/a/ef-a1-tests/', 1], ['Pre-intermediate · A2', 'Entry, file, progress and end-of-course tests', '/a/ef-a2-tests/', 1], ['Intermediate · B1', 'Entry, file, progress and end-of-course tests', '/a/ef-b1-tests/', 1], ['Upper-intermediate · B2', 'Entry, file, progress and end-of-course tests', '/a/ef-b2-tests/', 1], ['Advanced · C1', 'Entry, file, progress and end-of-course tests', '/a/ef-c1-tests/', 1]]],
     ['English for Teenagers', [['B1–B2', '46 tests: entry, unit, part, progress and end-of-course', '/a/teens-b1-tests/', 1], ['B2–C1', 'Entry, unit, part, progress and end-of-course tests', '/a/teens-b2-tests/', 1]]],
     ['Young Learners', [['Pre A1 Starters', 'Ages 6–8 · 3 practice tests with listening, picture games and live games', '/a/starters-tests/', 0], ['A1 Movers', 'Ages 7–10 · 3 practice tests, games and live games', '/a/movers-tests/', 0], ['A2 Flyers', 'Ages 9–12 · 3 practice tests, games and live games', '/a/flyers-tests/', 0], ['Young Learners Test Centre', 'More practice tests for all three levels', '/a/yl-tests/', 1]]],
     ['Cambridge exams', [['PET · B1 Preliminary', 'Exam-style tests with every part', '/a/pet-tests/', 1]]],
@@ -58,7 +58,7 @@
   ];
   function centres() {
     var ok = CLS && CLS.map(IFClass.testPaths).filter(Boolean);
-    var list = !ok ? CENTRES : CENTRES.map(function (g) { return [g[0], g[1].filter(function (t) { return ok.indexOf(t[2]) >= 0; })]; }).filter(function (g) { return g[1].length; });
+    var list = !ok ? CENTRES : CENTRES.map(function (g) { return [g[0], g[1].filter(function (t) { return ok.indexOf(t[2]) >= 0 && (!/^Beginner/.test(t[0]) || CLS.indexOf('book:ef-a0') >= 0) && (!/^Elementary/.test(t[0]) || CLS.indexOf('book:ef-a0') < 0); })]; }).filter(function (g) { return g[1].length; });
     return '<div class="panel tc"><h2>' + (ok ? 'Your class tests' : 'All test centres') + '</h2><p class="sub">' + (ok ? 'The tests for your class, coursebook and level. Writing is marked by AI and every result goes to your profile and your teacher.' : 'Every test is supported by AI: writing is marked by AI and every result is saved to the student\'s profile and the teacher\'s results.') + '</p>' +
       (list.length ? '' : '<p class="mini">Your teacher will share your tests here.</p>') +
       list.map(function (g) {

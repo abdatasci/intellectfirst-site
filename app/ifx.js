@@ -182,7 +182,7 @@
     ['Business English', '💼', [['be:A2', 'A2'], ['be:B1', 'B1'], ['be:B2', 'B2'], ['be:C1', 'C1']]],
     ['Exams', '🎯', [['ielts', 'IELTS'], ['ket', 'KET (A2 Key)'], ['pet', 'PET (B1 Preliminary)']]],
     ['Young learners (6–12)', '🧸', [['yl:starters', 'Starters'], ['yl:movers', 'Movers'], ['yl:flyers', 'Flyers'], ['maths', 'Maths in English']]],
-    ['Coursebooks (up to 2)', '📗', [['book:ef-a1', 'English File Elementary'], ['book:ef-a2', 'English File Pre-intermediate'], ['book:ef-b1', 'English File Intermediate'], ['book:ef-b2', 'English File Upper-intermediate'], ['book:ef-c1', 'English File Advanced'], ['book:ef-c2', 'English File Advanced Plus'], ['book:teens-b1', 'English for Teenagers B1–B2'], ['book:teens-b2', 'English for Teenagers B2–C1'], ['book:giu', 'Grammar in Use']]]
+    ['Coursebooks (up to 2)', '📗', [['book:ef-a0', 'English File Beginner (A0)'], ['book:ef-a1', 'English File Elementary (A1)'], ['book:ef-a2', 'English File Pre-intermediate (A2)'], ['book:ef-b1', 'English File Intermediate (B1)'], ['book:ef-b2', 'English File Upper-intermediate (B2)'], ['book:ef-c1', 'English File Advanced (C1)'], ['book:ef-c2', 'English File Advanced Plus'], ['book:teens-b1', 'English for Teenagers B1–B2'], ['book:teens-b2', 'English for Teenagers B2–C1'], ['book:giu', 'Grammar in Use']]]
   ];
   var SNAME = {}, SICON = {};
   STUDY.forEach(function (g) { g[2].forEach(function (x) { SNAME[x[0]] = /^ge:/.test(x[0]) ? 'General English ' + x[1] : /^be:/.test(x[0]) ? 'Business English ' + x[1] : /^yl:/.test(x[0]) ? x[1] : x[1]; SICON[x[0]] = g[1]; }); });
@@ -198,8 +198,9 @@
     else if (k === 'pet') { P.voc = byId('voc-pet'); P.game = byId('pet-arcade'); P.test = byId('pet-tests'); P.level = 'B1'; }
     else if (/^yl:/.test(k)) { var y = k.split(':')[1]; P.course = BY['yl-' + y]; P.voc = byId('voc-' + y) || byId('yl'); P.game = byId('kids-quest'); P.test = byId(y + '-t'); P.kids = true; }
     else if (k === 'maths') { P.course = BY.maths; P.game = byId('yl-games'); P.kids = true; }
-    else if (/^book:/.test(k)) { var bk = k.slice(5), BL = { 'ef-a1': 'A1', 'ef-a2': 'A2', 'ef-b1': 'B1', 'ef-b2': 'B2', 'ef-c1': 'C1', 'ef-c2': 'C2', 'teens-b1': 'B1', 'teens-b2': 'B2', giu: 'B1' }; P.level = BL[bk]; P.book = true;
-      if (/^ef-/.test(bk)) { P.test = byId(bk); P.voc = byId('voc-' + bk.slice(3)); P.game = byId('mind-lab'); }
+    else if (/^book:/.test(k)) { var bk = k.slice(5), BL = { 'ef-a0': 'A1', 'ef-a1': 'A1', 'ef-a2': 'A2', 'ef-b1': 'B1', 'ef-b2': 'B2', 'ef-c1': 'C1', 'ef-c2': 'C2', 'teens-b1': 'B1', 'teens-b2': 'B2', giu: 'B1' }; P.level = BL[bk]; P.book = true;
+      if (bk === 'ef-a0') { P.test = byId('ef-a1'); P.voc = byId('voc-a1'); P.game = byId('mind-lab'); }   // Beginner (A0): the Elementary materials until Beginner ones exist
+      else if (/^ef-/.test(bk)) { P.test = byId(bk); P.voc = byId('voc-' + bk.slice(3)); P.game = byId('mind-lab'); }
       else if (/^teens-/.test(bk)) { P.test = byId(bk); P.voc = byId(bk === 'teens-b1' ? 'voc-tb1' : 'voc-tb2'); P.game = byId('gameroom'); }
       else { P.voc = byId('gram-centre'); P.game = byId('mind-lab'); P.test = byId('test-centre'); }
       P.course = BY[bk] || BY['ge-' + (P.level || '').toLowerCase()]; }
@@ -215,7 +216,7 @@
     if (k === 'ket') return /ket/.test(tags) || (it.tr === 'general' && (it.lv || []).indexOf('A2') >= 0 && it.s === 'grammar');
     if (k === 'pet') return /pet/.test(tags) || (it.tr === 'general' && (it.lv || []).indexOf('B1') >= 0 && it.s === 'grammar');
     if (/^yl:|^maths$/.test(k)) return it.tr === 'kids';
-    if (/^book:/.test(k)) { var bk = k.slice(5); return it.id === bk || (bk === 'teens-b1' && it.id === 'voc-tb1') || (bk === 'teens-b2' && it.id === 'voc-tb2') || (/^teens/.test(bk) && /teens/.test(tags) && it.s !== 'tests' && it.s !== 'vocab') || (bk === 'giu' && /gram|giu/.test(it.id)) || (/^ef-/.test(bk) && it.id === 'voc-' + bk.slice(3)); }
+    if (/^book:/.test(k)) { var bk = k.slice(5); if (bk === 'ef-a0') bk = 'ef-a1'; return it.id === bk || (bk === 'teens-b1' && it.id === 'voc-tb1') || (bk === 'teens-b2' && it.id === 'voc-tb2') || (/^teens/.test(bk) && /teens/.test(tags) && it.s !== 'tests' && it.s !== 'vocab') || (bk === 'giu' && /gram|giu/.test(it.id)) || (/^ef-/.test(bk) && it.id === 'voc-' + bk.slice(3)); }
     return false;
   }
   /* full view: staff, teachers, or anyone who hasn't chosen goals yet. Everyone else sees only what fits their goals. */

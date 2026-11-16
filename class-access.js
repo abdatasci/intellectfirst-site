@@ -5,10 +5,10 @@
 (function () {
   var LV = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
   function levelIn(t) {
-    var m = String(t || '').toUpperCase().match(/\b(PRE[- ]?A1|A1|A2|B1|B2|C1|C2)\b/); if (m) return /PRE/.test(m[1]) ? 'A1' : m[1];
+    var m = String(t || '').toUpperCase().match(/\b(PRE[- ]?A1|A0|A1|A2|B1|B2|C1|C2)\b/); if (m) return /PRE/.test(m[1]) ? 'A0' : m[1];
     // groups named by the coursebook level (e.g. a new "Elementary" group)
     var w = String(t || '').toLowerCase();
-    return /beginner|elementary/.test(w) && !/pre[- ]?int/.test(w) ? 'A1' : /pre[- ]?int/.test(w) ? 'A2' : /upper[- ]?int/.test(w) ? 'B2' : /\bintermediate/.test(w) ? 'B1' : /advanced/.test(w) ? 'C1' : '';
+    return /beginner|from zero/.test(w) ? 'A0' : /elementary/.test(w) && !/pre[- ]?int/.test(w) ? 'A1' : /pre[- ]?int/.test(w) ? 'A2' : /upper[- ]?int/.test(w) ? 'B2' : /\bintermediate/.test(w) ? 'B1' : /advanced/.test(w) ? 'C1' : '';
   }
   function bookKey(title) {
     var t = String(title || '').toLowerCase();
@@ -18,15 +18,16 @@
       if (/upper/.test(t)) return 'ef-b2';
       if (/pre[- ]?int/.test(t)) return 'ef-a2';
       if (/intermediate/.test(t)) return 'ef-b1';
-      if (/elementary|beginner/.test(t)) return 'ef-a1';
+      if (/beginner/.test(t)) return 'ef-a0';
+      if (/elementary/.test(t)) return 'ef-a1';
       var l = levelIn(t); return l ? 'ef-' + l.toLowerCase() : '';
     }
     if (/teen/.test(t)) return levelIn(t) === 'B2' || /b2\s*[–-]\s*c1/.test(t) ? 'teens-b2' : 'teens-b1';
     if (/grammar in use/.test(t)) return 'giu';
     return '';
   }
-  var SAME = { A1: ['ef-a1'], A2: ['ef-a2'], B1: ['ef-b1', 'teens-b1'], B2: ['ef-b2', 'teens-b2'], C1: ['ef-c1'], C2: ['ef-c2'] };
-  var BL = { 'ef-a1': 'A1', 'ef-a2': 'A2', 'ef-b1': 'B1', 'ef-b2': 'B2', 'ef-c1': 'C1', 'ef-c2': 'C2', 'teens-b1': 'B1', 'teens-b2': 'B2', giu: 'B1' };
+  var SAME = { A0: ['ef-a0', 'ef-a1'], A1: ['ef-a1'], A2: ['ef-a2'], B1: ['ef-b1', 'teens-b1'], B2: ['ef-b2', 'teens-b2'], C1: ['ef-c1'], C2: ['ef-c2'] };
+  var BL = { 'ef-a0': 'A0', 'ef-a1': 'A1', 'ef-a2': 'A2', 'ef-b1': 'B1', 'ef-b2': 'B2', 'ef-c1': 'C1', 'ef-c2': 'C2', 'teens-b1': 'B1', 'teens-b2': 'B2', giu: 'B1' };
   function keys(me) {
     if (!me || !me.profile || me.access === 'staff' || /teacher|admin/.test(me.profile.role || '')) return null;
     var cls = me.classes || [], st = me.student; if (!st || !cls.length) return null;
@@ -45,11 +46,11 @@
       if (!lv) lv = levelIn(text);
     });
     if (cls.some(indiv)) {
-      ['A1', 'A2', 'B1', 'B2', 'C1'].forEach(function (l) { add('ge:' + l); (SAME[l] || []).forEach(function (bk) { add('book:' + bk); }); });
+      add('book:ef-a0'); ['A1', 'A2', 'B1', 'B2', 'C1'].forEach(function (l) { add('ge:' + l); (SAME[l] || []).forEach(function (bk) { add('book:' + bk); }); });
       if (lv === 'C2') { add('ge:C2'); add('book:ef-c2'); }
     }
     if (lv && !kids) {
-      add(biz ? 'be:' + (lv === 'A1' ? 'A2' : lv === 'C2' ? 'C1' : lv) : 'ge:' + lv);
+      add(biz ? 'be:' + (lv === 'A1' || lv === 'A0' ? 'A2' : lv === 'C2' ? 'C1' : lv) : 'ge:' + (lv === 'A0' ? 'A1' : lv));
       // every coursebook of the same level is open too (English File B1 <-> English for Teenagers B1, and so on)
       (SAME[lv] || []).forEach(function (bk) { add('book:' + bk); });
     }
