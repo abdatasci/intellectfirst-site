@@ -57,7 +57,7 @@
       bar.appendChild(kq);
     }
     document.body.appendChild(bar);
-    /* apps that redraw the whole page (IF English) would remove the buttons: put them back */
+    /* apps that redraw the whole page (IF App) would remove the buttons: put them back */
     setInterval(function () { if (!document.body.contains(bar)) document.body.appendChild(bar); }, 800);
     bar.querySelector('.back').addEventListener('click', function (e) {
       e.preventDefault();

@@ -1,7 +1,7 @@
-/* IF English: everything on the site, organised. Each item: id, s (section), t (title), d (description), lv (levels), tr (track),
+/* IF App: everything on the site, organised. Each item: id, s (section), t (title), d (description), lv (levels), tr (track),
    tags (for filters and search), href, icon. Sections: vocab, grammar, games, tests, ielts, kids, more. */
 window.IFX_DIR = [
-  /* ---------- vocabulary courses (IF English Vocabulary Arenas, by level, book and exam) ---------- */
+  /* ---------- vocabulary courses (IF App Vocabulary Arenas, by level, book and exam) ---------- */
   { id: 'voc-a1', s: 'vocab', t: 'English File Elementary vocabulary (A1)', d: 'Every Student\'s Book unit: beginner words with pictures, sounds and games', lv: ['A1'], tr: 'general', tags: ['general', 'level', 'book', 'ef', 'teens', 'adults'], href: '/a/if-english/courses/A1/index.html', icon: '🌱' },
   { id: 'voc-a2', s: 'vocab', t: 'English File Pre-intermediate vocabulary (A2)', d: 'Every Student\'s Book unit: everyday vocabulary, unit by unit', lv: ['A2'], tr: 'general', tags: ['general', 'level', 'book', 'ef', 'teens', 'adults'], href: '/a/if-english/courses/A2/index.html', icon: '🌿' },
   { id: 'voc-b1', s: 'vocab', t: 'English File Intermediate vocabulary (B1)', d: 'Every Student\'s Book unit: topic vocabulary and collocations', lv: ['B1'], tr: 'general', tags: ['general', 'level', 'book', 'ef', 'teens', 'adults'], href: '/a/if-english/courses/B1/index.html', icon: '🌳' },
@@ -40,7 +40,7 @@ window.IFX_DIR = [
   { id: 'kq-pet', s: 'games', t: 'Kids Quest · B1 PET race', d: 'Kart race and word mine on Treasure Island and in the Robot Lab', lv: ['B1'], tr: 'exam', tags: ['pet', 'grammar', 'race'], href: '/a/kids-quest/?level=PET', icon: '🏎️' },
   { id: 'kq-flyers', s: 'games', t: 'Kids Quest · Flyers race', d: 'Star Station and Midnight Museum: kart race, story and word mine', lv: ['A2'], tr: 'kids', tags: ['kids', 'vocabulary', 'race'], href: '/a/kids-quest/?level=Flyers', icon: '🚀' },
   { id: 'bq-kids', s: 'games', t: 'Block Quest for kids (A1)', d: '3D block world for older children: mine word blocks and jump the obby', lv: ['A1'], tr: 'kids', tags: ['kids', 'vocabulary', '3d'], href: '/a/block-quest/?level=A1', icon: '🧱' },
-  { id: 'block-quest', s: 'games', t: 'IF Block Quest (3D)', d: 'Word Mine and Grammar Obby: 3D block-world games for teens and adults, A1–C2, questions from the IF English courses', lv: ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'], tr: 'general', tags: ['general', 'vocabulary', 'grammar', 'teens', 'adults'], href: '/a/block-quest/', icon: '⛏️' },
+  { id: 'block-quest', s: 'games', t: 'IF Block Quest (3D)', d: 'Word Mine and Grammar Obby: 3D block-world games for teens and adults, A1–C2, questions from the IF App courses', lv: ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'], tr: 'general', tags: ['general', 'vocabulary', 'grammar', 'teens', 'adults'], href: '/a/block-quest/', icon: '⛏️' },
   { id: 'kids-quest', s: 'games', t: 'IF Kids Quest', d: 'Story adventure with kart races and a word mine — 10 lands from Starters, Movers and Flyers to A2 Key and B1 PET', lv: ['A1', 'A2', 'B1'], tr: 'kids', tags: ['kids', 'vocabulary', 'cambridge', 'ket', 'pet'], href: '/a/kids-quest/', icon: '🏎️' },
   { id: 'yl-games', s: 'archive', t: 'Young Learners games', d: 'Memory, balloons, spelling and speed games for Starters, Movers and Flyers', lv: ['A1', 'A2'], tr: 'kids', tags: ['kids', 'vocabulary'], href: '/a/young-learners/', icon: '🎈' },
   { id: 'kids-english', s: 'archive', t: 'IF Kids English', d: 'Playful English for young children', lv: ['A1'], tr: 'kids', tags: ['kids', 'vocabulary'], href: '/a/kids-english/index.html', icon: '🧸' },
@@ -60,7 +60,7 @@ window.IFX_DIR = [
   { id: 'movers-t', s: 'tests', t: 'Movers tests', d: 'A1 Movers practice tests with listening', lv: ['A1'], tr: 'kids', tags: ['kids', 'cambridge'], href: '/a/movers-tests/', icon: '🐯' },
   { id: 'flyers-t', s: 'tests', t: 'Flyers tests', d: 'A2 Flyers practice tests with listening', lv: ['A2'], tr: 'kids', tags: ['kids', 'cambridge'], href: '/a/flyers-tests/', icon: '🦅' },
 
-  /* ---------- IELTS practice tools (the lessons are an IF English course) ---------- */
+  /* ---------- IELTS practice tools (the lessons are an IF App course) ---------- */
   { id: 'ielts-studio', s: 'ielts', t: 'IF IELTS Studio', d: 'Writing practice, Task 1 charts, the Language and Vocabulary banks (PDF)', lv: ['B1', 'B2', 'C1'], tr: 'exam', tags: ['ielts', 'writing'], href: '/a/ielts-studio/index.html', icon: '✍️' },
   { id: 'ielts-speaking', s: 'ielts', t: 'IELTS Speaking Lab', d: 'Parts 1, 2 and 3 with model answers and timing', lv: ['B1', 'B2', 'C1'], tr: 'exam', tags: ['ielts', 'speaking'], href: '/a/ielts-speaking/index.html', icon: '🎤' },
   { id: 'ielts-centre', s: 'ielts', t: 'IELTS Centre', d: 'Full practice tests and your band scores', lv: ['B2', 'C1'], tr: 'exam', tags: ['ielts', 'tests'], href: '/a/ielts/index.html', icon: '🏛️' },

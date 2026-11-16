@@ -99,7 +99,7 @@
         .then(function (k) { if (!k || !k.ks) share(); }).catch(function () { share(); });
     }
   } catch (e) {}
-  /* pages without their own lock screen (apps grid, materials, IF English, login): unlock silently from the account */
+  /* pages without their own lock screen (apps grid, materials, IF App, login): unlock silently from the account */
   try {
     var last = +sessionStorage.getItem('if.sso') || 0;
     if (!role() && Date.now() - last > 120000 && !document.getElementById('payload')) {

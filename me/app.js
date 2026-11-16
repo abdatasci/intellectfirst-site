@@ -38,7 +38,7 @@
     'alumni': ['IF Alumni', 'I finished my course at IF Academy'],
     'outside': ['Learning on my own', 'Free account. Full access is paid'],
     'parent': ['A parent', 'My child (6–12) learns English: Young Learners and Maths in English'],
-    'tutor': ['A teacher', 'I teach English and want IF English for my classes (Teacher plan)']
+    'tutor': ['A teacher', 'I teach English and want IF App for my classes (Teacher plan)']
   };
   function whoPicker(sel) {
     return '<label class="f">I am…</label><div class="who4" role="radiogroup">' + Object.keys(TRACKS).map(function (k) {
@@ -47,16 +47,16 @@
   }
   // main goal → the apps that fit it (lock = part of full access)
   var GOALS = [
-    ['General English', [['IF English vocabulary', '/app/#/vocab', 1], ['IF Skill Games', '/a/skill-games/'], ['Grammar Game Centre', '/a/grammar-game-centre/'], ['Grammar in Use Quest', '/a/grammar-in-use-quest/'], ['Test Centres A1–C1', '/a/ef-b1-tests/', 1], ['AI practice', '/live/'], ['AI tests', '/tests/']]],
+    ['General English', [['IF App vocabulary', '/app/#/vocab', 1], ['IF Skill Games', '/a/skill-games/'], ['Grammar Game Centre', '/a/grammar-game-centre/'], ['Grammar in Use Quest', '/a/grammar-in-use-quest/'], ['Test Centres A1–C1', '/a/ef-b1-tests/', 1], ['AI practice', '/live/'], ['AI tests', '/tests/']]],
     ['IELTS', [['IELTS Centre (AI marking)', '/a/ielts/', 1], ['IELTS Speaking Lab', '/a/ielts-speaking/'], ['IF IELTS Studio', '/a/ielts-studio/'], ['Band 9 Lexis', '/a/band9-lexis/'], ['AI tests', '/tests/']]],
     ['Cambridge exams (KET, PET, Flyers)', [['KET Quest', '/a/ket-quest/'], ['KET Booster Arcade', '/a/ket-booster/'], ['PET Quest', '/a/pet-quest/'], ['PET Arcade', '/a/pet-arcade/'], ['Flyers Arcade', '/a/flyers-arcade/'], ['IF Kids Quest', '/a/kids-quest/'], ['PET Test Centre', '/a/pet-tests/', 1], ['Young Learners tests', '/a/yl-tests/', 1]]],
     ['English for children', [['IF Kids Quest (story game)', '/a/kids-quest/'], ['IF Kids English', '/a/kids-english/'], ['Young Learners Centre', '/a/young-learners/'], ['Flyers Arcade', '/a/flyers-arcade/'], ['Young Learners tests', '/a/yl-tests/', 1]]],
-    ['Business English', [['IF English vocabulary', '/app/#/vocab', 1], ['IF Skill Games', '/a/skill-games/'], ['AI tests', '/tests/'], ['AI practice', '/live/']]],
+    ['Business English', [['IF App vocabulary', '/app/#/vocab', 1], ['IF Skill Games', '/a/skill-games/'], ['AI tests', '/tests/'], ['AI practice', '/live/']]],
     ['Kazakh or Russian', [['Kazakh A1–B1', '/a/kazakh-a1-b1/'], ['Russian A1–B1', '/a/russian-a1-b1/']]]
   ];
   function goalOf(p) { var g = String((p && p.goals) || ''); for (var i = 0; i < GOALS.length; i++) if (g.indexOf(GOALS[i][0]) === 0) return GOALS[i]; return null; }
   function goalSelect(id, val) { return '<select class="inp" id="' + id + '"><option value="">Choose…</option>' + GOALS.map(function (g) { return '<option' + (String(val || '').indexOf(g[0]) === 0 ? ' selected' : '') + '>' + esc(g[0]) + '</option>'; }).join('') + '</select>'; }
-  /* what to study: one or more courses and levels (changeable later in My account and in IF English) */
+  /* what to study: one or more courses and levels (changeable later in My account and in IF App) */
   var STUDY = [
     ['General English', [['ge:A1', 'A1 Beginner'], ['ge:A2', 'A2 Elementary'], ['ge:B1', 'B1 Intermediate'], ['ge:B2', 'B2 Upper-intermediate'], ['ge:C1', 'C1 Advanced'], ['ge:C2', 'C2 Proficiency']]],
     ['Business English', [['be:A2', 'Business A2'], ['be:B1', 'Business B1'], ['be:B2', 'Business B2'], ['be:C1', 'Business C1']]],
@@ -76,10 +76,10 @@
   function studySummary(a) { return (a || []).map(function (k) { return STUDY_NAME[k] || k; }).join(', '); }
   function goalBox(p) {
     var st = p.study || [];
-    return '<div class="box"><h3>' + (p.track === 'parent' ? 'My child\'s courses' + (p.child ? ': ' + esc(p.child) : '') : 'My courses and levels') + '</h3><p class="small" style="margin:0 0 8px">Choose one or more. Change them any time — IF English shows lessons, words, games and tests for what you choose.</p>' +
-      studyPicker(st, p.track === 'parent') + '<div class="row" style="margin-top:10px"><button class="btn" id="stsave" style="width:auto">Save</button><a class="btn ghost" style="width:auto" href="/app/">Open IF English →</a></div></div>';
+    return '<div class="box"><h3>' + (p.track === 'parent' ? 'My child\'s courses' + (p.child ? ': ' + esc(p.child) : '') : 'My courses and levels') + '</h3><p class="small" style="margin:0 0 8px">Choose one or more. Change them any time — IF App shows lessons, words, games and tests for what you choose.</p>' +
+      studyPicker(st, p.track === 'parent') + '<div class="row" style="margin-top:10px"><button class="btn" id="stsave" style="width:auto">Save</button><a class="btn ghost" style="width:auto" href="/app/">Open IF App →</a></div></div>';
   }
-  function wireGoal() { var b = $('#stsave'); if (b) b.onclick = async function () { var s = studyValue(); if (!s.length) return toast('Choose at least one course or level.'); b.disabled = true; try { var r = await api('profile', { method: 'PUT', body: { study: s, goals: studySummary(s) } }); ME.profile = r.profile; toast('Saved. IF English is updated.'); } catch (e) { toast('Could not save.'); } b.disabled = false; }; }
+  function wireGoal() { var b = $('#stsave'); if (b) b.onclick = async function () { var s = studyValue(); if (!s.length) return toast('Choose at least one course or level.'); b.disabled = true; try { var r = await api('profile', { method: 'PUT', body: { study: s, goals: studySummary(s) } }); ME.profile = r.profile; toast('Saved. IF App is updated.'); } catch (e) { toast('Could not save.'); } b.disabled = false; }; }
   function track() { var r = $('input[name=trk]:checked'); return r ? r.value : 'if'; }
   function welcomeMsg(res) {
     if (res && res.access && res.access !== 'free') return 'Welcome to IF Academy';
@@ -176,7 +176,7 @@
       catch (e) { err(f, authMsg(e)); b.disabled = false; }
     };
   }
-  /** After signing in or registering: back to the page that sent them here (e.g. the IF English app). */
+  /** After signing in or registering: back to the page that sent them here (e.g. the IF App). */
   function afterAuth() {
     var nx = null; try { nx = sessionStorage.getItem('if.next'); } catch (e) {}
     if (!nx || !role()) return false;
@@ -429,13 +429,13 @@
   function accessBand(p) {
     if (role() !== 'guest') return '';
     var rq = p.request, L = TRACKS[p.track] ? TRACKS[p.track][0] : '', fp = fromPrice(ME.membership);
-    if (paidActive(p)) return '<div class="acc ok"><b>Full access until ' + when(p.paidUntil) + '</b><span>All test centres, IF English, IELTS marking, unlimited AI tests and the assistant.</span><a class="btn ghost sm" href="#/upgrade">Extend</a></div>';
+    if (paidActive(p)) return '<div class="acc ok"><b>Full access until ' + when(p.paidUntil) + '</b><span>All test centres, IF App, IELTS marking, unlimited AI tests and the assistant.</span><a class="btn ghost sm" href="#/upgrade">Extend</a></div>';
     if (rq && rq.paid) return '<div class="acc wait"><b>Payment sent for checking</b><span>Your full access starts as soon as the school confirms the payment (' + rq.months + ' month' + (rq.months > 1 ? 's' : '') + ').</span></div>';
-    var trial = trialOn(p) ? '<div class="acc ok"><b>Full access trial: ' + daysLeft(p.trialUntil) + ' day' + (daysLeft(p.trialUntil) > 1 ? 's' : '') + ' left</b><span>Everything is open: every test centre, IF English, IELTS marking and unlimited AI practice. Make the most of it!</span><a class="btn ghost sm" href="#/upgrade">See plans</a></div>' : '';
+    var trial = trialOn(p) ? '<div class="acc ok"><b>Full access trial: ' + daysLeft(p.trialUntil) + ' day' + (daysLeft(p.trialUntil) > 1 ? 's' : '') + ' left</b><span>Everything is open: every test centre, IF App, IELTS marking and unlimited AI practice. Make the most of it!</span><a class="btn ghost sm" href="#/upgrade">See plans</a></div>' : '';
     if (rq) return trial + '<div class="acc wait"><b>Waiting for confirmation</b><span>Abdoulie will confirm you as: ' + esc(L.replace(/^An? /, '')) + '. Have a code from your teacher? <a href="#/activate">Enter it</a> for full access now.</span></div>';
     if (trial) return trial;
-    if (p.trialUntil) return '<div class="acc"><b>Your free trial has ended</b><span>Keep full access' + (fp ? ' from <b>' + kzt(fp) + ' a month</b>' : '') + ': every test centre, IF English, IELTS marking and unlimited AI practice.</span><a class="btn sm" href="#/upgrade">Keep full access</a></div>';
-    return '<div class="acc"><b>Free account</b><span>Games, quests, the placement test and a little AI practice every day. Full access opens every test centre, IF English, IELTS marking and unlimited AI practice.</span><a class="btn sm" href="#/upgrade">Get full access</a></div>';
+    if (p.trialUntil) return '<div class="acc"><b>Your free trial has ended</b><span>Keep full access' + (fp ? ' from <b>' + kzt(fp) + ' a month</b>' : '') + ': every test centre, IF App, IELTS marking and unlimited AI practice.</span><a class="btn sm" href="#/upgrade">Keep full access</a></div>';
+    return '<div class="acc"><b>Free account</b><span>Games, quests, the placement test and a little AI practice every day. Full access opens every test centre, IF App, IELTS marking and unlimited AI practice.</span><a class="btn sm" href="#/upgrade">Get full access</a></div>';
   }
   function vUpgrade() {
     setNav('home');
@@ -444,9 +444,9 @@
     var p = ME.profile, m0 = ME.membership || {}, r = role(), student = r !== 'guest', paid = paidActive(p), trial = trialOn(p), tutor = p.track === 'tutor';
     var m = tutor ? Object.assign({}, m0, { plans: m0.teacherPlans || {} }) : m0;
     var tick = function (a) { return '<ul class="plist">' + a.map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ul>'; };
-    var free = ['IF English: the first two units of every course', '3 games a day, at every level (Kart, Block Quest, Skill Games, Grammar Game Centre…)', 'Free placement test', 'Join IF Live games with a PIN', '2 AI practice tests a day', '6 rounds of AI practice a day', 'Notifications on Telegram'];
-    var full = ['Everything in the free account', 'Every unit of every IF English course', 'Unlimited games', 'All Test Centres: A1–C1, KET, PET, Young Learners, Teens', 'IF English: 12 vocabulary courses with audio and games', 'IELTS Centre: AI marking of Writing and Speaking', 'Unlimited AI tests and AI practice', 'AI study assistant', 'Results saved on your profile'];
-    if (tutor) full = ['Every IF English course and lesson, for you and in class', 'Teach mode: big text for the projector, answers shown when you choose', 'IF Live: host class games with a PIN or QR code, with AI questions', 'All Test Centres and the IELTS lessons, Studio and Speaking Lab', 'Vocabulary, grammar and game banks for every level'];
+    var free = ['IF App: the first two units of every course', '3 games a day, at every level (Kart, Block Quest, Skill Games, Grammar Game Centre…)', 'Free placement test', 'Join IF Live games with a PIN', '2 AI practice tests a day', '6 rounds of AI practice a day', 'Notifications on Telegram'];
+    var full = ['Everything in the free account', 'Every unit of every IF App course', 'Unlimited games', 'All Test Centres: A1–C1, KET, PET, Young Learners, Teens', 'IF App: 12 vocabulary courses with audio and games', 'IELTS Centre: AI marking of Writing and Speaking', 'Unlimited AI tests and AI practice', 'AI study assistant', 'Results saved on your profile'];
+    if (tutor) full = ['Every IF App course and lesson, for you and in class', 'Teach mode: big text for the projector, answers shown when you choose', 'IF Live: host class games with a PIN or QR code, with AI questions', 'All Test Centres and the IELTS lessons, Studio and Speaking Lab', 'Vocabulary, grammar and game banks for every level'];
     var L = plansOf(m), base = L.length ? L[0].per : 0, fp = fromPrice(m);
     var lead = student ? 'As ' + (p.track === 'private' ? 'Abdoulie\'s individual student' : 'an IF Academy student') + ', full access is included free with your lessons.' :
       paid ? 'Your access runs until ' + when(p.paidUntil) + '. You can extend it below.' :
@@ -462,7 +462,7 @@
         '<span class="pm">' + (x.months > 1 ? kzt(x.total) : kzt(x.per) + '<small> / month</small>') + '</span>' +
         '<span class="tot">' + (x.months > 1 ? '≈ ' + kzt(x.per) + ' a month' + (save > 0 ? ' · save ' + save + '%' : '') + (base ? '<s>' + kzt(base * x.months) + '</s>' : '') : 'Pay monthly, stop any time') + '</span></label>';
     }).join('');
-    view.innerHTML = '<section class="hero" style="padding-bottom:4px"><div class="eyebrow">' + (tutor ? 'Teacher plan' : 'IF Academy online') + '</div><h1>' + (student || paid ? 'You have full access' : trial ? 'Keep full access' : tutor ? 'Teach with IF English' : 'Get full access') + '</h1><p class="lead">' + lead + '</p></section>' +
+    view.innerHTML = '<section class="hero" style="padding-bottom:4px"><div class="eyebrow">' + (tutor ? 'Teacher plan' : 'IF Academy online') + '</div><h1>' + (student || paid ? 'You have full access' : trial ? 'Keep full access' : tutor ? 'Teach with IF App' : 'Get full access') + '</h1><p class="lead">' + lead + '</p></section>' +
       '<section class="section plans"><div class="box"><h3>Free account</h3>' + tick(free) + '</div><div class="box hl"><h3>' + (tutor ? 'Teacher plan' : 'Full access') + '</h3>' + (student ? '<p class="price">Included with your lessons</p>' : fp ? '<p class="price">from ' + kzt(fp) + ' <small>a month</small></p>' : '') + tick(full) + '</div></section>' +
       (student ? '' :
       '<section class="section"><div class="panel wide"><h2>Choose your plan</h2>' + (m.offer ? '<p class="offer">' + esc(m.offer) + '</p>' : '') +
@@ -504,8 +504,8 @@
       h += '<div class="box"><h3>Test results</h3>' + testsTable(st && st.tests) + '</div>';
       h += attBox(ME.attendance);
       h += ieltsBox(ME.ielts, true);
-      h += freeAcct() ? '<div class="box"><h3>Vocabulary</h3><p class="small" style="margin-bottom:12px">IF English: 12 vocabulary courses with flashcards, audio and games. Included in full access.</p><a class="btn sm" href="#/upgrade">See full access</a></div>'
-        : '<div class="box"><h3>Vocabulary</h3><p class="small" style="margin-bottom:12px">Practise the words for your course with flashcards, audio and games.</p><a class="btn sm" href="/app/#/vocab">Open IF English</a></div>';
+      h += freeAcct() ? '<div class="box"><h3>Vocabulary</h3><p class="small" style="margin-bottom:12px">IF App: 12 vocabulary courses with flashcards, audio and games. Included in full access.</p><a class="btn sm" href="#/upgrade">See full access</a></div>'
+        : '<div class="box"><h3>Vocabulary</h3><p class="small" style="margin-bottom:12px">Practise the words for your course with flashcards, audio and games.</p><a class="btn sm" href="/app/#/vocab">Open IF App</a></div>';
       h += '<div class="box"><h3>Games and practice</h3><p class="small" style="margin-bottom:12px">Games, quests and AI practice for every level' + (freeAcct() ? ' (free accounts: a few AI rounds a day)' : '') + '.</p><a class="btn sm" href="/#apps">Open the apps</a> <a class="btn ghost sm" href="/live/">AI practice</a> <a class="btn ghost sm" href="/tests/">AI tests</a></div>';
       if (r === 'student' || (ME.homework || []).length) h += hwBox(ME.homework || []);
     } else {

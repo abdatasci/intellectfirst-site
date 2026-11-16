@@ -1,7 +1,7 @@
 /* IF Academy inside the Telegram bot (Mini App). Does nothing on the normal website.
    When a page is opened from the bot, Telegram passes signed launch data in the address (#tgWebAppData=…). This script
    keeps it for the visit, sends it with the site's own requests (/api/…, X-TG-Init header) so the server knows who it
-   is from the bot connection, and lets the pages' sign-in check pass — so My account, the IF English app, tests and
+   is from the bot connection, and lets the pages' sign-in check pass — so My account, the IF App, tests and
    IELTS work in Telegram exactly as on the website, with no password. Same-origin frames (games) share it too. */
 (function () {
   var K = 'if.tginit', init = '';

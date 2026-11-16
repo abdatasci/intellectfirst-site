@@ -1,4 +1,4 @@
-/* IF English — one app for courses, vocabulary, grammar, games, tests and IELTS.
+/* IF App — one app for courses, vocabulary, grammar, games, tests and IELTS.
    Progress is kept on the device and, when signed in, in the account (so it follows you to the phone app and the website). */
 (function () {
   'use strict';
@@ -63,7 +63,7 @@
   var isFree = function (it) { return !!(it && FREE_IDS[it.id]); };
   var canOpen = function (it) { if (S.cls && !fullView() && !fits(it) && it.s !== 'more') return false; return isFree(it) || access().signed; };
   var JOIN = '/me/#/register?next=' + encodeURIComponent('/app/');
-  function tasterHTML() { return meLoaded && !access().signed ? '<div class="taster"><div><b>You are trying IF English free — no account needed.</b><span>Open the first unit of every course, the placement test and a selection of games. Create a free account for the first two units of every course, a 7-day trial of everything, and your progress on every device.</span></div><a class="btn gold" href="' + JOIN + '">Create a free account</a></div>' : ''; }
+  function tasterHTML() { return meLoaded && !access().signed ? '<div class="taster"><div><b>You are trying IF App free — no account needed.</b><span>Open the first unit of every course, the placement test and a selection of games. Create a free account for the first two units of every course, a 7-day trial of everything, and your progress on every device.</span></div><a class="btn gold" href="' + JOIN + '">Create a free account</a></div>' : ''; }
   /* Full-access trial countdown (guests in their 7-day trial, not paid). */
   function trialHTML() {
     var p = ME && ME.profile; if (!p || p.role !== 'guest' || !p.trialUntil) return '';
@@ -159,7 +159,7 @@
     var a = access();
     var emb = document.body.classList.contains('embed');
     document.body.innerHTML =
-      '<header class="top"><div class="top-in"><a class="brand" href="#/"><img src="/brand/if-shield-3d-180.webp" alt=""><span>IF English<small>IF ACADEMY</small></span></a>' +
+      '<header class="top"><div class="top-in"><a class="brand" href="#/"><img src="/brand/if-shield-3d-180.webp" alt=""><span>IF App<small>IF ACADEMY</small></span></a>' +
       '<label class="srch"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="q" type="search" placeholder="' + esc(t('search')) + '" autocomplete="off" aria-label="Search"></label>' +
       '<div class="stats"><span class="stat" title="' + esc(t('streak')) + '">🔥 <b id="stS">' + S.streak + '</b></span><span class="stat xp" title="XP">⚡ <b id="stX">' + S.xp + '</b></span>' +
       (window.IFVoice ? '<button class="lang" id="vox" title="Voice: British female / male" aria-label="Voice">' + (IFVoice.get() === 'male' ? '👨' : '👩') + '</button>' : '') +
@@ -260,7 +260,7 @@
     setNav('home');
     if (S.cls) return go('#/');
     if (step !== 'pick') {
-      view().innerHTML = tasterHTML() + trialHTML() + '<div class="onb"><p class="h-eyebrow">IF English</p><h1>Who is learning?</h1><p class="lead">We\'ll show what fits — and keep the rest out of the way.</p><div class="pick">' +
+      view().innerHTML = tasterHTML() + trialHTML() + '<div class="onb"><p class="h-eyebrow">IF App</p><h1>Who is learning?</h1><p class="lead">We\'ll show what fits — and keep the rest out of the way.</p><div class="pick">' +
         [['me', '🙋', 'Me', 'Teens and adults: General, Business, IELTS, KET, PET'], ['child', '🧸', 'My child', 'Young Learners (6–12) and Maths in English'], ['teach', '👩‍🏫', 'I am a teacher', 'Use every course in class with Teach mode']].map(function (g) { return '<button data-w="' + g[0] + '"><i>' + g[1] + '</i><span><b>' + g[2] + '</b><span>' + g[3] + '</span></span></button>'; }).join('') + '</div></div>';
       $$('[data-w]').forEach(function (b) { b.onclick = function () { S.who = b.dataset.w; S.teacher = S.who === 'teach'; save(); if (S.teacher) { S.study = S.study && S.study.length ? S.study : []; save(); return go('#/'); } vOnboard('pick'); }; });
       return;
@@ -288,7 +288,7 @@
     var goalPct = Math.min(100, Math.round((S.today.d === day() ? S.today.xp : 0) / GOAL_XP * 100));
     var lvPct = P.level && LEVELS.indexOf(P.level) >= 0 ? (function () { var cs = COURSES.filter(function (c) { return c.level === P.level && (c.track === 'general' || c.track === 'business'); }); var n = 0, d = 0; cs.forEach(function (c) { var s2 = courseStats(c); n += s2.n; d += s2.d; }); return n ? Math.round(d / n * 100) : 0; })() : null;
     var nextLv = P.level ? LEVELS[LEVELS.indexOf(P.level) + 1] : null;
-    var html = tasterHTML() + trialHTML() + '<div class="page-h"><div><p class="h-eyebrow">' + (S.teacher ? '👩‍🏫 Teacher' : S.who === 'child' ? '🧸 Young learner' : 'IF English') + '</p><h1>' + (a.name ? 'Hi, ' + esc(a.name.split(' ')[0]) + '!' : 'Welcome to IF English') + '</h1></div><a class="chip" href="#/onboard">✎ My courses</a></div>' +
+    var html = tasterHTML() + trialHTML() + '<div class="page-h"><div><p class="h-eyebrow">' + (S.teacher ? '👩‍🏫 Teacher' : S.who === 'child' ? '🧸 Young learner' : 'IF App') + '</p><h1>' + (a.name ? 'Hi, ' + esc(a.name.split(' ')[0]) + '!' : 'Welcome to IF App') + '</h1></div><a class="chip" href="#/onboard">✎ My courses</a></div>' +
       (keys.length ? '<div class="chips mycourses">' + keys.map(function (k) { return '<button class="chip' + (k === act ? ' on' : '') + '" data-a="' + k + '">' + SICON[k] + ' ' + esc(SNAME[k]) + '</button>'; }).join('') + '</div>' : '') +
       '<div class="hello"><div class="plan">' + (main ? '<p class="h-eyebrow" style="color:var(--gold2)">' + esc(t('yourPlan')) + '</p><h2>' + (nx ? esc(nx.l.title) : 'Course complete! 🎉') + '</h2><p>' + esc(main.title) + (nx ? ' · ' + esc(t('unit')) + ' ' + (nx.ui + 1) + ': ' + esc(nx.u.title) : '') + '</p>' +
         (nx ? '<a class="btn gold" href="#/lesson/' + main.id + '/' + nx.u.id + '/' + nx.l.id + '">' + (st.d ? t('cont') : t('start')) + ' →</a>' : '<a class="btn gold" href="#/courses">Next course →</a>')
@@ -312,7 +312,7 @@
     return '<a class="step" href="' + esc(x.href) + '"><span class="n">' + n + '</span><span><b>' + esc(x.t) + '</b><span>' + esc(label + ' · ' + x.d) + '</span></span><span class="go">›</span></a>';
   }
   function teacherBox(a) {
-    return '<div class="sec"><h2>👩‍🏫 For teachers</h2></div><div class="card" style="flex-direction:row;gap:16px;align-items:center;flex-wrap:wrap"><div style="flex:1;min-width:240px"><h3>Teach with IF English</h3><p>Open any lesson in <b>Teach mode</b>: big text for the projector, answers shown when you choose, and class games in IF Live.</p></div>' +
+    return '<div class="sec"><h2>👩‍🏫 For teachers</h2></div><div class="card" style="flex-direction:row;gap:16px;align-items:center;flex-wrap:wrap"><div style="flex:1;min-width:240px"><h3>Teach with IF App</h3><p>Open any lesson in <b>Teach mode</b>: big text for the projector, answers shown when you choose, and class games in IF Live.</p></div>' +
       (a.teacher ? '<span class="tbadge">TEACHER PLAN ACTIVE</span>' : '<a class="btn gold" href="/me/#/register/teacher">Get the Teacher plan</a>') + '</div>';
   }
   function courseCard(c) {
@@ -658,7 +658,7 @@
       (k === 'grammar' ? extra : '') + (items.length ? (k === 'grammar' ? '<div class="sec"><h2>Grammar games and practice</h2></div>' : '') + '<div class="grid">' + items.map(itemCard).join('') + '</div>' : (k === 'grammar' && extra ? '' : (full ? '<div class="empty">Nothing here for this filter yet. Try “All”.</div>' : '<div class="empty">Nothing for your goals here yet. <a href="#/onboard">Change goals</a></div>'))) + (k === 'vocab' ? extra : '');
     $$('[data-f]').forEach(function (b) { b.onclick = function () { vSection(k, b.dataset.f); }; });
   }
-  /* Games play inside IF English: the game opens in the app frame, with a way back and a full-screen option. */
+  /* Games play inside IF App: the game opens in the app frame, with a way back and a full-screen option. */
   var OLD_IDS = { 'skill-games': 'mind-lab', 'g-skill': 'mind-lab', 'g-gram': 'gram-centre', 'ielts-tests': 'ielts-centre', 'mind-lab-ielts': 'mind-lab' };
   function vPlay(id) {
     if (OLD_IDS[id]) id = OLD_IDS[id];
@@ -668,7 +668,7 @@
     if (!canOpen(it)) {
       if (!meLoaded) { view().innerHTML = '<p style="text-align:center;margin-top:40px">Loading…</p>'; return; }
       if (S.cls && access().signed) { view().innerHTML = '<div class="join"><span class="ic">🏫</span><h2>' + esc(it.t) + '</h2><p>This isn\'t part of your class. You can open everything for your class and level: ' + esc(mine().map(function (k) { return SNAME[k]; }).join(', ')) + '.</p><div class="row" style="justify-content:center"><a class="btn gold" href="#/">Back to my class</a></div></div>'; return; }
-      view().innerHTML = '<div class="join"><span class="ic">' + it.icon + '</span><h2>' + esc(it.t) + '</h2><p>This is part of the full IF English app. Create a free account (it takes a minute) to open it — you also get the first two units of every course and 7 days of full access.</p>' +
+      view().innerHTML = '<div class="join"><span class="ic">' + it.icon + '</span><h2>' + esc(it.t) + '</h2><p>This is part of the full IF App. Create a free account (it takes a minute) to open it — you also get the first two units of every course and 7 days of full access.</p>' +
         '<div class="row" style="justify-content:center;gap:10px;flex-wrap:wrap"><a class="btn gold" href="' + JOIN + '">Create a free account</a><a class="btn ghost" href="/me/#/login?next=' + encodeURIComponent('/app/#/play/' + it.id) + '">Sign in</a></div>' +
         '<p class="note">Free without an account: the first unit of every course, the placement test, IF Live, IF Kart, Kids Quest, IF Skill Games, the IELTS Centre and three vocabulary courses.</p>' +
         '<a class="chip" href="#/' + (SEC[it.s] ? it.s : 'more') + '">← Back</a></div>';

@@ -1,6 +1,6 @@
 /* IF Academy — what a student registered in a class may see.
    From /api/school/me (student level, their classes and each class's coursebook) work out study keys, the same keys
-   IF English uses for goals: book:ef-b1, ge:B1, ielts, be:B2, ket, pet, yl:movers …
+   IF App uses for goals: book:ef-b1, ge:B1, ielts, be:B2, ket, pet, yl:movers …
    Staff and students without a class get null (no restriction). */
 (function () {
   var LV = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];

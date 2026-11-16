@@ -1,7 +1,7 @@
 /* IF Block Quest — 3D English games for teens and adults, built on Three.js (WebGL).
    Word Mine: a block island with glowing word blocks — mine them and answer to collect gems.
    Grammar Obby: a sky parkour course — jump onto the platform with the right answer; wrong ones fall.
-   Questions come from the IF English courses (vocabulary definitions and grammar items), by level A1–C2.
+   Questions come from the IF App courses (vocabulary definitions and grammar items), by level A1–C2.
    Original IF Academy game: no Minecraft or Roblox assets, names or characters. */
 (function () {
   'use strict';
@@ -19,7 +19,7 @@
     } catch (e) {}
   }
 
-  /* ---------------- question bank from the IF English courses ---------------- */
+  /* ---------------- question bank from the IF App courses ---------------- */
   function bank(level) {
     var vocab = [], gram = [];
     IFX_BANK.courses.filter(function (c) { return c.level === level; }).forEach(function (c) {

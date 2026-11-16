@@ -348,7 +348,7 @@ $("#modeNote").textContent="Offline mode · self-marking with checklists";
   if(cur==="home")renderHome();
 })();
 
-/* ---------- lessons: the IF English IELTS course, self-paced or in class (Teach mode for teachers) ---------- */
+/* ---------- lessons: the IF App IELTS course, self-paced or in class (Teach mode for teachers) ---------- */
 function renderLessons(){
   const el=$("#v-lessons"); if(el.dataset.on)return; el.dataset.on="1";
   el.innerHTML='<div class="panel" style="padding:0;overflow:hidden"><iframe src="/app/?embed=1#/course/ielts" title="IELTS lessons" style="width:100%;height:calc(100vh - 150px);min-height:620px;border:0;display:block" allow="autoplay"></iframe></div><p class="note">Lessons first, then practise the same part here in the Studio. Teachers: open a lesson and press <b>Teach mode</b> for the projector.</p>';

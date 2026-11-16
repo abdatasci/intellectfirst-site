@@ -72,7 +72,7 @@
     { slug: 'ielts-studio', path: '/a/ielts-studio/index.html', name: 'IF IELTS Studio', tag: 'Reading · Writing · Vocabulary', desc: 'IELTS-format reading passages, writing models and vocabulary practice.' },
     { slug: 'ielts-speaking', path: '/a/ielts-speaking/index.html', name: 'IELTS Speaking Lab', tag: 'Speaking practice', desc: '12 topics, cue cards and a full mock speaking test.' },
     { slug: 'band9-lexis', path: '/a/band9-lexis/index.html', name: 'Band 9 Lexis', tag: 'Vocabulary', desc: 'Daily IELTS vocabulary for Band 7+ writing and speaking.' },
-    { slug: 'if-english-ielts', path: '/a/if-english/courses/IELTS/index.html', name: 'IF English · IELTS course', tag: 'Vocabulary & grammar', desc: 'The IELTS course from IF English: flashcards, audio and games.' }
+    { slug: 'if-english-ielts', path: '/a/if-english/courses/IELTS/index.html', name: 'IF App · IELTS course', tag: 'Vocabulary & grammar', desc: 'The IELTS course from IF App: flashcards, audio and games.' }
   ];
   function openApp(slug) {
     var a = APPS.filter(function (x) { return x.slug === slug; })[0];

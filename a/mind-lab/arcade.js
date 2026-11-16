@@ -1,4 +1,4 @@
-/* IF Mind Lab — Neon arcade: four original word games on the IF English word bank (Pre A1–C2).
+/* IF Mind Lab — Neon arcade: four original word games on the IF App word bank (Pre A1–C2).
    NEON SERPENT (snake) · SKYLINE (tower) · FUSION CORE (2048) · CIPHER RAIN (falling letter blocks).
    Every right answer counts towards a level up (3 in a row), every slip towards a level down (2 in a row): the
    next word is chosen from the new level at once. Each game gets the runner's api A (add, miss, word, others, …). */

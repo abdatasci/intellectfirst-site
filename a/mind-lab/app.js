@@ -1,5 +1,5 @@
 /* IF Mind Lab — 24 English brain-training games. Seven original IF Academy games (B1–C2) and seventeen word games
-   on every word of the IF English courses (Pre A1–C2). Every game keeps its own level, which moves with the answers.
+   on every word of the IF App courses (Pre A1–C2). Every game keeps its own level, which moves with the answers.
    SIGNAL LOCK (focus) · HYPERREAD (reading speed) · ECHO (listening) · GLYPH FORGE (spelling & writing)
    PRECISION (vocabulary) · FAULT LINE (grammar) · VOICE GATE (speaking).
    Scores, best scores, a skill rating per area and the daily session are kept on this device. */
@@ -25,7 +25,7 @@
   var KEY = 'ifml.v1', S;
   try { S = JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { S = {}; }
   S.lv = LEVELS.indexOf(S.lv) >= 0 ? S.lv : 'B1'; S.tr = TRACKS[S.tr] ? S.tr : 'general';
-  (function () { var q = (location.search.match(/[?&]track=([a-z]+)/) || [])[1]; if (q && TRACKS[q]) S.tr = q; })();   // opened from IF English IELTS / Business
+  (function () { var q = (location.search.match(/[?&]track=([a-z]+)/) || [])[1]; if (q && TRACKS[q]) S.tr = q; })();   // opened from IF App IELTS / Business
   S.best = S.best || {}; S.rate = S.rate || {}; S.days = S.days || {}; S.plays = S.plays || 0; S.glv = S.glv || {}; S.wlv = S.wlv || {};
   function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
 
@@ -87,7 +87,7 @@
   }
 
   /* ---------- WORD GAMES: the IF Arcade games, with words chosen for you ----------
-     Every word from every IF English course (words.js, Pre A1–C2). No units to pick: each game has its own level.
+     Every word from every IF App course (words.js, Pre A1–C2). No units to pick: each game has its own level.
      After each round the level moves: 80% or more right → up, under 50% → down. */
   var WL = ['PA1', 'A1', 'A2', 'B1', 'B2', 'C1', 'C2'], WLN = { PA1: 'Pre A1', A1: 'A1', A2: 'A2', B1: 'B1', B2: 'B2', C1: 'C1', C2: 'C2' };
   var WG = [
@@ -203,7 +203,7 @@
       '<section class="row2"><div class="glass panel"><h2>Today\'s workout</h2><div class="today">' + td.map(function (x) { var g = x.g; return '<a href="' + hrefOf(x) + '" class="' + (done[x.id] ? 'done' : '') + '">' + (x.kind === 'mind' ? emblem(g.id, g.c1, g.c2) : '<span class="emo">' + g.e + '</span>') + '<span class="k">' + g.t + '<small>' + SK[g.sk] + ' · level ' + (x.kind === 'mind' ? LVN(LVS(g)[glevel(x.id)]) : WLN[WL[wlevel(x.id)]]) + '</small></span></a>'; }).join('') + '</div></div>' +
       '<div class="glass panel"><h2>Your skill map</h2>' + radar() + '</div></section>' +
       SECTIONS.map(function (sc) { return '<div class="sec" id="s-' + sc[0] + '"><h2>' + sc[1] + '</h2></div><section class="games">' + sc[2].map(function (x) { return card(x, sc[0]); }).join('') + '</section>'; }).join('') +
-      '<p class="note">The word games use every word from the IF English courses — English File, English for Teenagers, Cambridge Starters to PET, IELTS and Business — chosen for your level. Listening uses IF Academy\'s natural British voices. Speaking works best in Chrome, Edge or Safari with a microphone.</p>';
+      '<p class="note">The word games use every word from the IF App courses — English File, English for Teenagers, Cambridge Starters to PET, IELTS and Business — chosen for your level. Listening uses IF Academy\'s natural British voices. Speaking works best in Chrome, Edge or Safari with a microphone.</p>';
     $('#hi').onclick = function () { var m = GREET[S.plays % GREET.length]; $('#bub').textContent = m; speak(m, 'f'); };
   }
 
