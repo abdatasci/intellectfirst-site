@@ -36,7 +36,7 @@ export async function saveRates(r) {
   };
   const out = { default: rule(r.default), teachers: {}, skip: (r.skip || []).filter(x => /^t-[\w-]+$/.test(x)).slice(0, 20), fixed: {} };
   for (const [id, x] of Object.entries(r.teachers || {})) if (/^t-[\w-]+$/.test(id) && x && (x.amount || x.solo)) out.teachers[id] = rule(x);
-  out.periodStart = Math.min(28, Math.max(1, +r.periodStart || 1));
+  out.periodStart = Math.min(28, Math.max(1, +r.periodStart || 28));
   out.solo = {}; for (const [sid, v] of Object.entries(r.solo || {})) if (/^[\w-]{1,40}$/.test(sid) && +v > 0) out.solo[sid] = Math.round(+v);
   for (const k of ['manager', 'smm']) if (r.fixed && r.fixed[k]) out.fixed[k] = { amount: num(r.fixed[k].amount), deduct: num(r.fixed[k].deduct), note: String(r.fixed[k].note || '').slice(0, 80) };
   out.updated = new Date().toISOString();
@@ -47,7 +47,7 @@ export async function saveRates(r) {
 /** Pay period for a month: from the period-start day of the previous month to the day before it in this month
     (periodStart 28: November = 28 Oct – 27 Nov); periodStart 1 = the calendar month. */
 export function period(month, rates) {
-  const d = Math.min(28, Math.max(1, +(rates && rates.periodStart) || 1)), [y, m] = month.split('-').map(Number);
+  const d = Math.min(28, Math.max(1, +(rates && rates.periodStart) || 28)), [y, m] = month.split('-').map(Number);
   if (d === 1) return { from: `${month}-01`, to: new Date(Date.UTC(y, m, 0)).toISOString().slice(0, 10) };
   return { from: new Date(Date.UTC(y, m - 2, d)).toISOString().slice(0, 10), to: new Date(Date.UTC(y, m - 1, d - 1)).toISOString().slice(0, 10) };
 }
