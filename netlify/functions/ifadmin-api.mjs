@@ -126,6 +126,25 @@ export default async (req) => {
         delete b.id; Object.assign(r, b); await st.setJSON(sd[1], list); return json({ ok: true, record: r });
       }
     }
+    // the director's message to one class (Telegram; WhatsApp for students not on Telegram): {ru, en, kk?}
+    const nc = path.match(/^notify\/([A-Za-z0-9_-]+)$/);
+    if (nc && method === 'POST') {
+      const b = await req.json().catch(() => ({})); if (!b.ru && !b.en) return fail(400, 'text');
+      const { doc, getLinks, tgSend, tgToken, uidsByStudent, inClass } = await import('../lib/bot-core.mjs');
+      const { waReady, waSend, waNumber } = await import('../lib/whatsapp.mjs');
+      const c = (await doc('classes')).find(x => x.id === nc[1]); if (!c) return fail(404, 'class');
+      const students = (await doc('students')).filter(s => inClass(c, s) && !/withdrawn|finished|frozen/i.test(s.status || ''));
+      const links = await getLinks(), bySid = await uidsByStudent(links), prefs = (await getStore({ name: 'school', consistency: 'strong' }).get('waPrefs', { type: 'json' })) || {}, wa = waReady();
+      const sent = [];
+      for (const s0 of students) {
+        const uid = s0.uid || bySid[s0.id] || (links['sid:' + s0.id] ? 'sid:' + s0.id : null), l = uid && links[uid], lang = l?.lang || prefs[s0.id]?.lang || 'ru', text = b[lang] || b.ru || b.en;
+        try {
+          if (l && tgToken()) { await tgSend(l.chatId, text); sent.push([s0.first + ' ' + s0.last, 'telegram']); }
+          else if (wa && !prefs[s0.id]?.off) for (const num of [...new Set([s0.phone, s0.parentPhone].map(waNumber).filter(Boolean))]) { await waSend(num, 'IF Academy\n' + text); sent.push([s0.first + ' ' + s0.last, 'whatsapp']); }
+        } catch (e) { console.error('notify', s0.id, e.message); }
+      }
+      return json({ ok: true, sent, students: students.length });
+    }
     // website accounts (directory): find by name, and link an account to its school record (copying the phone if the record has none)
     if (path === 'accounts' && method === 'GET') {
       const q = (new URL(req.url).searchParams.get('q') || '').toLowerCase(), dir = (await getStore({ name: 'ielts', consistency: 'strong' }).get('directory', { type: 'json' })) || {};
