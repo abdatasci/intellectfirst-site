@@ -516,6 +516,7 @@
         : '<div class="box"><h3>Vocabulary</h3><p class="small" style="margin-bottom:12px">Practise the words for your course with flashcards, audio and games.</p><a class="btn sm" href="/app/#/vocab">Open IF App</a></div>';
       h += '<div class="box"><h3>Games and practice</h3><p class="small" style="margin-bottom:12px">Games, quests and AI practice for every level' + (freeAcct() ? ' (free accounts: a few AI rounds a day)' : '') + '.</p><a class="btn sm" href="/#apps">Open the apps</a> <a class="btn ghost sm" href="/live/">AI practice</a> <a class="btn ghost sm" href="/tests/">AI tests</a></div>';
       if (r === 'student' || (ME.homework || []).length) h += hwBox(ME.homework || []);
+      if (st) h += '<div class="box" id="tuibox"><h3>Tuition</h3><p class="small"><span class="spin"></span></p></div>';
     } else {
       h += '<div id="todaybox" class="wide2"></div>';
       var tc = ME.teaching || [];
@@ -528,6 +529,23 @@
     view.innerHTML = h;
     $('#ph').onclick = photoDialog; if ($('#editbtn')) $('#editbtn').onclick = function () { var d = $('#editp'); d.open = true; d.scrollIntoView({ behavior: 'smooth', block: 'start' }); }; wireDetails(); tgBand(); wirePro(); wireGoal();
     if (staff()) todayBox($('#todaybox'));
+    if ($('#tuibox')) tuitionBox($('#tuibox'));
+  }
+  /* Tuition on the profile: this month's status; pay by Kaspi and send the receipt to the bot, or report a cash payment */
+  async function tuitionBox(el) {
+    var d; try { d = (await api('tuition')).tuition; } catch (e) { d = null; }
+    if (!d) { el.remove(); return; }
+    var st = d.status, paid = st && st.paid;
+    var h = '<h3>Tuition</h3><p class="small" style="margin-bottom:10px">' + esc(monthLabel(d.month)) + ': ' + (paid ? '<span class="chip2 ok">Paid</span>' : st && st.state === 'overdue' ? '<span class="chip2 bad">Overdue</span>' : '<span class="chip2 mute">Not paid yet</span>') + (d.fee ? ' · ' + money(d.fee) : '') + '</p>';
+    if (d.waiting) h += '<p class="small">' + (d.waiting.cash ? '💵 Cash payment' : '📎 Receipt') + (d.waiting.amount ? ' of ' + money(d.waiting.amount) : '') + ' sent — waiting for the school to confirm it.</p>';
+    else h += '<p class="small" style="margin-bottom:10px">Paid by Kaspi or bank? Send the receipt to the IF Academy bot (📎 Send receipt). Paid in cash at the school? Tell us here:</p>' +
+      '<form id="cashf" class="row" style="gap:8px;flex-wrap:wrap"><input class="inp" id="cashA" type="number" min="1" step="1" style="max-width:160px" value="' + (d.fee || '') + '" placeholder="Amount ₸"><button class="btn sm" type="submit">💵 I paid in cash</button></form>';
+    el.innerHTML = h;
+    var f = $('#cashf'); if (f) f.onsubmit = async function (ev) {
+      ev.preventDefault(); var a = +$('#cashA').value; if (!(a > 0)) return toast('Type the amount you paid.');
+      if (!(await ask('Report a cash payment of ' + money(a) + ' for ' + monthLabel(d.month) + '? The school confirms it once they have the cash.'))) return;
+      try { await api('tuition/cash', { method: 'POST', body: { amount: a } }); toast('Thank you! The school will confirm your cash payment.'); tuitionBox(el); } catch (e) { toast('Could not send. Please try again.'); }
+    };
   }
 
   /* ---------- calendar: a week of lessons; cancel, move, restore or add a lesson (students are told; the bot follows) ---------- */
@@ -1251,8 +1269,8 @@
     var d; try { d = await api('admin/receipts'); } catch (e) { view.innerHTML = head + '<div class="empty">Could not load receipts.</div>'; return; }
     var L = d.receipts || [], mn = function (m) { return new Date(m + '-15').toLocaleDateString('en-GB', { month: 'long', year: 'numeric' }); };
     var card = function (r) {
-      return '<div class="rcard ' + r.status + '"><a href="/api/school/admin/receipt-file/' + r.id + '" target="_blank" rel="noopener" class="rthumb">' + (/^image/.test(r.type) ? '<img src="/api/school/admin/receipt-file/' + r.id + '" alt="Receipt" loading="lazy">' : '<span>PDF</span>') + '</a>' +
-        '<div class="rinfo"><b>' + esc(r.name || 'Not linked to a student') + '</b><small>' + mn(r.month) + ' · sent ' + when(r.at) + '</small><p>AI read: <b>' + (r.amount ? r.amount.toLocaleString('ru-RU') + ' ₸' : 'amount not readable') + '</b>' + (r.date ? ' · ' + esc(r.date) : '') + (r.payer ? ' · ' + esc(r.payer) : '') + (r.method ? ' · ' + esc(r.method) : '') + (r.isReceipt === false ? ' · ⚠️ may not be a receipt' : '') + '</p>' +
+      return '<div class="rcard ' + r.status + '">' + (r.cash ? '<span class="rthumb"><span style="font-size:34px">💵</span></span>' : '<a href="/api/school/admin/receipt-file/' + r.id + '" target="_blank" rel="noopener" class="rthumb">' + (/^image/.test(r.type) ? '<img src="/api/school/admin/receipt-file/' + r.id + '" alt="Receipt" loading="lazy">' : '<span>PDF</span>') + '</a>') +
+        '<div class="rinfo"><b>' + esc(r.name || 'Not linked to a student') + '</b><small>' + mn(r.month) + ' · sent ' + when(r.at) + '</small><p>' + (r.cash ? 'Paid in cash (reported by the student): <b>' : 'AI read: <b>') + (r.amount ? r.amount.toLocaleString('ru-RU') + ' ₸' : 'amount not readable') + '</b>' + (r.date ? ' · ' + esc(r.date) : '') + (r.payer ? ' · ' + esc(r.payer) : '') + (r.method ? ' · ' + esc(r.method) : '') + (r.isReceipt === false ? ' · ⚠️ may not be a receipt' : '') + '</p>' +
         (r.status === 'pending' ? '<div class="row"><button class="btn sm" data-rc="1" data-id="' + r.id + '">✅ Confirm payment</button><button class="btn ghost sm" data-rc="0" data-id="' + r.id + '">❌ Not right</button></div>' : '<span class="chip2 ' + (r.status === 'confirmed' ? 'ok' : 'mute') + '">' + (r.status === 'confirmed' ? 'Confirmed' + (r.saved ? ' · saved in IF Admin' : '') : 'Not right') + '</span>') + '</div></div>';
     };
     var P = L.filter(function (r) { return r.status === 'pending'; }), done = L.filter(function (r) { return r.status !== 'pending'; });

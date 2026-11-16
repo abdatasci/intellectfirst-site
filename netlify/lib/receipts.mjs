@@ -79,8 +79,13 @@ async function tellAdmins(rec) {
   for (const [u, l] of Object.entries(links)) {
     const p = await getProfile(u); if (p?.role !== 'admin') continue;
     try {
-      await tg('copyMessage', { chat_id: l.chatId, from_chat_id: rec.chatId, message_id: rec.msgId });
+      if (rec.msgId) await tg('copyMessage', { chat_id: l.chatId, from_chat_id: rec.chatId, message_id: rec.msgId });
       const net = await expected(rec);
+      if (rec.cash) {
+        await tgSend(l.chatId, `💵 Cash payment reported by ${rec.name || 'a student (not linked to a record)'} for ${mname(rec.month, 'en')}: ${rec.amount ? money(rec.amount) : 'amount not given'}${rec.received ? ' · paid to ' + rec.received : ''}${net && rec.amount && rec.amount !== net ? ' (expected ' + money(net) + ')' : ''}\nConfirm once you have the cash.`,
+          { reply_markup: { inline_keyboard: [[{ text: `✅ Confirm cash${rec.amount ? ' ' + money(rec.amount) : ''}`, callback_data: `rc:ok:${rec.id}` }, { text: '❌ Not received', callback_data: `rc:no:${rec.id}` }]] } });
+        continue;
+      }
       await tgSend(l.chatId, `🧾 Receipt from ${rec.name || 'a student (not linked to a record)'} for ${mname(rec.month, 'en')}\nAI read: ${rec.amount ? money(rec.amount) : 'amount not readable'}${rec.date ? ' · ' + rec.date : ''}${rec.payer ? ' · ' + rec.payer : ''}${rec.method ? ' · ' + rec.method : ''}${net ? '\nExpected: ' + money(net) : ''}${rec.isReceipt ? '' : '\n⚠️ AI thinks this may not be a receipt.'}`,
         { reply_markup: { inline_keyboard: [[{ text: `✅ Confirm${rec.amount ? ' ' + money(rec.amount) : ''}`, callback_data: `rc:ok:${rec.id}` }, { text: '❌ Not right', callback_data: `rc:no:${rec.id}` }]] } });
     } catch (e) { console.error('receipt admin notify', e.message); }
@@ -101,7 +106,7 @@ export async function decideReceipt(id, ok, by) {
     const D = { students: (await A().get('c/students', { type: 'json' })) || {}, groups: (await A().get('c/groups', { type: 'json' })) || {}, payments: (await A().get('c/payments', { type: 'json' })) || {} };
     const prev = D.payments[rec.month]?.rows?.[rec.studentId];
     const amount = rec.amount || (prev ? Math.max(0, (+prev.due || 0) - (+prev.disc || 0)) : 0) || await expected(rec);
-    const res = run(D, [{ op: 'payment', student: rec.studentId, month: rec.month, ...(prev && +prev.paid > 0 ? { add_paid: amount } : { paid: amount }), method: rec.method || 'Kaspi Transfer', date: rec.date || undefined, note: 'Receipt via Telegram' }]);
+    const res = run(D, [{ op: 'payment', student: rec.studentId, month: rec.month, ...(prev && +prev.paid > 0 ? { add_paid: amount } : { paid: amount }), method: rec.method || 'Kaspi Transfer', date: rec.date || undefined, note: rec.cash ? 'Cash (reported by the student, confirmed)' : 'Receipt via Telegram' }]);
     if (res.touched.has('payments')) {
       await A().setJSON('c/payments', D.payments);
       const st = (await A().get('stamp', { type: 'json' })) || {}; st.payments = Date.now(); await A().setJSON('stamp', st);
@@ -119,3 +124,26 @@ export async function decideReceipt(id, ok, by) {
   return rec;
 }
 export async function receiptFile(id) { return R().getWithMetadata(id, { type: 'arrayBuffer' }); }
+
+/* Paid in cash: no receipt to send, so the student (website or bot) reports the cash payment and the school confirms it
+   in the same place as receipts (Telegram buttons, Admin → Receipts). Confirming records it in IF Admin as Cash. */
+export async function cashInfo(uid) {
+  const profile = await getProfile(uid);
+  const s = profile?.studentId ? (await loadStudents()).find(x => x.id === profile.studentId) : null;
+  if (!s) return null;
+  const month = monthFor(s), P = await pending();
+  return { name: `${s.first} ${s.last}`.trim(), month, fee: +s.pay?.fee || 0, waiting: P[s.id] ? (await listReceipts()).find(r => r.id === P[s.id].id && r.status === 'pending') || null : null };
+}
+export async function cashClaim({ uid, amount, received, chatId, lang }) {
+  const profile = await getProfile(uid);
+  const s = profile?.studentId ? (await loadStudents()).find(x => x.id === profile.studentId) : null;
+  if (!s) return null;
+  const month = monthFor(s), amt = Math.round(+amount) > 0 && +amount < 5e6 ? Math.round(+amount) : (+s.pay?.fee || null);
+  const id = 'r' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
+  const rec = { id, uid, studentId: s.id, name: `${s.first} ${s.last}`.trim(), month, isReceipt: true, amount: amt, date: local().toISOString().slice(0, 10), payer: null, method: 'Cash', cash: true,
+    received: String(received || '').slice(0, 60), type: 'cash', chatId: chatId || null, msgId: null, at: new Date().toISOString(), status: 'pending' };
+  const list = await listReceipts(); list.push(rec); await saveList(list);
+  const P = await pending(); P[s.id] = { id, month }; await S().setJSON('receipts/pending', P);
+  await tellAdmins(rec);
+  return { ...rec, monthName: mname(month, lang || 'en') };
+}

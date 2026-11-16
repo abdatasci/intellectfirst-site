@@ -1,7 +1,7 @@
 // Telegram webhook for the IF Academy bot (background function: Telegram gets an immediate 202, the AI reply follows).
 // Webhook URL and secret are set from Admin → Bot ("Connect bot"), which calls setWebhook with a secret derived from the token.
 import { S, getProfile, contextFor, reply, publicReply, allow, tgSecret, tgSend, tg, getLinks, saveLinks, linkChat, matchPhone, local, money, langOf, localise } from '../lib/bot-core.mjs';
-import { handleReceipt, decideReceipt } from '../lib/receipts.mjs';
+import { handleReceipt, decideReceipt, cashInfo, cashClaim } from '../lib/receipts.mjs';
 import { loadHomework, forClasses, isUpcoming } from '../lib/homework.mjs';
 import { isStaff, STAFF_KB, STAFF_HELP, staffHello, sendToday, staffCallback, ensureStaffKb, cancelReasonText, sendRegisterMenu, kbFor, helpFor, helloFor, isAdminP, sendSchoolDay, sendTodo, sendWeek, sendChanges, sendFilming } from '../lib/teachbot.mjs';
 import { startCover, coverCallback } from '../lib/cover.mjs';
@@ -13,6 +13,11 @@ const SITE = 'https://intellectfirst.com/me/#/assistant';
 const PHONE_KB = lang => ({ keyboard: [[{ text: { en: '📱 Connect with my phone number', ru: '📱 Подключиться по номеру телефона', kk: '📱 Телефон нөмірі арқылы қосылу' }[lang] || '📱 Connect with my phone number', request_contact: true }]], resize_keyboard: true, one_time_keyboard: true });
 const APP_URL = (process.env.URL || 'https://intellectfirst.com').replace(/\/$/, '') + '/app/?tg=1';   // IF English as a Telegram Mini App
 const ME_URL = APP_URL.replace('/app/', '/me/');   // My account: results, attendance, progress, payments (teachers: classes, registers; admin: everything)
+const CASH = {
+  en: { ask0: 'Paid in cash at the school? Tell us here instead of sending a receipt:', btn: '💵 I paid in cash', ask: (n, m) => `💵 Cash payment for ${n} (${m}). How much did you pay?`, paid: a => `✅ I paid ${a} in cash`, other: '✍️ Another amount', type: 'Type the amount you paid in cash, e.g. 45000', thanks: (a, m) => `💵 Thank you! Cash payment of ${a} for ${m} reported. The school will confirm it once the cash is received, and you'll get a message here.`, waiting: 'Your last payment is still waiting for the school to confirm it. You will get a message here.', none: 'I could not find your student record. Please tell the school you paid in cash.' },
+  ru: { ask0: 'Оплатили наличными в школе? Сообщите здесь вместо чека:', btn: '💵 Я оплатил(а) наличными', ask: (n, m) => `💵 Оплата наличными: ${n} (${m}). Сколько вы заплатили?`, paid: a => `✅ Я оплатил(а) ${a} наличными`, other: '✍️ Другая сумма', type: 'Напишите сумму, которую вы оплатили наличными, например 45000', thanks: (a, m) => `💵 Спасибо! Оплата наличными ${a} за ${m} отмечена. Школа подтвердит её после получения денег, и вы получите сообщение здесь.`, waiting: 'Ваша прошлая оплата ещё ждёт подтверждения школы. Вы получите сообщение здесь.', none: 'Не нашёл вашу запись ученика. Пожалуйста, сообщите школе, что вы оплатили наличными.' },
+  kk: { ask0: 'Мектепте қолма-қол төледіңіз бе? Түбіртектің орнына осында хабарлаңыз:', btn: '💵 Қолма-қол төледім', ask: (n, m) => `💵 Қолма-қол төлем: ${n} (${m}). Қанша төледіңіз?`, paid: a => `✅ ${a} қолма-қол төледім`, other: '✍️ Басқа сома', type: 'Қолма-қол төлеген соманы жазыңыз, мысалы 45000', thanks: (a, m) => `💵 Рахмет! ${m} үшін ${a} қолма-қол төлем белгіленді. Мектеп ақшаны алған соң растайды, хабарламаны осында аласыз.`, waiting: 'Алдыңғы төлеміңіз мектептің растауын күтуде. Хабарламаны осында аласыз.', none: 'Оқушы жазбаңызды таппадым. Мектепке қолма-қол төлегеніңізді айтыңыз.' }
+};
 const KB = { keyboard: [[{ text: '📚 IF English' }, { text: '👤 My account' }], [{ text: '📅 Next lessons' }, { text: '📝 Homework & tests' }], [{ text: '📊 My results' }, { text: '💳 Payment' }], [{ text: '📎 Send receipt' }, { text: '❓ Help' }]], resize_keyboard: true, is_persistent: true };
 const L = {
   en: {
@@ -128,6 +133,27 @@ export default async (req) => {
   // the director presses Confirm / Not right under a receipt
   if (up?.callback_query) {
     const q = up.callback_query, mm = String(q.data || '').match(/^rc:(ok|no):([a-z0-9]+)$/);
+    if (/^cash:/.test(String(q.data || ''))) {   // a student says they paid in cash
+      try {
+        const chatId = q.message?.chat?.id, links = await getLinks(), ent = Object.entries(links).find(([, l]) => l.chatId === chatId), uid = ent?.[0], lang = ent?.[1]?.lang || 'ru', C = CASH[lang] || CASH.en;
+        await tg('answerCallbackQuery', { callback_query_id: q.id }).catch(() => {});
+        const info = uid ? await cashInfo(uid) : null;
+        if (!info) { await tgSend(chatId, C.none); return new Response('ok'); }
+        if (q.data === 'cash:start') {
+          if (info.waiting) { await tgSend(chatId, C.waiting); return new Response('ok'); }
+          const rows = []; if (info.fee) rows.push([{ text: C.paid(money(info.fee)), callback_data: 'cash:ok' }]);
+          rows.push([{ text: C.other, callback_data: 'cash:amt' }]);
+          await tgSend(chatId, C.ask(info.name, info.month), { reply_markup: { inline_keyboard: rows } });
+        } else if (q.data === 'cash:ok') {
+          const r = await cashClaim({ uid, amount: info.fee, chatId, lang });
+          await tgSend(chatId, r ? C.thanks(money(r.amount), r.monthName) : C.none);
+        } else if (q.data === 'cash:amt') {
+          await S().setJSON(`bot/cashflow/${chatId}`, { exp: Date.now() + 15 * 60e3 });
+          await tgSend(chatId, C.type);
+        }
+      } catch (e) { console.error('cash', e.message); }
+      return new Response('ok');
+    }
     const pk = String(q.data || '').match(/^ph:(\d+)$/);
     if (pk) {   // a parent's number matched several children: they picked one
       try {
@@ -263,7 +289,20 @@ export default async (req) => {
     if (isStaff(me) && !(me.smm && me.role !== 'admin') && /^📋 Register|^\/register\b/i.test(text)) { await sendRegisterMenu(chatId, me); return new Response('ok'); }
     if (isStaff(me) && /^\/today\b|^🕑|^\/clock/i.test(text)) { await sendToday(chatId, uid, me); return new Response('ok'); }
     if (isStaff(me) && /^\/start\b|^\/help\b|^❓/i.test(text)) { await tgSend(chatId, helpFor(me), { reply_markup: kbFor(me) }); return new Response('ok'); }
-    if (/^\/receipt\b|^📎/i.test(text)) { await tgSend(chatId, L[lang].receiptHow, { reply_markup: KB }); return new Response('ok'); }
+    if (/^\/receipt\b|^📎/i.test(text)) {
+      await tgSend(chatId, L[lang].receiptHow, { reply_markup: KB });
+      await tgSend(chatId, CASH[lang].ask0, { reply_markup: { inline_keyboard: [[{ text: CASH[lang].btn, callback_data: 'cash:start' }]] } });
+      return new Response('ok');
+    }
+    // paid in cash: the amount typed after "Another amount"
+    const cf = await S().get(`bot/cashflow/${chatId}`, { type: 'json' }).catch(() => null);
+    if (cf && cf.exp > Date.now() && /^[\d\s.,]+(₸|тг|tg|kzt)?$/i.test(text)) {
+      await S().delete(`bot/cashflow/${chatId}`);
+      const n = +text.replace(/[^\d]/g, '');
+      const r = n > 0 ? await cashClaim({ uid, amount: n, chatId, lang }) : null;
+      await tgSend(chatId, r ? CASH[lang].thanks(money(r.amount), r.monthName) : CASH[lang].none);
+      return new Response('ok');
+    }
     if (/^\/start\b|^\/help\b|^❓/i.test(text)) { await tgSend(chatId, L[lang].help, { reply_markup: KB }); return new Response('ok'); }
     const ctx = await contextFor(uid);
     if (!ctx) { await tgSend(chatId, L[lang].unlinked, { reply_markup: PHONE_KB(lang) }); return new Response('ok'); }

@@ -9,7 +9,7 @@ import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { getUser, refreshSession, admin as idAdmin } from '@netlify/identity';
 import { roleForCode, isStaff, lockKeysFromCode, verifyLockKeys, isPrivateCode } from '../lib/codes.mjs';
-import { listReceipts, decideReceipt, receiptFile } from '../lib/receipts.mjs';
+import { listReceipts, decideReceipt, receiptFile, cashInfo, cashClaim } from '../lib/receipts.mjs';
 import { publicFeedback, mine as myFeedback, submit as submitFeedback, removeMine as removeFeedback, decide as decideFeedback, loadFeedback } from '../lib/feedback.mjs';
 import { loadHomework, addHomework, removeHomework, forClasses, clean as cleanHw, hwText } from '../lib/homework.mjs';
 import { getLinks, tgSend, tgToken, addNote, uidsByStudent, inClass, loadChanges, saveChanges } from '../lib/bot-core.mjs';
@@ -481,6 +481,19 @@ export default async (req) => {
   }
 
   if (!profile?.role) return fail(403, 'activate');
+
+  /* ---------- tuition: the student's month, and "I paid in cash" (the school confirms it like a receipt) ---------- */
+  if (path === 'tuition' && method === 'GET') {
+    const info = await cashInfo(uid); if (!info) return json({ tuition: null });
+    const st = profile.studentId ? (await doc('students')).find(x => x.id === profile.studentId) : null;
+    const { payStatus } = await import('../lib/bot-core.mjs');
+    return json({ tuition: { ...info, waiting: info.waiting ? { amount: info.waiting.amount, cash: !!info.waiting.cash, at: info.waiting.at } : null, status: st ? payStatus(st) : null } });
+  }
+  if (path === 'tuition/cash' && method === 'POST') {
+    const b = await req.json().catch(() => ({}));
+    const r = await cashClaim({ uid, amount: b.amount, received: b.received, lang: 'en' });
+    return r ? json({ ok: true, amount: r.amount, month: r.month }) : fail(404, 'record');
+  }
 
   /* ---------- student feedback: one per account, shown on the homepage after the director approves it ---------- */
   if (path === 'feedback' && method === 'GET') return json({ feedback: await myFeedback(uid) });
