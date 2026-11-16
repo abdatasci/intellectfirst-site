@@ -370,7 +370,7 @@
   function vPractice() {
     document.body.classList.add('light');
     show('<div class="join" style="max-width:560px;text-align:left"><h1 style="text-align:center;color:var(--navy)">Practise English</h1><p style="text-align:center;color:var(--muted)">Choose your level and a topic. AI writes new questions for you every time.</p><div id="pf"></div>' +
-      '<button class="btn navy big" id="pgo" style="margin-top:20px">Start</button><div class="err" id="perr" style="color:var(--bad)"></div><p style="text-align:center;margin-top:16px"><button class="linkbtn" id="pback">← Join a class game instead</button></p></div>');
+      '<button class="btn navy big" id="pgo" style="margin-top:20px">Start</button><div class="err" id="perr" style="color:var(--bad)"></div><p style="text-align:center;margin-top:16px"><button class="linkbtn" id="pback">📱 Your teacher is running a class game? Join with the PIN</button></p></div>');
     var box = $('#pf'); box.innerHTML = L.genForm(P); L.genWire(box, P);
     $('#pback').onclick = function () { document.body.classList.remove('light'); vJoin(); };
     $('#pgo').onclick = startPractice;
@@ -420,5 +420,6 @@
   // opened again without the PIN (closed the tab by accident): go back to the last game from the last 3 hours
   if (!S.pin) { var last = String(L.ls.get('live.last') || '').split('|'); if (last[0] && Date.now() - +last[1] < 3 * 3600e3) S.pin = last[0]; }
   if (S.pin && L.ls.get('live.p.' + S.pin) && L.ls.get('live.name')) { show('<div class="wait"><div class="pulse"></div><h2>Rejoining…</h2></div>'); vJoin().then(function () { join(S.pin, L.ls.get('live.name')); }); }
-  else vJoin();
+  else if (S.pin) vJoin();
+  else vPractice();   // students choose and play straight away; joining a teacher's game with a PIN is one tap away
 })();
