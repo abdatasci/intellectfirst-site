@@ -257,3 +257,12 @@ body.in-lesson .ifnav{display:none!important}
 /* focused view for students: their goals instead of filter chips */
 .goalbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 16px;padding:10px 14px;border-radius:14px;background:var(--card);border:1px solid var(--line);font-size:14px;color:var(--soft)}.goalbar b{color:var(--ink,inherit)}.goalbar a{margin-left:auto;font-weight:600;color:var(--gold2,#a8824a);text-decoration:none}
 .goalbar .addons{display:flex;gap:6px;flex-wrap:wrap}.addon{border:1px dashed var(--gold2,#a8824a);background:transparent;color:var(--gold2,#a8824a);border-radius:99px;padding:4px 11px;font:inherit;font-size:13px;font-weight:600;cursor:pointer}.addon:hover{background:#a8824a14}
+
+/* game mode (phones): the game fills the screen */
+.playwrap .gfx{display:none}
+body.game-full{overflow:hidden}
+body.game-full .playwrap{position:fixed;inset:0;z-index:2147483000;height:100dvh;min-height:0;margin:0;border-radius:0;box-shadow:none;background:#000}
+body.game-full .playwrap{box-sizing:border-box;padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)}body.game-full .playwrap iframe{position:static;display:block;width:100%;height:100%}
+body.game-full .playwrap .gfx{display:flex;gap:8px;position:absolute;top:calc(env(safe-area-inset-top,0px) + 8px);right:calc(env(safe-area-inset-right,0px) + 8px);z-index:2}
+.gfx button{width:38px;height:38px;border-radius:50%;border:1px solid rgba(255,255,255,.25);background:rgba(10,20,40,.55);color:#fff;font-size:17px;line-height:1;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);cursor:pointer}
+.playwrap:fullscreen{border-radius:0}

@@ -573,7 +573,7 @@
   }
   function finish() {
     var fb = $('#fb'); if (fb) fb.remove();
-    document.body.classList.remove('teach'); document.body.classList.remove('playing'); document.body.classList.remove('in-lesson');
+    document.body.classList.remove('teach'); document.body.classList.remove('playing'); document.body.classList.remove('game-full'); document.body.classList.remove('in-lesson');
     var score = L.total ? Math.round(L.right / L.total * 100) : 100;
     var k = key3(L.c.id, L.u.id, L.l.id), first = !S.done[k];
     var xp = (first ? 10 : 4) + Math.round(score / 20);
@@ -682,9 +682,22 @@
         '<a class="chip" href="#/' + (SEC[it.s] ? it.s : 'more') + '">← Back</a></div>';
       return;
     }
-    view().innerHTML = '<div class="playbar"><a class="chip" href="#/' + (SEC[it.s] ? it.s : 'more') + '">← ' + esc(SEC[it.s] ? t(it.s) : t('more')) + '</a><b>' + it.icon + ' ' + esc(it.t) + '</b><a class="chip" href="' + esc(it.href) + '"' + (window.IF_TG ? '' : ' target="_blank" rel="noopener"') + '>⛶ Full screen</a></div>' +
-      '<div class="playwrap"><iframe src="' + esc(it.href) + '" title="' + esc(it.t) + '" allow="autoplay; fullscreen" allowfullscreen></iframe></div>';
+    view().innerHTML = '<div class="playbar"><a class="chip" href="#/' + (SEC[it.s] ? it.s : 'more') + '">← ' + esc(SEC[it.s] ? t(it.s) : t('more')) + '</a><b>' + it.icon + ' ' + esc(it.t) + '</b><a class="chip" href="' + esc(it.href) + '"' + (window.IF_TG ? '' : ' target="_blank" rel="noopener"') + ' data-gf="1">⛶ Full screen</a></div>' +
+      '<div class="playwrap" id="pw"><iframe src="' + esc(it.href) + '" title="' + esc(it.t) + '" allow="autoplay; fullscreen; microphone" allowfullscreen></iframe>' +
+      '<div class="gfx"><button type="button" id="gx" aria-label="Exit game">✕</button><button type="button" id="gf" aria-label="Full screen">⛶</button></div></div>';
     document.body.classList.add('playing');
+    gameFull(view(), window.matchMedia && matchMedia('(max-width:760px), (pointer:coarse) and (max-height:500px)').matches);
+  }
+  /* game mode: the game fills the whole phone screen like a mobile game (✕ to leave, ⛶ for true full screen) */
+  function gameFull(root, on) {
+    var pw = root.querySelector('#pw'); if (!pw) return;
+    var native = function () { var f = pw.requestFullscreen || pw.webkitRequestFullscreen; if (f) { try { var r = f.call(pw); if (r && r.catch) r.catch(function () {}); } catch (e) {} }
+      try { if (screen.orientation && screen.orientation.lock) screen.orientation.lock('portrait').catch(function () {}); } catch (e) {} };
+    var set = function (v) { document.body.classList.toggle('game-full', !!v); if (!v && (document.fullscreenElement || document.webkitFullscreenElement)) { try { (document.exitFullscreen || document.webkitExitFullscreen).call(document); } catch (e) {} } };
+    var fs = root.querySelector('[data-gf]'); if (fs) fs.onclick = function (e) { e.preventDefault(); set(true); native(); };
+    pw.querySelector('#gf').onclick = function () { if (document.fullscreenElement || document.webkitFullscreenElement) set(false); else { set(true); native(); } };
+    pw.querySelector('#gx').onclick = function () { if (document.body.classList.contains('game-full')) set(false); else history.back(); };
+    set(on);
   }
   function vIelts() {
     setNav('ielts');
