@@ -975,8 +975,9 @@
     if (d.pay) h += payHTML(d.pay);
     return h + '</div>';
   }
+  function dm(d) { return +d.slice(8) + ' ' + ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][+d.slice(5, 7) - 1]; }
   function tg(n) { return (Math.round(+n || 0)).toLocaleString('en-US').replace(/,/g, ' ') + ' ₸'; }
-  var PAYK = { taught: ['ok', 'taught'], nobody: ['mute', 'nobody came · ½'], latecancel: ['mute', 'late cancellation'], missed: ['bad', 'missed'] };
+  var PAYK = { unrecorded: ['bad', 'not recorded yet'], extra: ['ok', 'recorded'], taught: ['ok', 'taught'], nobody: ['mute', 'nobody came · ½'], latecancel: ['mute', 'late cancellation'], missed: ['bad', 'missed'] };
   function payItems(items, admin) {
     return '<table class="t small"><tr><th>Date</th><th>Lesson</th><th>Time</th><th></th><th style="text-align:right">Pay</th>' + (admin ? '<th></th>' : '') + '</tr>' + items.map(function (x) {
       var k = PAYK[x.kind] || ['mute', x.kind];
@@ -985,7 +986,7 @@
     }).join('') + '</table>';
   }
   function payHTML(P) {
-    var h = '<div class="paybox" style="margin-top:18px;border-top:1px solid var(--line,#e5e7eb);padding-top:16px"><div class="eyebrow">💰 My salary · this month so far</div>';
+    var h = '<div class="paybox" style="margin-top:18px;border-top:1px solid var(--line,#e5e7eb);padding-top:16px"><div class="eyebrow">💰 My salary · ' + (P.from ? esc(dm(P.from) + ' – ' + dm(P.to)) : 'this month') + ' (so far)</div>';
     if (P.own) return h + '<p class="sub">' + esc(P.rule) + '.</p></div>';
     h += '<div class="hbig">' + tg(P.total) + '</div><p class="sub">' + (P.lessons || 0) + ' lesson' + (P.lessons === 1 ? '' : 's') + ' · ' + hh(P.hours || 0) + ' taught · your rate: ' + esc(P.rule || 'not set yet') + '</p>' +
       (P.late && P.late.n ? '<p class="small">⏰ Late clock-ins this month: ' + P.late.n + ' (' + P.late.min + ' min in total).</p>' : '') +
@@ -1037,7 +1038,7 @@
     var el = document.getElementById('payroll'); if (!el) return;
     var P; try { P = await api('pay/month?month=' + month); } catch (e) { el.innerHTML = '<div class="empty">Could not load pay.</div>'; return; }
     var tot = 0; P.teachers.forEach(function (t) { tot += t.total; }); P.fixed.forEach(function (f) { tot += f.total; });
-    var h = '<h2 style="margin:0 0 4px">💰 Payroll · ' + esc(monthLabel(P.month)) + '</h2><p class="sub">Worked out automatically from clock-ins, registers, covers and cancellations. Each teacher sees their own total on their hours page. Total so far: <b>' + tg(tot) + '</b></p>';
+    var h = '<h2 style="margin:0 0 4px">💰 Payroll · ' + esc(monthLabel(P.month)) + (P.from ? ' <small class="mini">(' + esc(dm(P.from) + ' – ' + dm(P.to)) + ')</small>' : '') + '</h2><p class="sub">Worked out automatically from clock-ins, registers, covers and cancellations. Each teacher sees their own total on their hours page. Total so far: <b>' + tg(tot) + '</b></p>';
     h += P.teachers.map(function (t) {
       return '<details class="more" style="margin-top:10px"><summary><b>' + esc(t.name) + '</b> — ' + (t.own ? 'own pay arrangement · ' + hh(t.hours) + ' taught' : '<b>' + tg(t.total) + '</b> · ' + t.lessons + ' lessons · ' + hh(t.hours)) + (t.unpaidLate ? ' · ' + t.unpaidLate + ' late cancellation' + (t.unpaidLate > 1 ? 's' : '') + ' not paid' : '') + (t.late.n ? ' · ⏰ ' + t.late.n + ' late (' + t.late.min + ' min)' : '') + '</summary><p class="small">Rate: ' + esc(t.rule) + '</p>' + payItems(t.items, true) + '</details>';
     }).join('');
@@ -1055,7 +1056,7 @@
     el.innerHTML = h;
     $('#rsave').onclick = async function () {
       var solo = Object.assign({}, R.solo || {}); document.querySelectorAll('#solo [data-sid]').forEach(function (i) { if (+i.value > 0) solo[i.dataset.sid] = +i.value; else delete solo[i.dataset.sid]; });
-      var out = { solo: solo, teachers: {}, skip: [], fixed: { manager: { amount: $('#fxm').value, deduct: $('#fxmd').value, note: $('#fxmn').value }, smm: { amount: $('#fxs').value } } };
+      var out = { periodStart: R.periodStart || 28, solo: solo, teachers: {}, skip: [], fixed: { manager: { amount: $('#fxm').value, deduct: $('#fxmd').value, note: $('#fxmn').value }, smm: { amount: $('#fxs').value } } };
       document.querySelectorAll('#rates tr[data-tid]').forEach(function (tr) {
         var id = tr.dataset.tid, g = function (k) { return tr.querySelector('[data-k=' + k + ']'); }, r = { amount: g('amount').value, per: g('per').value };
         if (!id) { out.default = r; return; }

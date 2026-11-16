@@ -660,7 +660,7 @@ export default async (req) => {
     const out = { month, teaching: own.length ? await teachingHours(own, month) : null };
     if (profile.role === 'admin') out.admin = await adminHours(uid, month);
     // salary so far this month, worked out from the lesson log (covers included)
-    if (profile.teacherId) { try { const { payroll } = await import('../lib/payroll.mjs'); const P = await payroll(month, profile.teacherId); out.pay = { ...(P.teachers[0] || { total: 0, items: [], hours: 0, lessons: 0, rule: '' }), rules: P.rules }; if (!P.teachers[0]) { const { loadRates, ruleText } = await import('../lib/payroll.mjs'); const R = await loadRates(); out.pay.rule = (R.skip || []).includes(profile.teacherId) ? 'Own pay arrangement — hours only' : ruleText((R.teachers || {})[profile.teacherId] || R.default); out.pay.own = (R.skip || []).includes(profile.teacherId); } } catch (e) { console.error('pay', e.message); } }
+    if (profile.teacherId) { try { const { payroll } = await import('../lib/payroll.mjs'); const P = await payroll(month, profile.teacherId); out.pay = { ...(P.teachers[0] || { total: 0, items: [], hours: 0, lessons: 0, rule: '' }), rules: P.rules, from: P.from, to: P.to }; if (!P.teachers[0]) { const { loadRates, ruleText } = await import('../lib/payroll.mjs'); const R = await loadRates(); out.pay.rule = (R.skip || []).includes(profile.teacherId) ? 'Own pay arrangement — hours only' : ruleText((R.teachers || {})[profile.teacherId] || R.default); out.pay.own = (R.skip || []).includes(profile.teacherId); } } catch (e) { console.error('pay', e.message); } }
     return json(out);
   }
   /* ---- teacher pay (admin): the month's payroll, the rates, "the teacher was at school" for a late cancellation ---- */

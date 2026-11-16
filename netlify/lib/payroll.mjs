@@ -15,7 +15,7 @@
 //  • Individual students with a "share" rule: the teacher gets that share of the student's fee per lesson
 //    (fee for the month ÷ lessons in the package or, if not stated, the lessons on the timetable that month).
 import { getStore } from '@netlify/blobs';
-import { monthLessons, lessonsOn } from './lessons.mjs';
+import { lessonsOn, loadLog, withEntry, since, today } from './lessons.mjs';
 import { doc, loadChanges } from './bot-core.mjs';
 
 const S = () => getStore({ name: 'school', consistency: 'strong' });
@@ -36,6 +36,7 @@ export async function saveRates(r) {
   };
   const out = { default: rule(r.default), teachers: {}, skip: (r.skip || []).filter(x => /^t-[\w-]+$/.test(x)).slice(0, 20), fixed: {} };
   for (const [id, x] of Object.entries(r.teachers || {})) if (/^t-[\w-]+$/.test(id) && x && (x.amount || x.solo)) out.teachers[id] = rule(x);
+  out.periodStart = Math.min(28, Math.max(1, +r.periodStart || 1));
   out.solo = {}; for (const [sid, v] of Object.entries(r.solo || {})) if (/^[\w-]{1,40}$/.test(sid) && +v > 0) out.solo[sid] = Math.round(+v);
   for (const k of ['manager', 'smm']) if (r.fixed && r.fixed[k]) out.fixed[k] = { amount: num(r.fixed[k].amount), deduct: num(r.fixed[k].deduct), note: String(r.fixed[k].note || '').slice(0, 80) };
   out.updated = new Date().toISOString();
@@ -43,6 +44,13 @@ export async function saveRates(r) {
   return out;
 }
 
+/** Pay period for a month: from the period-start day of the previous month to the day before it in this month
+    (periodStart 28: November = 28 Oct – 27 Nov); periodStart 1 = the calendar month. */
+export function period(month, rates) {
+  const d = Math.min(28, Math.max(1, +(rates && rates.periodStart) || 1)), [y, m] = month.split('-').map(Number);
+  if (d === 1) return { from: `${month}-01`, to: new Date(Date.UTC(y, m, 0)).toISOString().slice(0, 10) };
+  return { from: new Date(Date.UTC(y, m - 2, d)).toISOString().slice(0, 10), to: new Date(Date.UTC(y, m - 1, d - 1)).toISOString().slice(0, 10) };
+}
 const isSolo = c => !!c && ((Array.isArray(c.studentIds) && c.studentIds.length === 1) || (Array.isArray(c.uids) && c.uids.length === 1));
 const mins = l => Math.max(0, Math.round((Date.parse(l.endAt) - Date.parse(l.at)) / 60000));
 const per = (r, m) => Math.round((r.amount || 0) * m / (r.per || 60));
@@ -68,7 +76,12 @@ function soloFee(sid, month, D, timetableN) {
 export async function payroll(month, only = null, now = new Date()) {
   const [classes, teachers, rates, CH] = await Promise.all([doc('classes'), doc('teachers'), loadRates(), loadChanges()]);
   const D = { payments: (await A().get('c/payments', { type: 'json' })) || {}, students: (await A().get('c/students', { type: 'json' })) || {} };
-  const all = await monthLessons(classes, month, now), byT = {}, soloList = {};
+  const { from, to } = period(month, rates), all = [], byT = {}, soloList = {}, cutoff = await since(), logs = {}, td = today();
+  for (let t = Date.parse(from + 'T00:00:00Z'); t <= Date.parse(to + 'T00:00:00Z'); t += 864e5) {
+    const date = new Date(t).toISOString().slice(0, 10); if (date > td) break;
+    const mo = date.slice(0, 7), L = logs[mo] || (logs[mo] = await loadLog(mo));
+    all.push(...withEntry(lessonsOn(classes, date, CH), L, now, cutoff));
+  }
   const [y, m] = month.split('-').map(Number), last = new Date(Date.UTC(y, m, 0)).getUTCDate();
   const ttCount = {};   // timetable lessons of a class in the month (for packages with no stated number of lessons)
   const countFor = c => {
@@ -92,6 +105,7 @@ export async function payroll(month, only = null, now = new Date()) {
     }
     const T = byT[tid] || (byT[tid] = { teacherId: tid, items: [], total: 0, minutes: 0, lessons: 0, late: { n: 0, min: 0 }, unpaidLate: 0 });
     const item = { key: l.key, date: l.date, start: l.start, end: l.end, label: l.label, min: mm, full, pay: 0, kind: '', note: '', how, cover: !!l.coverFor };
+    if (l.state === 'in' && !(l.entry && l.entry.checkIn)) { item.kind = 'unrecorded'; item.note = 'Before clock-in started: not counted until the director records it'; T.items.push(item); continue; }
     if (l.state === 'in' || l.state === 'in-late') {
       const marks = Object.values(e.marks || {}), nobody = e.takenAt && marks.length && marks.every(x => x === 'abs' || x === 'exc');
       if (nobody) { item.kind = 'nobody'; item.pay = Math.round(full / 2); item.note = 'Nobody came — you were at school: half the lesson'; }
@@ -108,6 +122,14 @@ export async function payroll(month, only = null, now = new Date()) {
     else continue;
     T.items.push(item); T.total += item.pay;
   }
+  // lessons recorded by hand that are not on any timetable (e.g. a trial lesson): store "school" → payextra
+  for (const x of ((await S().get('payextra', { type: 'json' })) || [])) {
+    if (x.date < from || x.date > to || (only && x.teacherId !== only)) continue;
+    const r = (rates.teachers || {})[x.teacherId] || rates.default || { amount: 0, per: 60 }, full = per(r, x.min || 60), pay = Math.round(full * (x.factor ?? 1));
+    const T = byT[x.teacherId] || (byT[x.teacherId] = { teacherId: x.teacherId, items: [], total: 0, minutes: 0, lessons: 0, late: { n: 0, min: 0 }, unpaidLate: 0 });
+    T.items.push({ key: 'x:' + x.id, date: x.date, start: x.start || '', end: x.end || '', label: x.label, min: x.min || 60, full, pay, kind: 'extra', note: x.note || '', how: `${x.min || 60} min` + (x.factor != null && x.factor !== 1 ? ` × ${x.factor}` : '') });
+    T.total += pay; T.minutes += x.min || 60; T.lessons++;
+  }
   const skip = new Set(rates.skip || []);
   const list = Object.values(byT).map(T => {
     const t = teachers.find(x => x.id === T.teacherId) || {};
@@ -119,7 +141,7 @@ export async function payroll(month, only = null, now = new Date()) {
     const { dayWatchers } = await import('./daydigest.mjs');
     fixed = (await dayWatchers()).map(w => { const f = (rates.fixed || {})[w.duty]; return f ? { uid: w.uid, name: w.name, duty: w.duty, amount: f.amount, deduct: f.deduct || 0, note: f.note || '', total: f.amount - (f.deduct || 0) } : null; }).filter(Boolean);
   }
-  return { month, teachers: list, fixed, rules: RULES, solo: Object.values(soloList) };
+  return { month, from, to, teachers: list, fixed, rules: RULES, solo: Object.values(soloList) };
 }
 
 export const RULES = [
