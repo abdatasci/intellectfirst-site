@@ -59,10 +59,10 @@
           '<circle cx="84" cy="95" r="3.6" fill="none" stroke="' + p.b + '" stroke-opacity=".55" stroke-width=".8"/><circle cx="116" cy="95" r="3.6" fill="none" stroke="' + p.b + '" stroke-opacity=".55" stroke-width=".8"/>' +
           '<circle cx="85.3" cy="93.8" r="1.1" fill="#fff"/><circle cx="117.3" cy="93.8" r="1.1" fill="#fff"/></g>' +
           '<rect class="lid lid2" x="75" y="89" width="18" height="0" rx="4" fill="#5e3620"/><rect class="lid lid2" x="107" y="89" width="18" height="0" rx="4" fill="#5e3620"/>' +
-          // thin round gold glasses (blue-light lenses)
-          '<g fill="rgba(150,140,255,.13)" stroke="#d4b265" stroke-width="1.8"><circle cx="84" cy="95" r="13"/><circle cx="116" cy="95" r="13"/></g>' +
-          '<path d="M97 93c2-2 4-2 6 0M71 92l-10-2M129 92l10-2" fill="none" stroke="#d4b265" stroke-width="1.6"/>' +
-          '<path d="M77 88c3-2 6-2 8-1" fill="none" stroke="#fff" stroke-opacity=".5" stroke-width="1.2"/>' +
+          // his glasses: large, slightly geometric round frames in thin rose gold (blue-light lenses)
+          '<g fill="rgba(150,140,255,.12)" stroke="#d9a07f" stroke-width="1.1" stroke-linejoin="round"><path d="M70.5 91c.5-6 6-9.5 13.5-9.5s13 3.5 13.5 9.5c.5 9-5 15.5-13.5 15.5s-14-6.5-13.5-15.5z"/><path d="M129.5 91c-.5-6-6-9.5-13.5-9.5s-13 3.5-13.5 9.5c-.5 9 5 15.5 13.5 15.5s14-6.5 13.5-15.5z"/></g>' +
+          '<path d="M97 88.5c2-1.4 4-1.4 6 0M71 89l-10-2M129 89l10-2" fill="none" stroke="#d9a07f" stroke-width="1"/>' +
+          '<path d="M75 86c3-2 7-2.6 10-2" fill="none" stroke="#fff" stroke-opacity=".5" stroke-width="1.1"/>' +
           // nose
           '<path d="M100 98c-1 8-3 13-6 16 3 2 9 2 12 0-3-3-5-8-6-16z" fill="#4a2817" fill-opacity=".55"/>' +
           '<path d="M92 114c3 2 13 2 16 0" fill="none" stroke="#2c170c" stroke-opacity=".6" stroke-width="1.4"/>' +
