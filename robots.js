@@ -66,11 +66,13 @@
           // nose
           '<path d="M100 98c-1 8-3 13-6 16 3 2 9 2 12 0-3-3-5-8-6-16z" fill="#4a2817" fill-opacity=".55"/>' +
           '<path d="M92 114c3 2 13 2 16 0" fill="none" stroke="#2c170c" stroke-opacity=".6" stroke-width="1.4"/>' +
-          // his beard: a neat moustache joined to a short chin beard, fine stubble along the jaw, clear cheeks
-          '<path d="M64 104c2 16 7 28 15 36 6 6 13 10 21 10s15-4 21-10c8-8 13-20 15-36" fill="none" stroke="#1a1311" stroke-opacity=".55" stroke-width="2.4"/>' +
-          '<path d="M86 132c2 8 7 14 14 15 7-1 12-7 14-15-4 3-9 4-14 4s-10-1-14-4z" fill="#161110"/>' +
-          '<path d="M85 122c4-3 9-4 15-3 6-1 11 0 15 3l1 5c-2-1-4-2-6-2-3 1-6 1-10 1s-7 0-10-1c-2 0-4 1-6 2z" fill="#161110"/>' +
-          '<path d="M85 125c-1 3-1 6 1 8M115 125c1 3 1 6-1 8" fill="none" stroke="#161110" stroke-opacity=".75" stroke-width="1.3" stroke-linecap="round"/>' +
+          // his beard: thin moustache curving down at the mouth corners, a small tuft under the lower lip,
+          // bare skin below it, then a pointed V-shaped chin beard; only light stubble along the jaw
+          '<path d="M66 106c2 15 7 27 15 35 6 6 12 9 19 10M134 106c-2 15-7 27-15 35-6 6-12 9-19 10" fill="none" stroke="#1a1311" stroke-opacity=".38" stroke-width="2"/>' +
+          '<path d="M83 128c1-4 3-7 6-8 4-1 7-1 11 0 4-1 7-1 11 0 3 1 5 4 6 8l1 4c-1 0-2-1-3-3-1-3-3-5-6-5-3-.5-6 0-9 .5-3-.5-6-1-9-.5-3 0-5 2-6 5-1 2-2 3-3 3z" fill="#161110"/>' +
+          '<path d="M97.5 136.5l2.5 4 2.5-4c-1.6.6-3.4.6-5 0z" fill="#161110"/>' +
+          '<path d="M86 145c4 1.6 9 2.4 14 2.4s10-.8 14-2.4c-1 7-6 13-14 17-8-4-13-10-14-17z" fill="#161110"/>' +
+          '<path d="M88 147c3 5 7 9 12 12M112 147c-3 5-7 9-12 12" fill="none" stroke="#2a201c" stroke-width=".8" stroke-opacity=".7"/>' +
           // mouth (opens while speaking) and a warm smile
           '<g class="mouth"><rect class="m0" x="92" y="128" width="16" height="1" rx="1" fill="#2a1010"/></g>' +
           '<path d="M86 127.5c7.5 7 20.5 7 28 0z" fill="#ffffff" stroke="#3a1c10" stroke-width="1.4" stroke-linejoin="round"/>' +
