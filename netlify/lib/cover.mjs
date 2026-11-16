@@ -135,6 +135,7 @@ export async function coverCallback(q, uid, p) {
     await edit(q, `✅ ${r.coverName} covers ${r.label}, ${r.when}. It is in the timetable now — reminders, clock-in and the register go to ${r.coverName.split(' ')[0]}.`);
     if (reqChat && r.byUid !== uid) await tgSend(reqChat, `✅ ${r.coverName} will cover ${r.label}, ${r.when}.`).catch(() => {});
     if (!mine) { const cc = (await staffChats()).filter(c => c.p.teacherId === cover); for (const c of cc) await tgSend(c.chatId, `✅ You are covering ${r.label}${l.room ? ' (' + l.room + ')' : ''}, ${r.when} (confirmed by ${p.name || 'the admin'}). I'll remind you before the lesson.`).catch(() => {}); }
+    { const { tellSmm } = await import('./daydigest.mjs'); await tellSmm(`🔁 Cover: ${r.coverName} teaches ${r.label}, ${r.when} instead of ${await tname(r.from)}.`).catch(() => {}); }
     await tellAdmins(`✅ Cover agreed: ${r.coverName} teaches ${r.label}, ${r.when} instead of ${await tname(r.from)}${r.doneBy && !mine ? ' (confirmed by ' + r.doneBy + ')' : ''}.`, null, uid);
     return true;
   }

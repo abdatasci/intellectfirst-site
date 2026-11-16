@@ -9,6 +9,7 @@ import { migrate } from '../lib/migrate.mjs';
 import { lessonsOn, loadLog, today as todayStr } from '../lib/lessons.mjs';
 import { getStore } from '@netlify/blobs';
 import { chaseManager } from '../lib/tasks.mjs';
+import { sendDayDigest } from '../lib/daydigest.mjs';
 import { lessonButtons, isStaff, ensureStaffKb, KBV } from '../lib/teachbot.mjs';
 
 /** Once: let the existing webhook also receive button presses (receipt Confirm / Not right). */
@@ -74,6 +75,7 @@ export default async () => {
   await migrate();
   await upgradeWebhook();
   try { const [cl, lk] = await Promise.all([doc('classes'), getLinks()]); await lessonWatch(cl, lk); } catch (e) { console.error('lesson watch', e.message); }
+  try { const n = await sendDayDigest(); if (n) console.log('day digest sent', n); } catch (e) { console.error('day digest', e.message); }
   try { const r = await chaseManager(); if (r.sent) console.log('manager tasks', r.open, 'open,', r.sent, 'messages'); } catch (e) { console.error('manager tasks', e.message); }
   const now = new Date();
   const [students, classes, links, homework, receipts] = await Promise.all([doc('students'), doc('classes'), getLinks(), loadHomework(), S().get('receipts/pending', { type: 'json' }).then(x => x || {})]);

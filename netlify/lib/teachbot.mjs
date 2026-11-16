@@ -55,13 +55,13 @@ const hm = iso => local(new Date(iso)).toISOString().slice(11, 16);
 export async function sendToday(chatId, uid, p) {
   const date = today(), classes = await doc('classes'), teachers = await doc('teachers');
   const all = lessonsOn(classes, date, await loadChanges()).filter(l => !l.cancelled && !l.movedTo);
-  const list = all.filter(l => mine(p, l));
+  const list = all.filter(l => mine(p, l) || p.smm);   // the SMM sees every lesson (no buttons)
   if (!list.length) return tgSend(chatId, canAll(p) ? 'No lessons today.' : 'You have no lessons today. 🙂', { reply_markup: STAFF_KB });
   const L = await loadLog(date.slice(0, 7)), tName = id => (teachers.find(t => t.id === id) || {}).name || '';
   await tgSend(chatId, `🕑 Lessons today (${date.slice(8)}.${date.slice(5, 7)}):`, { reply_markup: STAFF_KB });
   for (const l of list.slice(0, 20)) {
     const e = L[l.key];
-    await tgSend(chatId, lessonLine(l, e, canAll(p) && l.teacherId !== p.teacherId ? tName(l.teacherId) : ''), { reply_markup: { inline_keyboard: lessonButtons(l, e) } });
+    await tgSend(chatId, lessonLine(l, e, (canAll(p) || p.smm) && l.teacherId !== p.teacherId ? tName(l.teacherId) : ''), { reply_markup: { inline_keyboard: mine(p, l) ? lessonButtons(l, e) : [] } });
   }
 }
 
@@ -170,6 +170,7 @@ export async function staffCallback(q, uid, p) {
     st.label = `${l.label}, ${day}`; await S().setJSON(`bot/lx/${chatId}`, st);
     await answer(q, 'Cancelled');
     await edit(q, `❌ Cancelled: ${l.label}, ${day}${note ? ' — ' + note : ''}.\n${why === 'staff' ? 'Students were not told (staff only). It is not counted as a missed lesson and needs no make-up.' : `Students told: ${told}.`}\nThe website and the admin pages show it now.`, { inline_keyboard: [[{ text: '↩ Undo', callback_data: 'lu' }]] });
+    if (date === today()) { const { tellSmm } = await import('./daydigest.mjs'); await tellSmm(`❌ Cancelled today: ${l.label} ${start}${note ? ' — ' + note : ''} (by ${p.name || 'a teacher'})`).catch(() => {}); }
     const { tellAdmins } = await import('./cover.mjs');
     await tellAdmins(`❌ ${p.name || 'A teacher'} cancelled ${l.label}, ${day}${note ? ' — ' + note : ''}.${why === 'staff' ? ' (Staff only: students were not told.)' : ''}`, null, uid);
     return true;

@@ -79,7 +79,7 @@ async function getProfile(uid) { return (await U().get(`u/${uid}/profile`, { typ
 async function putProfile(uid, p) {
   await U().setJSON(`u/${uid}/profile`, p);
   const dir = (await U().get('directory', { type: 'json' })) || {};
-  dir[uid] = { trialUntil: p.trialUntil || null, goals: p.goals || '', track: p.track || '', request: p.request || null, paidUntil: p.paidUntil || null, alumni: !!p.alumni, name: p.name, email: p.email, role: p.role, studentId: p.studentId || null, teacherId: p.teacherId || null, photo: !!p.photo, phone: p.phone || '', level: p.level || '', classChoice: p.classChoice || '' };
+  dir[uid] = { duty: p.smm ? 'smm' : p.manager ? 'manager' : '', trialUntil: p.trialUntil || null, goals: p.goals || '', track: p.track || '', request: p.request || null, paidUntil: p.paidUntil || null, alumni: !!p.alumni, name: p.name, email: p.email, role: p.role, studentId: p.studentId || null, teacherId: p.teacherId || null, photo: !!p.photo, phone: p.phone || '', level: p.level || '', classChoice: p.classChoice || '' };
   await U().setJSON('directory', dir);
 }
 // Online access plans, set against the 2026–27 brochure: the cheapest course is ₸45,000 a month (8 lessons with a teacher),
@@ -155,7 +155,7 @@ async function tellLesson(c, textFor) {
 }
 async function classesForTeacher(profile) {
   const [classes, teachers] = await Promise.all([doc('classes'), doc('teachers')]);
-  if (profile.role === 'admin') return classes;
+  if (profile.role === 'admin' || profile.smm) return classes;
   const t = teachers.find(x => x.id === profile.teacherId);
   return classes.filter(c => t && (c.teacherId === t.id));
 }
@@ -575,7 +575,7 @@ export default async (req) => {
     return json({ date, now: now.toISOString(), grace: GRACE_MIN, early: EARLY_MIN, lessons, me: punctuality(month, teachers)[0] || null });
   }
   if ((path === 'teach/checkin' || path === 'teach/register') && method === 'POST') {
-    if (!isStaff(profile.role)) return fail(403, 'staff');
+    if (!isStaff(profile.role) || (profile.smm && profile.role !== 'admin')) return fail(403, 'staff');
     const b = await req.json().catch(() => ({}));
     const [cid, date] = String(b.key || '').split('|');
     const CH = await loadChanges(), c = plusCover(await classesForTeacher(profile), await coverClasses(profile.teacherId, CH)).find(x => x.id === cid); if (!c || !/^\d{4}-\d{2}-\d{2}$/.test(date || '')) return fail(404, 'lesson');
@@ -645,7 +645,7 @@ export default async (req) => {
     return json({ month, teaching: rows.sort((a, b) => b.hours - a.hours), admin: await teamAdmin(month) });
   }
   if (path === 'teach/lesson-change' && method === 'POST') {
-    if (!isStaff(profile.role)) return fail(403, 'staff');
+    if (!isStaff(profile.role) || (profile.smm && profile.role !== 'admin')) return fail(403, 'staff');
     const b = await req.json().catch(() => ({}));
     const okD = d => /^\d{4}-\d{2}-\d{2}$/.test(d || ''), okT = t => /^\d{1,2}:\d{2}$/.test(t || ''), pad = t => t ? t.padStart(5, '0') : '';
     const note = String(b.note || '').replace(/\s+/g, ' ').trim().slice(0, 160), by = profile.name || '';
@@ -674,6 +674,7 @@ export default async (req) => {
     const l = lessonsOn([c], date, CH).find(x => x.key === b.key); if (!l) return fail(404, 'lesson');
     const orig = l.kind === 'moved' ? l.from : l.key, [, od, os] = orig.split('|'), origL = { date: od, start: os };
     let told = null;
+    if (l.date === todayStr() && (b.action === 'cancel' || b.action === 'move')) { const { tellSmm } = await import('../lib/daydigest.mjs'); await tellSmm(`${b.action === 'cancel' ? '❌ Cancelled today' : '↪ Moved'}: ${l.label} ${l.start}${b.action === 'move' && b.date ? ' → ' + b.date.slice(8) + '.' + b.date.slice(5, 7) + ' ' + b.start : ''}${note ? ' — ' + note : ''} (by ${by})`).catch(() => {}); }
     if (b.action === 'cancel') {
       if (l.kind === 'extra') CH.extra = CH.extra.filter(x => x.id !== l.extraId);
       else { delete CH.moves[orig]; CH.cancel[orig] = { note, by, at: new Date().toISOString() }; }
@@ -934,6 +935,7 @@ export default async (req) => {
       const p = await getProfile(str(b.uid, 60)); if (!p) return fail(404, 'missing');
       if ('role' in b && RANK[b.role]) p.role = b.role;
       if ('alumni' in b) p.alumni = !!b.alumni;
+      if ('duty' in b) { p.manager = b.duty === 'manager'; p.smm = b.duty === 'smm'; if (p.smm && !isStaff(p.role)) p.role = 'teacher'; }
       if ('studentId' in b) {
         const list = await doc('students');
         list.forEach(s => { if (s.uid === b.uid) s.uid = null; });
