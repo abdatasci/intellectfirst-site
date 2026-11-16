@@ -866,7 +866,7 @@ function renderLedger(){
   h+='<p class="src">'+(t.kind==='quick'?'Quick Tests written for IF Academy to follow English File Advanced, one test per File.':t.kind==='file'||t.kind==='progress'?'File and Progress Tests: English File Advanced third edition photocopiable tests, © Oxford University Press 2015. Listening scripts written for IF Academy and read by the device’s voices.':'Entry and End-of-course Tests: New English File Advanced photocopiable tests, © Oxford University Press 2010. Listening scripts written for IF Academy and read by the device’s voices.')+'</p></div>';
   $('#ledger').innerHTML=h;
   const mb=$('#markbtn');if(mb)mb.onclick=async()=>{const left=count-answered;if(left&&!await uiConfirm(left+' item'+(left>1?'s are':' is')+' still unanswered or unmarked. Mark the test now?'))return;st.marked=true;save();renderAll();queueSync(true)};
-  const hb=$('#handbtn');if(hb)hb.onclick=async()=>{if(!await uiConfirm('Hand in this test to your teacher? You won’t be able to change your answers afterwards.'))return;st.handed=true;st.marked=true;save();renderAll();queueSync(true)};
+  const hb=$('#handbtn');if(hb)hb.onclick=async()=>{if(!await uiConfirm('Hand in this test to your teacher? You won’t be able to change your answers afterwards.'))return;st.handed=true;st.marked=true;save();renderAll();queueSync(true);ifSendNow(t)};
   const cb=$('#codebtn');if(cb)cb.onclick=showCode;
   const ns=$('#newstu');if(ns)ns.onclick=async()=>{if(!await uiConfirm('Clear all answers on this device and start a new student? Results already saved to the class record are kept.'))return;stopAudio();stopTimer();state.tests={};state.name='';state.cls='';save();renderAll();const f=$('#sname');if(f)f.focus()};
   $('#printbtn').onclick=()=>print();
@@ -885,6 +885,8 @@ async function pack(obj){const raw=new TextEncoder().encode(JSON.stringify(obj))
 async function unpack(code){{const mm=String(code).match(/IFA[01]\.[A-Za-z0-9_-]+/);if(mm)code=mm[0]}code=String(code).trim().replace(/\s+/g,'');const m=code.match(/^IFA([01])\.(.+)$/);if(!m)throw new Error('This doesn’t look like an IF Academy result code.');
   let bytes=unb64u(m[2]);if(m[1]==='1'){const ds=new Blob([bytes]).stream().pipeThrough(new DecompressionStream('deflate-raw'));bytes=new Uint8Array(await new Response(ds).arrayBuffer())}
   return JSON.parse(new TextDecoder().decode(bytes))}
+/* hand in (button or time up) also saves the result to the student's profile and the teachers' results page */
+function ifSendNow(t){if(RT.owner)return;const st=ts(t.id),box=$('#codebox'),code='';if(!box)return;setTimeout(()=>{try{if(!window.IFR)return;if(!st.rid){st.rid=IFR.newId();try{(typeof _save==='function'?_save:save)()}catch(e){}}const r=recScore(t,localRec(t));const L=localRec(t);const S=t.secs.map(s=>[s.name,(s.writing&&!Object.keys(L.w||{}).length)||(s.speaking&&!Object.keys(L.s||{}).length)?null:r.secs[s.k],s.max]);const W=[st.wr||''];box.innerHTML='';IFR.box(box,{id:st.rid,c:'English File Advanced Test Centre',lv:'C1',t:t.title,v:'',n:state.name,cl:state.cls,s:S,w:W,x:code})}catch(e){console.error('IFR',e)}},0)}
 async function showCode(){
   const t=T(),st=ts(t.id);
   if(!state.name.trim()){await uiAlert('Please type your name (and class) at the top of the test first.');$('#sname')&&$('#sname').focus();return}
@@ -1134,7 +1136,7 @@ function tmStart(t){const st=ts(t.id);if(st.t0)return;st.t0=Date.now();st.pp={};
 async function tmTimeUp(t){
   const st=ts(t.id);if(tmDone(st))return;
   st.tout=true;st.marked=true;if(RT.sync==='live'&&!RT.owner)st.handed=true;
-  stopAudio();stopTimer();save();renderAll();queueSync(true);
+  stopAudio();stopTimer();save();renderAll();queueSync(true);ifSendNow(t);
   await uiAlert('Time is up. Your test has been marked.'+(!RT.owner&&RT.sync!=='live'?' Press “Send results to teacher” and send the code to your teacher.':''));
 }
 function tmPrepLeft(t,k){const st=ts(t.id),p=timePlan(t).secs.find(x=>x.k===k);if(!p||!p.prep||!st.t0||tmDone(st))return 0;
