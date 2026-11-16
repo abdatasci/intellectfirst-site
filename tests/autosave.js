@@ -41,9 +41,9 @@
       }
     }).catch(function () { delete sent[key]; note(container, 'no', '<b>No internet?</b> Send the message below to your teacher, or try again.'); });
   }
-  // Class B1 C (16 Nov 2026 test): speaking not marked yet → each speaking task gets 8 out of 10 (80% of the section) so they can submit now.
+  // Classes B1 C and B1 B (16 Nov 2026 test): speaking not marked yet → each speaking task gets 8 out of 10 (80% of the section) so they can submit now.
   // A mark from the AI examiner or the teacher replaces it. Other classes keep the examiner-then-save flow.
-  var B1C = /\bb1\s*(?:teen)?\s*[-\s]?\s*c\b/i;
+  var B1C = /\bb1\s*(?:teen)?\s*[-\s]?\s*[bc]\b/i;
   function isB1C(p) { var c = (p && p.cl) || ''; var f = document.getElementById('sclass'); return B1C.test(c) || !!(f && B1C.test(f.value)); }
   function fill(p) {
     if (p && Array.isArray(p.s) && isB1C(p)) p.s.forEach(function (x) { if (x && /speak/i.test(x[0]) && x[1] == null && x[2] > 0) { x[1] = Math.round(x[2] * 0.8 * 2) / 2; p.spAuto = 1; } });

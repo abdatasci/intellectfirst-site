@@ -43,7 +43,7 @@
     var go = bar.querySelector('button');
     // student view (mark buttons locked) and no mark yet: give 8 out of 10 now so the test can be submitted
     var locked = btns.every(function (z) { return z.disabled; });
-    var cls = document.getElementById('sclass'), b1c = /\bb1\s*(?:teen)?\s*[-\s]?\s*c\b/i.test((cls && cls.value) || '');
+    var cls = document.getElementById('sclass'), b1c = /\bb1\s*(?:teen)?\s*[-\s]?\s*[bc]\b/i.test((cls && cls.value) || '');
     if (locked && b1c && !btns.some(function (z) { return z.getAttribute('aria-pressed') === 'true'; })) {
       var want = Math.round(max * 0.8), d = btns.filter(function (z) { return +z.dataset.n === want; })[0];
       if (d) { d.disabled = false; d.click(); d.disabled = true; }
