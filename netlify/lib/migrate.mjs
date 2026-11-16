@@ -3,6 +3,8 @@
 import { getStore } from '@netlify/blobs';
 import { createHash } from 'node:crypto';
 import seed from './school-seed.json';
+import { loadChanges, saveChanges } from './bot-core.mjs';
+import { lessonsOn, correct } from './lessons.mjs';
 
 const S = () => getStore({ name: 'school', consistency: 'strong' });
 const A = () => getStore({ name: 'ifadmin', consistency: 'strong' });
@@ -126,7 +128,27 @@ async function teacherPhones() {
   return lines.length ? lines : ['no change'];
 }
 
-const MIGRATIONS = [['timetable-2026-11-14', () => applyTimetable(TT_2026_11_14)], ['timetable-2026-11-14-pending', () => applyPending(PENDING_2026_11_14), true], ['private-2026-11-15', () => grantPrivate(PRIVATE_2026_11_15)], ['schedule-2026-11-15', schedule20261115], ['ontime-2026-11-15', onTime20261115], ['teacher-phones-2026-11-15', teacherPhones]];
+/* 16 Nov 2026: Alina covered Olya's individual lesson 10:00-11:00 and clocked in on time (recorded by the director).
+   The student is found by a fingerprint of the first name (any spelling the records use). */
+const COVER_16 = new Set(['c18e7785082767a5', 'd1a96b5b937e26ca', '305aade803000fae', 'ed480e95b54016b8']);
+async function cover20261116() {
+  const date = '2026-11-16', W = S(), classes = (await W.get('classes', { type: 'json' })) || [];
+  let cand = classes.filter(c => COVER_16.has(fp(c.label)));
+  if (!cand.length) { const st = (await A().get('c/students', { type: 'json' })) || {}; const sids = Object.keys(st).filter(k => COVER_16.has(fp(st[k].n))); cand = classes.filter(c => (c.studentIds || []).some(x => sids.includes(x))); }
+  const c = cand.find(x => x.teacherId === 't-olya') || cand[0];
+  if (!c) return null;   // class not found yet: try again later
+  let l = lessonsOn([c], date, await loadChanges()).find(x => x.start === '10:00' && !x.cancelled && !x.movedTo);
+  if (!l) { const CH = await loadChanges(); CH.extra.push({ id: 'cov16', classId: c.id, date, start: '10:00', end: '11:00', note: 'Cover lesson', by: 'Abdoulie Manneh' }); await saveChanges(CH); l = lessonsOn([c], date, await loadChanges()).find(x => x.start === '10:00'); }
+  if (!l) return null;
+  const CH = await loadChanges(); CH.cover[l.key] = { teacherId: 't-alina', by: 'Abdoulie Manneh', at: new Date().toISOString() }; await saveChanges(CH);
+  l = lessonsOn([c], date, CH).find(x => x.key === l.key);
+  const e = await correct(l, { set: 'on', note: 'Alina covered for Olya — clocked in on time (recorded by the director)' }, { uid: 'director', name: 'Abdoulie Manneh' });
+  e.by = { uid: 'tid:t-alina', name: 'Alina Afanasyeva' }; e.teacherId = 't-alina';
+  const month = date.slice(0, 7), L = (await W.get('lessonlog/' + month, { type: 'json' })) || {}; L[l.key] = e; await W.setJSON('lessonlog/' + month, L);
+  return [`${c.id} 16 Nov 10:00 → covered by t-alina for t-olya, clocked in on time`];
+}
+
+const MIGRATIONS = [['timetable-2026-11-14', () => applyTimetable(TT_2026_11_14)], ['timetable-2026-11-14-pending', () => applyPending(PENDING_2026_11_14), true], ['private-2026-11-15', () => grantPrivate(PRIVATE_2026_11_15)], ['schedule-2026-11-15', schedule20261115], ['ontime-2026-11-15', onTime20261115], ['teacher-phones-2026-11-15', teacherPhones], ['cover-2026-11-16', cover20261116]];
 let running = null;
 /** Run any migration that has not run yet. Safe to call on every request (cached per instance). */
 let checkedAt = 0;
