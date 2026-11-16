@@ -4,7 +4,12 @@
    Staff and students without a class get null (no restriction). */
 (function () {
   var LV = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
-  function levelIn(t) { var m = String(t || '').toUpperCase().match(/\b(PRE[- ]?A1|A1|A2|B1|B2|C1|C2)\b/); return m ? (/PRE/.test(m[1]) ? 'A1' : m[1]) : ''; }
+  function levelIn(t) {
+    var m = String(t || '').toUpperCase().match(/\b(PRE[- ]?A1|A1|A2|B1|B2|C1|C2)\b/); if (m) return /PRE/.test(m[1]) ? 'A1' : m[1];
+    // groups named by the coursebook level (e.g. a new "Elementary" group)
+    var w = String(t || '').toLowerCase();
+    return /beginner|elementary/.test(w) && !/pre[- ]?int/.test(w) ? 'A1' : /pre[- ]?int/.test(w) ? 'A2' : /upper[- ]?int/.test(w) ? 'B2' : /\bintermediate/.test(w) ? 'B1' : /advanced/.test(w) ? 'C1' : '';
+  }
   function bookKey(title) {
     var t = String(title || '').toLowerCase();
     if (/english file/.test(t)) {
@@ -25,6 +30,8 @@
   function keys(me) {
     if (!me || !me.profile || me.access === 'staff' || /teacher|admin/.test(me.profile.role || '')) return null;
     var cls = me.classes || [], st = me.student; if (!st || !cls.length) return null;
+    // individual students (with a local or a native teacher) may use every level A1–C1
+    var indiv = function (c) { return /^c-ind-/.test(c.id || '') || /individual|1[- ]?(to|on)[- ]?1/i.test(c.label || ''); };
     var books = me.books || [], out = [], add = function (k) { if (k && out.indexOf(k) < 0) out.push(k); };
     var lv = levelIn(st.level), kids = false, biz = false;
     cls.forEach(function (c) {
@@ -37,6 +44,10 @@
       if (/business/.test(t)) biz = true;
       if (!lv) lv = levelIn(text);
     });
+    if (cls.some(indiv)) {
+      ['A1', 'A2', 'B1', 'B2', 'C1'].forEach(function (l) { add('ge:' + l); (SAME[l] || []).forEach(function (bk) { add('book:' + bk); }); });
+      if (lv === 'C2') { add('ge:C2'); add('book:ef-c2'); }
+    }
     if (lv && !kids) {
       add(biz ? 'be:' + (lv === 'A1' ? 'A2' : lv === 'C2' ? 'C1' : lv) : 'ge:' + lv);
       // every coursebook of the same level is open too (English File B1 <-> English for Teenagers B1, and so on)
