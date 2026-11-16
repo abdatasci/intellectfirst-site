@@ -85,7 +85,7 @@
     var long = L.isLong(q.o);
     show('<div class="pq"><div class="meta"><span>Question ' + (d.i + 1) + ' / ' + d.n + '</span><span id="tl"></span></div>' +
       '<div class="prompt">' + L.qhtml(q.p, esc) + '</div>' +
-      '<div class="opts' + (long ? ' long' : '') + '">' + q.o.map(function (o, k) { return '<button class="opt o' + k + '" data-k="' + k + '"><span class="sh">' + L.SHAPES[k] + '</span>' + esc(o) + '</button>'; }).join('') + '</div></div>');
+      '<div class="opts' + (long ? ' long' : '') + '">' + L.shuffle(q.o.map(function (_, k) { return k; })).map(function (k, pos) { return '<button class="opt o' + pos + '" data-k="' + k + '"><span class="sh">' + L.SHAPES[pos] + '</span>' + esc(q.o[k]) + '</button>'; }).join('') + '</div></div>');
     view.querySelectorAll('.opt').forEach(function (b) {
       b.onclick = function () {
         var k = +b.dataset.k; if (S.answered[d.i] != null) return;
@@ -130,7 +130,7 @@
     var q = R.qs[R.order[R.i]], long = L.isLong(q.o);
     show('<div class="pq"><div class="meta"><span id="rk"></span><span class="score-chip" id="rs">' + (power ? L.fmtN(myScore()) + ' ' + L.mode(S.st.mode).cur : R.s) + '</span></div>' + (S.st.mode === 'fish' && S.st.fz ? '<div class="fzline">🌊 FRENZY — catches ×2</div>' : '') +
       '<div class="prompt">' + L.qhtml(q.p, esc) + '</div><div class="lock" id="lk"></div>' +
-      '<div class="opts' + (long ? ' long' : '') + '">' + q.o.map(function (o, k) { return '<button class="opt o' + k + '" data-k="' + k + '"><span class="sh">' + L.SHAPES[k] + '</span>' + esc(o) + '</button>'; }).join('') + '</div></div>');
+      '<div class="opts' + (long ? ' long' : '') + '">' + L.shuffle(q.o.map(function (_, k) { return k; })).map(function (k, pos) { return '<button class="opt o' + pos + '" data-k="' + k + '"><span class="sh">' + L.SHAPES[pos] + '</span>' + esc(q.o[k]) + '</button>'; }).join('') + '</div></div>');
     raceTop();
     var done = false;   // one answer per question: a double tap must not count twice
     view.querySelectorAll('.opt').forEach(function (b) {
@@ -275,10 +275,14 @@
   }
   /** Anonymous servers: names and scores hidden, order shuffled every time. */
   function mystery(list, done) {
-    var pick = L.shuffle(list).slice(0, Math.min(6, list.length)), ic = ['🖥️', '💾', '📡', '🗄️', '🛰️', '💽'];
+    var pick = L.shuffle(list).slice(0, Math.min(5, list.length)), ic = ['🖥️', '💾', '📡', '🗄️', '🛰️', '💽'];
+    if (Math.random() < .35) pick.splice(Math.floor(Math.random() * (pick.length + 1)), 0, ['honeypot']);   // a trap server: it costs you
     show('<div class="pw"><h2>💻 Pick a server to hack</h2><p style="color:rgba(255,255,255,.75)">Every server belongs to another player — you\'ll only find out whose after the hack.</p><div class="chests">' +
       pick.map(function (e, i) { return '<button class="chest anon" data-i="' + i + '"><span style="font-size:42px">' + ic[i % ic.length] + '</span><b>Server ' + String.fromCharCode(65 + i) + '</b></button>'; }).join('') + '</div></div>');
-    view.querySelectorAll('.anon').forEach(function (b) { b.onclick = function () { var e = pick[+b.dataset.i]; e = e.slice(); e.anon = 'Server ' + String.fromCharCode(65 + +b.dataset.i); done(e); }; });
+    view.querySelectorAll('.anon').forEach(function (b) { b.onclick = function () {
+      var e = pick[+b.dataset.i];
+      if (e[0] === 'honeypot') { S.bus.pub('p', 'gain', { pid: S.pid, k: 'lose', v: .1 }); L.sfx('bad'); if (navigator.vibrate) navigator.vibrate([80, 50, 80]); show('<div class="res bad"><div class="big">🍯 Honeypot!</div><p>That server was a trap set by the network. You lost 10% of your ₿.</p></div>'); return cont(1800); }
+      e = e.slice(); e.anon = 'Server ' + String.fromCharCode(65 + +b.dataset.i); done(e); }; });
   }
   function guess(e) {
     var opts = e[4] || L.PASSWORDS.slice(0, 3);
@@ -289,8 +293,10 @@
         S.bus.pub('p', 'hack', { pid: S.pid, to: e[0], guess: b.dataset.v });
         var done = false;
         S.hackWait = function (ev) {
+          if (ev.k === 'trace') { done = true; S.hackWait = null; L.sfx('bad'); show('<div class="res bad"><div class="big">🚨 Traced!</div><p>You hacked ' + esc(e[1]) + ' too many times. Their firewall traced you and took ' + L.fmtN(ev.v) + ' ₿ back. Pick new targets!</p></div>'); return cont(2200); }
           if (done || ev.b !== e[0]) return; done = true; S.hackWait = null;
           if (ev.ok) { L.sfx('win'); show('<div class="res good"><div class="big">Hacked!</div><div class="gain">+' + L.fmtN(ev.v) + ' ₿ from ' + esc(e[1]) + '</div></div>'); }
+          else if (ev.why === 'shield') { L.sfx('bad'); show('<div class="res bad"><div class="big">🛡️ Firewall up</div><p>' + esc(e[1]) + ' was just hacked — their server is protected for a few seconds. Try someone else!</p></div>'); }
           else { L.sfx('bad'); show('<div class="res bad"><div class="big">Access denied</div><p>That was ' + esc(e[1]) + '\'s server — wrong password. Keep mining!</p></div>'); }
           cont(1600);
         };
@@ -301,7 +307,7 @@
   function vPassword() {
     S.busy = true;
     var opts = L.shuffle(L.PASSWORDS).slice(0, 6);
-    show('<div class="pw"><h2>💻 Choose your password</h2><p style="color:rgba(255,255,255,.75)">Others will try to guess it to hack you. Keep it secret!</p><div class="tlist two">' + opts.map(function (o) { return '<button class="tg pwp" data-v="' + o + '"><b>🔒 ' + o + '</b></button>'; }).join('') + '</div></div>');
+    show('<div class="pw"><h2>💻 Choose your password</h2><p style="color:rgba(255,255,255,.75)">Others will try to guess it to hack you. If you are hacked, your firewall gives you a new password and a shield — and every 90 seconds the network changes everyone\'s password, so sharing passwords is useless!</p><div class="tlist two">' + opts.map(function (o) { return '<button class="tg pwp" data-v="' + o + '"><b>🔒 ' + o + '</b></button>'; }).join('') + '</div></div>');
     view.querySelectorAll('.pwp').forEach(function (b) { b.onclick = function () { S.pwSet = b.dataset.v; S.bus.pub('p', 'pw', { pid: S.pid, pw: S.pwSet }); L.sfx('ok'); vPlay(); }; });
   }
   var FISH = [['👢', 'an old boot', 0, 0, 8], ['🐟', 'a sardine', 1, 3, 30], ['🐠', 'a clownfish', 2, 6, 22], ['🐡', 'a pufferfish', 4, 9, 14], ['🦑', 'a squid', 6, 15, 10], ['🐙', 'an octopus', 10, 25, 7], ['🐬', 'a dolphin', 20, 40, 4], ['🦈', 'a shark', 30, 60, 3], ['🐋', 'a whale', 60, 120, 1.2], ['🧜', 'a golden mermaid', 100, 200, .3]];
@@ -321,6 +327,7 @@
   function onEvent(e) {
     if (!e || !S.pid) return;
     if (e.a === S.pid && e.k === 'hack' && S.hackWait) return S.hackWait(e);
+    if (e.k === 'trace' && e.b === S.pid && S.hackWait) return S.hackWait(e);
     if (e.b === S.pid && !e.quiet && e.t) { toast(e.k === 'hack' ? '🚨 ' + e.t : e.t, 'bad'); L.sfx('bad'); if (navigator.vibrate) navigator.vibrate([80, 50, 80]); return; }
     if (e.k === 'fz') { toast(e.t, 'gold'); L.sfx('win'); }
   }

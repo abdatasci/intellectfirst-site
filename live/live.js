@@ -88,6 +88,23 @@
     qs = LIVE.shuffle(qs);
     return cfg.count && cfg.count !== 'all' ? qs.slice(0, +cfg.count) : qs;
   };
+  /** Timed (self-paced) modes need many questions so they do not repeat: every chosen word in every question type
+      (definition → word, word → meaning, Russian → English), and if the units give fewer than 60, the rest of the
+      book as review. Duplicates removed, shuffled, at most 240. */
+  LIVE.bigPool = function (cfg, banks) {
+    var qs = [], seen = {};
+    function add(list) { list.forEach(function (q) { var k = q.p + '|' + q.o[q.a]; if (!seen[k]) { seen[k] = 1; qs.push(q); } }); }
+    if (cfg.source === 'custom') return LIVE.build(Object.assign({}, cfg, { count: 'all' }), banks);
+    var ids = cfg.source === 'gen' ? (LEVEL_BANKS[cfg.level] || LEVEL_BANKS.B1).filter(function (id) { var b = banks.filter(function (x) { return x.id === id; })[0]; return b && !(cfg.focus === 'grammar' && b.kind !== 'g') && !(cfg.focus === 'vocab' && b.kind !== 'v'); }) : [cfg.bank];
+    ids.forEach(function (id) {
+      var b = banks.filter(function (x) { return x.id === id; })[0]; if (!b) return;
+      var units = cfg.source === 'gen' ? b.units.map(function (u) { return u.id; }) : cfg.units;
+      var one = function (us, t) { return LIVE.build({ bank: id, units: us, qtype: t, count: 'all' }, banks); };
+      if (b.kind === 'v') ['def', 'word', 'ru'].forEach(function (t) { add(one(units, t)); }); else add(one(units, 'def'));
+      if (qs.length < 60 && cfg.source !== 'gen') { var rest = b.units.map(function (u) { return u.id; }).filter(function (u) { return units.indexOf(u) < 0; }); if (rest.length) add(one(rest, 'mix')); }
+    });
+    return LIVE.shuffle(qs).slice(0, 240);
+  };
   LIVE.isLong = function (o) { return o.some(function (s) { return String(s).length > 34; }); };
 
   /* light obfuscation of answers sent to phones in race mode (keeps the answer out of plain sight) */
@@ -134,7 +151,7 @@
     classic: { name: 'Classic', icon: '🎯', tag: 'Teacher-paced', blurb: 'One question at a time on the big screen. Students answer on their phones; faster right answers score more.' },
     race: { name: 'Race', icon: '🏁', tag: 'Self-paced', self: true, unit: 'points', blurb: 'Everyone answers at their own speed. The screen shows a live race of scores. A wrong answer freezes the player for a moment.' },
     gold: { name: 'Treasure Hunt', icon: '🪙', tag: 'Self-paced · chests', self: true, power: true, unit: 'gold', cur: '🪙', blurb: 'Every right answer opens a treasure chest: gold, double, triple… or steal from a classmate, or swap totals! Most gold wins.' },
-    hack: { name: 'Cyber Heist', icon: '💻', tag: 'Self-paced · hacking', self: true, power: true, unit: 'crypto', cur: '₿', blurb: 'Students pick a secret password. Right answers mine crypto; hack classmates by guessing their password and steal their coins.' },
+    hack: { name: 'Cyber Heist', icon: '💻', tag: 'Self-paced · hacking', self: true, power: true, unit: 'crypto', cur: '₿', blurb: 'Students pick a secret password. Right answers mine crypto; hack classmates by guessing their password and steal their coins. Fair play built in: hacked servers reboot with a new password and a shield, the whole network resets every 90 seconds, honeypot servers trap hackers, and hacking the same classmate again earns less until their firewall traces you back — so teaming up does not pay.' },
     fish: { name: 'Fishing Frenzy', icon: '🎣', tag: 'Self-paced · catches', self: true, power: true, unit: 'kg', cur: 'kg', blurb: 'Every right answer casts a line. Catch heavier and rarer fish; Frenzy time doubles every catch. The heaviest haul wins.' },
     tug: { name: 'Tug of War', icon: '🪢', tag: '2 teams · great for kids', self: true, power: true, unit: 'pulls', cur: '💪', blurb: 'Two teams pull a rope on the big screen. Every right answer is a pull for your team. The first team to pull the rope over its line wins!' },
     boss: { name: 'Boss Battle', icon: '👾', tag: 'Whole class together', self: true, power: true, unit: 'hits', cur: '⚔️', blurb: 'The whole class fights Mumbleclaw the Word Monster. Every right answer is a hit; streaks hit harder. Beat the monster before time runs out!' },
@@ -150,7 +167,10 @@
     return m ? '<span class="qpic">' + esc(m[1]) + '</span>' + esc(m[2]) : esc(t);
   };
   LIVE.mode = function (m) { return LIVE.MODES[m] || LIVE.MODES.classic; };
-  LIVE.PASSWORDS = ['pancake', 'dragon42', 'lemonade', 'galaxy', 'tiger7', 'banana', 'rocket', 'snowball', 'pizza99', 'thunder', 'unicorn', 'cactus'];
+  LIVE.PASSWORDS = ['pancake', 'dragon42', 'lemonade', 'galaxy', 'tiger7', 'banana', 'rocket', 'snowball', 'pizza99', 'thunder', 'unicorn', 'cactus',
+    'falcon', 'meteor', 'pixel88', 'cobra', 'jupiter', 'waffle', 'blizzard', 'panda', 'neon77', 'avocado', 'vortex', 'koala', 'laser', 'mango', 'nebula', 'penguin',
+    'quantum', 'raptor', 'saturn', 'tornado', 'violet', 'wizard', 'yeti', 'zebra', 'comet', 'donut', 'ember', 'glacier', 'hydra', 'icicle', 'jaguar', 'kiwi',
+    'lynx', 'matrix', 'ninja', 'orbit', 'phoenix', 'robot', 'shadow', 'turbo', 'volcano', 'whale'];
   LIVE.fmtN = function (n) { n = Math.round(+n || 0); return Math.abs(n) >= 10000 ? (n / 1000).toFixed(n >= 100000 ? 0 : 1).replace(/\.0$/, '') + 'k' : String(n); };
 
   /* little sound effects (no files): ok, no, coin, bad, win, hack, splash */

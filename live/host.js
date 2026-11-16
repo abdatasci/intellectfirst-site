@@ -99,8 +99,8 @@
   }
   function count() {
     var el = $('#qcount');
-    if (useAI()) { if (el) el.textContent = '✨ AI will write ' + (CFG.count === 'all' ? 30 : CFG.count) + ' new questions (takes a few seconds)'; }
-    else { var n = L.build(CFG, BANKS).length; if (el) el.textContent = n ? n + ' questions ready' + (L.mode(CFG.mode).self || L.mode(CFG.mode).team ? ' (they repeat until time is up)' : '') : 'No questions yet'; }
+    if (useAI()) { if (el) el.textContent = '✨ AI will write ' + (CFG.count === 'all' ? 30 : CFG.count) + ' new questions (takes a few seconds)' + (L.mode(CFG.mode).self || L.mode(CFG.mode).team ? ' + ' + L.bigPool(CFG, BANKS).length + ' from the course, shuffled' : ''); }
+    else { var tm = L.mode(CFG.mode).self || L.mode(CFG.mode).team, n = (tm ? L.bigPool(CFG, BANKS) : L.build(CFG, BANKS)).length; if (el) el.textContent = n ? n + ' questions ready' + (tm ? ' — shuffled for each student, every word asked in different ways' : '') : 'No questions yet'; }
     var t = $('#title'); if (t && !t.dataset.touched) t.placeholder = defaultTitle();
     if (t) t.oninput = function () { t.dataset.touched = 1; };
   }
@@ -145,6 +145,10 @@
       err.style.color = '';
       if (!qs || !qs.length) err.textContent = 'AI is busy right now, so this game uses the ready-made questions instead.';
       else err.textContent = '';
+    }
+    var timed = L.mode(CFG.mode).self || L.mode(CFG.mode).team;
+    if (timed) {   // self-paced modes: the AI questions plus the whole pool of the chosen units, so questions rarely repeat
+      var seenQ = {}; qs = (qs || []).concat(L.bigPool(CFG, BANKS)).filter(function (q) { var k = q.p + '|' + q.o[q.a]; if (seenQ[k]) return false; seenQ[k] = 1; return true; }).slice(0, 260);
     }
     if (!qs || !qs.length) qs = CFG.source === 'gen' ? L.general(CFG, BANKS) : L.build(CFG, BANKS);
     if (!qs.length) { $('#go').disabled = false; err.textContent = CFG.source === 'custom' ? 'Write at least one question: question | right answer | wrong answer.' : 'No questions found for this choice.'; return; }
@@ -239,7 +243,14 @@
   }
   function pwOptions(pw) {
     var pool = L.PASSWORDS.filter(function (x) { return x !== pw; });
-    return L.shuffle([pw].concat(L.shuffle(pool).slice(0, 2)));
+    return L.shuffle([pw].concat(L.shuffle(pool).slice(0, 3)));
+  }
+  /* Cyber Heist fair play: passwords do not stay secret-shared. A hacked player's firewall reboots with a new password
+     and a 25-second shield; every 90 seconds the whole network resets all passwords; hacking the same classmate again
+     earns less, and a third time the firewall traces you back. So telling friends passwords or ganging up stops paying. */
+  function newPw(P, why) {
+    var pool = L.PASSWORDS.filter(function (x) { return x !== P.pw; });
+    P.pw = pool[Math.floor(Math.random() * pool.length)]; P.pwo = pwOptions(P.pw); P.pwAt = Date.now();
   }
   function power(name, d, pid, p) {
     var cur = M_UNIT(), T = d.to && H.players[d.to], live = T && !T.kicked && d.to !== pid;
@@ -292,11 +303,22 @@
       scheduleRender(); return;
     }
     if (name === 'hack' && live) {
+      var nowH = Date.now(), fail = function (why) { BUS.pub('h', 'ev', { id: ++H.evn, t: '', a: pid, b: d.to, k: 'hack', ok: 0, v: 0, quiet: 1, why: why }); scheduleRender(); };
+      if (T.shield && T.shield > nowH) return fail('shield');                         // just hacked: firewall up
       var ok = !!T.pw && String(d.guess || '') === T.pw;
       if (!T.pw) ok = Math.random() < .5;
-      var amt2 = ok ? Math.round(T.score * (.15 + Math.random() * .25)) : 0;
-      if (ok) { T.score -= amt2; p.score += amt2; feed(p.name + ' hacked ' + T.name + ' and took ' + L.fmtN(amt2) + ' ₿!', pid, d.to, 'hack', { v: amt2, ok: 1 }); }
-      else BUS.pub('h', 'ev', { id: ++H.evn, t: '', a: pid, b: d.to, k: 'hack', ok: 0, v: 0, quiet: 1 });
+      if (!ok) return fail('');
+      H.pairs = H.pairs || {}; var pk = pid + '>' + d.to, times = (H.pairs[pk] || 0) + 1; H.pairs[pk] = times;
+      if (times >= 3) {   // the same victim again and again: the firewall traces the hacker back
+        var back = Math.min(p.score, Math.max(25, Math.round(p.score * 0.1))); p.score -= back; T.score += back;
+        newPw(T); T.shield = nowH + 25000;
+        feed('🚨 ' + T.name + '\'s firewall traced ' + p.name + ' — ' + L.fmtN(back) + ' ₿ sent back!', d.to, pid, 'trace', { v: back });
+        return scheduleRender();
+      }
+      var amt2 = Math.round(T.score * (.15 + Math.random() * .25) / times);
+      T.score -= amt2; p.score += amt2;
+      newPw(T); T.shield = nowH + 25000;   // the victim's firewall reboots: new password, shield for 25 seconds
+      feed(p.name + ' hacked ' + T.name + ' and took ' + L.fmtN(amt2) + ' ₿!' + (times === 2 ? ' (2nd time: half)' : '') + ' 🔒 New password set.', pid, d.to, 'hack', { v: amt2, ok: 1 });
       scheduleRender(); return;
     }
   }
@@ -417,6 +439,10 @@
     timers.race = setInterval(function () {
       if (H.phase !== 'race' && H.phase !== 'match') return clearInterval(timers.race);
       var now = Date.now(), left = H.raceEnd - now, el = $('#rtime'); if (el) el.textContent = fmt(left);
+      if (H.mode === 'hack') {   // network reset: every 90 seconds all passwords change, so shared passwords go stale
+        if (!H.pwResetAt) H.pwResetAt = now + 90000;
+        if (now >= H.pwResetAt) { H.pwResetAt = now + 90000; H.order.forEach(function (id) { var P = H.players[id]; if (P && !P.kicked && P.pw) newPw(P); }); feed('🔄 NETWORK RESET — every password just changed!', null, null, 'big'); push(true); }
+      }
       if (H.mode === 'fish') {   // a 20-second Frenzy about every 75 seconds
         if (!H.fzAt) H.fzAt = now + 45000;
         if (now >= H.fzAt && now > H.fzEnd) { H.fzEnd = now + 20000; H.fzAt = now + 75000; feed('🌊 FRENZY! Every catch is doubled for 20 seconds!', null, null, 'fz'); push(true); render(); }
