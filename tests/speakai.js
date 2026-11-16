@@ -4,7 +4,7 @@
 (function () {
   'use strict';
   if (window.__ifSpeakAI) return; window.__ifSpeakAI = true;
-  var busy = false;
+  var busy = {};
   function css() {
     if (document.getElementById('ifsa-css')) return;
     var s = document.createElement('style'); s.id = 'ifsa-css';
@@ -14,7 +14,7 @@
   }
   function examiner() {
     if (window.IFExaminer) return Promise.resolve(window.IFExaminer);
-    return new Promise(function (ok) { var x = document.createElement('script'); x.src = '/tests/examiner.js?v=2'; x.onload = function () { ok(window.IFExaminer || null); }; x.onerror = function () { ok(null); }; document.head.appendChild(x); });
+    return new Promise(function (ok) { var x = document.createElement('script'); x.src = '/tests/examiner.js?v=3'; x.onload = function () { ok(window.IFExaminer || null); }; x.onerror = function () { ok(null); }; document.head.appendChild(x); });
   }
   var txt = function (el) { return el ? String(el.textContent || '').replace(/\s+/g, ' ').trim() : ''; };
   function levelOf() {
@@ -38,28 +38,19 @@
     if (!qs.length) return;
     css();
     var bar = document.createElement('div'); bar.className = 'ifsa';
-    bar.innerHTML = '<button type="button">🎙 Talk to the examiner</button><small>NOVA or ATLAS asks ' + (longTurn ? 'this task' : 'these questions') + ' out loud; you answer and AI gives the mark.</small>';
+    bar.innerHTML = '<button type="button">🎙 Talk to the examiner</button><small>NOVA or ATLAS asks ' + (longTurn ? 'this task' : 'these questions') + ' out loud; you answer and AI gives the mark for this task.</small>';
     group.parentNode.insertBefore(bar, group);
     var go = bar.querySelector('button');
-    // student view (mark buttons locked) and no mark yet: give 8 out of 10 now so the test can be submitted
-    var locked = btns.every(function (z) { return z.disabled; });
-    var cls = document.getElementById('sclass'), b1c = /\bb1\s*(?:teen)?\s*[-\s]?\s*[bc]\b/i.test((cls && cls.value) || '');
-    if (locked && b1c && !btns.some(function (z) { return z.getAttribute('aria-pressed') === 'true'; })) {
-      var want = Math.round(max * 0.8), d = btns.filter(function (z) { return +z.dataset.n === want; })[0];
-      if (d) { d.disabled = false; d.click(); d.disabled = true; }
-    }
-    var mn = group.parentNode.parentNode && group.parentNode.parentNode.querySelector('.marknote');
-    if (mn && locked && b1c) mn.textContent = 'Each speaking task has 8 out of 10 for now, so you can submit the test. Talk to the examiner for an AI mark; your teacher can change any mark.';
+    var keep = lastNote[btns[0].dataset.task]; if (keep) { var kn = document.createElement('div'); kn.className = 'ifsa-res ' + keep[0]; kn.innerHTML = keep[1]; bar.parentNode.insertBefore(kn, bar.nextSibling); }
     go.onclick = function () {
-      if (busy) return; busy = true; go.disabled = true;
+      var tk = btns[0].dataset.task; if (busy[tk]) return; busy[tk] = 1; go.disabled = true;
       var old = card.querySelector('.ifsa-res'); if (old) old.remove();
       try { speechSynthesis.cancel(); } catch (e) {}
       examiner().then(function (E) {
         if (!E) throw new Error('load');
-        return E.run(bar.parentNode, { lv: levelOf(), title: document.title, qs: qs, mins: longTurn ? (mins || 2) : 0, skip: 'Cancel' });
+        return E.run(document.body, { lv: levelOf(), title: document.title, qs: qs, mins: longTurn ? (mins || 2) : 0, skip: 'Cancel' });
       }).then(function (ans) {
-        var box = bar.parentNode.querySelector('.ifexam'); if (box) box.remove();
-        if (!ans) return null;
+                if (!ans) return null;
         note('', '<b>Marking your speaking…</b>');
         return fetch('/api/tests/speakmark', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ lv: levelOf(), title: document.title, task: head, max: max, answers: ans }) })
@@ -67,14 +58,17 @@
       }).then(function (x) {
         if (!x) return;
         if (!x.ok) { note('no', x.status === 401 ? '<b>Sign in to get an AI mark.</b> <a href="/me/#/login" target="_blank" rel="noopener">Sign in</a>, then try again. Your teacher can also mark this task.' : '<b>The AI mark could not be given just now.</b> Try again, or your teacher will mark this task.'); return; }
-        var b = btns.filter(function (z) { return +z.dataset.n === x.d.mark; })[0];
+        // the page may have re-drawn the speaking section: use the buttons on the page now
+        var live = [].slice.call(document.querySelectorAll('.rate button[data-task="' + tk + '"]'));
+        var b = (live.length ? live : btns).filter(function (z) { return +z.dataset.n === x.d.mark; })[0];
         if (b && b.getAttribute('aria-pressed') !== 'true') { var dis = b.disabled; b.disabled = false; b.click(); b.disabled = dis; }
         note('', '<b>✓ AI mark: ' + x.d.mark + ' / ' + x.d.max + '</b> ' + (x.d.comment ? esc(x.d.comment) : '') + ' <small>(your teacher can change it)</small>');
       }).catch(function () { note('no', '<b>The examiner could not start.</b> Your teacher will mark this task.'); })
-        .then(function () { busy = false; go.disabled = false; });
+        .then(function () { delete busy[tk]; go.disabled = false; });
     };
-    function note(cls, html) { var n = card.querySelector('.ifsa-res'); if (!n) { n = document.createElement('div'); bar.parentNode.insertBefore(n, bar.nextSibling); } n.className = 'ifsa-res ' + cls; n.innerHTML = html; }
+    function note(cls, html) { var g = document.querySelector('.rate button[data-task="' + btns[0].dataset.task + '"]'), grp = g ? g.closest('.rate') : group, b2 = grp.previousElementSibling && grp.previousElementSibling.classList.contains('ifsa') ? grp.previousElementSibling : bar; var n = b2.parentNode.querySelector('.ifsa-res'); if (!n) { n = document.createElement('div'); b2.parentNode.insertBefore(n, b2.nextSibling); } n.className = 'ifsa-res ' + cls; n.innerHTML = html; lastNote[btns[0].dataset.task] = [cls, html]; }
   }
+  var lastNote = {};
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
   function scan() { [].slice.call(document.querySelectorAll('.rate')).forEach(function (g) { if (g.querySelector('button[data-task]')) setup(g); }); }
   var t = null; new MutationObserver(function () { clearTimeout(t); t = setTimeout(scan, 150); }).observe(document.documentElement, { childList: true, subtree: true });

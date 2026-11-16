@@ -9,13 +9,18 @@
     var s = document.createElement('style'); s.id = 'ifas-css';
     s.textContent = '.ifas{margin:14px 0;padding:14px 16px;border-radius:12px;font:15px/1.45 system-ui,-apple-system,Segoe UI,sans-serif;border:1px solid #cfe3d6;background:#eef7f1;color:#1d4d33}' +
       '.ifas.wait{background:#f4f1ea;border-color:#e4dccd;color:#3b4354}.ifas.no{background:#fbf3df;border-color:#ecd9a8;color:#5c4511}.ifas b{display:block;font-size:16px;margin-bottom:2px}.ifas a{color:inherit;font-weight:700}' +
-      '.ifr.ifas-done{display:none}';
+      '.ifr.ifas-done{display:none}#ifas-toast{position:fixed;left:12px;right:12px;bottom:max(16px,env(safe-area-inset-bottom));z-index:2147482000;max-width:560px;margin:0 auto;padding:14px 16px;border-radius:14px;background:#14532d;color:#fff;font:600 15px/1.4 system-ui,-apple-system,sans-serif;box-shadow:0 12px 30px -10px rgba(0,0,0,.5);display:none}';
     document.head.appendChild(s);
   }
   function note(container, cls, html) {
     css();
     var n = container.querySelector('.ifas'); if (!n) { n = document.createElement('div'); container.insertBefore(n, container.firstChild); }
     n.className = 'ifas ' + cls; n.innerHTML = html; return n;
+  }
+  function toast(msg) {
+    css(); var t = document.getElementById('ifas-toast'); if (!t) { t = document.createElement('div'); t.id = 'ifas-toast'; document.body.appendChild(t); }
+    t.textContent = msg; t.style.display = 'block'; clearTimeout(t._h); t._h = setTimeout(function () { t.style.display = 'none'; }, 12000);
+    t.onclick = function () { t.style.display = 'none'; };
   }
   function save(container, p) {
     if (!p || !p.s) return;
@@ -30,8 +35,9 @@
       if (x.ok) {
         var d = x.d;
         note(container, '', '<b>\u2713 Saved to your profile and your teacher\u2019s results</b>Score ' + d.score + ' / ' + d.max +
-          (p.spAuto ? '. Speaking: 8 out of 10 for each task (your teacher can change it)' : '') + (d.aiSpeak ? '. Your speaking was marked by AI' + (d.aiMarked ? ', and your writing too.' : '.') + (d.comment ? ' ' + d.comment : '') : d.aiMarked ? '. Your writing was marked by AI.' : d.pending ? '. Your teacher will mark the writing.' : '.') + ' No need to send anything.');
+          (d.aiSpeak ? '. Your speaking was marked by AI' + (d.aiMarked ? ', and your writing too.' : '.') + (d.comment ? ' ' + d.comment : '') : d.aiMarked ? '. Your writing was marked by AI.' : d.pending ? '. Your teacher will mark the writing.' : '.') + ' No need to send anything.');
         var box = container.querySelector('.ifr'); if (box) box.classList.add('ifas-done');
+        toast('\u2713 Sent to your teacher. Score ' + d.score + ' / ' + d.max + (d.pending ? ' (speaking or writing still to be marked)' : '') + '. It is in your account and the bot\u2019s \u201cMy results\u201d.');
       } else if (x.status === 401) {
         delete sent[key];
         note(container, 'no', '<b>Sign in to save this result automatically</b><a href="/me/#/login" target="_blank" rel="noopener">Sign in</a> with your IF Academy account, then press the button again. Or send the message below to your teacher.');
@@ -41,17 +47,10 @@
       }
     }).catch(function () { delete sent[key]; note(container, 'no', '<b>No internet?</b> Send the message below to your teacher, or try again.'); });
   }
-  // Classes B1 C and B1 B (16 Nov 2026 test): speaking not marked yet → each speaking task gets 8 out of 10 (80% of the section) so they can submit now.
-  // A mark from the AI examiner or the teacher replaces it. Other classes keep the examiner-then-save flow.
-  var B1C = /\bb1\s*(?:teen)?\s*[-\s]?\s*[bc]\b/i;
-  function isB1C(p) { var c = (p && p.cl) || ''; var f = document.getElementById('sclass'); return B1C.test(c) || !!(f && B1C.test(f.value)); }
-  function fill(p) {
-    if (p && Array.isArray(p.s) && isB1C(p)) p.s.forEach(function (x) { if (x && /speak/i.test(x[0]) && x[1] == null && x[2] > 0) { x[1] = Math.round(x[2] * 0.8 * 2) / 2; p.spAuto = 1; } });
-    return p;
-  }
+  function fill(p) { return p; }
   function examiner() {
     if (window.IFExaminer) return Promise.resolve(window.IFExaminer);
-    return new Promise(function (ok) { var x = document.createElement('script'); x.src = '/tests/examiner.js?v=2'; x.onload = function () { ok(window.IFExaminer || null); }; x.onerror = function () { ok(null); }; document.head.appendChild(x); });
+    return new Promise(function (ok) { var x = document.createElement('script'); x.src = '/tests/examiner.js?v=3'; x.onload = function () { ok(window.IFExaminer || null); }; x.onerror = function () { ok(null); }; document.head.appendChild(x); });
   }
   function hook() {
     if (!window.IFR || window.IFR.__as) return !!window.IFR;
@@ -69,7 +68,7 @@
     var sp = p && Array.isArray(p.s) && p.s.some(function (x) { return x && /speak/i.test(x[0]) && x[1] == null && x[2] > 0; });
     if (sp && !p.sp && !p.__spk) {
       p.__spk = 1;
-      examiner().then(function (E) { return E ? E.run(container, { lv: p.lv, title: [p.t, p.c].filter(Boolean).join(' ') }) : null; })
+      examiner().then(function (E) { return E ? E.run(document.body, { lv: p.lv, title: [p.t, p.c].filter(Boolean).join(' ') }) : null; })
         .then(function (ans) { if (ans) p.sp = ans; delete p.__spk; save(container, p); })
         .catch(function () { delete p.__spk; save(container, p); });
     } else save(container, p);

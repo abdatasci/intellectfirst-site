@@ -44,6 +44,8 @@
       '.ifexam .dots{display:flex;gap:6px}.ifexam .dots i{width:8px;height:8px;border-radius:50%;background:#ffffff33}.ifexam .dots i.on{background:#22d3ee}' +
       '@keyframes ifxp{50%{box-shadow:0 0 0 8px #ef444433}}' +
       '@media(max-width:560px){.ifexam .stage{grid-template-columns:1fr;justify-items:center;text-align:center}.ifexam .ifbot{width:120px}.ifexam .row{justify-content:center}}';
+    s.textContent += '.ifexam-ov{position:fixed;inset:0;z-index:2147483000;background:rgba(5,10,25,.72);display:flex;align-items:center;justify-content:center;padding:max(12px,env(safe-area-inset-top)) 12px max(12px,env(safe-area-inset-bottom));overflow:auto}' +
+      '.ifexam-ov .ifexam{position:relative;width:min(720px,100%);max-height:100%;overflow:auto;margin:0}.ifexam .x{position:absolute;top:8px;right:8px;width:36px;height:36px;padding:0;border-radius:50%;background:#ffffff1f;color:#fff;font-size:22px;line-height:36px}';
     document.head.appendChild(s);
   }
   function say(text, g) {
@@ -65,16 +67,19 @@
     var deps = [window.IFBots ? null : load('/robots.js'), window.IFVoice ? null : load('/voice.js')].filter(Boolean);
     return Promise.all(deps).then(function () {
       css();
-      var box = document.createElement('div'); box.className = 'ifexam';
-      container.insertBefore(box, container.firstChild);
-      try { box.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) {}
+      // shown in its own layer over the page, so the test page re-drawing itself can never remove it mid-task
+      var old = document.querySelector('.ifexam-ov'); if (old) old.remove();
+      var ov = document.createElement('div'); ov.className = 'ifexam-ov';
+      var box = document.createElement('div'); box.className = 'ifexam'; ov.appendChild(box); document.body.appendChild(ov);
+      var lockY = document.documentElement.style.overflow; document.documentElement.style.overflow = 'hidden';
       return new Promise(function (resolve) {
         var finished = false;
-        function end(res) { if (finished) return; finished = true; try { speechSynthesis.cancel(); } catch (e) {} resolve(res); }
+        function end(res) { if (finished) return; finished = true; try { speechSynthesis.cancel(); } catch (e) {} document.documentElement.style.overflow = lockY; try { ov.remove(); } catch (e) {} resolve(res); }
         function frame(i, inner) {
-          box.innerHTML = '<div class="top"><span>🎙 Speaking · with ' + name + '</span><span class="dots">' + qs.map(function (_, k) { return '<i class="' + (k <= i ? 'on' : '') + '"></i>'; }).join('') + '</span></div>' +
+          box.innerHTML = '<button class="x" aria-label="Close" title="Close">×</button><div class="top"><span>🎙 Speaking · with ' + name + '</span><span class="dots">' + qs.map(function (_, k) { return '<i class="' + (k <= i ? 'on' : '') + '"></i>'; }).join('') + '</span></div>' +
             '<div class="stage"><div class="bot">' + (window.IFBots ? IFBots.html(g, name, true) : '') + '</div><div class="pane">' + inner + '</div></div>';
           if (window.IFBots) IFBots.talk(box.querySelector('.ifbot'));
+          box.querySelector('.x').onclick = function () { end(answers.some(function (a) { return a.text; }) ? answers : null); };
         }
         function intro() {
           frame(-1, '<p class="q">' + (kid ? 'Hello! I am ' + name + '. Let’s talk! I will ask you ' + (qs.length === 1 ? 'one question' : qs.length + ' questions') + '.' : 'Hello, I’m ' + name + ', your speaking examiner. ' + (qs.length === 1 ? 'I’ll give you one task — talk about it for about ' + (opt.mins || 2) + ' minutes.' : 'I’ll ask you ' + qs.length + ' questions.') + ' Answer in full sentences — about 30 to 60 seconds each.') + '</p>' +

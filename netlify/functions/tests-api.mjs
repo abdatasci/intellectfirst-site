@@ -231,12 +231,6 @@ export default async (req) => {
     // Speaking with the IF examiner (NOVA/ATLAS): the student's spoken answers (speech-recognition transcripts)
     const sp = (Array.isArray(p.sp) ? p.sp : []).slice(0, 5).map(a => ({ q: str(a?.q, 300), text: String(a?.text || '').slice(0, 3000), typed: !!a?.typed, secs: Math.max(0, Math.min(600, +a?.secs || 0)) }));
     let spPend = secs.filter(x => x[1] == null && x[2] > 0 && /speak/i.test(x[0]));
-    // Classes B1 Teen-C and B1 Teen-B (test on 16 Nov 2026): unmarked speaking gets 8/10 per task (80%) so the test is complete when submitted
-    if (spPend.length && !p.sp && profile?.studentId && !staff) {
-      try { const st = (await loadStudents()).find(x => x.id === profile.studentId);
-        if (st && (st.classes || []).some(c => /\bb1\s*(?:teen)?\s*[-\s]?\s*[bc]\b/i.test(c))) { for (const x of spPend) x[1] = Math.round(x[2] * 0.8 * 2) / 2; spPend.length = 0; p.spAuto = 1; }
-      } catch (e) { console.error('b1c speaking', e); }
-    }
     if (spPend.length && sp.some(a => a.text.trim().split(/\s+/).length >= 3)) {
       try {
         const j = await aiJSON({ model: MODEL_MARK, temperature: 0.2, maxTokens: 500,
@@ -260,12 +254,14 @@ export default async (req) => {
     const pending = secs.some(x => x[1] == null);
     const rid = 'ifr-' + (str(p.id, 40) || Date.now().toString(36));
     const entry = { id: rid, test: [str(p.t, 120), str(p.v, 20)].filter(Boolean).join(' ') + (p.c ? ' · ' + str(p.c, 80).replace(/ Test Centre$/, '') : ''), date: new Date().toISOString().slice(0, 10),
-      score: Math.round(score * 10) / 10, max, note: secs.map(x => `${x[0]} ${x[1] == null ? '–' : x[1]}/${x[2]}`).join(', ') + (pending ? ' (to be marked by the teacher)' : '') + (aiSpeak ? ' (speaking marked by AI)' : '') + (p.spAuto ? ' (speaking 8/10 per task, given automatically)' : '') + (aiMarked ? ' (writing marked by AI)' : ''), ...(sp.length ? { speaking: sp } : {}) };
+      score: Math.round(score * 10) / 10, max, note: secs.map(x => `${x[0]} ${x[1] == null ? '–' : x[1]}/${x[2]}`).join(', ') + (pending ? ' (to be marked by the teacher)' : '') + (aiSpeak ? ' (speaking marked by AI)' : '') + (aiMarked ? ' (writing marked by AI)' : ''), ...(sp.length ? { speaking: sp } : {}) };
     if (spComment) p.comment = [spComment, p.comment].filter(Boolean).join(' ');
     let studentName = str(p.n, 60) || profile?.name || '';
-    if (profile?.studentId && !staff) {
+    if (!staff) {
       try {
-        const list = await loadStudents(), st = list.find(x => x.id === profile.studentId);
+        const list = await loadStudents(), norm = v => String(v || '').toLowerCase().replace(/[^a-zа-яё]+/gi, ' ').trim();
+        let st = profile?.studentId ? list.find(x => x.id === profile.studentId) : null;
+        if (!st && p.n) { const n = norm(p.n), m = list.filter(x => { const a = norm(x.first + ' ' + x.last), b = norm(x.last + ' ' + x.first); return a && (a === n || b === n); }); if (m.length === 1) st = m[0]; }
         if (st) { studentName = `${st.first} ${st.last}`.trim(); st.tests = (st.tests || []).filter(t => t.id !== rid); st.tests.push(entry); await saveStudents(list); }
       } catch (e) { console.error('legacy record', e); }
     }
