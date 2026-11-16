@@ -245,6 +245,18 @@ export default async (req) => {
     if (!staff) return fail(403, 'staff');
     try { await importDashboard(); } catch (e) { console.error('dashboard import', e); }
     const rows = (await T().get('recent', { type: 'json' })) || [];
+    // every result already in IF Admin (Test Centres, imports from the old claude.ai dashboard, results entered by hand)
+    try {
+      const ifa = (await getStore({ name: 'ifadmin', consistency: 'strong' }).get('c/results', { type: 'json' })) || {}, have = new Set(rows.map(r => r.key));
+      for (const [k, r] of Object.entries(ifa)) {
+        if (!r || have.has(k) || have.has(r.src) || (r.src && have.has(String(r.src).replace(/^dash\./, '')))) continue;
+        const S = Array.isArray(r.S) ? r.S : [], secs = r.secs || {};
+        rows.push({ key: 'ifa.' + k, kind: 'centre', at: r.date || r.synced || '', uid: null, studentId: r.sid || null, name: r.name || '', cls: r.cls || '', level: r.centre || '',
+          test: (r.title || r.test || 'Test') + (r.course ? ' · ' + String(r.course).replace(/ Test Centre$/, '') : ''), score: r.tot ?? null, max: r.max || null,
+          pct: r.max && r.tot != null ? Math.round(r.tot / r.max * 100) : 0, note: S.map(x => `${x.n} ${secs[x.k] == null ? '–' : secs[x.k]}/${x.max}`).join(', '), comment: '' });
+      }
+      rows.sort((a, b) => String(b.at).localeCompare(String(a.at)));
+    } catch (e) { console.error('IF Admin results', e.message); }
     let byId = {}; try { for (const st of await loadStudents()) byId[st.id] = st.classes || []; } catch {}
     return json({ rows: rows.map(r => ({ ...r, classes: (r.studentId && byId[r.studentId]) || (r.cls ? [r.cls] : []) })) });
   }
