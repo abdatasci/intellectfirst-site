@@ -7,6 +7,7 @@ import { getStore } from '@netlify/blobs';
 import { doc, tg, tgSend, loadChanges, upcomingLessons, local } from './bot-core.mjs';
 import { addHomework, clean as cleanHw, loadHomework, forClasses } from './homework.mjs';
 import { tellClass } from './hwsend.mjs';
+import { CENTRES } from './testcentres.mjs';
 
 const S = () => getStore({ name: 'school', consistency: 'strong' });
 const KEY = chatId => `bot/hwflow/${chatId}`;
@@ -35,6 +36,7 @@ export async function startHomework(chatId, p) {
 }
 
 function preview(st) {
+  if (st.kind === 'online') return `🖥 Online test: ${st.text}${st.text !== st.centre ? ' (' + st.centre + ')' : ''}\nClass: ${st.label}\n\nStudents get a button that opens the test signed in; speaking is with NOVA/ATLAS and it is all marked straight away.\n\nSend this to every student in the class?`;
   const what = st.kind === 'test' ? `🧪 Test on ${DAY[new Date(st.due + 'T12:00:00Z').getUTCDay()]} ${dm(st.due)}${st.time ? ' at ' + st.time : ''}` : `📝 Homework due ${DAY[new Date(st.due + 'T12:00:00Z').getUTCDay()]} ${dm(st.due)}`;
   return `${what}\nClass: ${st.label}\n\n${st.text}${st.photo ? '\n\n📷 + your photo' : st.document ? '\n\n📎 + your file' : ''}\n\nSend this to every student in the class?`;
 }
@@ -50,7 +52,29 @@ export async function hwCallback(q, p) {
     if (!cls) { await answer(q, 'Class not found.', true); return true; }
     await putState(chatId, { step: 'kind', classId: cid, label: cls.label });
     await answer(q, '');
-    await edit(q, `Class: ${cls.label}\nHomework or a test?`, { inline_keyboard: [[{ text: '📝 Homework', callback_data: 'hw:k:hw' }, { text: '🧪 Test', callback_data: 'hw:k:test' }], CANCEL] });
+    await edit(q, `Class: ${cls.label}\nHomework or a test?`, { inline_keyboard: [[{ text: '📝 Homework', callback_data: 'hw:k:hw' }, { text: '🧪 Test date', callback_data: 'hw:k:test' }], [{ text: '🖥 Online test — students do it now', callback_data: 'hw:k:online' }], CANCEL] });
+    return true;
+  }
+  if (data === 'hw:k:online') {   // an online test: pick the test centre, then (optionally) which test
+    await putState(chatId, { ...st, step: 'centre' });
+    const rows = []; for (let i = 0; i < CENTRES.length; i += 2) rows.push(CENTRES.slice(i, i + 2).map((c, j) => ({ text: c[1], callback_data: 'hw:t:' + (i + j) })));
+    rows.push(CANCEL); await answer(q, '');
+    await edit(q, `Class: ${st.label}\n🖥 Which test centre?`, { inline_keyboard: rows });
+    return true;
+  }
+  if (data.startsWith('hw:t:')) {
+    const c = CENTRES[+data.slice(5)]; if (!c) return true;
+    const today = local().toISOString().slice(0, 10);
+    await putState(chatId, { ...st, step: 'text', kind: 'online', url: c[2], centre: c[1], due: today, time: '' });
+    await answer(q, '');
+    await edit(q, `Class: ${st.label} · 🖥 ${c[1]}\nWhich test should they do? Type it, e.g. "File 3 Test A" — or press Send now.`, { inline_keyboard: [[{ text: '✅ Send now (no details)', callback_data: 'hw:tn' }], CANCEL] });
+    return true;
+  }
+  if (data === 'hw:tn') {
+    if (st.kind !== 'online') return true;
+    const next = { ...st, step: 'confirm', text: st.centre };
+    await putState(chatId, next); await answer(q, '');
+    await edit(q, preview(next), { inline_keyboard: [[{ text: '✅ Send to the class', callback_data: 'hw:send' }], CANCEL] });
     return true;
   }
   if (data.startsWith('hw:k:')) {
@@ -78,7 +102,7 @@ export async function hwCallback(q, p) {
     if (st.step !== 'confirm') { await answer(q, 'Not ready yet.', true); return true; }
     const cls = (await doc('classes')).find(c => c.id === st.classId);
     if (!cls) { await answer(q, 'Class not found.', true); return true; }
-    const item = cleanHw({ kind: st.kind, text: st.text, due: st.due, time: st.time }, cls, p.name);
+    const item = cleanHw({ kind: st.kind, text: st.text, due: st.due, time: st.time, url: st.url }, cls, p.name);
     if (!item) { await answer(q, 'Something is missing. Start again.', true); return true; }
     await answer(q, 'Sending…');
     await addHomework(item);
@@ -110,7 +134,7 @@ export async function hwMessage(chatId, p, m) {
   if (st.step === 'text' || st.step === 'confirm') {
     const photo = m.photo ? m.photo[m.photo.length - 1].file_id : null, document = m.document ? m.document.file_id : null;
     if (!text && !photo && !document) return false;
-    const next = { ...st, step: 'confirm', text: (text || (st.kind === 'test' ? 'Test — see the attached file.' : 'See the attached worksheet.')).slice(0, 600), photo, document };
+    const next = { ...st, step: 'confirm', text: (text || (st.kind === 'online' ? st.centre : st.kind === 'test' ? 'Test — see the attached file.' : 'See the attached worksheet.')).slice(0, st.kind === 'online' ? 300 : 600), ...(st.kind === 'online' ? {} : { photo, document }) };
     await putState(chatId, next);
     await tgSend(chatId, preview(next), { reply_markup: { inline_keyboard: [[{ text: '✅ Send to the class', callback_data: 'hw:send' }], CANCEL] } });
     return true;

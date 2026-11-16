@@ -1,3 +1,4 @@
+import { CENTRES, centreByUrl, SITE } from './testcentres.mjs';
 // Homework and test dates, set by teachers per class (website → My classes → a class).
 // Store "school" → "homework": [{ id, classId, classLabel, kind: 'hw'|'test', text, due: 'YYYY-MM-DD', time: 'HH:MM'|'', by, at }]
 // Students see them on their profile and in the Telegram bot; reminders: homework the evening before it is due,
@@ -14,11 +15,14 @@ async function saveHomework(list) {
   await S().setJSON('homework', list.filter(h => h.due >= cut).slice(-800));
 }
 export function clean(b, cls, by) {
-  const kind = b.kind === 'test' ? 'test' : 'hw';
-  const text = str(b.text, 600); if (!text) return null;
+  // an online test: one of the IF test centres, opened by the students from the bot (signed in) or the website
+  const centre = b.kind === 'online' || b.url ? centreByUrl(b.url) : null;
+  if (b.kind === 'online' && !centre) return null;
+  const kind = centre || b.kind === 'test' ? 'test' : 'hw';
+  const text = centre ? str(b.text, 300) || centre[1] : str(b.text, 600); if (!text) return null;
   const due = /^\d{4}-\d{2}-\d{2}$/.test(b.due || '') ? b.due : null; if (!due) return null;
   const time = /^\d{1,2}:\d{2}$/.test(b.time || '') ? b.time.padStart(5, '0') : '';
-  return { id: 'h' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), classId: cls.id, classLabel: cls.label, kind, text, due, time, by: str(by, 80), at: new Date().toISOString() };
+  return { id: 'h' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), classId: cls.id, classLabel: cls.label, kind, text, due, time, ...(centre ? { url: centre[2], centre: centre[1] } : {}), by: str(by, 80), at: new Date().toISOString() };
 }
 export async function addHomework(item) {
   const l = await loadHomework(); l.push(item); await saveHomework(l);
@@ -45,4 +49,11 @@ const T = {
   kk: { hwNew: h => `📝 ${h.classLabel} үшін жаңа үй тапсырмасы (мерзімі ${h.due}):\n${h.text}`, testNew: h => `🧪 ${h.classLabel} тобында ${h.due}${h.time ? ' ' + h.time : ''} тест:\n${h.text}`,
     hwEve: h => `📝 Еске салу: ертең үй тапсырмасын тапсыру керек (${h.classLabel}):\n${h.text}`, testEve: h => `🧪 Еске салу: ертең${h.time ? ' ' + h.time : ''} тест (${h.classLabel}):\n${h.text}\nСәттілік!`, testDay: h => `🧪 Бүгін${h.time ? ' ' + h.time : ''} тест (${h.classLabel}): ${h.text}. Сіз бәрін жасай аласыз!` }
 };
-export const hwText = (kind, h, lang) => (T[lang] || T.en)[kind](h);
+const ONLINE = {
+  en: h => `🖥 Online test for ${h.classLabel}: ${h.text}${h.centre && h.text !== h.centre ? ' (' + h.centre + ')' : ''}\nOpen it with the button below — you are signed in automatically. Speaking is with NOVA or ATLAS, and everything is marked straight away.`,
+  ru: h => `🖥 Онлайн-тест для группы ${h.classLabel}: ${h.text}${h.centre && h.text !== h.centre ? ' (' + h.centre + ')' : ''}\nОткройте его кнопкой ниже — вход автоматический. Speaking — с NOVA или ATLAS, оценка сразу.`,
+  kk: h => `🖥 ${h.classLabel} тобына онлайн-тест: ${h.text}${h.centre && h.text !== h.centre ? ' (' + h.centre + ')' : ''}\nТөмендегі батырмамен ашыңыз — кіру автоматты. Speaking — NOVA не ATLAS-пен, баға бірден.`
+};
+export const hwText = (kind, h, lang, withLink) => h.url && kind === 'testNew'
+  ? (ONLINE[lang] || ONLINE.en)(h) + (withLink ? `\n${SITE}${h.url}` : '')
+  : (T[lang] || T.en)[kind](h);

@@ -268,7 +268,13 @@ export default async (req) => {
     const ctx = await contextFor(uid);
     if (!ctx) { await tgSend(chatId, L[lang].unlinked, { reply_markup: PHONE_KB(lang) }); return new Response('ok'); }
     if (/^\/next\b|^📅/i.test(text)) { await tgSend(chatId, ctx.student || ctx.classes.length ? nextText(ctx, lang) : L[lang].unlinkedRecord, { reply_markup: isStaff(ctx.profile) ? kbFor(ctx.profile) : KB }); return new Response('ok'); }
-    if (/^\/hw\b|^\/homework\b|^📝/i.test(text)) { await tgSend(chatId, ctx.classes.length ? hwListText(forClasses(await loadHomework(), ctx.classes.map(c => c.id), { past: 0 }).filter(isUpcoming), lang) : L[lang].unlinkedRecord, { reply_markup: isStaff(ctx.profile) ? kbFor(ctx.profile) : KB }); return new Response('ok'); }
+    if (/^\/hw\b|^\/homework\b|^📝/i.test(text)) {
+      const items = ctx.classes.length ? forClasses(await loadHomework(), ctx.classes.map(c => c.id), { past: 0 }).filter(isUpcoming) : [];
+      await tgSend(chatId, ctx.classes.length ? hwListText(items, lang) : L[lang].unlinkedRecord, { reply_markup: isStaff(ctx.profile) ? kbFor(ctx.profile) : KB });
+      const online = items.filter(h => h.url).slice(0, 6);   // online tests: open straight from here, signed in
+      if (online.length) await tgSend(chatId, { en: '🖥 Online tests', ru: '🖥 Онлайн-тесты', kk: '🖥 Онлайн-тесттер' }[lang] || '🖥 Online tests', { reply_markup: { inline_keyboard: online.map(h => [{ text: '🖥 ' + String(h.text).slice(0, 40), web_app: { url: 'https://intellectfirst.com' + h.url + '?tg=1' } }]) } });
+      return new Response('ok');
+    }
     if (/^\/results\b|^📊/i.test(text)) { await tgSend(chatId, await resultsText(ctx, uid, lang), { reply_markup: KB }); return new Response('ok'); }
     if (/^\/pay\b|^💳/i.test(text)) { await tgSend(chatId, ctx.student ? payText(ctx, lang) : L[lang].unlinkedRecord, { reply_markup: isStaff(ctx.profile) ? kbFor(ctx.profile) : KB }); return new Response('ok'); }
     if (!text) { await tgSend(chatId, L[lang].help); return new Response('ok'); }
