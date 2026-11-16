@@ -69,9 +69,9 @@ export const ymd = d => { const l = local(d); return l.toISOString().slice(0, 10
 export const monthKey = d => ymd(d).slice(0, 7);
 
 /* ---------- timetable ----------
-   Accepts the school's formats: "Tue · Thu 16:25–17:55", "Mon–Wed 16:00" (Mon and Wed), "Mon–Fri 18:30–20:00" (every weekday),
-   "Tue–Thu–Sat 16:00", "Mon 15:15–16:45 · Wed 15:15–16:45", also Russian day names. A dash between two days two apart means
-   "these two days"; a longer dash means the whole range. Days without a time are returned with start = null. */
+   Accepts the school's formats: "Tue · Thu 16:25–17:55", "Mon–Wed 16:00" (Mon and Wed), "Mon–Fri 18:30–20:00" (Mon and Fri),
+   "Tue–Thu–Sat 16:00", "Mon 15:15–16:45 · Wed 15:15–16:45", also Russian day names. At IF Academy a dash between days
+   always lists those days only ("Mon–Fri" = Monday and Friday, confirmed 16.11.2026), never a range. Days without a time are returned with start = null. */
 const DAYS = { mon: 1, tue: 2, wed: 3, thu: 4, fri: 5, sat: 6, sun: 0, пн: 1, вт: 2, ср: 3, чт: 4, пт: 5, сб: 6, вс: 0 };
 const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 export function parseSchedule(text) {
@@ -81,10 +81,6 @@ export function parseSchedule(text) {
   while ((m = re.exec(t))) {
     if (m[1]) {
       const d = DAYS[m[1]];
-      if (dash && lastDay != null) {
-        const span = (d - lastDay + 7) % 7;
-        if (span >= 3) for (let k = 1; k < span; k++) pending.push((lastDay + k) % 7);
-      }
       pending.push(d); lastDay = d; dash = false;
     } else if (m[2]) {
       const start = `${m[2].padStart(2, '0')}:${m[3]}`, end = m[4] ? `${m[4].padStart(2, '0')}:${m[5]}` : null;
