@@ -11,6 +11,7 @@ import { join } from 'node:path';
 import { getUser, refreshSession, admin as idAdmin } from '@netlify/identity';
 import { roleForCode, isStaff, lockKeysFromCode, verifyLockKeys, isPrivateCode } from '../lib/codes.mjs';
 import { listReceipts, decideReceipt, receiptFile, cashInfo, cashClaim } from '../lib/receipts.mjs';
+import { kaspiInfo, createInvoice } from '../lib/kaspi.mjs';
 import { publicFeedback, mine as myFeedback, submit as submitFeedback, removeMine as removeFeedback, decide as decideFeedback, loadFeedback } from '../lib/feedback.mjs';
 import { loadHomework, addHomework, removeHomework, forClasses, clean as cleanHw, hwText, setCheck, forStudent } from '../lib/homework.mjs';
 import { getLinks, tgSend, tgToken, addNote, uidsByStudent, inClass, loadChanges, saveChanges } from '../lib/bot-core.mjs';
@@ -511,7 +512,12 @@ export default async (req) => {
     const info = await cashInfo(uid); if (!info) return json({ tuition: null });
     const st = profile.studentId ? (await doc('students')).find(x => x.id === profile.studentId) : null;
     const { payStatus } = await import('../lib/bot-core.mjs');
-    return json({ tuition: { ...info, waiting: info.waiting ? { amount: info.waiting.amount, cash: !!info.waiting.cash, at: info.waiting.at } : null, status: st ? payStatus(st) : null } });
+    return json({ tuition: { ...info, waiting: info.waiting ? { amount: info.waiting.amount, cash: !!info.waiting.cash, at: info.waiting.at } : null, status: st ? payStatus(st) : null, kaspi: await kaspiInfo(uid).catch(e => { console.error('kaspi info', e.message); return { ready: false }; }) } });
+  }
+  if (path === 'tuition/kaspi' && method === 'POST') {   // send the Kaspi invoice to the student's or the parent's number on the school record
+    const b = await req.json().catch(() => ({}));
+    const r = await createInvoice({ uid, which: b.phone === 'p' ? 'p' : b.phone === 's' ? 's' : '', lang: 'en' });
+    return r.ok ? json({ ok: true, already: !!r.already, amount: r.amount, month: r.month, phone: r.phone }) : fail(r.error === 'limit' ? 429 : r.error === 'failed' ? 502 : 404, r.error || 'failed');
   }
   if (path === 'tuition/cash' && method === 'POST') {
     const b = await req.json().catch(() => ({}));

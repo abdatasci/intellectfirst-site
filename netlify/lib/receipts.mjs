@@ -14,7 +14,7 @@ const A = () => getStore({ name: 'ifadmin', consistency: 'strong' });
 const MODEL = process.env.RECEIPT_MODEL || 'claude-sonnet-5-5';
 const str = (v, n = 120) => (v == null ? '' : String(v)).replace(/\s+/g, ' ').trim().slice(0, n);
 const MONTHS = { en: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'], ru: ['январь', 'февраль', 'март', 'апрель', 'май', 'июнь', 'июль', 'август', 'сентябрь', 'октябрь', 'ноябрь', 'декабрь'], kk: ['қаңтар', 'ақпан', 'наурыз', 'сәуір', 'мамыр', 'маусым', 'шілде', 'тамыз', 'қыркүйек', 'қазан', 'қараша', 'желтоқсан'] };
-const mname = (m, lang) => (MONTHS[lang] || MONTHS.en)[+m.slice(5) - 1] + ' ' + m.slice(0, 4);
+export const mname = (m, lang) => (MONTHS[lang] || MONTHS.en)[+m.slice(5) - 1] + ' ' + m.slice(0, 4);
 
 export const listReceipts = async () => (await S().get('receipts/list', { type: 'json' })) || [];
 const saveList = l => S().setJSON('receipts/list', l.slice(-300));
@@ -44,7 +44,7 @@ async function readReceipt(bytes, type) {
 }
 
 /** The month this payment is for: the open month, or the next one if this month is already paid. */
-function monthFor(s) {
+export function monthFor(s) {
   const p = payStatus(s); const now = local(); const cur = now.toISOString().slice(0, 7);
   if (!p) return cur;
   if (!p.paid) return p.month;

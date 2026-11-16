@@ -9,6 +9,7 @@ import { migrate } from '../lib/migrate.mjs';
 import { lessonsOn, loadLog, today as todayStr } from '../lib/lessons.mjs';
 import { getStore } from '@netlify/blobs';
 import { chaseManager } from '../lib/tasks.mjs';
+import { kaspiReady, kaspiTexts, syncOpen } from '../lib/kaspi.mjs';
 import { sendDayDigest } from '../lib/daydigest.mjs';
 import { lessonButtons, isStaff, ensureStaffKb, KBV } from '../lib/teachbot.mjs';
 
@@ -77,6 +78,7 @@ export default async () => {
   try { const [cl, lk] = await Promise.all([doc('classes'), getLinks()]); await lessonWatch(cl, lk); } catch (e) { console.error('lesson watch', e.message); }
   try { const n = await sendDayDigest(); if (n) console.log('day digest sent', n); } catch (e) { console.error('day digest', e.message); }
   try { const r = await chaseManager(); if (r.sent) console.log('manager tasks', r.open, 'open,', r.sent, 'messages'); } catch (e) { console.error('manager tasks', e.message); }
+  try { const n = await syncOpen(); if (n) console.log('kaspi invoices checked', n); } catch (e) { console.error('kaspi sync', e.message); }
   const now = new Date();
   const [students, classes, links, homework, receipts] = await Promise.all([doc('students'), doc('classes'), getLinks(), loadHomework(), S().get('receipts/pending', { type: 'json' }).then(x => x || {})]);
   const bySid = await uidsByStudent(links);
@@ -96,7 +98,7 @@ export default async () => {
     const l = r.uid && links[r.uid], lang = l?.lang || prefs[r.studentId]?.lang || 'ru';
     if (r.uid) { await addNote(r.uid, { kind: r.kind, text: reminderText(r, l ? lang : 'en') }); siteCount++; }
     if (l && tgToken()) {
-      try { await tgSend(l.chatId, reminderText(r, lang)); tgCount++; }
+      try { await tgSend(l.chatId, reminderText(r, lang), /^pay/.test(r.kind) && kaspiReady() ? { reply_markup: { inline_keyboard: [[{ text: kaspiTexts(lang).btn, callback_data: 'kp:start' }]] } } : {}); tgCount++; }
       catch (e) { console.error('reminder send failed', r.uid, e.message); }
     }
     if (wa && !prefs[r.studentId]?.off) {

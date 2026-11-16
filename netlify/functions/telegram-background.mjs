@@ -1,7 +1,8 @@
 // Telegram webhook for the IF Academy bot (background function: Telegram gets an immediate 202, the AI reply follows).
 // Webhook URL and secret are set from Admin → Bot ("Connect bot"), which calls setWebhook with a secret derived from the token.
 import { S, getProfile, contextFor, reply, publicReply, allow, tgSecret, tgSend, tg, getLinks, saveLinks, linkChat, matchPhone, local, money, langOf, localise } from '../lib/bot-core.mjs';
-import { handleReceipt, decideReceipt, cashInfo, cashClaim } from '../lib/receipts.mjs';
+import { handleReceipt, decideReceipt, cashInfo, cashClaim, mname } from '../lib/receipts.mjs';
+import { kaspiReady, kaspiTexts, kaspiInfo, createInvoice } from '../lib/kaspi.mjs';
 import { loadHomework, forClasses, isUpcoming } from '../lib/homework.mjs';
 import { isStaff, STAFF_KB, STAFF_HELP, staffHello, sendToday, staffCallback, ensureStaffKb, cancelReasonText, sendRegisterMenu, kbFor, helpFor, helloFor, isAdminP, sendSchoolDay, sendTodo, sendWeek, sendChanges, sendFilming } from '../lib/teachbot.mjs';
 import { startCover, coverCallback } from '../lib/cover.mjs';
@@ -136,6 +137,24 @@ export default async (req) => {
   // the director presses Confirm / Not right under a receipt
   if (up?.callback_query) {
     const q = up.callback_query, mm = String(q.data || '').match(/^rc:(ok|no):([a-z0-9]+)$/);
+    if (/^kp:/.test(String(q.data || ''))) {   // "Pay with Kaspi": the invoice goes to the student's or the parent's Kaspi number on the school record
+      try {
+        const chatId = q.message?.chat?.id, links = await getLinks(), ent = Object.entries(links).find(([, l]) => l.chatId === chatId), uid = ent?.[0], lang = ent?.[1]?.lang || 'ru', K = kaspiTexts(lang);
+        await tg('answerCallbackQuery', { callback_query_id: q.id }).catch(() => {});
+        const info = uid ? await kaspiInfo(uid) : null;
+        if (!info?.ready) { await tgSend(chatId, kaspiReady() ? K.none : K.off); return new Response('ok'); }
+        const which = q.data === 'kp:s' ? 's' : q.data === 'kp:p' ? 'p' : '';
+        if (!which && info.open) { await tgSend(chatId, K.already(info.open.phone)); return new Response('ok'); }
+        if (!(info.amount >= 100)) { await tgSend(chatId, K.nothing); return new Response('ok'); }
+        if (!which && info.phones.length > 1) {
+          await tgSend(chatId, K.which(money(info.amount), mname(info.month, lang)), { reply_markup: { inline_keyboard: info.phones.map(p => [{ text: `${p.k === 'p' ? K.parent : K.own}: ${p.mask}`, callback_data: 'kp:' + p.k }]) } });
+          return new Response('ok');
+        }
+        const r = await createInvoice({ uid, which, chatId, lang });
+        await tgSend(chatId, r.ok ? (r.already ? K.already(r.phone) : K.sent(money(r.amount), mname(r.month, lang), r.phone)) : K[r.error] || K.failed);
+      } catch (e) { console.error('kaspi button', e.message); }
+      return new Response('ok');
+    }
     if (/^cash:/.test(String(q.data || ''))) {   // a student says they paid in cash
       try {
         const chatId = q.message?.chat?.id, links = await getLinks(), ent = Object.entries(links).find(([, l]) => l.chatId === chatId), uid = ent?.[0], lang = ent?.[1]?.lang || 'ru', C = CASH[lang] || CASH.en;
@@ -294,6 +313,7 @@ export default async (req) => {
     if (isStaff(me) && /^\/start\b|^\/help\b|^❓/i.test(text)) { await tgSend(chatId, helpFor(me), { reply_markup: kbFor(me) }); return new Response('ok'); }
     if (/^\/receipt\b|^📎/i.test(text)) {
       await tgSend(chatId, L[lang].receiptHow, { reply_markup: KB });
+      if (kaspiReady()) await tgSend(chatId, kaspiTexts(lang).offer, { reply_markup: { inline_keyboard: [[{ text: kaspiTexts(lang).btn, callback_data: 'kp:start' }]] } });
       await tgSend(chatId, CASH[lang].ask0, { reply_markup: { inline_keyboard: [[{ text: CASH[lang].btn, callback_data: 'cash:start' }]] } });
       return new Response('ok');
     }
@@ -319,7 +339,11 @@ export default async (req) => {
       return new Response('ok');
     }
     if (/^\/results\b|^📊/i.test(text)) { await tgSend(chatId, await resultsText(ctx, uid, lang), { reply_markup: KB }); return new Response('ok'); }
-    if (/^\/pay\b|^💳/i.test(text)) { await tgSend(chatId, ctx.student ? payText(ctx, lang) : L[lang].unlinkedRecord, { reply_markup: isStaff(ctx.profile) ? kbFor(ctx.profile) : KB }); return new Response('ok'); }
+    if (/^\/pay\b|^💳/i.test(text)) {
+      await tgSend(chatId, ctx.student ? payText(ctx, lang) : L[lang].unlinkedRecord, { reply_markup: isStaff(ctx.profile) ? kbFor(ctx.profile) : KB });
+      if (ctx.student && kaspiReady()) await tgSend(chatId, kaspiTexts(lang).offer, { reply_markup: { inline_keyboard: [[{ text: kaspiTexts(lang).btn, callback_data: 'kp:start' }]] } });
+      return new Response('ok');
+    }
     if (!text) { await tgSend(chatId, L[lang].help); return new Response('ok'); }
 
     if (!(await allow(uid, ctx.role !== 'student'))) { await tgSend(chatId, L[lang].busy); return new Response('ok'); }

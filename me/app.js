@@ -551,10 +551,23 @@
     if (!d) { el.remove(); return; }
     var st = d.status, paid = st && st.paid;
     var h = '<h3>Tuition</h3><p class="small" style="margin-bottom:10px">' + esc(monthLabel(d.month)) + ': ' + (paid ? '<span class="chip2 ok">Paid</span>' : st && st.state === 'overdue' ? '<span class="chip2 bad">Overdue</span>' : '<span class="chip2 mute">Not paid yet</span>') + (d.fee ? ' · ' + money(d.fee) : '') + '</p>';
+    var k = d.kaspi && d.kaspi.ready ? d.kaspi : null;
+    if (k && k.open) h += '<p class="small" style="margin-bottom:10px">💳 ' + (k.test ? 'TEST · ' : '') + 'Kaspi invoice of ' + money(k.open.amount) + (k.open.phone ? ' sent to ' + esc(k.open.phone) : ' sent') + '. Open the Kaspi app and pay it within 24 hours; it is confirmed here automatically. <a href="#" id="kchk">Check now</a></p>';
+    else if (k && k.amount >= 100 && k.phones.length && !d.waiting) h += '<p class="small" style="margin-bottom:6px">Pay ' + money(k.amount) + ' for ' + esc(monthLabel(k.month)) + ' in the Kaspi app. We send the invoice to your Kaspi and it is confirmed automatically, no receipt needed.</p><div class="row" style="gap:8px;flex-wrap:wrap;margin-bottom:12px">' +
+      k.phones.map(function (p) { return '<button class="btn sm kpay" type="button" data-k="' + p.k + '">💳 Pay with Kaspi' + (k.phones.length > 1 ? ' · ' + (p.k === 'p' ? 'parent ' : 'student ') : ' · ') + esc(p.mask) + '</button>'; }).join('') + '</div>';
     if (d.waiting) h += '<p class="small">' + (d.waiting.cash ? '💵 Cash payment' : '📎 Receipt') + (d.waiting.amount ? ' of ' + money(d.waiting.amount) : '') + ' sent — waiting for the school to confirm it.</p>';
     else h += '<p class="small" style="margin-bottom:10px">Paid by Kaspi or bank? Send the receipt to the IF Academy bot (📎 Send receipt). Paid in cash at the school? Tell us here:</p>' +
       '<form id="cashf" class="row" style="gap:8px;flex-wrap:wrap"><input class="inp" id="cashA" type="number" min="1" step="1" style="max-width:160px" value="' + (d.fee || '') + '" placeholder="Amount ₸"><button class="btn sm" type="submit">💵 I paid in cash</button></form>';
     el.innerHTML = h;
+    if ($('#kchk')) $('#kchk').onclick = function (ev) { ev.preventDefault(); tuitionBox(el); };
+    Array.prototype.forEach.call(el.querySelectorAll('.kpay'), function (b) {
+      b.onclick = async function () {
+        if (!(await ask('Send a Kaspi invoice of ' + money(k.amount) + ' for ' + monthLabel(k.month) + ' to ' + b.textContent.split('· ').pop() + '?'))) return;
+        b.disabled = true;
+        try { var r = await api('tuition/kaspi', { method: 'POST', body: { phone: b.getAttribute('data-k') } }); toast(r.already ? 'The invoice is already in the Kaspi app.' : 'Invoice sent. Open the Kaspi app to pay.'); tuitionBox(el); }
+        catch (e) { b.disabled = false; toast('The Kaspi invoice could not be sent. Please try again, or pay by transfer and send the receipt to the bot.'); }
+      };
+    });
     var f = $('#cashf'); if (f) f.onsubmit = async function (ev) {
       ev.preventDefault(); var a = +$('#cashA').value; if (!(a > 0)) return toast('Type the amount you paid.');
       if (!(await ask('Report a cash payment of ' + money(a) + ' for ' + monthLabel(d.month) + '? The school confirms it once they have the cash.'))) return;
