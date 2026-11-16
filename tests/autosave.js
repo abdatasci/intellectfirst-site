@@ -30,7 +30,7 @@
       if (x.ok) {
         var d = x.d;
         note(container, '', '<b>\u2713 Saved to your profile and your teacher\u2019s results</b>Score ' + d.score + ' / ' + d.max +
-          (d.aiMarked ? '. Your writing was marked by AI.' : d.pending ? '. Your teacher will mark the writing.' : '.') + ' No need to send anything.');
+          (d.aiSpeak ? '. Your speaking was marked by AI' + (d.aiMarked ? ', and your writing too.' : '.') + (d.comment ? ' ' + d.comment : '') : d.aiMarked ? '. Your writing was marked by AI.' : d.pending ? '. Your teacher will mark the writing.' : '.') + ' No need to send anything.');
         var box = container.querySelector('.ifr'); if (box) box.classList.add('ifas-done');
       } else if (x.status === 401) {
         delete sent[key];
@@ -41,10 +41,27 @@
       }
     }).catch(function () { delete sent[key]; note(container, 'no', '<b>No internet?</b> Send the message below to your teacher, or try again.'); });
   }
+  function examiner() {
+    if (window.IFExaminer) return Promise.resolve(window.IFExaminer);
+    return new Promise(function (ok) { var x = document.createElement('script'); x.src = '/tests/examiner.js?v=1'; x.onload = function () { ok(window.IFExaminer || null); }; x.onerror = function () { ok(null); }; document.head.appendChild(x); });
+  }
   function hook() {
     if (!window.IFR || window.IFR.__as) return !!window.IFR;
     var orig = window.IFR.box;
-    window.IFR.box = function (container, p) { var r = orig.apply(this, arguments); try { save(container, p); } catch (e) {} return r; };
+    window.IFR.box = function (container, p) {
+      var r = orig.apply(this, arguments);
+      try {
+        // Speaking not marked yet: the IF examiner (NOVA/ATLAS) runs the speaking part first; AI marks it with the result
+        var sp = p && Array.isArray(p.s) && p.s.some(function (x) { return x && /speak/i.test(x[0]) && x[1] == null && x[2] > 0; });
+        if (sp && !p.sp && !p.__spk) {
+          p.__spk = 1;
+          examiner().then(function (E) { return E ? E.run(container, { lv: p.lv, title: [p.t, p.c].filter(Boolean).join(' ') }) : null; })
+            .then(function (ans) { if (ans) p.sp = ans; delete p.__spk; save(container, p); })
+            .catch(function () { delete p.__spk; save(container, p); });
+        } else save(container, p);
+      } catch (e) {}
+      return r;
+    };
     window.IFR.__as = true;
     return true;
   }
