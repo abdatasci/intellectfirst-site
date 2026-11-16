@@ -230,7 +230,13 @@ export default async (req) => {
     let aiMarked = false, aiSpeak = false, spComment = '';
     // Speaking with the IF examiner (NOVA/ATLAS): the student's spoken answers (speech-recognition transcripts)
     const sp = (Array.isArray(p.sp) ? p.sp : []).slice(0, 5).map(a => ({ q: str(a?.q, 300), text: String(a?.text || '').slice(0, 3000), typed: !!a?.typed, secs: Math.max(0, Math.min(600, +a?.secs || 0)) }));
-    const spPend = secs.filter(x => x[1] == null && x[2] > 0 && /speak/i.test(x[0]));
+    let spPend = secs.filter(x => x[1] == null && x[2] > 0 && /speak/i.test(x[0]));
+    // Class B1 Teen-C (test on 16 Nov 2026): unmarked speaking gets 8/10 per task (80%) so the test is complete when submitted
+    if (spPend.length && !p.sp && profile?.studentId && !staff) {
+      try { const st = (await loadStudents()).find(x => x.id === profile.studentId);
+        if (st && (st.classes || []).some(c => /\bb1\s*(?:teen)?\s*[-\s]?\s*c\b/i.test(c))) { for (const x of spPend) x[1] = Math.round(x[2] * 0.8 * 2) / 2; spPend.length = 0; p.spAuto = 1; }
+      } catch (e) { console.error('b1c speaking', e); }
+    }
     if (spPend.length && sp.some(a => a.text.trim().split(/\s+/).length >= 3)) {
       try {
         const j = await aiJSON({ model: MODEL_MARK, temperature: 0.2, maxTokens: 500,
