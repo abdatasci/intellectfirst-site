@@ -173,6 +173,16 @@ export async function staffCallback(q, uid, p) {
     await tgSend(chatId, `❌ Cancel ${L0.label}\n${L0.date.slice(8)}.${L0.date.slice(5, 7)} · ${L0.start}${L0.end ? '–' + L0.end : ''} · starts in ${hl}\n\nWho cancelled?\n• On time = 8+ hours before the start: no charge, a make-up lesson is arranged.\n• Late = less than 8 hours: the lesson is charged (UA), no make-up.\n${onTime ? 'It is more than 8 hours before the start, so a student cancellation now is on time.' : 'It is less than 8 hours before the start: a student cancellation now is late — unless they told you earlier.'}`, { reply_markup: { inline_keyboard: rows } });
     return true;
   }
+  if (data === 'lw') {   // the teacher was at school waiting when the student cancelled late → half the lesson
+    const st = await S().get(`bot/lx/${chatId}`, { type: 'json' });
+    if (!st) { await answer(q, 'Expired.', true); return true; }
+    const { setAtSchool } = await import('./payroll.mjs');
+    if (!(await setAtSchool(st.key, true, p.name || ''))) { await answer(q, 'This lesson is not cancelled any more.', true); return true; }
+    await answer(q, 'Noted ✓');
+    await tgSend(chatId, `📍 Noted: you were at school waiting for ${st.label || 'the student'}. You are paid half the lesson for this late cancellation — it shows on your hours page.`);
+    const { tellAdmins } = await import('./cover.mjs'); await tellAdmins(`📍 ${p.name || 'A teacher'} was at school waiting — late cancellation ${st.label || st.key}: half the lesson paid. (Admin → Hours & pay to change it.)`, null, uid);
+    return true;
+  }
   if (data.startsWith('lr:') || data.startsWith('lt:') || data === 'lu') {
     const st = await S().get(`bot/lx/${chatId}`, { type: 'json' });
     if (data === 'lr:no') { await S().delete(`bot/lx/${chatId}`).catch(() => {}); await answer(q, 'Kept'); await edit(q, '👍 The lesson stays on the timetable.'); return true; }
@@ -246,7 +256,15 @@ async function doCancel(chatId, uid, p, st, f, why, typed, tell) {
   if (date === today()) { const { tellSmm } = await import('./daydigest.mjs'); await tellSmm(`❌ Cancelled today: ${l.label} ${start} — ${note || 'no reason given'} (by ${p.name || 'a teacher'})`).catch(() => {}); }
   const { tellAdmins } = await import('./cover.mjs');
   await tellAdmins(`${HEAD[why] || HEAD.other} (by ${p.name || 'a teacher'})\n${l.label} · ${day}${note ? '\n' + note : ''}${!tell ? '\nStudents were not told.' : ''}`, null, uid);
-  return { text: msg, kb: { inline_keyboard: [[{ text: '↩ Undo', callback_data: 'lu' }]] } };
+  // teacher pay: a late cancellation pays half the lesson only if the teacher was at school waiting
+  let payLine = '', rows = [[{ text: '↩ Undo', callback_data: 'lu' }]];
+  if (why === 'slate') {
+    const minsBefore = (Date.parse(l.at) - Date.now()) / 60000, e = (await loadLog(l.date.slice(0, 7)))[l.key];
+    if (e && e.checkIn) payLine = '\n💰 You clocked in for this lesson, so you are paid half the lesson.';
+    else if (minsBefore <= 30) { payLine = '\n💰 Are you at school waiting for the student? Tap 📍 below: you are then paid half the lesson. If you are not at school, it is recorded but not paid.'; rows.unshift([{ text: '📍 I\'m at school, waiting', callback_data: 'lw' }]); }
+    else payLine = '\n💰 Pay: a late cancellation is paid (half the lesson) only if you are at school waiting — it came more than 30 minutes before the start, so it is recorded but not paid.';
+  }
+  return { text: msg + payLine, kb: { inline_keyboard: rows } };
 }
 /** Tell the students of a class on Telegram (in their language) and on the website. Returns how many were reached. */
 async function tellStudents(cls, text) {

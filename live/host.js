@@ -19,7 +19,7 @@
       if (!BANKS) BANKS = (await (await fetch('/live/banks.json')).json()).banks;
       ROOMS = L.local ? { ready: true, rooms: [], recent: [] } : await L.api('rooms');
     } catch (e) {
-      view.innerHTML = '<div class="hwrap"><div class="panel"><h2>IF Live</h2><p class="sub">' + (e.status === 401 ? 'Please sign in with your teacher account first.' : e.status === 403 ? 'Hosting live games is for teachers and staff. Ask the director to give your account the Teacher role.' : 'Could not load. Check the connection and try again.') + '</p><a class="btn navy" href="/me/#/login">Sign in</a></div></div>';
+      view.innerHTML = '<div class="hwrap"><div class="panel"><h2>IF Live</h2><p class="sub">' + (e.status === 401 ? 'Please sign in with your teacher account first.' : e.status === 403 ? 'Hosting live games is for teachers and staff. Ask the director to give your account the Teacher role.' : 'Could not load. Check the connection and try again.') + '</p><a class="btn navy" href="/me/#/login?next=/live/host/">Sign in</a></div></div>';
       return;
     }
     var saved = L.ls.get('live.host');

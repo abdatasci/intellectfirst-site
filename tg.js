@@ -3,6 +3,33 @@
    keeps it for the visit, sends it with the site's own requests (/api/…, X-TG-Init header) so the server knows who it
    is from the bot connection, and lets the pages' sign-in check pass — so My account, the IF App, tests and
    IELTS work in Telegram exactly as on the website, with no password. Same-origin frames (games) share it too. */
+/* Stay signed in across every page and app of the site: the sign-in cookie lasts about an hour, and only My account
+   used to renew it. Now any page's own request (/api/…) that comes back "not signed in" renews the session once and
+   tries again, so IF Live, tests, IELTS and the games keep the person signed in when they move between them. */
+(function () {
+  if (!window.fetch || window.__ifKeep) return; window.__ifKeep = true;
+  var raw = window.fetch.bind(window), busy = null;
+  function lib() {
+    if (window.NFIdentity) return Promise.resolve(window.NFIdentity);
+    return new Promise(function (ok) { var s = document.createElement('script'); s.src = '/a/ielts/identity.js'; s.onload = function () { ok(window.NFIdentity || null); }; s.onerror = function () { ok(null); }; (document.head || document.documentElement).appendChild(s); });
+  }
+  function renew() {
+    if (!busy) busy = lib().then(function (I) { if (!I || !I.refreshSession) return null; return Promise.resolve(I.getUser ? I.getUser() : null).catch(function () {}).then(function () { return I.refreshSession(); }); }).catch(function () { return null; }).then(function (r) { setTimeout(function () { busy = null; }, 3000); return r; });
+    return busy;
+  }
+  // signed in on this browser: renew an old session as soon as the page has loaded (before it is needed)
+  try { if (localStorage.getItem('gotrue.user')) document.addEventListener('DOMContentLoaded', function () { renew(); }); } catch (e) {}
+  window.fetch = function (input, init) {
+    var url = typeof input === 'string' ? input : (input && input.url) || '';
+    var api = /^(\/|https?:\/\/[^/]*intellectfirst\.com\/|https?:\/\/localhost[^/]*\/)api\//.test(url) || (url.indexOf(location.origin + '/api/') === 0);
+    if (!api) return raw(input, init);
+    var again = typeof input === 'string' ? null : input.clone();
+    return raw(input, init).then(function (res) {
+      if (res.status !== 401) return res;
+      return renew().then(function () { return raw(again || input, init); }, function () { return res; });
+    });
+  };
+})();
 (function () {
   var K = 'if.tginit', init = '';
   function note(why) {

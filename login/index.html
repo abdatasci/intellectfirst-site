@@ -64,7 +64,7 @@
     document.getElementById('sub').textContent = role === 'teacher' ? 'Tests, lesson materials with teacher view, and staff tools are open on this device.' : 'Tests and lesson materials are open on this device.';
     document.getElementById('cont').href = ROOT + next;
   }
-  if (IFLock.role()) signedIn(IFLock.role());
+  if (IFLock.role() && IFLock.canOpen('s')) signedIn(IFLock.role());   // a member without the page key still needs the code box
   document.getElementById('f').addEventListener('submit', function (e) {
     e.preventDefault();
     var code = document.getElementById('code').value;
@@ -83,7 +83,7 @@
   });
   document.getElementById('out').onclick = function () { IFLock.signOut(); location.reload(); };
   var pending = null; try { pending = sessionStorage.getItem('if.pw'); sessionStorage.removeItem('if.pw'); } catch (e) {}
-  if (pending && !IFLock.role()) { document.getElementById('code').value = pending; document.getElementById('f').requestSubmit(); }
+  if (pending && !IFLock.canOpen('s')) { document.getElementById('code').value = pending; document.getElementById('f').requestSubmit(); }
 })();
 </script>
 </body>

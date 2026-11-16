@@ -63,11 +63,27 @@
       if (r.status === 403) r.json().then(function (d) { if (d && d.error === 'members') membersNote(); }).catch(function () {});
       return r.ok ? r.json() : null;
     }).then(function (k) {
-      if (k && k.member && !k.ks) { ls('if.member', '1'); ls('if.role', k.role || 'student'); ls('if.until', k.until || null); return canOpen(lvl) || lvl === 's'; }
+      if (k && k.member && !k.ks) {
+        ls('if.member', '1'); ls('if.role', k.role || 'student'); ls('if.until', k.until || null);
+        // an encrypted page (test centres, teacher pages) needs the real page key: the site does not have it right now.
+        // Saying "yes" here made those pages reload for ever ("Opening…"): show how to restore the key instead.
+        if (document.getElementById('payload')) { keyNote(k.role === 'teacher'); return canOpen(lvl); }
+        return canOpen(lvl) || lvl === 's';
+      }
       if (!k || !k.ks) return false;
       ls('if.ks', k.ks); ls('if.kt', k.kt || null); ls('if.role', k.kt ? 'teacher' : 'student'); ls('if.until', k.until || null);
       return canOpen(lvl);
     }).catch(function () { return false; });
+  }
+  function keyNote(staff) {
+    var go = function () {
+      if (document.getElementById('if-keynote')) return;
+      var d = document.createElement('div'); d.id = 'if-keynote';
+      d.setAttribute('style', 'position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:99999;max-width:min(560px,calc(100% - 24px));background:#0b1f3a;color:#fff;border-radius:16px;padding:14px 18px;font:15px/1.45 system-ui,-apple-system,Segoe UI,sans-serif;box-shadow:0 18px 40px -12px rgba(0,0,0,.45)');
+      d.innerHTML = '<b style="display:block;margin-bottom:2px">You are signed in — this page needs the school code once</b>' + (staff ? 'Press Sign in and type the staff code (or the class code). The site then keeps the key and this page opens for every student and teacher, with no code.' : 'Ask your teacher: they type the class code once, and then it opens for everyone with no code.');
+      (document.body || document.documentElement).appendChild(d);
+    };
+    if (document.body) go(); else document.addEventListener('DOMContentLoaded', go);
   }
   /* free online accounts: this page is part of full access */
   function membersNote() {

@@ -659,7 +659,27 @@ export default async (req) => {
     const mine = await classesForTeacher(profile), own = profile.role === 'admin' ? mine.filter(c => c.teacherId && c.teacherId === profile.teacherId) : mine;
     const out = { month, teaching: own.length ? await teachingHours(own, month) : null };
     if (profile.role === 'admin') out.admin = await adminHours(uid, month);
+    // salary so far this month, worked out from the lesson log (covers included)
+    if (profile.teacherId) { try { const { payroll } = await import('../lib/payroll.mjs'); const P = await payroll(month, profile.teacherId); out.pay = { ...(P.teachers[0] || { total: 0, items: [], hours: 0, lessons: 0, rule: '' }), rules: P.rules }; if (!P.teachers[0]) { const { loadRates, ruleText } = await import('../lib/payroll.mjs'); const R = await loadRates(); out.pay.rule = (R.skip || []).includes(profile.teacherId) ? 'Own pay arrangement — hours only' : ruleText((R.teachers || {})[profile.teacherId] || R.default); out.pay.own = (R.skip || []).includes(profile.teacherId); } } catch (e) { console.error('pay', e.message); } }
     return json(out);
+  }
+  /* ---- teacher pay (admin): the month's payroll, the rates, "the teacher was at school" for a late cancellation ---- */
+  if (path === 'pay/month' && method === 'GET') {
+    if (profile.role !== 'admin' || profile.teacherId !== 't-abdoulie') return fail(403, 'director');
+    const month = /^\d{4}-\d{2}$/.test(url.searchParams.get('month') || '') ? url.searchParams.get('month') : todayStr().slice(0, 7);
+    const { payroll, loadRates } = await import('../lib/payroll.mjs');
+    return json({ ...(await payroll(month)), rates: await loadRates(), teachersList: (await doc('teachers')).map(t => ({ id: t.id, name: t.name })) });
+  }
+  if (path === 'pay/rates' && method === 'PUT') {
+    if (profile.role !== 'admin' || profile.teacherId !== 't-abdoulie') return fail(403, 'director');
+    const { saveRates } = await import('../lib/payroll.mjs');
+    return json({ rates: await saveRates(await req.json().catch(() => ({}))) });
+  }
+  if (path === 'pay/atschool' && method === 'POST') {
+    if (profile.role !== 'admin') return fail(403, 'admin');
+    const b = await req.json().catch(() => ({}));
+    const { setAtSchool } = await import('../lib/payroll.mjs');
+    return (await setAtSchool(String(b.key || ''), !!b.on, profile.name || '')) ? json({ ok: true }) : fail(404, 'missing');
   }
   if ((path === 'hours/shift' || path === 'hours/add' || path === 'hours/remove') && method === 'POST') {
     if (profile.role !== 'admin') return fail(403, 'admin');
@@ -681,6 +701,7 @@ export default async (req) => {
       const cl = classes.filter(c => c.teacherId === t.id); if (!cl.length) continue;
       const h = await teachingHours(cl, month); rows.push({ id: t.id, name: t.name, hours: h.hours, lessons: h.lessons, week: h.week, planned: h.planned });
     }
+    if (profile.teacherId === 't-abdoulie') try { const { payroll } = await import('../lib/payroll.mjs'); const P = await payroll(month); for (const r of rows) { const x = P.teachers.find(y => y.teacherId === r.id); r.pay = x ? (x.own ? null : x.total) : 0; } } catch (e) { console.error('pay', e.message); }
     return json({ month, teaching: rows.sort((a, b) => b.hours - a.hours), admin: await teamAdmin(month) });
   }
   if (path === 'teach/lesson-change' && method === 'POST') {

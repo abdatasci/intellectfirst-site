@@ -950,7 +950,7 @@
   }
 
   /* ---------- working hours: teaching hours (lessons that took place) and administrative hours (shifts) ---------- */
-  var HRS = { d: null };
+  var HRS = { d: null }, PAYV = false;
   function hh(h) { h = +h || 0; var m = Math.round(h * 60); if (m < 60) return m + ' min'; return Math.floor(m / 60) + ' h' + (m % 60 ? ' ' + (m % 60) + ' min' : ''); }
   function hm(iso) { return new Date(iso).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Qostanay' }); }
   async function loadHours() { try { HRS.d = await api('hours/me'); } catch (e) { HRS.d = null; } return HRS.d; }
@@ -971,8 +971,34 @@
         '<button class="btn ghost sm" data-hrs="add">+ Add time worked away from the desk</button>' +
         (A.list.length ? '<details class="more"><summary>Entries (' + A.list.length + ')</summary><table class="t small">' + A.list.map(function (x) { return '<tr><td>' + x.day.slice(8) + '.' + x.day.slice(5, 7) + '</td><td>' + hm(x.in) + '–' + (x.out ? hm(x.out) : 'now') + '</td><td>' + hh(x.h) + '</td><td>' + (x.manual ? '<span class="chip2 mute">added</span> ' : '') + (x.auto ? '<span class="chip2 bad">not finished — closed after 8 h</span> ' : '') + esc(x.note || '') + '</td><td>' + (x.manual || x.auto ? '<button class="btn ghost sm" data-hrs="rm" data-id="' + esc(x.id) + '">Remove</button>' : '') + '</td></tr>'; }).join('') + '</table></details>' : '') + '</div>';
     }
-    return h + '</div></div>';
+    h += '</div>';
+    if (d.pay) h += payHTML(d.pay);
+    return h + '</div>';
   }
+  function tg(n) { return (Math.round(+n || 0)).toLocaleString('en-US').replace(/,/g, ' ') + ' ₸'; }
+  var PAYK = { taught: ['ok', 'taught'], nobody: ['mute', 'nobody came · ½'], latecancel: ['mute', 'late cancellation'], missed: ['bad', 'missed'] };
+  function payItems(items, admin) {
+    return '<table class="t small"><tr><th>Date</th><th>Lesson</th><th>Time</th><th></th><th style="text-align:right">Pay</th>' + (admin ? '<th></th>' : '') + '</tr>' + items.map(function (x) {
+      var k = PAYK[x.kind] || ['mute', x.kind];
+      return '<tr><td>' + x.date.slice(8) + '.' + x.date.slice(5, 7) + '</td><td>' + esc(x.label) + (x.cover ? ' <span class="chip2 mute">cover</span>' : '') + (x.lateMin ? ' <span class="chip2 bad">' + x.lateMin + ' min late</span>' : '') + '<br><small class="mini">' + esc(x.note || x.how || '') + '</small></td><td>' + esc(x.start) + '–' + esc(x.end || '') + '</td><td><span class="chip2 ' + k[0] + '">' + k[1] + '</span></td><td style="text-align:right"><b>' + tg(x.pay) + '</b></td>' +
+        (admin ? '<td>' + (x.kind === 'latecancel' ? '<button class="btn ghost sm" data-atschool="' + esc(x.key) + '" data-on="' + (x.pay ? '' : '1') + '">' + (x.pay ? 'Not at school' : '📍 Was at school') + '</button>' : '') + '</td>' : '') + '</tr>';
+    }).join('') + '</table>';
+  }
+  function payHTML(P) {
+    var h = '<div class="paybox" style="margin-top:18px;border-top:1px solid var(--line,#e5e7eb);padding-top:16px"><div class="eyebrow">💰 My salary · this month so far</div>';
+    if (P.own) return h + '<p class="sub">' + esc(P.rule) + '.</p></div>';
+    h += '<div class="hbig">' + tg(P.total) + '</div><p class="sub">' + (P.lessons || 0) + ' lesson' + (P.lessons === 1 ? '' : 's') + ' · ' + hh(P.hours || 0) + ' taught · your rate: ' + esc(P.rule || 'not set yet') + '</p>' +
+      (P.late && P.late.n ? '<p class="small">⏰ Late clock-ins this month: ' + P.late.n + ' (' + P.late.min + ' min in total).</p>' : '') +
+      (P.items && P.items.length ? '<details class="more"><summary>Lessons and pay (' + P.items.length + ')</summary>' + payItems(P.items.slice().reverse(), false) + '</details>' : '') +
+      '<details class="more"><summary>How pay is worked out</summary><ul class="small" style="margin:8px 0 0 18px;line-height:1.5">' + (P.rules || []).map(function (r) { return '<li>' + esc(r) + '</li>'; }).join('') + '</ul></details>';
+    return h + '</div>';
+  }
+  document.addEventListener('click', async function (e) {
+    var b = e.target.closest('[data-atschool]'); if (!b) return;
+    b.disabled = true;
+    try { await api('pay/atschool', { method: 'POST', body: { key: b.dataset.atschool, on: !!b.dataset.on } }); toast('Saved ✓'); var m = document.getElementById('hmon'); if (m) m.onchange.call(m); }
+    catch (er) { toast('Could not save.'); b.disabled = false; }
+  });
   function drawHours() { var el = document.getElementById('hrs'); if (el) el.innerHTML = hoursHTML(); }
   document.addEventListener('click', async function (e) {
     var b = e.target.closest('[data-hrs]'); if (!b) return;
@@ -995,14 +1021,50 @@
     } catch (er) { toast(er && /open/.test(er.message) ? 'You are already clocked in.' : 'Could not save. Try again.'); b.disabled = false; }
   });
   async function aHours(head, month) {
+    PAYV = !!(ME && ME.profile && ME.profile.teacherId === 't-abdoulie');
     view.innerHTML = head + '<p><span class="spin"></span></p>';
     month = month || new Date(Date.now() + 5 * 3600e3).toISOString().slice(0, 7);
     var d; try { d = await api('hours/team?month=' + month); } catch (e) { view.innerHTML = head + '<div class="empty">Could not load hours.</div>'; return; }
     view.innerHTML = head + '<div class="panel wide"><div class="row" style="gap:12px;align-items:center;flex-wrap:wrap"><h2 style="margin:0">Team hours</h2><input class="inp" type="month" id="hmon" value="' + d.month + '" style="max-width:180px"></div>' +
-      '<h3 style="margin-top:16px">Teaching (lessons that took place)</h3>' + (d.teaching.length ? '<table class="t"><tr><th>Teacher</th><th>Hours</th><th>Lessons</th><th>This week</th><th>Still planned</th></tr>' + d.teaching.map(function (t) { return '<tr><td><a href="#/staff/' + esc(t.id) + '"><b>' + esc(t.name) + '</b></a></td><td>' + hh(t.hours) + '</td><td>' + t.lessons + '</td><td>' + hh(t.week) + '</td><td>' + hh(t.planned) + '</td></tr>'; }).join('') + '</table>' : '<p class="sub">No lessons yet.</p>') +
+      '<h3 style="margin-top:16px">Teaching (lessons that took place)</h3>' + (d.teaching.length ? '<table class="t"><tr><th>Teacher</th><th>Hours</th><th>Lessons</th><th>This week</th><th>Still planned</th>' + (PAYV ? '<th>Pay so far</th>' : '') + '</tr>' + d.teaching.map(function (t) { return '<tr><td><a href="#/staff/' + esc(t.id) + '"><b>' + esc(t.name) + '</b></a></td><td>' + hh(t.hours) + '</td><td>' + t.lessons + '</td><td>' + hh(t.week) + '</td><td>' + hh(t.planned) + '</td>' + (PAYV ? '<td>' + (t.pay == null ? '<span class="mini">own</span>' : '<b>' + tg(t.pay) + '</b>') + '</td>' : '') + '</tr>'; }).join('') + '</table>' : '<p class="sub">No lessons yet.</p>') +
       '<h3 style="margin-top:18px">Administrative work (shifts)</h3>' + (d.admin.length ? '<table class="t"><tr><th>Name</th><th>Hours</th><th>Days</th><th>This week</th><th>Now</th></tr>' + d.admin.map(function (a) { return '<tr><td><a href="#/staff/' + esc(a.uid) + '"><b>' + esc(a.name) + '</b></a></td><td>' + hh(a.hours) + '</td><td>' + a.days + '</td><td>' + hh(a.week) + '</td><td>' + (a.open ? '<span class="chip2 ok">working since ' + hm(a.open.in) + '</span>' : '—') + '</td></tr>'; }).join('') + '</table>' : '<p class="sub">No shifts recorded this month. Administrators press “Start work” at the top of the admin page.</p>') +
-      '<p class="small" style="margin-top:12px">WhatsApp and Instagram conversations are not tracked automatically; time worked on them away from the desk can be added with “+ Add time”.</p></div>';
+      '<p class="small" style="margin-top:12px">WhatsApp and Instagram conversations are not tracked automatically; time worked on them away from the desk can be added with “+ Add time”.</p></div>' +
+      (PAYV ? '<div class="panel wide" id="payroll"><span class="spin"></span></div>' : '');
     $('#hmon').onchange = function () { aHours(head, this.value); };
+    if (PAYV) payroll(d.month);
+  }
+  async function payroll(month) {
+    var el = document.getElementById('payroll'); if (!el) return;
+    var P; try { P = await api('pay/month?month=' + month); } catch (e) { el.innerHTML = '<div class="empty">Could not load pay.</div>'; return; }
+    var tot = 0; P.teachers.forEach(function (t) { tot += t.total; }); P.fixed.forEach(function (f) { tot += f.total; });
+    var h = '<h2 style="margin:0 0 4px">💰 Payroll · ' + esc(monthLabel(P.month)) + '</h2><p class="sub">Worked out automatically from clock-ins, registers, covers and cancellations. Each teacher sees their own total on their hours page. Total so far: <b>' + tg(tot) + '</b></p>';
+    h += P.teachers.map(function (t) {
+      return '<details class="more" style="margin-top:10px"><summary><b>' + esc(t.name) + '</b> — ' + (t.own ? 'own pay arrangement · ' + hh(t.hours) + ' taught' : '<b>' + tg(t.total) + '</b> · ' + t.lessons + ' lessons · ' + hh(t.hours)) + (t.unpaidLate ? ' · ' + t.unpaidLate + ' late cancellation' + (t.unpaidLate > 1 ? 's' : '') + ' not paid' : '') + (t.late.n ? ' · ⏰ ' + t.late.n + ' late (' + t.late.min + ' min)' : '') + '</summary><p class="small">Rate: ' + esc(t.rule) + '</p>' + payItems(t.items, true) + '</details>';
+    }).join('');
+    if (P.fixed.length) h += '<h3 style="margin-top:16px">Fixed monthly pay</h3><table class="t"><tr><th>Name</th><th>Duty</th><th>Salary</th><th>Deduction</th><th>To pay</th></tr>' + P.fixed.map(function (f) { return '<tr><td>' + esc(f.name) + '</td><td>' + (f.duty === 'smm' ? 'SMM' : 'Manager') + '</td><td>' + tg(f.amount) + '</td><td>' + (f.deduct ? tg(f.deduct) + (f.note ? ' <small class="mini">' + esc(f.note) + '</small>' : '') : '—') + '</td><td><b>' + tg(f.total) + '</b></td></tr>'; }).join('') + '</table>';
+    // rates (director)
+    var R = P.rates || {}, T = R.teachers || {}, row = function (id, name, r, own) {
+      r = r || {};
+      return '<tr data-tid="' + esc(id) + '"><td>' + esc(name) + '</td><td><input class="inp" type="number" min="0" step="50" data-k="amount" value="' + (r.amount || '') + '" placeholder="' + (id ? 'default' : '') + '" style="max-width:110px"></td><td><select class="inp" data-k="per" style="max-width:110px">' + [60, 90, 45].map(function (m) { return '<option value="' + m + '"' + ((r.per || 60) === m ? ' selected' : '') + '>per ' + m + ' min</option>'; }).join('') + '</select></td><td>' + (id ? '<label class="small"><input type="checkbox" data-k="share"' + (r.solo === 'share' ? ' checked' : '') + '> 50% of fee</label>' : '') + '</td><td>' + (id ? '<label class="small"><input type="checkbox" data-k="own"' + (own ? ' checked' : '') + '> own pay</label>' : '') + '</td></tr>';
+    };
+    h += '<details class="more" style="margin-top:16px"><summary>⚙️ Pay rates</summary><p class="small">Empty = the default rate. “50% of fee” = individual students pay the teacher half the student\'s fee per lesson. “Own pay” = hours only (not calculated).</p><table class="t small" id="rates"><tr><th>Teacher</th><th>Amount ₸</th><th>Per</th><th>Individual</th><th></th></tr>' +
+      row('', 'Default (everyone else)', R.default, false) + P.teachersList.map(function (t) { return row(t.id, t.name, T[t.id], (R.skip || []).indexOf(t.id) >= 0); }).join('') + '</table>' +
+      '<div class="row" style="gap:10px;flex-wrap:wrap;margin-top:10px"><label class="small">Manager ₸ <input class="inp" type="number" id="fxm" value="' + ((R.fixed || {}).manager || {}).amount + '" style="max-width:120px"></label><label class="small">minus ₸ <input class="inp" type="number" id="fxmd" value="' + (((R.fixed || {}).manager || {}).deduct || 0) + '" style="max-width:110px"></label><label class="small">for <input class="inp" id="fxmn" value="' + esc(((R.fixed || {}).manager || {}).note || '') + '" style="max-width:150px"></label><label class="small">SMM ₸ <input class="inp" type="number" id="fxs" value="' + (((R.fixed || {}).smm || {}).amount || '') + '" style="max-width:120px"></label></div>' +
+      ((P.solo || []).length ? '<h3 style="margin-top:14px">Individual students — lesson price</h3><p class="small">The teacher gets 50% of this per lesson. Worked out from IF Admin (fee ÷ lessons) until you type the real price of one lesson.</p><table class="t small" id="solo"><tr><th>Student</th><th>Price of one lesson ₸</th></tr>' + P.solo.map(function (x) { return '<tr><td>' + esc(x.label) + '</td><td><input class="inp" type="number" min="0" step="1" data-sid="' + esc(x.sid) + '" value="' + (x.set ? x.each : '') + '" placeholder="' + x.each + ' (worked out)" style="max-width:170px"></td></tr>'; }).join('') + '</table>' : '') +
+      '<p><button class="btn sm" id="rsave">Save rates</button></p></details>';
+    el.innerHTML = h;
+    $('#rsave').onclick = async function () {
+      var solo = Object.assign({}, R.solo || {}); document.querySelectorAll('#solo [data-sid]').forEach(function (i) { if (+i.value > 0) solo[i.dataset.sid] = +i.value; else delete solo[i.dataset.sid]; });
+      var out = { solo: solo, teachers: {}, skip: [], fixed: { manager: { amount: $('#fxm').value, deduct: $('#fxmd').value, note: $('#fxmn').value }, smm: { amount: $('#fxs').value } } };
+      document.querySelectorAll('#rates tr[data-tid]').forEach(function (tr) {
+        var id = tr.dataset.tid, g = function (k) { return tr.querySelector('[data-k=' + k + ']'); }, r = { amount: g('amount').value, per: g('per').value };
+        if (!id) { out.default = r; return; }
+        if (g('share').checked) { r.solo = 'share'; r.share = 0.5; }
+        if (g('own').checked) out.skip.push(id);
+        if (+r.amount || r.solo) { if (!+r.amount) r.amount = (out.default || {}).amount; out.teachers[id] = r; }
+      });
+      try { await api('pay/rates', { method: 'PUT', body: out }); toast('Rates saved ✓'); payroll(month); } catch (e) { toast('Could not save.'); }
+    };
   }
 
   /* ---------- staff pages: the director and the manager open any teacher's or staff member's page and amend it ---------- */
