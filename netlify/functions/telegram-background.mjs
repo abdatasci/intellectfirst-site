@@ -3,7 +3,7 @@
 import { S, getProfile, contextFor, reply, publicReply, allow, tgSecret, tgSend, tg, getLinks, saveLinks, linkChat, matchPhone, local, money, langOf, localise } from '../lib/bot-core.mjs';
 import { handleReceipt, decideReceipt } from '../lib/receipts.mjs';
 import { loadHomework, forClasses, isUpcoming } from '../lib/homework.mjs';
-import { isStaff, STAFF_KB, STAFF_HELP, staffHello, sendToday, staffCallback, ensureStaffKb, cancelReasonText, kbFor, helpFor, helloFor, isAdminP, sendSchoolDay, sendTodo, sendWeek, sendChanges, sendFilming } from '../lib/teachbot.mjs';
+import { isStaff, STAFF_KB, STAFF_HELP, staffHello, sendToday, staffCallback, ensureStaffKb, cancelReasonText, sendRegisterMenu, kbFor, helpFor, helloFor, isAdminP, sendSchoolDay, sendTodo, sendWeek, sendChanges, sendFilming } from '../lib/teachbot.mjs';
 import { startCover, coverCallback } from '../lib/cover.mjs';
 import { startHomework, hwCallback, hwMessage } from '../lib/teachhw.mjs';
 import { startTask, ctCallback, ctMessage, ctAnswer, ctPollAnswer } from '../lib/classtask.mjs';
@@ -88,12 +88,12 @@ async function resultsText(ctx, uid, lang) {
 
 /* The bot's "Menu" (command list). Students get the general list; teachers get their own list in their chat.
    Updated automatically when the list changes (CMDV), so nobody has to press "Connect bot" again. */
-const CMDV = '2026-11-16a';
+const CMDV = '2026-11-16d';
 const CMDS = {
   en: [['app', 'Open IF English'], ['account', 'My account: results, attendance, payments'], ['next', 'Next lessons'], ['homework', 'Homework & tests'], ['results', 'My test results'], ['pay', 'Tuition status'], ['help', 'What I can do'], ['stop', 'Disconnect this chat']],
   ru: [['app', 'Открыть IF English'], ['account', 'Мой аккаунт: результаты, посещаемость, оплаты'], ['next', 'Ближайшие занятия'], ['homework', 'Домашние задания и тесты'], ['results', 'Мои результаты'], ['pay', 'Статус оплаты'], ['help', 'Что я умею'], ['stop', 'Отключить чат']]
 };
-const STAFF_CMDS = [['app', 'Open IF English (Teach mode too)'], ['account', 'My account: classes, registers, admin'], ['today', "Today's lessons: clock in, register"], ['cover', 'Ask a colleague to cover a lesson'], ['task', 'Class task: quiz, poll, writing or speaking'], ['sendhw', 'Send homework or a test to a class'], ['next', 'Next lessons'], ['help', 'Help for teachers'], ['stop', 'Disconnect this chat']];
+const STAFF_CMDS = [['app', 'Open IF English (Teach mode too)'], ['account', 'My account: classes, registers, admin'], ['today', "Today's lessons: clock in, register"], ['register', 'Take or correct a register'], ['cover', 'Ask a colleague to cover a lesson'], ['task', 'Class task: quiz, poll, writing or speaking'], ['sendhw', 'Send homework or a test to a class'], ['next', 'Next lessons'], ['help', 'Help for teachers'], ['stop', 'Disconnect this chat']];
 const asCmds = l => l.map(([command, description]) => ({ command, description }));
 async function syncCommands(chatId, staff) {
   try {
@@ -247,7 +247,7 @@ export default async (req) => {
     if (isStaff(me) && /^🔁|^\/cover\b/i.test(text)) { await startCover(chatId, uid, me); return new Response('ok'); }
     if (isStaff(me) && (isAdminP(me) || me.smm)) {   // director, manager, SMM menus
       if (/^🏫|^\/school\b/i.test(text) && isAdminP(me)) { await sendSchoolDay(chatId, me); return new Response('ok'); }
-      if (/^📋|^\/todo\b/i.test(text) && isAdminP(me)) { await sendTodo(chatId, me); return new Response('ok'); }
+      if (/^📋 To-do|^\/todo\b/i.test(text) && isAdminP(me)) { await sendTodo(chatId, me); return new Response('ok'); }
       if (/^💳 Payments due|^\/due\b/i.test(text) && isAdminP(me)) { await sendTodo(chatId, me, 'payment'); return new Response('ok'); }
       if (/^🕑 My lessons|^\/mine\b/i.test(text) && isAdminP(me)) { await sendToday(chatId, uid, me, true); return new Response('ok'); }
       if (/^📆|^\/week\b/i.test(text)) { await sendWeek(chatId, me); return new Response('ok'); }
@@ -255,6 +255,7 @@ export default async (req) => {
       if (/^🎬|^\/film\b/i.test(text)) { await sendFilming(chatId, me); return new Response('ok'); }
       if (/^🕑|^\/today\b/i.test(text) && me.smm && me.role !== 'admin') { await sendSchoolDay(chatId, me); return new Response('ok'); }
     }
+    if (isStaff(me) && !(me.smm && me.role !== 'admin') && /^📋 Register|^\/register\b/i.test(text)) { await sendRegisterMenu(chatId, me); return new Response('ok'); }
     if (isStaff(me) && /^\/today\b|^🕑|^\/clock/i.test(text)) { await sendToday(chatId, uid, me); return new Response('ok'); }
     if (isStaff(me) && /^\/start\b|^\/help\b|^❓/i.test(text)) { await tgSend(chatId, helpFor(me), { reply_markup: kbFor(me) }); return new Response('ok'); }
     if (/^\/receipt\b|^📎/i.test(text)) { await tgSend(chatId, L[lang].receiptHow, { reply_markup: KB }); return new Response('ok'); }

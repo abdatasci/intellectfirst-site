@@ -601,6 +601,7 @@
     else if (l.state === 'missed' && !admin) h += '<p class="small" style="margin:8px 0 0">This lesson ended without a clock-in. If it took place, ask the administrator to correct it.</p>';
     var canReg = (e.checkIn || l.auto || (admin && l.state !== 'upcoming')) && !e.cancelled && (admin || l.date === today);   // the register opens once the lesson has started
     if (canReg) h += '<p class="small" style="margin:10px 0 6px">Mark each student — it goes to IF Admin automatically.</p><div class="reg" id="calreg" hidden></div>';
+    else if (!e.cancelled && l.state !== 'cancelled' && !l.movedTo && (own || admin) && l.date >= today) h += '<div class="regsoon"><b>📋 Register</b><span>' + (l.date === today ? 'Opens when you clock in (from <b>' + opens + '</b>). Then mark every student — or press ✅ All present — and save.' : 'Opens on ' + l.date.slice(8) + '.' + l.date.slice(5, 7) + ', when you clock in.') + '</span></div>';
     return h + '</div>';
   }
   function wireClock(l, d) {

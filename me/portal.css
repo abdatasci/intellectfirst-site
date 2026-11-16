@@ -288,3 +288,5 @@ tr.regrow-admin td{background:#fbf8f1}
 .editp>summary::after{content:"▾";position:absolute;right:18px;margin-top:4px}
 .editp{position:relative}.editp[open]>summary{border-bottom:1px solid var(--line,rgba(11,37,69,.14))}
 .editp>.section{padding:0 14px 14px;margin-top:14px}
+
+.regsoon{margin-top:12px;padding:10px 12px;border-radius:12px;background:#f6f3ea;border:1px dashed #d8c99a;display:flex;flex-direction:column;gap:2px;font-size:14px}.regsoon span{color:#5d6676}

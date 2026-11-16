@@ -10,24 +10,25 @@ const S = () => getStore({ name: 'school', consistency: 'strong' });
 export const isStaff = p => !!p && (p.role === 'teacher' || p.role === 'admin');
 const canAll = p => p.role === 'admin' || !!p.manager;
 const APP_URL = (process.env.URL || 'https://intellectfirst.com').replace(/\/$/, '') + '/app/?tg=1';
-export const STAFF_KB = { keyboard: [[{ text: '📚 IF English' }, { text: '👤 My account' }], [{ text: '🕑 Today\'s lessons' }, { text: '🎯 Class task' }], [{ text: '📝 Send homework' }, { text: '📅 Next lessons' }], [{ text: '🔁 Cover a lesson' }, { text: '❓ Help' }]], resize_keyboard: true, is_persistent: true };
+export const STAFF_KB = { keyboard: [[{ text: '🕑 Today\'s lessons' }, { text: '📋 Register' }], [{ text: '🎯 Class task' }, { text: '📝 Send homework' }], [{ text: '🔁 Cover a lesson' }, { text: '📅 Next lessons' }], [{ text: '📚 IF English' }, { text: '👤 My account' }, { text: '❓ Help' }]], resize_keyboard: true, is_persistent: true };
 // Telegram keeps the old keyboard until the bot sends a new one: when the teacher menu changes, bump KBV and every
 // teacher gets the new keyboard (at once from the reminder job, or with their next message).
-export const KBV = '2026-11-16c';
+export const KBV = '2026-11-16d';
 // Three staff menus: teachers; the director and the manager (they teach too); the SMM (not a teacher)
 export const ADMIN_KB = { keyboard: [
   [{ text: '🏫 School today' }, { text: '📋 To-do' }],
-  [{ text: '🕑 My lessons' }, { text: '🔁 Cover a lesson' }],
-  [{ text: '💳 Payments due' }, { text: '📆 This week' }],
-  [{ text: '🎯 Class task' }, { text: '📝 Send homework' }],
-  [{ text: '👤 Admin' }, { text: '📚 IF English' }, { text: '❓ Help' }]], resize_keyboard: true, is_persistent: true };
+  [{ text: '🕑 My lessons' }, { text: '📋 Register' }],
+  [{ text: '🔁 Cover a lesson' }, { text: '💳 Payments due' }],
+  [{ text: '📆 This week' }, { text: '🎯 Class task' }],
+  [{ text: '📝 Send homework' }, { text: '👤 Admin' }],
+  [{ text: '📚 IF English' }, { text: '❓ Help' }]], resize_keyboard: true, is_persistent: true };
 export const SMM_KB = { keyboard: [
   [{ text: '🕑 Today at school' }, { text: '📆 This week' }],
   [{ text: '🔔 Changes' }, { text: '🎬 Filming plan' }],
   [{ text: '👤 My account' }, { text: '❓ Help' }]], resize_keyboard: true, is_persistent: true };
 export const isAdminP = p => !!p && (p.role === 'admin' || !!p.manager);
 export const kbFor = p => p && p.smm && p.role !== 'admin' ? SMM_KB : isAdminP(p) ? ADMIN_KB : STAFF_KB;
-export const ADMIN_HELP = '🏫 Director / manager menu:\n• 🏫 School today — every lesson with its status: clocked in, late, not yet, register taken, cancelled, covered.\n• 📋 To-do — registers, make-up lessons, covers, receipts, payments and access requests waiting for you.\n• 🕑 My lessons — your own lessons with Clock in, Register, Cancel.\n• 🔁 Cover a lesson — arrange or confirm covers.\n• 💳 Payments due — overdue tuition and receipts to confirm.\n• 📆 This week — the timetable for the next 7 days.\n• 🎯 Class task and 📝 Send homework — as for teachers.\n• 👤 Admin — the full admin pages inside Telegram.\nYou also get a message for every cover, cancellation and late clock-in.';
+export const ADMIN_HELP = '🏫 Director / manager menu:\n• 🏫 School today — every lesson with its status: clocked in, late, not yet, register taken, cancelled, covered.\n• 📋 To-do — registers, make-up lessons, covers, receipts, payments and access requests waiting for you.\n• 🕑 My lessons — your own lessons with Clock in and Cancel.\n• 📋 Register — take or correct the register of any lesson today (yours, or for a teacher).\n• 🔁 Cover a lesson — arrange or confirm covers.\n• 💳 Payments due — overdue tuition and receipts to confirm.\n• 📆 This week — the timetable for the next 7 days.\n• 🎯 Class task and 📝 Send homework — as for teachers.\n• 👤 Admin — the full admin pages inside Telegram.\nYou also get a message for every cover, cancellation and late clock-in.';
 export const SMM_HELP = '🎬 SMM menu:\n• 🕑 Today at school — all lessons today: time, class, teacher, room.\n• 📆 This week — the next 7 days, to plan posts and shoots.\n• 🔔 Changes — cancellations, moved lessons and covers today and tomorrow.\n• 🎬 Filming plan — the best lessons to film today: groups with the most students, Young Learners, IELTS and new classes, with their rooms.\n• Every morning at 08:00 you get the day\'s lessons automatically, and a message whenever a lesson changes.';
 export const helpFor = p => p && p.smm && p.role !== 'admin' ? SMM_HELP : isAdminP(p) ? ADMIN_HELP + '\n\n' + STAFF_HELP : STAFF_HELP;
 export const helloFor = (p, n) => `Hi ${n}! 👋 You are connected to the IF Academy bot as ${p && p.smm && p.role !== 'admin' ? 'SMM' : p && p.teacherId === 't-abdoulie' ? 'director' : isAdminP(p) ? 'manager' : 'a teacher'}.\n\n` + helpFor(p);
@@ -39,7 +40,7 @@ export async function ensureStaffKb(chatId, who, force) {
   return true;
 }
 export const staffHello = n => `Hi ${n}! 👋 You are connected to the IF Academy bot as a teacher.\n\n` + STAFF_HELP;
-export const STAFF_HELP = '👩‍🏫 For teachers:\n• 🕑 Today\'s lessons — clock in (from 5 minutes before the start) and take the register with buttons.\n• Before each lesson I send you a reminder with a "✅ Clock in" button, and after it a "📋 Take register" button.\n• 🔁 Cover a lesson — can\'t teach a lesson? Choose it and ask a colleague (or all teachers). When someone accepts, the timetable changes and the admin is told.\n• 📚 IF English — the whole app inside Telegram, with Teach mode for the projector.\n• 👤 My account — your classes, registers, students\' results and (for the director and manager) Admin, inside Telegram.\n• 🎯 Class task — during the lesson, send a quiz (yours, or ✨ written by AI from a topic), a poll, a writing or a speaking task to the class. Students answer on their phones; your message shows who has answered and their scores, live.\n• 📝 Send homework — choose the class, homework or test, the date, then type the task (or send a photo of the worksheet). Every student in the class gets it at once, and it appears on the website.\n• Everything you press here is saved in the school system and shows on the admin pages straight away.\n• /stop disconnects this chat.';
+export const STAFF_HELP = '👩‍🏫 For teachers:\n• 🕑 Today\'s lessons — clock in (from 5 minutes before the start) and take the register with buttons.\n• 📋 Register — your lessons today: take or correct the register (it opens once you have clocked in).\n• Before each lesson I send you a reminder with a "✅ Clock in" button, and after it a "📋 Take register" button.\n• 🔁 Cover a lesson — can\'t teach a lesson? Choose it and ask a colleague (or all teachers). When someone accepts, the timetable changes and the admin is told.\n• 📚 IF English — the whole app inside Telegram, with Teach mode for the projector.\n• 👤 My account — your classes, registers, students\' results and (for the director and manager) Admin, inside Telegram.\n• 🎯 Class task — during the lesson, send a quiz (yours, or ✨ written by AI from a topic), a poll, a writing or a speaking task to the class. Students answer on their phones; your message shows who has answered and their scores, live.\n• 📝 Send homework — choose the class, homework or test, the date, then type the task (or send a photo of the worksheet). Every student in the class gets it at once, and it appears on the website.\n• Everything you press here is saved in the school system and shows on the admin pages straight away.\n• /stop disconnects this chat.';
 
 // the same marks as the website: absent = EA (excused), late cancellation = UA (charged). Nobody is marked in advance.
 const MARK = { '': '⬜', on: '✅', late: '⏰', exc: '❌', abs: '🟡' };
@@ -320,4 +321,22 @@ export async function sendFilming(chatId, p) {
   const scored = ls.map(l => { const c = classes.find(x => x.id === l.classId), n = size(c); return { l, n, s: n + (/individual/i.test(l.label) ? -5 : 0) + (/starters|movers|flyers|kids|yl/i.test(l.label) ? 3 : 0) }; }).sort((a, b) => b.s - a.s);
   const lines = scored.map((x, i) => `${i < 3 ? ['🥇', '🥈', '🥉'][i] : '•'} ${x.l.start}${x.l.end ? '–' + x.l.end : ''} ${x.l.label} · ${tn(x.l.teacherId)}${x.l.room ? ' · ' + x.l.room : ''} · ${x.n} students\n      ${tag(x.l)}`);
   return tgSend(chatId, `🎬 Filming plan · today\n\n${lines.join('\n')}\n\nTip: film in the first 15 minutes (warm-up, games) or the last 10 (results). Ask the teacher before you come in, and only film students who have photo consent.`, { reply_markup: kbFor(p) });
+}
+
+/** 📋 Register: today's lessons with the right button — take/correct the register, clock in first, or when it opens. */
+export async function sendRegisterMenu(chatId, p) {
+  const date = today(), classes = await doc('classes'), teachers = await doc('teachers');
+  const tn = id => ((teachers.find(t => t.id === id) || {}).name || '').split(' ')[0];
+  const all = lessonsOn(classes, date, await loadChanges()).filter(l => !l.cancelled && !l.movedTo && (canAll(p) || l.teacherId === p.teacherId));
+  if (!all.length) return tgSend(chatId, canAll(p) ? 'No lessons today.' : 'You have no lessons today. 🙂', { reply_markup: kbFor(p) });
+  const L = await loadLog(date.slice(0, 7)), now = Date.now();
+  const rows = [], lines = [];
+  for (const l of all.slice(0, 20)) {
+    const e = L[l.key] || {}, started = Date.parse(l.at) - EARLY_MIN * 60000 <= now, who = canAll(p) && l.teacherId !== p.teacherId ? ' · ' + tn(l.teacherId) : '';
+    if (e.takenAt) { lines.push(`📋 ${l.start} ${l.label}${who} — register taken ✓`); rows.push([{ text: `✏️ ${l.start} ${l.label} — change`.slice(0, 60), callback_data: 'ro:' + l.key }]); }
+    else if (e.checkIn || (canAll(p) && started)) { lines.push(`🟢 ${l.start} ${l.label}${who} — register open`); rows.push([{ text: `📋 ${l.start} ${l.label} — take register`.slice(0, 60), callback_data: 'ro:' + l.key }]); }
+    else if (started) { lines.push(`⚠️ ${l.start} ${l.label}${who} — clock in first`); rows.push([{ text: `✅ Clock in: ${l.start} ${l.label}`.slice(0, 60), callback_data: 'ci:' + l.key }]); }
+    else lines.push(`⏳ ${l.start} ${l.label}${who} — opens at ${hm(new Date(Date.parse(l.at) - EARLY_MIN * 60000).toISOString())} (clock in first)`);
+  }
+  return tgSend(chatId, `📋 Registers today · ${date.slice(8)}.${date.slice(5, 7)}\n\n${lines.join('\n')}\n\nEvery student must be marked — or press ✅ All present. Saved to IF Admin straight away.`, { reply_markup: rows.length ? { inline_keyboard: rows } : kbFor(p) });
 }
