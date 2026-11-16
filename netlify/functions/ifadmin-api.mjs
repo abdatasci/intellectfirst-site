@@ -62,6 +62,22 @@ async function putColl(c, map) {
   await A().setJSON('c/' + c, map);
   const st = (await A().get('stamp', { type: 'json' })) || {};
   st[c] = Date.now(); await A().setJSON('stamp', st);
+  if (c === 'groups') await syncClassTimes(map).catch(e => console.error('class times', e.message));
+}
+/* A group's timetable in IF Admin (e.g. "Mon 15:15–16:45, Fri 16:50–18:20") is also the website class's timetable:
+   the calendar, check-in, reminders and the bot read the website class. Only timetables with times are copied. */
+const normLabel = s => String(s || '').toLowerCase().replace(/group|teens?/g, m => m.startsWith('teen') ? 'teen' : '').replace(/[^a-z0-9]/g, '');
+async function syncClassTimes(groups) {
+  const W = getStore({ name: 'school', consistency: 'strong' });
+  const classes = (await W.get('classes', { type: 'json' })) || []; let changed = [];
+  for (const [gid, g] of Object.entries(groups || {})) {
+    if (!g || !/\d{1,2}[:.]\d{2}/.test(g.sch || '')) continue;
+    const loose = s => normLabel(s).replace(/teen/g, ''), byLoose = classes.filter(x => loose(x.label) === loose(g.n));
+    const c = classes.find(x => x.id === 'c-' + gid) || classes.find(x => normLabel(x.label) === normLabel(g.n)) || (byLoose.length === 1 ? byLoose[0] : null);
+    if (c && c.schedule !== g.sch) { c.schedule = g.sch; changed.push(c.label); }
+  }
+  if (changed.length) await W.setJSON('classes', classes);
+  return changed;
 }
 
 async function appHtml() {
@@ -93,7 +109,7 @@ export default async (req) => {
         const body = await req.json().catch(() => null);
         if (!body || typeof body !== 'object' || Array.isArray(body)) return fail(400, 'doc');
         if (JSON.stringify(body).length > 900000) return fail(413, 'big');
-        map[id] = body; await putColl(c, map); return json({ ok: true });
+        map[id] = body; await putColl(c, map); return json({ ok: true, ...(c === 'groups' ? { classes: await syncClassTimes(map) } : {}) });
       }
       if (method === 'DELETE') { delete map[id]; await putColl(c, map); return json({ ok: true }); }
     }
