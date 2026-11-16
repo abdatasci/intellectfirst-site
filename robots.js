@@ -17,8 +17,8 @@
     return '<svg class="ifbot-svg" viewBox="0 0 200 230" role="img" aria-label="ATLAS, the IF presenter">' +
       '<defs>' +
         '<linearGradient id="' + id('ask') + '" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7b4a2c"/><stop offset=".55" stop-color="#5e3620"/><stop offset="1" stop-color="#432414"/></linearGradient>' +
-        '<linearGradient id="' + id('abl') + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#cbb7aa"/><stop offset="1" stop-color="#a58e80"/></linearGradient>' +
-        '<pattern id="' + id('akn') + '" width="4" height="6" patternUnits="userSpaceOnUse"><rect width="4" height="6" fill="url(#' + id('abl') + ')"/><path d="M1 0v6" stroke="#8d7668" stroke-opacity=".35" stroke-width=".8"/></pattern>' +
+        '<linearGradient id="' + id('abl') + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#22386b"/><stop offset="1" stop-color="#101c3c"/></linearGradient>' +
+        '<pattern id="' + id('akn') + '" width="4" height="6" patternUnits="userSpaceOnUse"><rect width="4" height="6" fill="url(#' + id('abl') + ')"/><path d="M1 0v6" stroke="#3a548c" stroke-opacity=".25" stroke-width=".6"/></pattern>' +
         '<radialGradient id="' + id('gl') + '"><stop offset="0" stop-color="' + p.a + '" stop-opacity=".5"/><stop offset="1" stop-color="' + p.a + '" stop-opacity="0"/></radialGradient>' +
         '<filter id="' + id('bl') + '" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="2"/></filter>' +
       '</defs>' +
@@ -26,15 +26,15 @@
       '<g class="ring" fill="none" stroke="' + p.b + '" stroke-opacity=".35"><circle cx="100" cy="92" r="84" stroke-dasharray="3 9"/><circle cx="100" cy="92" r="74" stroke-dasharray="40 14 4 14" stroke-opacity=".5"/></g>' +
       '<g class="body">' +
         // tailored taupe suit jacket (structured shoulders, notch lapels, breast pocket) over a white crew-neck tee
-        '<path d="M18 230c2-30 8-44 22-52 16-8 36-10 60-10s44 2 60 10c14 8 20 22 22 52z" fill="url(#' + id('akn') + ')"/>' +
-        '<path d="M40 178c-8 4-14 14-17 30M160 178c8 4 14 14 17 30" fill="none" stroke="#8d7668" stroke-opacity=".6" stroke-width="1.2"/>' +
+        '<path d="M18 230c2-30 8-44 22-52 16-8 36-10 60-10s44 2 60 10c14 8 20 22 22 52z" fill="url(#' + id('abl') + ')"/>' +
+        '<path d="M40 178c-8 4-14 14-17 30M160 178c8 4 14 14 17 30" fill="none" stroke="#3d5d9b" stroke-opacity=".6" stroke-width="1.2"/>' +
         '<path d="M80 172c5 20 12 40 20 58 8-18 15-38 20-58-6-2-13-3-20-3s-14 1-20 3z" fill="#f7f7f5"/>' +
-        '<path d="M88 170c3 5 7 7 12 7s9-2 12-7" fill="none" stroke="#dcdcd6" stroke-width="3"/>' +
-        '<path d="M80 172l-16 8 9 15-9 5 28 30c-6-18-10-38-12-58z" fill="#b39d8f"/><path d="M120 172l16 8-9 15 9 5-28 30c6-18 10-38 12-58z" fill="#b39d8f"/>' +
-        '<path d="M80 172l-16 8 9 15-9 5 28 30M120 172l16 8-9 15 9 5-28 30" fill="none" stroke="#7d6658" stroke-width="1.1"/>' +
-        '<path d="M73 195l-9 5" stroke="#7d6658" stroke-width="1.1"/><path d="M127 195l9 5" stroke="#7d6658" stroke-width="1.1"/>' +
-        '<path d="M126 208h20l-1 4h-18z" fill="#8d7668" fill-opacity=".6"/><path d="M130 208l3-5 3 5 3-4 2 4" fill="#f7f7f5"/>' +
-        '<circle cx="100" cy="226" r="2.6" fill="#3b2a22"/>' +
+        '<path d="M86 168l14 14-10 6-8-14zM114 168l-14 14 10 6 8-14z" fill="#ffffff" stroke="#d5d9e0" stroke-width="1"/><path d="M100 184v42" stroke="#e3e6eb" stroke-width="1"/><circle cx="100" cy="196" r="1.2" fill="#c9ced8"/><circle cx="100" cy="210" r="1.2" fill="#c9ced8"/>' +
+        '<path d="M80 172l-16 8 9 15-9 5 28 30c-6-18-10-38-12-58z" fill="#1a2c58"/><path d="M120 172l16 8-9 15 9 5-28 30c6-18 10-38 12-58z" fill="#1a2c58"/>' +
+        '<path d="M80 172l-16 8 9 15-9 5 28 30M120 172l16 8-9 15 9 5-28 30" fill="none" stroke="#3d5d9b" stroke-width="1.1"/>' +
+        '<path d="M73 195l-9 5" stroke="#3d5d9b" stroke-width="1.1"/><path d="M127 195l9 5" stroke="#3d5d9b" stroke-width="1.1"/>' +
+        '<path d="M126 208h20l-1 4h-18z" fill="#0b1530" fill-opacity=".7"/><path d="M130 208l3-5 3 5 3-4 2 4" fill="#f7f7f5"/>' +
+        '<circle cx="100" cy="226" r="2.6" fill="#0a1226"/>' +
         // lapel pin: the speaking light
         '<circle class="core" cx="66" cy="196" r="4.5" fill="' + p.a + '"/><circle class="core" cx="66" cy="196" r="4.5" fill="' + p.a + '" filter="url(#' + id('bl') + ')"/><circle cx="66" cy="196" r="1.8" fill="#fff" fill-opacity=".9"/>' +
         // neck
@@ -73,7 +73,7 @@
           '<path d="M85 125c-1 3-1 6 1 8M115 125c1 3 1 6-1 8" fill="none" stroke="#161110" stroke-opacity=".75" stroke-width="1.3" stroke-linecap="round"/>' +
           // mouth (opens while speaking) and a warm smile
           '<g class="mouth"><rect class="m0" x="92" y="128" width="16" height="1" rx="1" fill="#2a1010"/></g>' +
-          '<path d="M89 129c6 3.5 16 3.5 22 0" fill="#8b4a3a" stroke="#3a1c10" stroke-width="1.4" stroke-linecap="round"/>' +
+          '<path d="M86 127.5c7.5 7 20.5 7 28 0z" fill="#ffffff" stroke="#3a1c10" stroke-width="1.4" stroke-linejoin="round"/>' +
           
         '</g>' +
       '</g></svg>';
