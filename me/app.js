@@ -5,6 +5,21 @@
   var view = $('#view'), USER = null, ME = null, RECOVERY = null, ADMIN = null;
 
   /* ---------- helpers ---------- */
+  /* Yes/No question that works everywhere: the browser's dialog where it shows; inside Telegram (which blocks it)
+     Telegram's own dialog or a small box on the page. */
+  function ask(msg) {
+    return new Promise(function (res) {
+      var W = window.Telegram && window.Telegram.WebApp;
+      if (W && W.initData && W.showConfirm) { try { W.showConfirm(String(msg), function (ok) { res(!!ok); }); return; } catch (e) {} }
+      var t0 = Date.now(), r = false; try { r = window.confirm(msg); } catch (e) {}
+      if (r) return res(true);
+      if (Date.now() - t0 > 80) return res(false);   // the person pressed Cancel
+      var o = document.createElement('div'); o.className = 'askbox';
+      o.innerHTML = '<div class="askc" role="dialog" aria-modal="true"><p>' + esc(msg) + '</p><div class="row" style="gap:10px;justify-content:flex-end"><button class="btn ghost" data-a="0">No</button><button class="btn primary" data-a="1">Yes</button></div></div>';
+      document.body.appendChild(o);
+      o.addEventListener('click', function (e) { var b = e.target.closest('[data-a]'); if (!b && e.target !== o) return; o.remove(); res(!!(b && b.dataset.a === '1')); });
+    });
+  }
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   function band(b) { return typeof b === 'number' ? (b % 1 ? b.toFixed(1) : b + '.0') : '–'; }
   function when(iso) { if (!iso) return '–'; var d = new Date(iso); return isNaN(d) ? esc(iso) : d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }); }
@@ -368,7 +383,7 @@
         } catch (x) { $('button', f).disabled = false; $('#cmsg').textContent = x.status === 413 ? 'The file is too big (4 MB at most).' : 'Could not save. Try again.'; }
       };
     };
-    view.querySelectorAll('[data-cdel]').forEach(function (b) { b.onclick = async function () { if (!confirm('Remove this certificate?')) return; await api('cert/' + b.dataset.cdel, { method: 'DELETE' }); await loadMe(); route(); }; });
+    view.querySelectorAll('[data-cdel]').forEach(function (b) { b.onclick = async function () { if (!(await ask('Remove this certificate?'))) return; await api('cert/' + b.dataset.cdel, { method: 'DELETE' }); await loadMe(); route(); }; });
   }
   async function vTeacher(uid) {
     setNav('admin'); if (!staff()) return go('#/');
@@ -560,7 +575,7 @@
         if ($('#crest')) $('#crest').onclick = function () { send({ action: 'restore' }, 'Lesson back on.'); };
         if ($('#cmove')) $('#cmove').onclick = function () { send({ action: 'move', date: $('#md').value, start: $('#ms').value, end: $('#me').value }, 'Lesson moved.'); };
         if ($('#cvset')) $('#cvset').onclick = async function () { this.disabled = true; try { await api('teach/lesson-change', { method: 'POST', body: { action: 'cover', key: l.key, teacherId: $('#cvt').value } }); toast($('#cvt').value ? 'Cover saved — the teacher is told on Telegram.' : 'Cover removed.'); vCalendar(CAL.from); } catch (e) { this.disabled = false; toast('Could not save the cover.'); } };
-        if ($('#ccan')) $('#ccan').onclick = function () { if (confirm('Cancel ' + l.label + ' on ' + fmtD(l.date) + ' at ' + l.start + '?')) send({ action: 'cancel' }, 'Lesson cancelled.'); };
+        if ($('#ccan')) $('#ccan').onclick = async function () { if (await ask('Cancel ' + l.label + ' on ' + fmtD(l.date) + ' at ' + l.start + '?')) send({ action: 'cancel' }, 'Lesson cancelled.'); };
         wireClock(l, d);
         $('#cpanel').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       };
@@ -705,7 +720,7 @@
     var t = new Date(Date.now() + 5 * 3600e3), d = new Date(t.getTime() + 2 * 864e5); $('#hwd').value = d.toISOString().slice(0, 10);
     function draw(list) {
       $('#hwl').innerHTML = list.length ? list.slice().reverse().map(function (x) { return '<div class="hwrow"><span class="hwk">' + (x.kind === 'test' ? '🧪 Test' : '📝 Homework') + '</span><b>' + esc(x.text) + '</b><small>' + (x.kind === 'test' ? 'on ' : 'due ') + when(x.due) + (x.time ? ' ' + esc(x.time) : '') + ' · ' + esc(x.by || '') + ' <button class="linkbtn" data-del="' + x.id + '">Delete</button></small></div>'; }).join('') : '<p class="small">Nothing set yet.</p>';
-      view.querySelectorAll('[data-del]').forEach(function (b) { b.onclick = async function () { if (!confirm('Delete this?')) return; await api('teach/homework/' + b.dataset.del, { method: 'DELETE' }); load(); }; });
+      view.querySelectorAll('[data-del]').forEach(function (b) { b.onclick = async function () { if (!(await ask('Delete this?'))) return; await api('teach/homework/' + b.dataset.del, { method: 'DELETE' }); load(); }; });
     }
     async function load() { try { draw((await api('teach/homework/' + c.id)).homework); } catch (e) { $('#hwl').innerHTML = '<p class="small">Could not load.</p>'; } }
     $('#hwf').onsubmit = async function (ev) {
@@ -949,7 +964,7 @@
     var k = b.dataset.hrs, r;
     try {
       if (k === 'in' || k === 'out') { b.disabled = true; r = await api('hours/shift', { method: 'POST', body: { action: k } }); toast(k === 'in' ? 'Started ✓ Have a good day!' : 'Finished ✓'); }
-      else if (k === 'rm') { if (!confirm('Remove this entry?')) return; r = await api('hours/remove', { method: 'POST', body: { month: HRS.d.month, id: b.dataset.id } }); }
+      else if (k === 'rm') { if (!(await ask('Remove this entry?'))) return; r = await api('hours/remove', { method: 'POST', body: { month: HRS.d.month, id: b.dataset.id } }); }
       else if (k === 'add') {
         var td = new Date(Date.now() + 5 * 3600e3).toISOString().slice(0, 10);
         modal('<h2>Add time worked</h2><p class="sub">For admin work away from the desk — for example answering WhatsApp or Instagram enquiries in the evening.</p>' +
@@ -1019,7 +1034,7 @@
       modal('<h2>Add time for ' + esc(name) + '</h2><label class="lbl">Date</label><input class="inp" type="date" id="hd" value="' + td + '" max="' + td + '"><div class="row" style="gap:10px"><div style="flex:1"><label class="lbl">From</label><input class="inp" type="time" id="hf" value="10:00"></div><div style="flex:1"><label class="lbl">To</label><input class="inp" type="time" id="ht" value="14:00"></div></div><label class="lbl">Note</label><input class="inp" id="hn" maxlength="200" placeholder="e.g. forgot to press Start"><p style="margin-top:14px"><button class="btn" id="hsave">Save</button></p>');
       $('#hsave').onclick = async function () { try { await api('hours/add', { method: 'POST', body: { for: d.uid, date: $('#hd').value, from: $('#hf').value, to: $('#ht').value, note: $('#hn').value } }); closeModal(); toast('Added ✓'); vStaff(id, d.month); } catch (e) { toast('Check the date and times.'); } };
     };
-    view.querySelectorAll('.strm').forEach(function (b) { b.onclick = async function () { if (!confirm('Remove this entry?')) return; try { await api('hours/remove', { method: 'POST', body: { for: d.uid, month: d.month, id: b.dataset.id } }); vStaff(id, d.month); } catch (e) { toast('Could not remove.'); } }; });
+    view.querySelectorAll('.strm').forEach(function (b) { b.onclick = async function () { if (!(await ask('Remove this entry?'))) return; try { await api('hours/remove', { method: 'POST', body: { for: d.uid, month: d.month, id: b.dataset.id } }); vStaff(id, d.month); } catch (e) { toast('Could not remove.'); } }; });
   }
 
   /* ---------- the manager's to-do list (also sent on Telegram and WhatsApp until done) ---------- */
@@ -1201,9 +1216,9 @@
       }
       toast(errs ? 'Done, but ' + errs + ' could not be made. Try again.' : 'Done'); aLogins(head);
     }
-    var mk = $('#mkall'); if (mk) mk.onclick = function () { if (confirm('Create accounts for ' + none.length + ' students?')) run('admin/logins/create', none.map(function (r) { return r.sid; })); };
+    var mk = $('#mkall'); if (mk) mk.onclick = async function () { if (await ask('Create accounts for ' + none.length + ' students?')) run('admin/logins/create', none.map(function (r) { return r.sid; })); };
     view.querySelectorAll('[data-mk]').forEach(function (b) { b.onclick = function () { run('admin/logins/create', [b.dataset.mk]); }; });
-    view.querySelectorAll('[data-rs]').forEach(function (b) { b.onclick = function () { if (confirm('Give ' + byId[b.dataset.rs].name + ' a new one-time password? Their current password stops working.')) run('admin/logins/reset', [b.dataset.rs]); }; });
+    view.querySelectorAll('[data-rs]').forEach(function (b) { b.onclick = async function () { if (await ask('Give ' + byId[b.dataset.rs].name + ' a new one-time password? Their current password stops working.')) run('admin/logins/reset', [b.dataset.rs]); }; });
     view.querySelectorAll('[data-cp]').forEach(function (b) { b.onclick = function () { try { navigator.clipboard.writeText(msg(byId[b.dataset.cp])); toast('Message copied'); } catch (e) {} }; });
     var cp = $('#cpall'); if (cp) cp.onclick = function () { try { navigator.clipboard.writeText(pending.map(msg).join('\n\n———\n\n')); toast('All messages copied'); } catch (e) {} };
   }
@@ -1269,7 +1284,7 @@
     };
     var up = $('#unpay'); if (up) up.onclick = async function () {
       var m = f0.elements.month.value; if (!paid[m]) return toast('That month is not marked paid.');
-      if (!confirm('Mark ' + monthLabel(m) + ' as not paid? The tuition income entry for it is removed.')) return;
+      if (!(await ask('Mark ' + monthLabel(m) + ' as not paid? The tuition income entry for it is removed.'))) return;
       var pay = Object.assign({}, s.pay); pay.paid = Object.assign({}, pay.paid); delete pay.paid[m];
       await store(pay, monthLabel(m) + ' marked unpaid');
     };
@@ -1323,7 +1338,7 @@
       if (!item.first && !item.last) return toast('Enter a name.');
       await api('admin/students', { method: 'PUT', body: { item: item } }); closeModal(); toast('Saved'); vAdmin('students');
     };
-    var d = $('#del'); if (d) d.onclick = async function () { if (!confirm('Delete ' + s.first + ' ' + s.last + '? Their account (if any) stays but is unlinked.')) return; await api('admin/students/' + s.id, { method: 'DELETE' }); closeModal(); vAdmin('students'); };
+    var d = $('#del'); if (d) d.onclick = async function () { if (!(await ask('Delete ' + s.first + ' ' + s.last + '? Their account (if any) stays but is unlinked.'))) return; await api('admin/students/' + s.id, { method: 'DELETE' }); closeModal(); vAdmin('students'); };
   }
 
   function payEditor(p) {
@@ -1356,7 +1371,7 @@
         return '<label class="f">' + f[1] + '</label>' + (f[2] ? '<select class="inp" name="' + f[0] + '">' + f[2](x[f[0]]) + '</select>' : '<input class="inp" name="' + f[0] + '" value="' + esc(x[f[0]] || '') + '">');
       }).join('') + '<div class="row" style="margin-top:18px"><button class="btn" type="submit">Save</button>' + (x.id ? '<button class="btn ghost" type="button" id="del">Delete</button>' : '') + '</div></form>');
       $('#ef').onsubmit = async function (ev) { ev.preventDefault(); var it = Object.assign({}, x); fields.forEach(function (f) { it[f[0]] = ev.target.elements[f[0]].value.trim(); }); await api('admin/' + key, { method: 'PUT', body: { item: it } }); closeModal(); toast('Saved'); vAdmin(key); };
-      var d = $('#del'); if (d) d.onclick = async function () { if (!confirm('Delete this ' + title + '?')) return; await api('admin/' + key + '/' + x.id, { method: 'DELETE' }); closeModal(); vAdmin(key); };
+      var d = $('#del'); if (d) d.onclick = async function () { if (!(await ask('Delete this ' + title + '?'))) return; await api('admin/' + key + '/' + x.id, { method: 'DELETE' }); closeModal(); vAdmin(key); };
     }
     view.querySelectorAll('[data-ed]').forEach(function (b) { b.onclick = function () { edit(list.filter(function (x) { return x.id === b.dataset.ed; })[0]); }; });
     $('#add').onclick = function () { edit({}); };
@@ -1512,7 +1527,7 @@
       $('#fe').onsubmit = async function (ev) { ev.preventDefault(); var f = ev.target, it = { id: e.id, type: f.elements.type.value, amount: num(f.elements.amount.value), month: f.elements.month.value, date: f.elements.date.value, category: f.elements.category.value.trim(), note: f.elements.note.value.trim() };
         if (!it.amount || !it.month) return toast('Enter an amount and a month.');
         try { FIN = (await api('admin/finance', { method: 'PUT', body: { item: it } })).entries; closeModal(); toast('Saved'); draw(); } catch (x) { toast('Could not save.'); } };
-      var d = $('#delE'); if (d) d.onclick = async function () { if (!confirm('Delete this entry?')) return; FIN = (await api('admin/finance/' + e.id, { method: 'DELETE' })).entries; closeModal(); draw(); };
+      var d = $('#delE'); if (d) d.onclick = async function () { if (!(await ask('Delete this entry?'))) return; FIN = (await api('admin/finance/' + e.id, { method: 'DELETE' })).entries; closeModal(); draw(); };
     }
     function finImport() {
       modal('<h2>Import income and expenses</h2><p class="small">Excel or CSV. Works with a ledger (one row per payment: date, type, category, amount) or a monthly summary (one row per month with Income and Expenses columns). Re-importing the same rows does not duplicate them.</p><label class="btn" style="cursor:pointer;margin-top:10px">Choose file<input type="file" id="ff" accept=".xlsx,.xls,.csv" hidden></label><div id="fmap"></div>');
@@ -1852,7 +1867,7 @@
       var t = await aapi('telegram');
       if (t.linked) {
         p.innerHTML = '<h2>Telegram</h2><p class="sub"><span class="chip2 ok">Connected</span>' + (t.linked.username ? ' @' + esc(t.linked.username) : '') + '</p><p class="small">Reminders and chat also work in Telegram' + (t.bot ? ' with <a href="https://t.me/' + esc(t.bot) + '" target="_blank" rel="noopener">@' + esc(t.bot) + '</a>' : '') + '.</p><button class="linkbtn" id="tgx">Disconnect</button>';
-        $('#tgx').onclick = async function () { if (!confirm('Stop Telegram reminders?')) return; await aapi('telegram', { method: 'DELETE' }); tgPanel(); };
+        $('#tgx').onclick = async function () { if (!(await ask('Stop Telegram reminders?'))) return; await aapi('telegram', { method: 'DELETE' }); tgPanel(); };
       } else if (t.ready) {
         p.innerHTML = '<h2>Telegram</h2><p class="sub">Get lesson and payment reminders on your phone, and chat with the assistant in Telegram' + (t.bot ? ' (<b>@' + esc(t.bot) + '</b>)' : '') + '.</p><div id="tgui"></div>';
         tgConnectUI($('#tgui'), t.bot);
@@ -1925,9 +1940,8 @@
       try { await api('feedback', { method: 'POST', body: { rating: rating, course: $('#fbc').value, text: text, consent: true, lang: lang } }); toast('Thank you! The director will read it soon.'); vFeedback(); }
       catch (e) { this.disabled = false; toast('Could not send it. Please try again.'); }
     };
-    if ($('#fbdel')) $('#fbdel').onclick = async function () { if (!confirmDel()) return; try { await api('feedback', { method: 'DELETE' }); toast('Deleted.'); vFeedback(); } catch (e) { toast('Could not delete.'); } };
+    if ($('#fbdel')) $('#fbdel').onclick = async function () { if (!(await ask('Delete your feedback?'))) return; try { await api('feedback', { method: 'DELETE' }); toast('Deleted.'); vFeedback(); } catch (e) { toast('Could not delete.'); } };
   }
-  function confirmDel() { return window.confirm ? window.confirm('Delete your feedback?') : true; }
 
   async function aFeedback(head) {
     view.innerHTML = head + '<p><span class="spin"></span> Loading feedback…</p>';
@@ -1946,7 +1960,7 @@
       view.querySelectorAll('.fb-admin [data-a]').forEach(function (b) {
         b.onclick = async function () {
           var id = b.closest('.fb-admin').dataset.id, x = L.find(function (y) { return y.id === id; }), a = b.dataset.a, body;
-          if (a === 'delete') { if (!window.confirm('Delete this feedback for good?')) return; body = { delete: true }; }
+          if (a === 'delete') { if (!(await ask('Delete this feedback for good?'))) return; body = { delete: true }; }
           else if (a === 'name') { var nm = window.prompt('Name shown on the website', x.name); if (nm == null) return; var co = window.prompt('Course shown on the website', x.course || ''); if (co == null) return; body = { name: nm, course: co }; }
           else body = { status: a };
           try { await api('admin/feedback/' + id, { method: 'POST', body: body }); toast(a === 'shown' ? 'Now on the website.' : a === 'hidden' ? 'Hidden.' : a === 'delete' ? 'Deleted.' : 'Saved.'); aFeedback(head); } catch (e) { toast('Could not save.'); }
