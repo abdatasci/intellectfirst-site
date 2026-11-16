@@ -13,10 +13,28 @@ const APP_URL = (process.env.URL || 'https://intellectfirst.com').replace(/\/$/,
 export const STAFF_KB = { keyboard: [[{ text: '📚 IF English' }, { text: '👤 My account' }], [{ text: '🕑 Today\'s lessons' }, { text: '🎯 Class task' }], [{ text: '📝 Send homework' }, { text: '📅 Next lessons' }], [{ text: '🔁 Cover a lesson' }, { text: '❓ Help' }]], resize_keyboard: true, is_persistent: true };
 // Telegram keeps the old keyboard until the bot sends a new one: when the teacher menu changes, bump KBV and every
 // teacher gets the new keyboard (at once from the reminder job, or with their next message).
-export const KBV = '2026-11-16b';
-export async function ensureStaffKb(chatId, name, force) {
+export const KBV = '2026-11-16c';
+// Three staff menus: teachers; the director and the manager (they teach too); the SMM (not a teacher)
+export const ADMIN_KB = { keyboard: [
+  [{ text: '🏫 School today' }, { text: '📋 To-do' }],
+  [{ text: '🕑 My lessons' }, { text: '🔁 Cover a lesson' }],
+  [{ text: '💳 Payments due' }, { text: '📆 This week' }],
+  [{ text: '🎯 Class task' }, { text: '📝 Send homework' }],
+  [{ text: '👤 Admin' }, { text: '📚 IF English' }, { text: '❓ Help' }]], resize_keyboard: true, is_persistent: true };
+export const SMM_KB = { keyboard: [
+  [{ text: '🕑 Today at school' }, { text: '📆 This week' }],
+  [{ text: '🔔 Changes' }, { text: '🎬 Filming plan' }],
+  [{ text: '👤 My account' }, { text: '❓ Help' }]], resize_keyboard: true, is_persistent: true };
+export const isAdminP = p => !!p && (p.role === 'admin' || !!p.manager);
+export const kbFor = p => p && p.smm && p.role !== 'admin' ? SMM_KB : isAdminP(p) ? ADMIN_KB : STAFF_KB;
+export const ADMIN_HELP = '🏫 Director / manager menu:\n• 🏫 School today — every lesson with its status: clocked in, late, not yet, register taken, cancelled, covered.\n• 📋 To-do — registers, make-up lessons, covers, receipts, payments and access requests waiting for you.\n• 🕑 My lessons — your own lessons with Clock in, Register, Cancel.\n• 🔁 Cover a lesson — arrange or confirm covers.\n• 💳 Payments due — overdue tuition and receipts to confirm.\n• 📆 This week — the timetable for the next 7 days.\n• 🎯 Class task and 📝 Send homework — as for teachers.\n• 👤 Admin — the full admin pages inside Telegram.\nYou also get a message for every cover, cancellation and late clock-in.';
+export const SMM_HELP = '🎬 SMM menu:\n• 🕑 Today at school — all lessons today: time, class, teacher, room.\n• 📆 This week — the next 7 days, to plan posts and shoots.\n• 🔔 Changes — cancellations, moved lessons and covers today and tomorrow.\n• 🎬 Filming plan — the best lessons to film today: groups with the most students, Young Learners, IELTS and new classes, with their rooms.\n• Every morning at 08:00 you get the day\'s lessons automatically, and a message whenever a lesson changes.';
+export const helpFor = p => p && p.smm && p.role !== 'admin' ? SMM_HELP : isAdminP(p) ? ADMIN_HELP + '\n\n' + STAFF_HELP : STAFF_HELP;
+export const helloFor = (p, n) => `Hi ${n}! 👋 You are connected to the IF Academy bot as ${p && p.smm && p.role !== 'admin' ? 'SMM' : p && p.teacherId === 't-abdoulie' ? 'director' : isAdminP(p) ? 'manager' : 'a teacher'}.\n\n` + helpFor(p);
+export async function ensureStaffKb(chatId, who, force) {
+  const p = typeof who === 'string' ? { name: who, role: 'teacher' } : who || {};
   if (!force && (await S().get(`bot/kbv/${chatId}`)) === KBV) return false;
-  await tgSend(chatId, staffHello(String(name || '').split(' ')[0] || 'there'), { reply_markup: STAFF_KB });
+  await tgSend(chatId, helloFor(p, String(p.name || '').split(' ')[0] || 'there'), { reply_markup: kbFor(p) });
   await S().set(`bot/kbv/${chatId}`, KBV);
   return true;
 }
@@ -52,13 +70,13 @@ function lessonLine(l, e, tName) {
 const hm = iso => local(new Date(iso)).toISOString().slice(11, 16);
 
 /** "🕑 Today's lessons": one message per lesson, each with its own buttons. */
-export async function sendToday(chatId, uid, p) {
+export async function sendToday(chatId, uid, p, onlyMine) {
   const date = today(), classes = await doc('classes'), teachers = await doc('teachers');
   const all = lessonsOn(classes, date, await loadChanges()).filter(l => !l.cancelled && !l.movedTo);
-  const list = all.filter(l => mine(p, l) || p.smm);   // the SMM sees every lesson (no buttons)
-  if (!list.length) return tgSend(chatId, canAll(p) ? 'No lessons today.' : 'You have no lessons today. 🙂', { reply_markup: STAFF_KB });
+  const list = all.filter(l => onlyMine ? l.teacherId === p.teacherId : (mine(p, l) || p.smm));
+  if (!list.length) return tgSend(chatId, canAll(p) ? 'No lessons today.' : 'You have no lessons today. 🙂', { reply_markup: kbFor(p) });
   const L = await loadLog(date.slice(0, 7)), tName = id => (teachers.find(t => t.id === id) || {}).name || '';
-  await tgSend(chatId, `🕑 Lessons today (${date.slice(8)}.${date.slice(5, 7)}):`, { reply_markup: STAFF_KB });
+  await tgSend(chatId, `🕑 Lessons today (${date.slice(8)}.${date.slice(5, 7)}):`, { reply_markup: kbFor(p) });
   for (const l of list.slice(0, 20)) {
     const e = L[l.key];
     await tgSend(chatId, lessonLine(l, e, (canAll(p) || p.smm) && l.teacherId !== p.teacherId ? tName(l.teacherId) : ''), { reply_markup: { inline_keyboard: mine(p, l) ? lessonButtons(l, e) : [] } });
@@ -232,4 +250,71 @@ async function tellStudents(cls, text) {
   const links = await getLinks(), bySid = await uidsByStudent(links); let n = 0;
   for (const s of students) { const uid = s.uid || bySid[s.id], l = uid && links[uid]; if (uid) await addNote(uid, { kind: 'lessonChange', text: text.en }).catch(() => {}); if (l && l.chatId) { await tgSend(l.chatId, l.lang === 'en' ? text.en : text.ru).catch(() => {}); n++; } }
   return n;
+}
+
+/* ---------- director / manager / SMM views ---------- */
+const DOT = l => l.cancelled ? '❌' : l.movedTo ? '↪' : '';
+/** 🏫 School today: one board with every lesson and its status. */
+export async function sendSchoolDay(chatId, p) {
+  const date = today(), classes = await doc('classes'), teachers = await doc('teachers'), students = await doc('students');
+  const tn = id => ((teachers.find(t => t.id === id) || {}).name || '').split(' ')[0] || '—';
+  const { withEntry, since } = await import('./lessons.mjs');
+  const list = withEntry(lessonsOn(classes, date, await loadChanges()), await loadLog(date.slice(0, 7)), new Date(), await since());
+  const size = cid => students.filter(s => inClass(classes.find(c => c.id === cid), s) && s.status === 'active').length;
+  const ST = l => { const e = l.entry || {}; if (l.cancelled || l.state === 'cancelled') return '❌ cancelled'; if (l.movedTo) return '↪ moved'; if (e.takenAt) return '📋 register taken'; if (e.checkIn) return e.lateMin > 0 ? `⏰ in, ${e.lateMin} min late` : '✅ clocked in'; if (l.state === 'missed') return '⚠️ no clock-in'; if (l.state === 'overdue') return '⚠️ started, not clocked in'; return '⏳ upcoming'; };
+  const live = list.filter(l => !l.cancelled && !l.movedTo), n = k => list.filter(l => ST(l).startsWith(k)).length;
+  const head = `🏫 School today · ${date.slice(8)}.${date.slice(5, 7)}\n${live.length} lessons · ✅ ${n('✅') + n('📋') + n('⏰')} in · ⚠️ ${n('⚠️')} missing · ⏳ ${n('⏳')} to come${n('❌') ? ' · ❌ ' + n('❌') + ' cancelled' : ''}`;
+  const lines = list.map(l => `${l.start}${l.end ? '–' + l.end : ''}  ${l.label} · ${tn(l.teacherId)}${l.coverFor ? ' (cover for ' + tn(l.coverFor) + ')' : ''}${l.room ? ' · ' + l.room : ''} · ${size(l.classId)} st.\n      ${ST(l)}`);
+  return tgSend(chatId, `${head}\n\n${lines.join('\n') || 'No lessons today.'}\n\nDetails: intellectfirst.com/me/#/admin/lessons`, { reply_markup: kbFor(p) });
+}
+/** 📋 To-do: the manager's open tasks, grouped. */
+export async function sendTodo(chatId, p, only) {
+  const { openTasks } = await import('./tasks.mjs');
+  let t = await openTasks(); if (only) t = t.filter(x => x.kind === only);
+  if (!t.length) return tgSend(chatId, only === 'payment' ? '💳 No overdue payments and no receipts waiting. 👍' : '📋 Nothing waiting — all done. 👍', { reply_markup: kbFor(p) });
+  const ICON = { attendance: '📋 Registers', reschedule: '🔁 Make-up lessons & covers', payment: '💳 Payments', accounts: '👤 Accounts & feedback' }, by = {};
+  t.forEach(x => (by[x.kind] = by[x.kind] || []).push(x));
+  const body = Object.keys(by).map(k => `${ICON[k] || k} (${by[k].length})\n` + by[k].slice(0, 10).map(x => '• ' + x.text.replace(/^[^:]+: /, '')).join('\n') + (by[k].length > 10 ? `\n… and ${by[k].length - 10} more` : '')).join('\n\n');
+  return tgSend(chatId, `${only === 'payment' ? '💳 Payments due' : '📋 To-do'} · ${t.length}\n\n${body}\n\nOpen: intellectfirst.com/me/#/admin`, { reply_markup: kbFor(p) });
+}
+/** 📆 This week: the next 7 days, compact. */
+export async function sendWeek(chatId, p) {
+  const classes = await doc('classes'), teachers = await doc('teachers'), CH = await loadChanges();
+  const tn = id => ((teachers.find(t => t.id === id) || {}).name || '').split(' ')[0] || '—', DN = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const d0 = today(), out = [];
+  for (let i = 0; i < 7; i++) {
+    const date = new Date(Date.parse(d0 + 'T00:00:00Z') + i * 864e5).toISOString().slice(0, 10), ls = lessonsOn(classes, date, CH);
+    out.push(`📅 ${DN[new Date(date + 'T00:00:00Z').getUTCDay()]} ${date.slice(8)}.${date.slice(5, 7)}${ls.length ? '' : ' — no lessons'}` + ls.map(l => `\n${DOT(l) || '•'} ${l.start} ${l.label} · ${tn(l.teacherId)}${l.coverFor ? ' (cover)' : ''}${l.room ? ' · ' + l.room : ''}`).join(''));
+  }
+  const text = '📆 The next 7 days\n\n' + out.join('\n\n');
+  for (let k = 0; k < text.length; k += 3800) await tgSend(chatId, text.slice(k, k + 3800), k ? {} : { reply_markup: kbFor(p) });
+}
+/** 🔔 Changes: cancellations, moves and covers today and tomorrow. */
+export async function sendChanges(chatId, p) {
+  const classes = await doc('classes'), teachers = await doc('teachers'), CH = await loadChanges();
+  const tn = id => ((teachers.find(t => t.id === id) || {}).name || '').split(' ')[0] || '—', out = [];
+  for (let i = 0; i < 2; i++) {
+    const date = new Date(Date.parse(today() + 'T00:00:00Z') + i * 864e5).toISOString().slice(0, 10);
+    for (const l of lessonsOn(classes, date, CH)) {
+      const w = (i ? 'Tomorrow ' : 'Today ') + l.start + ' ' + l.label;
+      if (l.cancelled) out.push(`❌ ${w} — cancelled${l.note ? ' (' + l.note + ')' : ''}`);
+      else if (l.movedTo) out.push(`↪ ${w} — moved to ${l.movedTo.date.slice(8)}.${l.movedTo.date.slice(5, 7)} ${l.movedTo.start}`);
+      else if (l.kind === 'moved') out.push(`↪ ${w} — moved here from ${l.movedFrom.date.slice(8)}.${l.movedFrom.date.slice(5, 7)}`);
+      else if (l.kind === 'extra') out.push(`➕ ${w} — extra lesson (${tn(l.teacherId)})`);
+      else if (l.coverFor) out.push(`🔁 ${w} — ${tn(l.teacherId)} covers for ${tn(l.coverFor)}`);
+    }
+  }
+  return tgSend(chatId, out.length ? '🔔 Changes today and tomorrow\n\n' + out.join('\n') : '🔔 No changes today or tomorrow — everything runs as timetabled.', { reply_markup: kbFor(p) });
+}
+/** 🎬 Filming plan for the SMM: today's lessons ranked by what makes good content. */
+export async function sendFilming(chatId, p) {
+  const classes = await doc('classes'), teachers = await doc('teachers'), students = await doc('students'), date = today();
+  const tn = id => ((teachers.find(t => t.id === id) || {}).name || '').split(' ')[0] || '—';
+  const size = c => students.filter(s => inClass(c, s) && s.status === 'active').length;
+  const now = Date.now(), ls = lessonsOn(classes, date, await loadChanges()).filter(l => !l.cancelled && !l.movedTo && Date.parse(l.endAt) > now);
+  if (!ls.length) return tgSend(chatId, '🎬 No more lessons today.', { reply_markup: kbFor(p) });
+  const tag = (l, c) => /starters|movers|flyers|kids|young|yl/i.test(l.label) ? '🧸 Young Learners — games and songs' : /ielts/i.test(l.label) ? '🎓 IELTS — speaking practice, success stories' : /business|adult/i.test(l.label) ? '💼 Adults — real-life English' : /teen|ket|pet|fce/i.test(l.label) ? '🎒 Teens — team games, IF Live' : /individual/i.test(l.label) ? '👤 Individual — ask first, short clip only' : '📚 Group lesson';
+  const scored = ls.map(l => { const c = classes.find(x => x.id === l.classId), n = size(c); return { l, n, s: n + (/individual/i.test(l.label) ? -5 : 0) + (/starters|movers|flyers|kids|yl/i.test(l.label) ? 3 : 0) }; }).sort((a, b) => b.s - a.s);
+  const lines = scored.map((x, i) => `${i < 3 ? ['🥇', '🥈', '🥉'][i] : '•'} ${x.l.start}${x.l.end ? '–' + x.l.end : ''} ${x.l.label} · ${tn(x.l.teacherId)}${x.l.room ? ' · ' + x.l.room : ''} · ${x.n} students\n      ${tag(x.l)}`);
+  return tgSend(chatId, `🎬 Filming plan · today\n\n${lines.join('\n')}\n\nTip: film in the first 15 minutes (warm-up, games) or the last 10 (results). Ask the teacher before you come in, and only film students who have photo consent.`, { reply_markup: kbFor(p) });
 }

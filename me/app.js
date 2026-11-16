@@ -495,12 +495,13 @@
     if (!role()) return go('#/activate');
     if (ME.profile && ME.profile.mustChange) return vNewPassword();
     var p = ME.profile, st = ME.student, r = role();
-    var roleLbl = r === 'admin' ? (p.teacherId === 't-abdoulie' ? 'Founder &amp; Director' : 'Administrator') : r === 'teacher' ? 'Teacher' : p.alumni ? '🎓 IF Alumni' : r === 'guest' ? (paidActive(p) ? 'Full access' : trialOn(p) ? 'Full access trial' : 'Free account') : p.track === 'private' ? 'Individual student' : 'Student';
+    var roleLbl = r === 'admin' ? (p.teacherId === 't-abdoulie' ? 'Founder &amp; Director · Teacher' : 'Manager' + (p.teacherId ? ' · Teacher' : '')) : r === 'teacher' ? (p.smm ? 'SMM · Social media' : 'Teacher') : p.alumni ? '🎓 IF Alumni' : r === 'guest' ? (paidActive(p) ? 'Full access' : trialOn(p) ? 'Full access trial' : 'Free account') : p.track === 'private' ? 'Individual student' : 'Student';
     var h = '<section class="prof"><div style="position:relative">' + avatar(ME.user.id, p.name, p.photo) + '<button class="avbtn" id="ph" style="border-radius:0 0 60px 60px">Change</button></div>' +
       '<div><div class="eyebrow">' + roleLbl + (st ? ' · ' + esc((st.classes || []).join(', ')) : '') + '</div><h1>' + esc(p.name) + '</h1><p class="lead" style="font-size:15.5px">' + (/@students\.intellectfirst\.com$/.test(ME.user.email) ? 'Login: ' + esc(ME.user.email.split('@')[0]) : esc(ME.user.email)) + (p.phone ? ' · ' + esc(p.phone) : '') + '</p>' +
       '<div class="chips">' + (st ? statusChip(st.status) : '') + (p.goals ? '<span class="chip2">Goal: ' + esc(p.goals) + '</span>' : '') + (p.since ? '<span class="chip2 mute">Member since ' + when(p.since) + '</span>' : '') + '<button class="btn ghost sm" id="editbtn" type="button">✏️ Edit profile</button></div></div></section>';
     if (r === 'admin') { h += '<div id="todo"></div>'; loadTasks().then(drawTasks); }
-    if (r === 'teacher' || r === 'admin') { h += '<div id="hrs"><p class="sub"><span class="spin"></span> Loading your hours…</p></div>'; loadHours().then(drawHours); }
+    if (p.smm && r !== 'admin') h += '<div class="panel wide" style="margin:14px 0"><div class="eyebrow">SMM</div><h2 style="margin:4px 0 6px">Today at IF Academy</h2><p class="small" style="margin:0 0 12px">Every lesson with its teacher and room — to plan filming and posts. Every morning at 08:00 the day\'s lessons also come to you on Telegram, and any change during the day.</p><div class="row" style="gap:8px;flex-wrap:wrap"><a class="btn sm" href="#/calendar">📆 Week calendar</a><a class="btn ghost sm" href="/live/">🎮 IF Live (class games to film)</a><a class="btn ghost sm" href="/#apps">IF App</a></div></div>';
+    if ((r === 'teacher' || r === 'admin') && !(p.smm && r !== 'admin')) { h += '<div id="hrs"><p class="sub"><span class="spin"></span> Loading your hours…</p></div>'; loadHours().then(drawHours); }
     h += accessBand(p);
     if (r === 'student' && !st && p.track !== 'private' && !p.alumni) h += '<div class="banner"><b>We have not found your school record yet.</b> Check that your phone number below is the one you gave IF Academy (yours or your parent\'s). If it still does not match, your teacher can link your account.</div>';
     h += '<div id="tgband"></div>';
@@ -518,7 +519,7 @@
     } else {
       h += '<div id="todaybox" class="wide2"></div>';
       var tc = ME.teaching || [];
-      h += '<div class="box"><h3>' + (r === 'admin' ? 'All classes' : 'My classes') + '</h3>' + (tc.length ? tc.slice(0, 8).map(function (c) { return '<div class="cls"><div style="flex:1"><b><a href="#/class/' + c.id + '" style="text-decoration:none">' + esc(c.label) + '</a></b><p>' + esc(c.schedule || '') + (c.room ? ' · ' + esc(c.room) : '') + '</p></div></div>'; }).join('') + (tc.length > 8 ? '<a class="btn ghost sm" href="#/classes">All ' + tc.length + ' classes</a>' : '') :
+      h += '<div class="box"><h3>' + (r === 'admin' || p.smm ? 'All classes' : 'My classes') + '</h3>' + (tc.length ? tc.slice(0, 8).map(function (c) { return '<div class="cls"><div style="flex:1"><b><a href="#/class/' + c.id + '" style="text-decoration:none">' + esc(c.label) + '</a></b><p>' + esc(c.schedule || '') + (c.room ? ' · ' + esc(c.room) : '') + '</p></div></div>'; }).join('') + (tc.length > 8 ? '<a class="btn ghost sm" href="#/classes">All ' + tc.length + ' classes</a>' : '') :
         '<p class="small">No classes are linked to your account yet. The administrator can assign them.</p>') + '</div>';
       h += ieltsBox(ME.ielts, true);
       h += '<div class="box"><h3>Teaching materials</h3><p class="small" style="margin-bottom:12px">Lesson presentations for every book, with animations: present them full-screen in class.</p><a class="btn sm" href="#/classroom">Open IF Classroom</a></div>';

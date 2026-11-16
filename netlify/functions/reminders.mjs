@@ -67,7 +67,7 @@ export default async () => {
   try {
     if (tgToken() && (await S().get('bot/kbv-all')) !== KBV) {
       const links = await getLinks();
-      for (const [uid, l] of Object.entries(links)) { if (!l || !l.chatId || uid.startsWith('sid:')) continue; const p = await getProfile(uid).catch(() => null); if (isStaff(p)) await ensureStaffKb(l.chatId, p.name).catch(e => console.error('staff kb', e.message)); }
+      for (const [uid, l] of Object.entries(links)) { if (!l || !l.chatId || uid.startsWith('sid:')) continue; const p = await getProfile(uid).catch(() => null); if (isStaff(p)) await ensureStaffKb(l.chatId, p).catch(e => console.error('staff kb', e.message)); }
       await S().set('bot/kbv-all', KBV);
     }
   } catch (e) { console.error('staff kb', e.message); }

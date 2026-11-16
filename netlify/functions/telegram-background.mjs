@@ -3,7 +3,7 @@
 import { S, getProfile, contextFor, reply, publicReply, allow, tgSecret, tgSend, tg, getLinks, saveLinks, linkChat, matchPhone, local, money, langOf, localise } from '../lib/bot-core.mjs';
 import { handleReceipt, decideReceipt } from '../lib/receipts.mjs';
 import { loadHomework, forClasses, isUpcoming } from '../lib/homework.mjs';
-import { isStaff, STAFF_KB, STAFF_HELP, staffHello, sendToday, staffCallback, ensureStaffKb, cancelReasonText } from '../lib/teachbot.mjs';
+import { isStaff, STAFF_KB, STAFF_HELP, staffHello, sendToday, staffCallback, ensureStaffKb, cancelReasonText, kbFor, helpFor, helloFor, isAdminP, sendSchoolDay, sendTodo, sendWeek, sendChanges, sendFilming } from '../lib/teachbot.mjs';
 import { startCover, coverCallback } from '../lib/cover.mjs';
 import { startHomework, hwCallback, hwMessage } from '../lib/teachhw.mjs';
 import { startTask, ctCallback, ctMessage, ctAnswer, ctPollAnswer } from '../lib/classtask.mjs';
@@ -137,7 +137,7 @@ export default async (req) => {
         if (!c) { await tg('answerCallbackQuery', { callback_query_id: q.id, text: 'Expired. Share your number again.' }); return new Response('ok'); }
         await linkChat(c.key, chatId, q.from?.username, lang); await S().delete(`bot/phonepick/${chatId}`);
         await tg('answerCallbackQuery', { callback_query_id: q.id, text: '✓' });
-        const sp = isStaff(await getProfile(c.key)), f = c.name.split(' ')[0]; await tgSend(chatId, sp ? staffHello(f) : L[lang].hello(f), { reply_markup: sp ? STAFF_KB : KB });
+        const pp = await getProfile(c.key), sp = isStaff(pp), f = c.name.split(' ')[0]; await tgSend(chatId, sp ? helloFor(pp, f) : L[lang].hello(f), { reply_markup: sp ? kbFor(pp) : KB });
       } catch (e) { console.error('phone pick', e.message); }
       return new Response('ok');
     }
@@ -192,14 +192,14 @@ export default async (req) => {
       links[link.uid] = { chatId, username: m.from?.username || '', lang, at: new Date().toISOString() };
       await saveLinks(links); await S().set(`bot/chat/${chatId}`, link.uid);
       const p = await getProfile(link.uid);
-      const f = (p?.name || m.from?.first_name || '').split(' ')[0]; await tgSend(chatId, isStaff(p) ? staffHello(f) : L[lang].hello(f), { reply_markup: isStaff(p) ? STAFF_KB : KB });
+      const f = (p?.name || m.from?.first_name || '').split(' ')[0]; await tgSend(chatId, isStaff(p) ? helloFor(p, f) : L[lang].hello(f), { reply_markup: isStaff(p) ? kbFor(p) : KB });
       return new Response('ok');
     }
     if (m.contact) {   // connect by phone number (Telegram's "share my number" button)
       if (m.contact.user_id && m.contact.user_id !== m.from?.id) { await tgSend(chatId, L[lang].phoneOwn, { reply_markup: PHONE_KB(lang) }); return new Response('ok'); }
       const cands = await matchPhone(m.contact.phone_number);
       if (!cands.length) { await tgSend(chatId, L[lang].phoneNone('+' + String(m.contact.phone_number).replace(/^\+/, '')), { reply_markup: { remove_keyboard: true } }); return new Response('ok'); }
-      if (cands.length === 1) { await linkChat(cands[0].key, chatId, m.from?.username, lang); const sp = isStaff(await getProfile(cands[0].key)), f = cands[0].name.split(' ')[0]; await tgSend(chatId, sp ? staffHello(f) : L[lang].hello(f), { reply_markup: sp ? STAFF_KB : KB }); return new Response('ok'); }
+      if (cands.length === 1) { await linkChat(cands[0].key, chatId, m.from?.username, lang); const pp = await getProfile(cands[0].key), sp = isStaff(pp), f = cands[0].name.split(' ')[0]; await tgSend(chatId, sp ? helloFor(pp, f) : L[lang].hello(f), { reply_markup: sp ? kbFor(pp) : KB }); return new Response('ok'); }
       await S().setJSON(`bot/phonepick/${chatId}`, { cands: cands.slice(0, 8), lang, exp: Date.now() + 30 * 60e3 });
       await tgSend(chatId, L[lang].phonePick, { reply_markup: { inline_keyboard: cands.slice(0, 8).map((c, i) => [{ text: c.name + (c.classes ? ' · ' + c.classes : ''), callback_data: 'ph:' + i }]) } });
       return new Response('ok');
@@ -224,7 +224,7 @@ export default async (req) => {
     }
     const me = await getProfile(uid).catch(() => null);
     await syncCommands(chatId, isStaff(me));
-    if (isStaff(me) && await ensureStaffKb(chatId, me.name) && /^\/start\b|^\/help\b|^❓|^💳|^📎|^📝 Homework/i.test(text)) return new Response('ok');
+    if (isStaff(me) && await ensureStaffKb(chatId, me) && /^\/start\b|^\/help\b|^❓|^💳|^📎|^📝 Homework/i.test(text)) return new Response('ok');
     if (isStaff(me) && /^📝 Send homework|^\/sendhw\b|^\/sethw\b/i.test(text)) { await startHomework(chatId, me); return new Response('ok'); }
     // Apps opened from the reply keyboard get no sign-in data from Telegram, so these buttons answer with buttons
     // under the message (which do), and the bot's Menu button (next to the text box) opens My account directly.
@@ -245,16 +245,26 @@ export default async (req) => {
     if (m.photo || m.document) { tg('sendChatAction', { chat_id: chatId, action: 'typing' }).catch(() => {}); await handleReceipt({ chatId, uid, msg: m, lang }); return new Response('ok'); }
     if (isStaff(me) && await cancelReasonText(chatId, text)) return new Response('ok');
     if (isStaff(me) && /^🔁|^\/cover\b/i.test(text)) { await startCover(chatId, uid, me); return new Response('ok'); }
+    if (isStaff(me) && (isAdminP(me) || me.smm)) {   // director, manager, SMM menus
+      if (/^🏫|^\/school\b/i.test(text) && isAdminP(me)) { await sendSchoolDay(chatId, me); return new Response('ok'); }
+      if (/^📋|^\/todo\b/i.test(text) && isAdminP(me)) { await sendTodo(chatId, me); return new Response('ok'); }
+      if (/^💳 Payments due|^\/due\b/i.test(text) && isAdminP(me)) { await sendTodo(chatId, me, 'payment'); return new Response('ok'); }
+      if (/^🕑 My lessons|^\/mine\b/i.test(text) && isAdminP(me)) { await sendToday(chatId, uid, me, true); return new Response('ok'); }
+      if (/^📆|^\/week\b/i.test(text)) { await sendWeek(chatId, me); return new Response('ok'); }
+      if (/^🔔|^\/changes\b/i.test(text)) { await sendChanges(chatId, me); return new Response('ok'); }
+      if (/^🎬|^\/film\b/i.test(text)) { await sendFilming(chatId, me); return new Response('ok'); }
+      if (/^🕑|^\/today\b/i.test(text) && me.smm && me.role !== 'admin') { await sendSchoolDay(chatId, me); return new Response('ok'); }
+    }
     if (isStaff(me) && /^\/today\b|^🕑|^\/clock/i.test(text)) { await sendToday(chatId, uid, me); return new Response('ok'); }
-    if (isStaff(me) && /^\/start\b|^\/help\b|^❓/i.test(text)) { await tgSend(chatId, STAFF_HELP, { reply_markup: STAFF_KB }); return new Response('ok'); }
+    if (isStaff(me) && /^\/start\b|^\/help\b|^❓/i.test(text)) { await tgSend(chatId, helpFor(me), { reply_markup: kbFor(me) }); return new Response('ok'); }
     if (/^\/receipt\b|^📎/i.test(text)) { await tgSend(chatId, L[lang].receiptHow, { reply_markup: KB }); return new Response('ok'); }
     if (/^\/start\b|^\/help\b|^❓/i.test(text)) { await tgSend(chatId, L[lang].help, { reply_markup: KB }); return new Response('ok'); }
     const ctx = await contextFor(uid);
     if (!ctx) { await tgSend(chatId, L[lang].unlinked, { reply_markup: PHONE_KB(lang) }); return new Response('ok'); }
-    if (/^\/next\b|^📅/i.test(text)) { await tgSend(chatId, ctx.student || ctx.classes.length ? nextText(ctx, lang) : L[lang].unlinkedRecord, { reply_markup: isStaff(ctx.profile) ? STAFF_KB : KB }); return new Response('ok'); }
-    if (/^\/hw\b|^\/homework\b|^📝/i.test(text)) { await tgSend(chatId, ctx.classes.length ? hwListText(forClasses(await loadHomework(), ctx.classes.map(c => c.id), { past: 0 }).filter(isUpcoming), lang) : L[lang].unlinkedRecord, { reply_markup: isStaff(ctx.profile) ? STAFF_KB : KB }); return new Response('ok'); }
+    if (/^\/next\b|^📅/i.test(text)) { await tgSend(chatId, ctx.student || ctx.classes.length ? nextText(ctx, lang) : L[lang].unlinkedRecord, { reply_markup: isStaff(ctx.profile) ? kbFor(ctx.profile) : KB }); return new Response('ok'); }
+    if (/^\/hw\b|^\/homework\b|^📝/i.test(text)) { await tgSend(chatId, ctx.classes.length ? hwListText(forClasses(await loadHomework(), ctx.classes.map(c => c.id), { past: 0 }).filter(isUpcoming), lang) : L[lang].unlinkedRecord, { reply_markup: isStaff(ctx.profile) ? kbFor(ctx.profile) : KB }); return new Response('ok'); }
     if (/^\/results\b|^📊/i.test(text)) { await tgSend(chatId, await resultsText(ctx, uid, lang), { reply_markup: KB }); return new Response('ok'); }
-    if (/^\/pay\b|^💳/i.test(text)) { await tgSend(chatId, ctx.student ? payText(ctx, lang) : L[lang].unlinkedRecord, { reply_markup: isStaff(ctx.profile) ? STAFF_KB : KB }); return new Response('ok'); }
+    if (/^\/pay\b|^💳/i.test(text)) { await tgSend(chatId, ctx.student ? payText(ctx, lang) : L[lang].unlinkedRecord, { reply_markup: isStaff(ctx.profile) ? kbFor(ctx.profile) : KB }); return new Response('ok'); }
     if (!text) { await tgSend(chatId, L[lang].help); return new Response('ok'); }
 
     if (!(await allow(uid, ctx.role !== 'student'))) { await tgSend(chatId, L[lang].busy); return new Response('ok'); }
