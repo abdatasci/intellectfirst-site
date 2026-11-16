@@ -24,7 +24,8 @@ async function who(req) {
   return { user, profile, level: tier(profile) };
 }
 const canWatch = (level, unitNo) => unitNo <= FREE_UNITS || (level !== 'none' && unitNo <= SIGNED_UNITS) || level === 'member' || level === 'staff';
-const ytId = v => { const s = String(v || '').trim(); const m = s.match(/(?:youtu\.be\/|v=|embed\/|shorts\/)([\w-]{11})/) || s.match(/^([\w-]{11})$/); return m ? m[1] : ''; };
+// a YouTube Shorts link (vertical video, like a Reel) is stored as "s:<id>" so the page shows a tall player
+const ytId = v => { const s = String(v || '').trim(); const m = s.match(/(?:youtu\.be\/|v=|embed\/|shorts\/)([\w-]{11})/) || s.match(/^(?:s:)?([\w-]{11})$/); return m ? ((/shorts\/|^s:/.test(s) ? 's:' : '') + m[1]) : ''; };
 const unitOf = lessonId => +((String(lessonId).match(/^u(\d+)/) || [])[1] || 0);
 
 export default async (req) => {
