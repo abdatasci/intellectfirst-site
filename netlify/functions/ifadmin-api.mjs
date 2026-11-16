@@ -125,6 +125,24 @@ export default async (req) => {
         delete b.id; Object.assign(r, b); await st.setJSON(sd[1], list); return json({ ok: true, record: r });
       }
     }
+    // website accounts (directory): find by name, and link an account to its school record (copying the phone if the record has none)
+    if (path === 'accounts' && method === 'GET') {
+      const q = (new URL(req.url).searchParams.get('q') || '').toLowerCase(), dir = (await getStore({ name: 'ielts', consistency: 'strong' }).get('directory', { type: 'json' })) || {};
+      return json(Object.entries(dir).filter(([u, d]) => q && String(d.name || '').toLowerCase().includes(q)).slice(0, 20).map(([u, d]) => ({ uid: u, name: d.name, phone: d.phone || '', role: d.role, studentId: d.studentId || null })));
+    }
+    const la = path.match(/^accounts\/([A-Za-z0-9-]+)\/link$/);
+    if (la && method === 'POST') {
+      const b = await req.json().catch(() => ({})), U = getStore({ name: 'ielts', consistency: 'strong' }), st = getStore({ name: 'school', consistency: 'strong' });
+      const dir = (await U.get('directory', { type: 'json' })) || {}, p = await U.get(`u/${la[1]}/profile`, { type: 'json' });
+      const list = (await st.get('students', { type: 'json' })) || [], rec = list.find(x => x.id === b.studentId);
+      if (!p || !rec) return fail(404, 'missing');
+      p.studentId = rec.id; if (!p.role || p.role === 'guest') p.role = 'student'; await U.setJSON(`u/${la[1]}/profile`, p);
+      dir[la[1]] = { ...(dir[la[1]] || {}), studentId: rec.id, role: p.role }; await U.setJSON('directory', dir);
+      const phone = p.phone || (dir[la[1]] || {}).phone || '';
+      if (phone && !rec.phone) rec.phone = phone;
+      rec.uid = la[1]; await st.setJSON('students', list);
+      return json({ ok: true, profile: { name: p.name, role: p.role, studentId: p.studentId, phone }, record: { id: rec.id, phone: rec.phone } });
+    }
     // lesson clock-in log: read a month, or correct one lesson's clock-in time (the director's corrections)
     const ll = path.match(/^lessonlog\/(\d{4}-\d{2})(?:\/(.+))?$/);
     if (ll) {
