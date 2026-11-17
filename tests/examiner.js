@@ -65,6 +65,11 @@
     var qs = opt.qs && opt.qs.length ? opt.qs.slice(0, 5) : pick(BANK[lv] || BANK.B1, 3), g = kid ? 'f' : (Math.random() < 0.5 ? 'f' : 'm'), name = g === 'm' ? 'ATLAS' : 'NOVA';
     var SR = window.SpeechRecognition || window.webkitSpeechRecognition, answers = [];
     var canRec = !!(window.MediaRecorder && navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+    // iPhone/iPad and the Telegram mini-app: the browser's own speech recognition is refused there ("service not allowed"),
+    // so record the answer and transcribe it on the server (/api/stt) instead
+    var IOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    var TGW = !!(window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initData) || /Telegram/i.test(navigator.userAgent);
+    if (canRec && (IOS || TGW)) SR = null;
     var deps = [window.IFBots ? null : load('/robots.js'), window.IFVoice ? null : load('/voice.js')].filter(Boolean);
     return Promise.all(deps).then(function () {
       css();
@@ -121,7 +126,7 @@
                 text = (text ? text + ' ' : '') + got; tr.textContent = text; nx.disabled = false;
               })
               .catch(function () { typing('Sorry, I couldn’t hear the recording. Please type your answer.'); })
-              .then(function () { busy = false; if (mic) mic.disabled = false; });
+              .then(function () { busy = false; if (mic) { mic.style.display = ''; mic.disabled = false; } });
           }
           if (mic && REC) mic.onclick = function () {
             if (busy) return;
@@ -139,7 +144,7 @@
               };
               mr.start(); t0 = t0 || Date.now(); var r0 = Date.now(); mic.classList.add('on'); mic.textContent = '■ Stop'; tr.textContent = 'Recording… speak now, then press Stop.';
               timer = setInterval(function () { var sec = Math.round((Date.now() - r0) / 1000); tm.textContent = sec + 's'; if (sec >= (opt.mins ? opt.mins * 60 + 30 : 120)) stop(); }, 500);
-            }).catch(function () { typing('The microphone isn’t available here. Please type your answer.'); });
+            }).catch(function () { typing(IOS ? (TGW ? 'Telegram cannot use the microphone yet. On the iPhone: Settings → Telegram → turn on Microphone, then press the microphone again — or type your answer below.' : 'Allow the microphone: tap “aA” in the address bar → Website Settings → Microphone → Allow, then press the microphone again — or type your answer below.') : 'The microphone isn’t available here. Allow it in the browser, then press the microphone again — or type your answer below.'); if (mic) { mic.style.display = ''; mic.disabled = false; } });
           };
           if (mic && SR) mic.onclick = function () {
             if (mic.classList.contains('on')) return stop();
@@ -147,7 +152,7 @@
             rec = new SR(); rec.lang = 'en-GB'; rec.continuous = true; rec.interimResults = true;
             var base = text ? text + ' ' : '';
             rec.onresult = function (ev) { var fin = '', tmp = ''; for (var k = 0; k < ev.results.length; k++) { if (ev.results[k].isFinal) fin += ev.results[k][0].transcript + ' '; else tmp += ev.results[k][0].transcript; } text = (base + fin).trim(); tr.textContent = (text + ' ' + tmp).trim() || '…'; if (!speechStart) speechStart = Date.now(); nx.disabled = !(text || tmp); };
-            rec.onerror = function (e) { if (e.error === 'not-allowed' || e.error === 'service-not-allowed') { tr.textContent = 'The microphone is blocked. Allow it in the browser settings, or skip and your teacher will mark speaking.'; } stop(); };
+            rec.onerror = function (e) { if (e.error === 'not-allowed' || e.error === 'service-not-allowed') { if (canRec) { SR = null; stop(); answers.length = i; ask(i); return; } tr.textContent = 'The microphone is blocked. Allow it in the browser settings, or type your answer.'; } stop(); };
             rec.onend = function () { if (mic.classList.contains('on')) { try { rec.start(); } catch (e) { stop(); } } };
             try { rec.start(); } catch (e) {}
             t0 = t0 || Date.now(); mic.classList.add('on'); mic.textContent = '■ Stop';

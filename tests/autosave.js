@@ -50,7 +50,7 @@
   function fill(p) { return p; }
   function examiner() {
     if (window.IFExaminer) return Promise.resolve(window.IFExaminer);
-    return new Promise(function (ok) { var x = document.createElement('script'); x.src = '/tests/examiner.js?v=4'; x.onload = function () { ok(window.IFExaminer || null); }; x.onerror = function () { ok(null); }; document.head.appendChild(x); });
+    return new Promise(function (ok) { var x = document.createElement('script'); x.src = '/tests/examiner.js?v=5'; x.onload = function () { ok(window.IFExaminer || null); }; x.onerror = function () { ok(null); }; document.head.appendChild(x); });
   }
   function hook() {
     if (!window.IFR || window.IFR.__as) return !!window.IFR;

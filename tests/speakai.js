@@ -14,7 +14,7 @@
   }
   function examiner() {
     if (window.IFExaminer) return Promise.resolve(window.IFExaminer);
-    return new Promise(function (ok) { var x = document.createElement('script'); x.src = '/tests/examiner.js?v=4'; x.onload = function () { ok(window.IFExaminer || null); }; x.onerror = function () { ok(null); }; document.head.appendChild(x); });
+    return new Promise(function (ok) { var x = document.createElement('script'); x.src = '/tests/examiner.js?v=5'; x.onload = function () { ok(window.IFExaminer || null); }; x.onerror = function () { ok(null); }; document.head.appendChild(x); });
   }
   var txt = function (el) { return el ? String(el.textContent || '').replace(/\s+/g, ' ').trim() : ''; };
   function levelOf() {
