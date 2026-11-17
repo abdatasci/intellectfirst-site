@@ -2,7 +2,8 @@
 //   · A reason is required before the cancellation takes effect.
 //   · 8 hours or more before the start: free — the lesson does not count from the package (IF Admin mark EA).
 //     Less than 8 hours before: the lesson counts (IF Admin mark UA), as a late cancellation.
-//   · At most MAX_PER_MONTH cancellations per calendar month (by the lesson's month); after that, the student must contact the school.
+//   · The first MAX_PER_MONTH cancellations in a calendar month (by the lesson's month) can be free; any further cancellation
+//     that month is allowed (the school is still told, with the reason) but always counts, however early.
 //   · The director, the manager(s) and the class's teacher are told in the bot (and in their website notifications).
 //   · Private students of the director: an early cancellation cancels the whole lesson (it is their own lesson); only the director is told.
 // Stored in school "cancels": { "<lessonKey>|<sid>": { sid, uid, name, classId, label, date, start, key, reason, early, at, via } };
@@ -36,13 +37,14 @@ export async function myLessons(w, now = new Date()) {
     freeHours: FREE_HOURS, max: MAX_PER_MONTH,
     lessons: list.map(l => {
       const c = C[l.key + '|' + w.sid], hrs = (l.at - now) / 3600e3;
-      return { key: l.key, label: l.label, date: l.date, start: l.start, end: l.end, room: l.room, at: l.at.toISOString(), hoursLeft: Math.round(hrs * 10) / 10, free: hrs >= FREE_HOURS,
+      return { key: l.key, label: l.label, date: l.date, start: l.start, end: l.end, room: l.room, at: l.at.toISOString(), hoursLeft: Math.round(hrs * 10) / 10, inTime: hrs >= FREE_HOURS,
+        free: hrs >= FREE_HOURS && used(l.date.slice(0, 7)) < MAX_PER_MONTH,
         cancelled: c ? { early: c.early, reason: c.reason, at: c.at } : null, left: Math.max(0, MAX_PER_MONTH - used(l.date.slice(0, 7))) };
     })
   };
 }
 
-/** Cancel one lesson. Throws {code: 'reason' | 'lesson' | 'started' | 'already' | 'limit'}. */
+/** Cancel one lesson. Throws {code: 'reason' | 'lesson' | 'started' | 'already'}. */
 export async function cancelLesson(w, key, reason, via = 'site', now = new Date()) {
   reason = String(reason || '').replace(/\s+/g, ' ').trim().slice(0, 300);
   if (reason.length < 3) throw err('reason');
@@ -53,10 +55,9 @@ export async function cancelLesson(w, key, reason, via = 'site', now = new Date(
   const C = await loadCancels(), k = key + '|' + w.sid;
   if (C[k]) throw err('already');
   const month = l.date.slice(0, 7), used = Object.values(C).filter(x => x.sid === w.sid && x.date.slice(0, 7) === month).length;
-  if (used >= MAX_PER_MONTH) throw err('limit', { max: MAX_PER_MONTH });
-  const early = (l.at - now) / 3600e3 >= FREE_HOURS, at = now.toISOString();
+  const over = used >= MAX_PER_MONTH, early = !over && (l.at - now) / 3600e3 >= FREE_HOURS, at = now.toISOString();
   const cls = w.classes.find(c => c.id === l.classId) || {}, priv = isPrivateClass(cls);
-  C[k] = { sid: w.sid, uid: w.uid, name: w.name, classId: l.classId, label: l.label, date: l.date, start: l.start, key, reason, early, at, via };
+  C[k] = { sid: w.sid, uid: w.uid, name: w.name, classId: l.classId, label: l.label, date: l.date, start: l.start, key, reason, early, over, at, via };
   await saveCancels(C);
 
   // the register: the teacher sees it, and saveRegister keeps the mark
@@ -87,8 +88,8 @@ export async function cancelLesson(w, key, reason, via = 'site', now = new Date(
 
   // tell the director, the manager(s) and the teacher
   const text = `${early ? '🗓' : '⚠️'} Lesson cancelled by ${w.name}\n${l.label} · ${whenText(l)}${l.end ? '–' + l.end : ''}\nReason: ${reason}\n` +
-    (early ? `In time (${FREE_HOURS}+ hours before): not counted${priv ? ' — the lesson is taken off the timetable' : ''}.` : `Late (less than ${FREE_HOURS} hours before): the lesson COUNTS from the package.`) +
-    `\nCancellations this month: ${used + 1} of ${MAX_PER_MONTH}.`;
+    (early ? `In time (${FREE_HOURS}+ hours before): not counted${priv ? ' — the lesson is taken off the timetable' : ''}.` : over ? `Over the monthly limit of ${MAX_PER_MONTH}: the lesson COUNTS from the package.` : `Late (less than ${FREE_HOURS} hours before): the lesson COUNTS from the package.`) +
+    `\nCancellations this month: ${used + 1} (${MAX_PER_MONTH} can be free).`;
   const teachers = await doc('teachers'), links = await getLinks();
   const uids = new Set();
   const want = priv ? [DIRECTOR_TID] : [DIRECTOR_TID, l.teacherId];
@@ -103,59 +104,86 @@ export async function cancelLesson(w, key, reason, via = 'site', now = new Date(
     await addNote(u, { kind: 'cancel', text }).catch(() => {});
     const ln = links[u]; if (ln && ln.chatId) await tgSend(ln.chatId, text).catch(() => {});
   }
-  return { lesson: { key, label: l.label, date: l.date, start: l.start, end: l.end }, early, counted: !early, used: used + 1, max: MAX_PER_MONTH, ifadmin: ifa };
+  return { lesson: { key, label: l.label, date: l.date, start: l.start, end: l.end }, early, over, counted: !early, used: used + 1, max: MAX_PER_MONTH, ifadmin: ifa };
 }
 
 /* ---------- Telegram: "❌ Can't come" under the student's next lessons ---------- */
 const TX = {
-  en: { offer: n => `❌ Can't come? Choose the lesson to cancel (free ${FREE_HOURS}+ hours before; later it counts). Cancellations left this month: ${n}.`,
-    ask: (l, free) => `${l.label} · ${l.when}\n${free ? `✅ More than ${FREE_HOURS} hours before: it will NOT be counted.` : `⚠️ Less than ${FREE_HOURS} hours before: it WILL be counted as a lesson.`}\n\n✍️ Write the reason in one message (required). The lesson is cancelled only after you send the reason.`,
-    keep: '✖ Keep the lesson', kept: 'OK, the lesson stays booked.', done: (free, u, m) => `✅ Cancelled. ${free ? 'It is not counted.' : `It counts as a lesson (less than ${FREE_HOURS} hours before).`} Your teacher, the manager and the director have been told. (${u} of ${m} this month)`,
-    limit: m => `You have already cancelled ${m} lessons this month. Please contact the school.`, started: 'This lesson has already started.', already: 'You have already cancelled this lesson.', short: 'Please write the reason (a few words).', gone: 'This list is old. Press 📅 Next lessons again.', none: 'No lessons to cancel in the next two weeks.' },
-  ru: { offer: n => `❌ Не можете прийти? Выберите занятие для отмены (бесплатно за ${FREE_HOURS}+ часов; позже — занятие засчитывается). Осталось отмен в этом месяце: ${n}.`,
-    ask: (l, free) => `${l.label} · ${l.when}\n${free ? `✅ Больше чем за ${FREE_HOURS} часов: занятие НЕ будет засчитано.` : `⚠️ Меньше чем за ${FREE_HOURS} часов: занятие БУДЕТ засчитано.`}\n\n✍️ Напишите причину одним сообщением (обязательно). Отмена вступит в силу только после того, как вы отправите причину.`,
-    keep: '✖ Не отменять', kept: 'Хорошо, занятие остаётся.', done: (free, u, m) => `✅ Занятие отменено. ${free ? 'Оно не засчитывается.' : `Оно засчитывается (меньше чем за ${FREE_HOURS} часов).`} Учитель, менеджер и директор получили уведомление. (${u} из ${m} в этом месяце)`,
-    limit: m => `Вы уже отменили ${m} занятия в этом месяце. Пожалуйста, свяжитесь со школой.`, started: 'Это занятие уже началось.', already: 'Вы уже отменили это занятие.', short: 'Пожалуйста, напишите причину (несколько слов).', gone: 'Список устарел. Нажмите 📅 Ближайшие занятия ещё раз.', none: 'В ближайшие две недели нет занятий для отмены.' },
-  kk: { offer: n => `❌ Келе алмайсыз ба? Бас тартатын сабақты таңдаңыз (${FREE_HOURS}+ сағат бұрын — тегін; кейінірек — сабақ есептеледі). Осы айда қалған бас тартулар: ${n}.`,
-    ask: (l, free) => `${l.label} · ${l.when}\n${free ? `✅ ${FREE_HOURS} сағаттан көп уақыт бар: сабақ ЕСЕПТЕЛМЕЙДІ.` : `⚠️ ${FREE_HOURS} сағаттан аз уақыт қалды: сабақ ЕСЕПТЕЛЕДІ.`}\n\n✍️ Себебін бір хабарламамен жазыңыз (міндетті). Себебін жібергеннен кейін ғана сабақ тоқтатылады.`,
-    keep: '✖ Бас тартпау', kept: 'Жақсы, сабақ қалады.', done: (free, u, m) => `✅ Сабақтан бас тартылды. ${free ? 'Ол есептелмейді.' : `Ол есептеледі (${FREE_HOURS} сағаттан аз).`} Мұғалім, менеджер және директор хабардар етілді. (осы айда ${u}/${m})`,
-    limit: m => `Сіз осы айда ${m} сабақтан бас тарттыңыз. Мектеппен хабарласыңыз.`, started: 'Бұл сабақ басталып кетті.', already: 'Сіз бұл сабақтан бас тартқансыз.', short: 'Себебін жазыңыз (бірнеше сөз).', gone: 'Тізім ескірді. 📅 батырмасын қайта басыңыз.', none: 'Алдағы екі аптада бас тартатын сабақ жоқ.' }
+  en: {
+    rules: `📜 IF Academy cancellation rules\n• Cancel at least ${FREE_HOURS} hours before the lesson: it is NOT counted.\n• Less than ${FREE_HOURS} hours before (or not coming without cancelling): the lesson IS counted from your package.\n• Up to ${MAX_PER_MONTH} free cancellations a month. From the third cancellation in a month, every cancellation is counted, even if it is early.\n• A reason is required. Your teacher, the manager and the director are told.`,
+    offer: n => `❌ Can't come? Choose the lesson. Free cancellations left this month: ${n} of ${MAX_PER_MONTH}.`,
+    outcome: (l) => l.free ? `✅ This cancellation will NOT be counted.` : !l.inTime ? `⚠️ Less than ${FREE_HOURS} hours before: this lesson WILL be counted.` : `⚠️ You have used your ${MAX_PER_MONTH} free cancellations this month: this lesson WILL be counted.`,
+    askReason: '✍️ Write the reason in one message (required).',
+    confirm: '⚠️ Please read before you confirm:', reasonLbl: 'Reason', yes: '✅ Yes, cancel the lesson',
+    keep: '✖ Keep the lesson', kept: 'OK, the lesson stays booked.',
+    done: (free, u) => `✅ Cancelled. ${free ? 'It is not counted.' : 'It is counted as a lesson.'} Your teacher, the manager and the director have been told. (Cancellations this month: ${u})`,
+    started: 'This lesson has already started.', already: 'You have already cancelled this lesson.', short: 'Please write the reason (a few words).', gone: 'This list is old. Press 📅 Next lessons again.' },
+  ru: {
+    rules: `📜 Правила отмены занятий IF Academy\n• Отмена не позднее чем за ${FREE_HOURS} часов до занятия: занятие НЕ засчитывается.\n• Меньше чем за ${FREE_HOURS} часов (или неявка без отмены): занятие ЗАСЧИТЫВАЕТСЯ из абонемента.\n• До ${MAX_PER_MONTH} бесплатных отмен в месяц. С ${MAX_PER_MONTH + 1}-й отмены в месяце каждая отмена засчитывается, даже если она заранее.\n• Причина обязательна. Учитель, менеджер и директор получают уведомление.`,
+    offer: n => `❌ Не можете прийти? Выберите занятие. Бесплатных отмен в этом месяце осталось: ${n} из ${MAX_PER_MONTH}.`,
+    outcome: (l) => l.free ? `✅ Эта отмена НЕ будет засчитана.` : !l.inTime ? `⚠️ Меньше чем за ${FREE_HOURS} часов: занятие БУДЕТ засчитано.` : `⚠️ Вы уже использовали ${MAX_PER_MONTH} бесплатные отмены в этом месяце: занятие БУДЕТ засчитано.`,
+    askReason: '✍️ Напишите причину одним сообщением (обязательно).',
+    confirm: '⚠️ Пожалуйста, прочитайте перед подтверждением:', reasonLbl: 'Причина', yes: '✅ Да, отменить занятие',
+    keep: '✖ Не отменять', kept: 'Хорошо, занятие остаётся.',
+    done: (free, u) => `✅ Занятие отменено. ${free ? 'Оно не засчитывается.' : 'Оно засчитывается как занятие.'} Учитель, менеджер и директор получили уведомление. (Отмен в этом месяце: ${u})`,
+    started: 'Это занятие уже началось.', already: 'Вы уже отменили это занятие.', short: 'Пожалуйста, напишите причину (несколько слов).', gone: 'Список устарел. Нажмите 📅 Ближайшие занятия ещё раз.' },
+  kk: {
+    rules: `📜 IF Academy сабақтан бас тарту ережелері\n• Сабаққа дейін кемінде ${FREE_HOURS} сағат бұрын бас тартсаңыз: сабақ ЕСЕПТЕЛМЕЙДІ.\n• ${FREE_HOURS} сағаттан аз уақыт қалғанда (немесе ескертусіз келмесеңіз): сабақ абонементтен ЕСЕПТЕЛЕДІ.\n• Айына ${MAX_PER_MONTH} тегін бас тарту. Айдағы ${MAX_PER_MONTH + 1}-ші бас тартудан бастап әрқайсысы ерте болса да есептеледі.\n• Себебі міндетті. Мұғалім, менеджер және директор хабардар етіледі.`,
+    offer: n => `❌ Келе алмайсыз ба? Сабақты таңдаңыз. Осы айда қалған тегін бас тартулар: ${n} / ${MAX_PER_MONTH}.`,
+    outcome: (l) => l.free ? `✅ Бұл бас тарту ЕСЕПТЕЛМЕЙДІ.` : !l.inTime ? `⚠️ ${FREE_HOURS} сағаттан аз: сабақ ЕСЕПТЕЛЕДІ.` : `⚠️ Осы айдағы ${MAX_PER_MONTH} тегін бас тарту пайдаланылды: сабақ ЕСЕПТЕЛЕДІ.`,
+    askReason: '✍️ Себебін бір хабарламамен жазыңыз (міндетті).',
+    confirm: '⚠️ Растамас бұрын оқыңыз:', reasonLbl: 'Себебі', yes: '✅ Иә, сабақтан бас тарту',
+    keep: '✖ Бас тартпау', kept: 'Жақсы, сабақ қалады.',
+    done: (free, u) => `✅ Сабақтан бас тартылды. ${free ? 'Ол есептелмейді.' : 'Ол сабақ ретінде есептеледі.'} Мұғалім, менеджер және директор хабардар етілді. (Осы айда: ${u})`,
+    started: 'Бұл сабақ басталып кетті.', already: 'Сіз бұл сабақтан бас тартқансыз.', short: 'Себебін жазыңыз (бірнеше сөз).', gone: 'Тізім ескірді. 📅 батырмасын қайта басыңыз.' }
 };
 const tx = lang => TX[lang] || TX.en;
+const KEEP = lang => ({ inline_keyboard: [[{ text: tx(lang).keep, callback_data: 'lc:x' }]] });
 
 /** After "📅 Next lessons": the cancel buttons (students only). */
 export async function botOffer(chatId, ctx, lang) {
   if (!ctx || ctx.role !== 'student' || !ctx.classes?.length) return;
-  const d = await myLessons(who(ctx)), open = d.lessons.filter(l => !l.cancelled && l.left > 0).slice(0, 6);
+  const d = await myLessons(who(ctx)), open = d.lessons.filter(l => !l.cancelled).slice(0, 6);
   if (!open.length) return;
   await S().setJSON(`bot/lcx/${chatId}`, { keys: open.map(l => l.key), exp: Date.now() + 6 * 3600e3 });
-  await tgSend(chatId, tx(lang).offer(open[0].left), { reply_markup: { inline_keyboard: [...open.map((l, i) => [{ text: `❌ ${l.label} · ${whenText(l, lang)}`.slice(0, 60), callback_data: 'lc:' + i }])] } });
+  await tgSend(chatId, tx(lang).offer(open[0].left), { reply_markup: { inline_keyboard: open.map((l, i) => [{ text: `❌ ${l.label} · ${whenText(l, lang)}`.slice(0, 60), callback_data: 'lc:' + i }]) } });
 }
-/** Buttons lc:<i> (choose) and lc:x (keep). */
+async function lessonFor(uid, key) { const ctx = await contextFor(uid), d = ctx && await myLessons(who(ctx)); return { ctx, l: d && d.lessons.find(x => x.key === key) }; }
+const lessonLine = (l, lang) => `📅 ${l.label} · ${whenText(l, lang)}${l.end ? '–' + l.end : ''}`;
+
+/** Buttons: lc:<i> choose a lesson · lc:y yes, cancel · lc:x keep it. */
 export async function botCallback(q, uid, lang) {
   const chatId = q.message?.chat?.id, data = String(q.data || ''), T = tx(lang);
   const ans = (text, alert) => tg('answerCallbackQuery', { callback_query_id: q.id, text: text || '', show_alert: !!alert }).catch(() => {});
-  if (data === 'lc:x') { await S().delete(`bot/lcr/${chatId}`).catch(() => {}); await ans(T.kept); await tgSend(chatId, T.kept); return; }
+  const clearKb = () => q.message && tg('editMessageReplyMarkup', { chat_id: chatId, message_id: q.message.message_id, reply_markup: { inline_keyboard: [] } }).catch(() => {});
+  if (data === 'lc:x') { await S().delete(`bot/lcr/${chatId}`).catch(() => {}); await ans(T.kept); await clearKb(); await tgSend(chatId, T.kept); return; }
+  if (data === 'lc:y') {
+    const st = await S().get(`bot/lcr/${chatId}`, { type: 'json' }).catch(() => null);
+    if (!st || !st.reason || st.exp < Date.now()) { await ans(T.gone, true); return; }
+    await S().delete(`bot/lcr/${chatId}`).catch(() => {}); await ans(); await clearKb();
+    try { const ctx = await contextFor(uid), r = await cancelLesson(who(ctx), st.key, st.reason, 'bot'); await tgSend(chatId, T.done(r.early, r.used)); }
+    catch (e) { await tgSend(chatId, e.code === 'started' ? T.started : e.code === 'already' ? T.already : e.code === 'reason' ? T.short : T.gone); }
+    return;
+  }
   const st = (await S().get(`bot/lcx/${chatId}`, { type: 'json' })) || {}, key = (st.keys || [])[+data.slice(3)];
   if (!key || st.exp < Date.now()) { await ans(T.gone, true); return; }
-  const ctx = await contextFor(uid), d = ctx && await myLessons(who(ctx)), l = d && d.lessons.find(x => x.key === key);
+  const { l } = await lessonFor(uid, key);
   if (!l) { await ans(T.gone, true); return; }
   if (l.cancelled) { await ans(T.already, true); return; }
-  if (l.left <= 0) { await ans(T.limit(d.max), true); return; }
   await S().setJSON(`bot/lcr/${chatId}`, { key, exp: Date.now() + 30 * 60e3 });
   await ans();
-  await tgSend(chatId, T.ask({ label: l.label, when: whenText(l, lang) + (l.end ? '–' + l.end : '') }, l.free), { reply_markup: { inline_keyboard: [[{ text: T.keep, callback_data: 'lc:x' }]] } });
+  await tgSend(chatId, `${lessonLine(l, lang)}\n${T.outcome(l)}\n\n${T.rules}\n\n${T.askReason}`, { reply_markup: KEEP(lang) });
 }
-/** The reason typed after choosing a lesson. Returns true when the message was used. */
+/** The reason typed after choosing a lesson → the warning window with "Yes, cancel" / "Keep". Returns true when used. */
 export async function botReason(chatId, uid, text, lang) {
   const st = await S().get(`bot/lcr/${chatId}`, { type: 'json' }).catch(() => null);
-  if (!st || st.exp < Date.now() || !text || /^\//.test(text) || /^[\u{1F300}-\u{1FAFF}☀-➿]/u.test(text)) return false;
+  if (!st || st.reason || st.exp < Date.now() || !text || /^\//.test(text) || /^[\u{1F300}-\u{1FAFF}☀-➿]/u.test(text)) return false;
   const T = tx(lang);
   if (text.trim().length < 3) { await tgSend(chatId, T.short); return true; }
-  await S().delete(`bot/lcr/${chatId}`).catch(() => {});
-  try {
-    const ctx = await contextFor(uid), r = await cancelLesson(who(ctx), st.key, text, 'bot');
-    await tgSend(chatId, T.done(r.early, r.used, r.max));
-  } catch (e) { await tgSend(chatId, e.code === 'limit' ? T.limit(MAX_PER_MONTH) : e.code === 'started' ? T.started : e.code === 'already' ? T.already : e.code === 'reason' ? T.short : T.gone); }
+  const { l } = await lessonFor(uid, st.key);
+  if (!l || l.cancelled) { await S().delete(`bot/lcr/${chatId}`).catch(() => {}); await tgSend(chatId, l ? T.already : T.gone); return true; }
+  const reason = text.replace(/\s+/g, ' ').trim().slice(0, 300);
+  await S().setJSON(`bot/lcr/${chatId}`, { key: st.key, reason, exp: Date.now() + 30 * 60e3 });
+  await tgSend(chatId, `${T.confirm}\n\n${lessonLine(l, lang)}\n${T.reasonLbl}: ${reason}\n${T.outcome(l)}\n\n${T.rules}`, { reply_markup: { inline_keyboard: [[{ text: T.yes, callback_data: 'lc:y' }], [{ text: T.keep, callback_data: 'lc:x' }]] } });
   return true;
 }

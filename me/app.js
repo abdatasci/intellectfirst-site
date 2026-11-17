@@ -360,34 +360,44 @@
     var d; try { d = await api('me/lessons'); } catch (e) { el.innerHTML = '<h3>My next lessons</h3><p class="small">Could not load your lessons.</p>'; return; }
     var DN = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     var day = function (l) { return DN[new Date(l.date + 'T00:00:00Z').getUTCDay()] + ' ' + l.date.slice(8) + '.' + l.date.slice(5, 7); };
+    var rules = '<ul class="small" style="margin:6px 0 0;padding-left:18px;line-height:1.5">' +
+      '<li>Cancel at least <b>' + d.freeHours + ' hours</b> before the lesson: it is <b>not counted</b>.</li>' +
+      '<li>Less than ' + d.freeHours + ' hours before (or not coming without cancelling): the lesson <b>is counted</b> from your package.</li>' +
+      '<li>Up to <b>' + d.max + ' free cancellations a month</b>. From the third cancellation in a month, every cancellation is counted, even if it is early.</li>' +
+      '<li>A reason is required. Your teacher, the manager and the director are told.</li></ul>';
     var rows = (d.lessons || []).slice(0, 6).map(function (l, i) {
-      var right = l.cancelled ? '<span class="chip2 ' + (l.cancelled.early ? 'mute' : 'bad') + '">' + (l.cancelled.early ? 'Cancelled · not counted' : 'Cancelled late · counted') + '</span>'
-        : l.left > 0 ? '<button class="btn ghost sm" data-cx="' + i + '">Can’t come</button>' : '<span class="chip2 mute" title="You have used your ' + d.max + ' cancellations this month">Limit reached</span>';
+      var right = l.cancelled ? '<span class="chip2 ' + (l.cancelled.early ? 'mute' : 'bad') + '">' + (l.cancelled.early ? 'Cancelled · not counted' : 'Cancelled · counted') + '</span>'
+        : '<button class="btn ghost sm" data-cx="' + i + '">Can’t come</button>';
       return '<div class="cls"><div style="flex:1"><b>' + esc(l.label) + '</b><p>' + esc(day(l)) + ' · ' + esc(l.start) + (l.end ? '–' + esc(l.end) : '') + (l.room ? ' · ' + esc(l.room) : '') + '</p>' +
         (l.cancelled ? '<p class="small">Reason: ' + esc(l.cancelled.reason) + '</p>' : '') + '</div>' + right + '</div>';
     }).join('');
     el.innerHTML = '<h3>My next lessons</h3>' + (rows || '<p class="small">No lessons in the next two weeks.</p>') +
-      '<p class="small" style="margin-top:10px">Can’t come? Cancel at least <b>' + d.freeHours + ' hours</b> before the lesson and it is not counted. Later cancellations count as a lesson. Up to ' + d.max + ' cancellations a month.</p>';
+      '<details style="margin-top:10px"><summary class="small"><b>Cancellation rules</b></summary>' + rules + '</details>';
     el.querySelectorAll('[data-cx]').forEach(function (b) {
       b.onclick = function () {
         var l = d.lessons[+b.dataset.cx];
-        modal('<h2 style="margin-top:0">Cancel this lesson?</h2><p><b>' + esc(l.label) + '</b><br>' + esc(day(l)) + ' · ' + esc(l.start) + (l.end ? '–' + esc(l.end) : '') + '</p>' +
-          (l.free ? '<p class="chip2 ok" style="display:inline-block">' + d.freeHours + '+ hours before: this lesson will not be counted</p>' : '<p class="chip2 bad" style="display:inline-block">Less than ' + d.freeHours + ' hours before: this lesson will be counted</p>') +
-          '<p class="small">Cancellations left this month: ' + l.left + ' of ' + d.max + '. Your teacher, the manager and the director will be told.</p>' +
-          '<label class="small" for="cxr"><b>Reason</b> (required)</label><textarea class="inp" id="cxr" rows="3" maxlength="300" placeholder="e.g. I am ill / family trip / exam at school" style="width:100%;margin:6px 0 12px"></textarea>' +
-          '<div class="row" style="gap:8px"><button class="btn primary" id="cxok" disabled>Cancel the lesson</button><button class="btn ghost" id="cxno">Keep it</button></div>');
-        var r = $('#cxr'), ok = $('#cxok');
-        r.oninput = function () { ok.disabled = r.value.trim().length < 3; };
+        var outcome = l.free ? '<p class="chip2 ok" style="display:inline-block;white-space:normal">✅ This cancellation will NOT be counted.</p>'
+          : !l.inTime ? '<p class="chip2 bad" style="display:inline-block;white-space:normal">⚠️ Less than ' + d.freeHours + ' hours before: this lesson WILL be counted.</p>'
+          : '<p class="chip2 bad" style="display:inline-block;white-space:normal">⚠️ You have used your ' + d.max + ' free cancellations this month: this lesson WILL be counted.</p>';
+        modal('<h2 style="margin-top:0">⚠️ Before you cancel</h2><p><b>' + esc(l.label) + '</b><br>' + esc(day(l)) + ' · ' + esc(l.start) + (l.end ? '–' + esc(l.end) : '') + '</p>' + outcome +
+          '<div style="background:#fff8e6;border:1px solid #f1d58a;border-radius:12px;padding:10px 14px;margin:10px 0"><b class="small">IF Academy cancellation rules</b>' + rules +
+          '<p class="small" style="margin:6px 0 0">Free cancellations left this month: <b>' + l.left + ' of ' + d.max + '</b>.</p></div>' +
+          '<label class="small" for="cxr"><b>Reason</b> (required)</label><textarea class="inp" id="cxr" rows="3" maxlength="300" placeholder="e.g. I am ill / family trip / exam at school" style="width:100%;margin:6px 0 10px"></textarea>' +
+          '<label class="small" style="display:flex;gap:8px;align-items:flex-start;margin-bottom:12px"><input type="checkbox" id="cxa" style="margin-top:3px"> I have read the rules and understand ' + (l.free ? 'how cancellations work.' : 'that this lesson will be counted.') + '</label>' +
+          '<div class="row" style="gap:8px"><button class="btn primary" id="cxok" disabled>Yes, cancel the lesson</button><button class="btn ghost" id="cxno">Keep it</button></div>');
+        var r = $('#cxr'), a = $('#cxa'), ok = $('#cxok');
+        var upd = function () { ok.disabled = r.value.trim().length < 3 || !a.checked; };
+        r.oninput = upd; a.onchange = upd;
         $('#cxno').onclick = closeModal;
         ok.onclick = async function () {
           ok.disabled = true;
           try {
             var x = await api('me/lessons/cancel', { method: 'POST', body: { key: l.key, reason: r.value.trim() } });
-            closeModal(); toast(x.early ? 'Lesson cancelled. It will not be counted.' : 'Lesson cancelled. It counts as a lesson (less than ' + d.freeHours + ' hours before).');
+            closeModal(); toast(x.early ? 'Lesson cancelled. It will not be counted.' : 'Lesson cancelled. It is counted as a lesson.');
             lessonsBox(el);
           } catch (e) {
-            ok.disabled = false;
-            toast(e.code === 'limit' ? 'You have already cancelled ' + d.max + ' lessons this month. Please contact the school.' : e.code === 'started' ? 'This lesson has already started.' : e.code === 'already' ? 'You have already cancelled this lesson.' : e.code === 'reason' ? 'Please write the reason.' : 'Could not cancel. Please try again.');
+            upd();
+            toast(e.code === 'started' ? 'This lesson has already started.' : e.code === 'already' ? 'You have already cancelled this lesson.' : e.code === 'reason' ? 'Please write the reason.' : 'Could not cancel. Please try again.');
           }
         };
         r.focus();
