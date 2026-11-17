@@ -13,9 +13,10 @@
     get: function (k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } },
     set: function (k, v) { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
   };
-  LIVE.api = async function (path, body) {
+  LIVE.api = async function (path, body, again) {
     var res = await fetch('/api/live/' + path, body ? { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), credentials: 'same-origin' } : { credentials: 'same-origin' });
-    if (res.status === 401 && !LIVE.api.retried && window.NFIdentity) { LIVE.api.retried = true; try { await NFIdentity.refreshSession(); } catch (e) {} return LIVE.api(path, body); }
+    // the 1-hour sign-in token runs out during long lessons: renew it and try again (every time, not just once per page)
+    if (res.status === 401 && !again && window.NFIdentity) { try { await NFIdentity.refreshSession(); } catch (e) {} return LIVE.api(path, body, true); }
     var d = await res.json().catch(function () { return {}; });
     if (!res.ok) { var e = new Error(d.error || res.status); e.code = d.error; e.free = !!d.free; e.status = res.status; throw e; }
     return d;

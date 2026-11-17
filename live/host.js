@@ -167,7 +167,7 @@
         qs: qs, i: -1, phase: 'lobby', players: {}, order: [], ans: {}, qStart: 0, raceEnd: 0, raceId: 0, salt: Math.floor(Math.random() * 1000), feed: [], evn: 0, fzAt: 0, fzEnd: 0 };
       await connect(r.token);
       save(); lobby();
-    } catch (e) { $('#go').disabled = false; err.textContent = e.code === 'not-configured' ? 'Live games are not switched on yet (see the note above).' : 'Could not open the game room. Try again.'; }
+    } catch (e) { $('#go').disabled = false; err.innerHTML = e.code === 'not-configured' ? 'Live games are not switched on yet (see the note above).' : e.status === 401 ? 'Your sign-in has expired. <a href="/me/#/login" target="_blank" rel="noopener">Sign in again</a>, then press the button again — your settings are kept.' : 'Could not open the game room. Try again.'; }
   }
   async function resumeGame(saved) {
     H = saved;
