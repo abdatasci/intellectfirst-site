@@ -1170,7 +1170,7 @@ function snowDraw(){
 let XC=gs.get('xc',{teams:['Team X','Team O'],task:'mix'});let XG=null;
 const XTASK={explain:'Explain the word without saying it.',sentence:'Make a correct sentence with the word.',define:'Say what the word means, or translate it.'};
 /* ---------- chess: a real board (rules by chess.js, BSD licence) with English move calling ---------- */
-let CHC=gs.get('chc',{names:['White','Black'],say:true});let CH=null;
+let CHC=gs.get('chc',{names:['White','Black'],say:true,opp:'human',level:'medium',side:'w'});if(!CHC.opp){CHC.opp='human';CHC.level='medium';CHC.side='w'}let CH=null;
 const CHW={p:'Pawn',n:'Knight',b:'Bishop',r:'Rook',q:'Queen',k:'King'},CHG={p:'♟',n:'♞',b:'♝',r:'♜',q:'♛',k:'♚'};
 const CHV=[['king','король'],['queen','ферзь'],['rook','ладья'],['bishop','слон'],['knight','конь'],['pawn','пешка'],['check','шах'],['checkmate','мат'],['stalemate','пат'],['castle','рокировка'],['take / capture','взять'],['square','клетка'],['file (a–h)','вертикаль'],['rank (1–8)','горизонталь'],['promote','превратить пешку'],['draw','ничья'],['resign','сдаться'],['move','ход']];
 function chessLoad(){return window.Chess?Promise.resolve():new Promise((ok,no)=>{const s=document.createElement('script');s.src='chess-engine.js';s.onload=ok;s.onerror=no;document.head.appendChild(s)})}
@@ -1178,38 +1178,58 @@ function chessSetup(){
   CH=null;
   app.innerHTML=`<div><h2>Chess</h2><p class="lead">A real chess board for two players. Say each move in English before you play it. / Скажите ход по-английски, прежде чем сделать его.</p></div>
   <section class="panel"><div class="lab">Players</div><div class="teamin">${CHC.names.map((t,i)=>`<label class="tin"><span class="xo-m ${i?'o':'x'}">${i?'♚':'♔'}</span><input id="cn${i}" value="${esc(t)}" maxlength="24"></label>`).join('')}</div>
+  <div class="row"><span class="sublab w">Opponent</span>${[['human','Another player'],['cpu','Computer']].map(([k,l])=>`<button class="btn ${CHC.opp===k?'on':''}" data-copp="${k}">${l}</button>`).join('')}</div>
+  ${CHC.opp==='cpu'?`<div class="row"><span class="sublab w">Level</span>${[['easy','Easy'],['medium','Medium'],['hard','Hard']].map(([k,l])=>`<button class="btn ${CHC.level===k?'on':''}" data-clv="${k}">${l}</button>`).join('')}</div><div class="row"><span class="sublab w">You play</span>${[['w','White'],['b','Black']].map(([k,l])=>`<button class="btn ${CHC.side===k?'on':''}" data-cside="${k}">${l}</button>`).join('')}</div>`:''}
   <div class="row"><span class="sublab w">Say it in English</span>${[[true,'On'],[false,'Off']].map(([v,l])=>`<button class="btn ${CHC.say===v?'on':''}" data-csay="${v}">${l}</button>`).join('')}</div></section>
   <section class="panel"><div class="lab">Chess words · шахматные слова</div><div class="row" style="flex-wrap:wrap;gap:8px">${CHV.map(([e,r])=>`<span class="btn" style="cursor:default"><b>${e}</b> · ${r}</span>`).join('')}</div></section>
   <div class="row end"><button class="btn gold big" id="cgo">Start</button></div>`;
   app.onclick=e=>{const b=e.target.closest('button');if(!b)return;
     CHC.names=[0,1].map(i=>($('#cn'+i)||{value:CHC.names[i]}).value.trim()||['White','Black'][i]);
-    if(b.dataset.csay!=null)CHC.say=b.dataset.csay==='true';gs.set('chc',CHC);
-    if(b.id==='cgo'){b.disabled=true;return chessLoad().then(()=>{CH={g:new Chess(),sel:null,flip:false,pend:null,promo:null};chessDraw()}).catch(()=>{b.disabled=false;alert('Chess could not load. Check the connection and try again.')})}
+    if(b.dataset.csay!=null)CHC.say=b.dataset.csay==='true';if(b.dataset.copp)CHC.opp=b.dataset.copp;if(b.dataset.clv)CHC.level=b.dataset.clv;if(b.dataset.cside)CHC.side=b.dataset.cside;gs.set('chc',CHC);
+    if(b.id==='cgo'){b.disabled=true;return chessLoad().then(()=>{chessNew(false)}).catch(()=>{b.disabled=false;alert('Chess could not load. Check the connection and try again.')})}
     rerender(chessSetup)};
 }
+function chessNew(flip){
+  const cpu=CHC.opp==='cpu',lv={easy:'Easy',medium:'Medium',hard:'Hard'}[CHC.level];
+  if(CH&&CH.ai){try{CH.ai.terminate()}catch(e){}}
+  CH={g:new Chess(),sel:null,flip:cpu?CHC.side==='b':flip,pend:null,promo:null,cpu:cpu?(CHC.side==='w'?'b':'w'):null,names:CHC.names.slice(),think:false,said:null};
+  if(cpu)CH.names[CHC.side==='w'?1:0]='Computer · '+lv;
+  chessDraw();chessCpu();
+}
+function chessCpu(){
+  if(!CH.cpu||CH.g.game_over()||CH.g.turn()!==CH.cpu||CH.think)return;
+  CH.think=true;chessDraw();
+  try{CH.ai=CH.ai||new Worker('chess-ai.js')}catch(e){CH.think=false;return chessDraw()}
+  const me=CH,t0=Date.now();
+  CH.ai.onmessage=ev=>{const m=ev.data;const wait=Math.max(0,500-(Date.now()-t0));setTimeout(()=>{if(CH!==me||!m)return;const r=me.g.move({from:m.from,to:m.to,promotion:m.promotion});me.think=false;me.said=r?chessSay(r):null;chessDraw()},wait)};
+  CH.ai.onerror=()=>{me.think=false;chessDraw()};
+  CH.ai.postMessage({fen:CH.g.fen(),level:CHC.level});
+}
+function chessSpeak(t){try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='en-GB';u.rate=.9;speechSynthesis.speak(u)}catch(e){}}
 function chessSay(m){
   if(m.flags.includes('k'))return 'Castle kingside';if(m.flags.includes('q'))return 'Castle queenside';
   let t=CHW[m.piece]+(m.captured?' takes ':' to ')+m.to+(m.flags.includes('e')?' (en passant)':'');
   if(m.promotion)t+=' and promotes to '+CHW[m.promotion];
   if(/#/.test(m.san))t+=', checkmate!';else if(/\+/.test(m.san))t+=', check!';return t;
 }
-function chessDo(m){CH.g.move({from:m.from,to:m.to,promotion:m.promotion});CH.sel=null;CH.pend=null;CH.promo=null;chessDraw()}
+function chessDo(m){CH.g.move({from:m.from,to:m.to,promotion:m.promotion});CH.sel=null;CH.pend=null;CH.promo=null;CH.said=null;chessDraw();chessCpu()}
 function chessDraw(){
   const g=CH.g,turn=g.turn(),B=g.board(),over=g.game_over(),legal=CH.sel?g.moves({square:CH.sel,verbose:true}):[],hist=g.history({verbose:true}),last=hist[hist.length-1];
   const tg=new Set(legal.map(m=>m.to)),inChk=g.in_check(),kingSq=inChk?B.flat().find(p=>p&&p.type==='k'&&p.color===turn):null;
   const rows=CH.flip?[7,6,5,4,3,2,1,0]:[0,1,2,3,4,5,6,7],cols=CH.flip?[7,6,5,4,3,2,1,0]:[0,1,2,3,4,5,6,7];
   const cells=rows.map(r=>cols.map(c=>{const p=B[r][c],sq='abcdefgh'[c]+(8-r),dk=(r+c)%2===1;
     return `<button class="chs ${dk?'dk':''} ${CH.sel===sq?'sel':''} ${tg.has(sq)?'tg':''} ${tg.has(sq)&&p?'cp':''} ${last&&(last.from===sq||last.to===sq)?'last':''} ${kingSq&&p===kingSq?'chk':''}" data-sq="${sq}" aria-label="${sq}${p?' '+(p.color==='w'?'white ':'black ')+CHW[p.type]:''}">${p?`<span class="${p.color==='w'?'pw':'pb'}">${CHG[p.type]}</span>`:''}${c===cols[0]?`<i class="chc2 r">${8-r}</i>`:''}${r===rows[7]?`<i class="chc2 f">${'abcdefgh'[c]}</i>`:''}</button>`}).join('')).join('');
-  const name=i=>CHC.names[i],cur=turn==='w'?0:1;
+  const name=i=>CH.names[i],cur=turn==='w'?0:1;
   const cap=col=>{const start={p:8,n:2,b:2,r:2,q:1},have={p:0,n:0,b:0,r:0,q:0};B.flat().forEach(p=>{if(p&&p.color===col&&p.type!=='k')have[p.type]++});return Object.keys(start).map(t=>CHG[t].repeat(Math.max(0,start[t]-have[t]))).join('')};
   let status;
   if(g.in_checkmate())status=`<div class="chmv">Checkmate! ${esc(name(1-cur))} wins 🏆</div>`;
   else if(g.in_stalemate())status=`<div class="chmv">Stalemate · draw</div>`;
   else if(g.in_draw())status=`<div class="chmv">Draw</div>`;
+  else if(CH.think)status=`<div class="chmv">${esc(name(cur))} is thinking… <span class="spin"></span></div>`;
   else status=`<div class="chmv">${esc(name(cur))} to move${inChk?' · <span style="color:var(--red)">check!</span>':''}</div>`;
-  let bar='';
-  if(CH.promo)bar=`<div class="panel"><div class="lab">Promote the pawn to…</div><div class="row">${['q','r','b','n'].map(t=>`<button class="btn big" data-promo="${t}">${CHG[t]} ${CHW[t]}</button>`).join('')}</div></div>`;
-  else if(CH.pend)bar=`<div class="panel"><div class="lab">Say it in English</div><div class="chmv" style="font-size:2rem">${esc(chessSay(CH.pend))}</div><div class="acts"><button class="act no" id="cno">✕ Not correct · choose again</button><button class="act ok" id="cok">✓ Said it · play the move</button></div></div>`;
+  let bar='';if(CH.said&&!CH.think)bar=`<div class="panel"><div class="lab">The computer played</div><div class="row"><div class="chmv" style="font-size:1.8rem">${esc(CH.said)}</div><button class="btn" id="chear">🔊 Hear it</button></div></div>`;
+  if(CH.promo)bar+=`<div class="panel"><div class="lab">Promote the pawn to…</div><div class="row">${['q','r','b','n'].map(t=>`<button class="btn big" data-promo="${t}">${CHG[t]} ${CHW[t]}</button>`).join('')}</div></div>`;
+  else if(CH.pend)bar+=`<div class="panel"><div class="lab">Say it in English</div><div class="chmv" style="font-size:2rem">${esc(chessSay(CH.pend))}</div><div class="acts"><button class="act no" id="cno">✕ Not correct · choose again</button><button class="act ok" id="cok">✓ Said it · play the move</button></div></div>`;
   const log=[];for(let i=0;i<hist.length;i+=2)log.push(`<span>${i/2+1}.</span><span>${esc(hist[i].san)}</span><span>${hist[i+1]?esc(hist[i+1].san):''}</span>`);
   app.innerHTML=`<div class="scores">${[0,1].map(i=>`<div class="sc ${i===cur&&!over?'cur':''}"><span><span class="xo-m ${i?'o':'x'}">${i?'♚':'♔'}</span> ${esc(name(i))}</span><span class="chcap">${cap(i?'w':'b')}</span></div>`).join('')}</div>
   <div class="chg"><div><div class="chb">${cells}</div></div><div style="display:flex;flex-direction:column;gap:12px;min-width:0">${status}${bar}
@@ -1221,10 +1241,11 @@ function chessDraw(){
     if(b.id==='cno'){CH.pend=null;CH.sel=null;return chessDraw()}
     if(b.dataset.promo){const m=CH.promo.find(x=>x.promotion===b.dataset.promo);return CHC.say?(CH.promo=null,CH.pend=m,chessDraw()):chessDo(m)}
     if(b.id==='cflip'){CH.flip=!CH.flip;return chessDraw()}
-    if(b.id==='cundo'){g.undo();CH.sel=null;CH.pend=null;CH.promo=null;return chessDraw()}
-    if(b.id==='cnew'){CH={g:new Chess(),sel:null,flip:CH.flip,pend:null,promo:null};return chessDraw()}
+    if(b.id==='chear')return chessSpeak(CH.said);
+    if(b.id==='cundo'){if(CH.think)return;g.undo();if(CH.cpu&&g.turn()===CH.cpu&&g.history().length)g.undo();CH.said=null;CH.sel=null;CH.pend=null;CH.promo=null;return chessDraw()}
+    if(b.id==='cnew')return chessNew(CH.flip);
     if(b.id==='cend')return chessSetup();
-    const sq=b.dataset.sq;if(!sq||over||CH.pend||CH.promo)return;
+    const sq=b.dataset.sq;if(!sq||over||CH.pend||CH.promo||CH.think||(CH.cpu&&turn===CH.cpu))return;
     const mv=legal.filter(m=>m.to===sq);
     if(mv.length){if(mv.length>1&&mv[0].promotion){CH.promo=mv;return chessDraw()}
       if(CHC.say){CH.pend=mv[0];return chessDraw()}return chessDo(mv[0])}
