@@ -367,7 +367,16 @@
       '<p class="small" style="margin-top:10px">Pre-A1 · A1 · A2 · B1 · B2 · C1 · C2 (Common European Framework). Grammar, vocabulary, reading and listening use the same question bank for every student; writing and speaking are rated by AI using CEFR descriptors.</p>' +
       (ai.error ? '<div class="err" style="margin-top:10px">Writing and speaking could not be marked just now, so this result is based on the other four parts. A teacher can check your answers.</div>' : '') + '</div>' +
       fb('Writing', ai.writing) + fb('Speaking', ai.speaking) + '</section>' +
-      '<div class="row" style="margin:18px 0 40px"><span id="sv" class="small"></span><span class="spacer" style="flex:1"></span><button class="btn ghost" onclick="print()">Print or save as PDF</button><button class="btn ghost" id="again">Take the test again</button></div>';
+      '<div class="row" style="margin:18px 0 40px"><span id="sv" class="small"></span><span class="spacer" style="flex:1"></span><button class="btn" id="cert">⬇ Download certificate (PDF)</button><button class="btn ghost" id="again">Take the test again</button></div>';
+    $('#cert').onclick = async function () {   // a real PDF file, laid out as an IF Academy certificate
+      var b = this, txt = b.textContent; if (!window.IFCert) return print();
+      b.disabled = true; b.textContent = 'Preparing your certificate…';
+      try {
+        await IFCert.download({ name: T.name, date: new Date(T.finished || Date.now()).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }), level: label(R.overall), desc: desc, course: R.course,
+          skills: Object.keys(NAMES).filter(function (k) { return R.skills[k] != null; }).map(function (k) { return { name: NAMES[k], label: label(R.skills[k]) }; }), id: T.savedId ? String(T.savedId).slice(-8).toUpperCase() : '' });
+      } catch (e) { toast('The certificate could not be made on this device. Try another browser, or use Print.'); }
+      b.disabled = false; b.textContent = txt;
+    };
     $('#again').onclick = function () { if (confirm('Start a new test? This result stays saved.')) { lsSet('pt:state', null); T = null; vStart(); } };
   }
   async function saveResult() {
