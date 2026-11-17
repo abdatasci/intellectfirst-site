@@ -38,7 +38,7 @@
     var saved = L.ls.get('live.p.' + pin);
     try {
       var r = L.local ? { pid: saved || 'p-' + Math.random().toString(36).slice(2, 10), token: null, account: null } : await L.api('join', { pin: pin, pid: saved });
-      if (r.mode === 'mafia') { location.replace('/live/mafia/?pin=' + pin); return; }   // Mafia Live has its own phone screen
+      if (r.mode === 'mafia' || r.mode === 'mystery') { location.replace('/live/' + r.mode + '/?pin=' + pin); return; }   // Mafia Live and Mystery Live have their own phone screens
       S.pin = pin; S.name = name; S.pid = r.pid; S.uid = r.account && r.account.uid;
       L.ls.set('live.p.' + pin, r.pid); L.ls.set('live.name', name); L.ls.set('live.last', pin + '|' + Date.now());
       var first = r.token;

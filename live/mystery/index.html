@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<title>Mystery Live · IF Academy</title>
+<meta name="description" content="Detective mysteries for the English class, played on phones: a character card for every player, a detective notebook, clues on a timer and a final accusation. Or solve a case on your own.">
+<meta name="theme-color" content="#071528">
+<link rel="icon" href="/brand/favicon-64.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@600;700;800&family=Inter:wght@400;600;700&family=Instrument+Serif&display=swap">
+<link rel="stylesheet" href="/live/live.css?v=39">
+<link rel="stylesheet" href="/live/mafia/mafia.css?v=2">
+<link rel="stylesheet" href="/live/mystery/mystery.css?v=1">
+</head>
+<body data-no-nav>
+<header class="top">
+  <a class="brand" href="/app/"><img src="/brand/if-shield-3d-180.webp" alt=""><span><small>IF Live</small><b>Mystery</b></span></a>
+  <span class="spacer"></span>
+  <span class="pill" id="pinpill" hidden></span>
+  <button class="btn ghost sm" id="snd" hidden>🔊</button>
+</header>
+<main id="view" aria-live="polite"></main>
+
+<script src="/a/ielts/identity.js"></script>
+<script src="/live/vendor/ably.min.js?v=3.1.0"></script>
+<script src="/live/vendor/qrcode.js"></script>
+<script src="/live/live.js?v=39"></script>
+<script src="/live/mystery/cases.js?v=1"></script>
+<script src="/live/mystery/mystery.js?v=1"></script>
+</body>
+</html>
