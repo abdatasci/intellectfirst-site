@@ -272,7 +272,72 @@ async function recordByTime(R) {
   await W.setJSON('payextra', X);
   return lines.length ? lines : ['no change'];
 }
-const MIGRATIONS = [['timetable-2026-11-14', () => applyTimetable(TT_2026_11_14)], ['timetable-2026-11-14-pending', () => applyPending(PENDING_2026_11_14), true], ['private-2026-11-15', () => grantPrivate(PRIVATE_2026_11_15)], ['schedule-2026-11-15', schedule20261115], ['ontime-2026-11-15', onTime20261115], ['teacher-phones-2026-11-15', teacherPhones], ['cover-2026-11-16', cover20261116], ['smm-2026-11-16', smm20261116], ['aitach-record-2026-11-16', () => recordLessons(AITACH_REC)], ['alina-record-2026-11-17', () => recordByTime(ALINA_REC)]];
+/* 17 Nov 2026: Olya's lessons from 29 Oct to 17 Nov, as listed by the director: [date, student, start or '', minutes (0 = the timetable length), kind].
+   The student is a fingerprint set of the first name (any spelling the records use), never the name. kind: 'taught',
+   'late' (late cancellation by the student) or 'cancel' (cancelled on time: not a lesson). Lessons already clocked in are
+   left as they are; her timetabled lessons in this range that are not listed did not take place. Trials are half pay. */
+const OLYA_FP = {"z": ["0e068ab927c1e2f5", "b8818afbe9588a9c", "278c24710cc41be0"], "am": ["f487dfce9b263194", "4cbca9afaf757285"], "al": ["c18e7785082767a5", "d1a96b5b937e26ca", "305aade803000fae"], "l": ["2c7e9f6370f03f6a", "b42051cc352c6984", "364f5f054561aee5", "1adfaf57cbf9d804", "d84fe7e07bedb227"], "k": ["e1d691baa981809f", "84beee45720853fe", "cbc1971c55732f0f", "e9fcd40e52869db5"]};
+const OLYA_REC = {
+  teacher: 't-olya', from: '2026-10-29', to: '2026-11-17',
+  lessons: [['2026-11-04', 'am', '', 0, 'taught'], ['2026-11-05', 'z', '18:00', 0, 'taught'], ['2026-11-10', 'z', '', 0, 'taught'], ['2026-11-10', 'k', '', 0, 'cancel'],
+    ['2026-11-11', 'al', '', 0, 'taught'], ['2026-11-12', 'z', '', 0, 'taught'], ['2026-11-13', 'al', '', 0, 'taught'], ['2026-11-14', 'l', '', 0, 'taught'],
+    ['2026-11-15', 'l', '', 0, 'late'], ['2026-11-17', 'z', '', 0, 'taught']],
+  extra: [{ id: 'trial-20261103-olya', date: '2026-11-03', start: '18:00', end: '19:00', label: 'Trial lesson (new student)', min: 60, factor: 0.5, note: 'Trial lesson: half pay' },
+    { id: 'trial-20261106-olya', date: '2026-11-06', start: '15:00', end: '16:00', label: 'Trial lesson (new student)', min: 60, factor: 0.5, note: 'Trial lesson: half pay' }]
+};
+async function recordByStudent(R, FP) {
+  const W = S(), classes = (await W.get('classes', { type: 'json' })) || [], st = (await A().get('c/students', { type: 'json' })) || {};
+  if (!classes.some(c => c.teacherId === R.teacher)) return null;   // her classes are not there yet: try again later
+  const CH = await loadChanges(), logs = {}, lines = [], who = { uid: 'director', name: 'Abdoulie Manneh' }, now = new Date().toISOString();
+  const log = async mo => logs[mo] || (logs[mo] = (await W.get('lessonlog/' + mo, { type: 'json' })) || {});
+  const pad = t => String(t).padStart(5, '0'), X = (await W.get('payextra', { type: 'json' })) || [];
+  const isOf = (c, k) => { const set = new Set(FP[k] || []); return set.has(fp(c.label)) || (c.studentIds || []).some(id => st[id] && set.has(fp(st[id].n))); };
+  const entry = (L, l) => L[l.key] || (L[l.key] = { classId: l.classId, label: l.label, date: l.date, start: l.start, end: l.end, teacherId: R.teacher });
+  for (let t = Date.parse(R.from + 'T00:00:00Z'); t <= Date.parse(R.to + 'T00:00:00Z'); t += 864e5) {
+    const date = new Date(t).toISOString().slice(0, 10), L = await log(date.slice(0, 7));
+    const hers = lessonsOn(classes, date, CH).filter(l => l.teacherId === R.teacher && !l.movedTo), recs = R.lessons.filter(x => x[0] === date), used = new Set();
+    const done = l => !!(L[l.key] && L[l.key].checkIn && !L[l.key].cancelled);
+    for (const r of recs) {
+      const [, k, start, min, kind] = r, free = hers.filter(l => !used.has(l) && !(l.cancelled && kind === 'taught'));
+      // the student's own lesson that day (at the stated time if one was given); failing that, when only one of her lessons is left that day, that one
+      const own = free.filter(l => isOf(classes.find(c => c.id === l.classId) || {}, k));
+      const l = own.find(x => start && pad(x.start) === pad(start)) || own[0] || (kind === 'taught' && start && free.find(x => pad(x.start) === pad(start))) || (kind === 'taught' && free.length === 1 ? free[0] : null);
+      if (!l) {
+        if (kind !== 'taught') { lines.push(`${date} ${k}: ${kind}, no timetabled lesson found`); continue; }
+        const id = 'rec-' + R.teacher + '-' + date + '-' + k + (start ? '-' + pad(start) : '');
+        if (!X.some(y => y.id === id)) { X.push({ id, teacherId: R.teacher, date, start: start ? pad(start) : '', end: '', label: 'Lesson (recorded by the director)', min: min || 60, note: 'Recorded by the director' }); lines.push(`${date} ${k}: recorded lesson (${min || 60} min)`); }
+        continue;
+      }
+      used.add(l);
+      const e = entry(L, l), tt = Math.round((Date.parse(l.endAt) - Date.parse(l.at)) / 60000);
+      if (kind === 'taught') {
+        if (min && min !== tt) e.min = min;   // 0 = the timetable length
+        if (done(l)) { lines.push(`${l.key}: already clocked in, kept`); continue; }
+        e.cancelled = false; delete e.cancelReason; e.checkIn = new Date(l.at).toISOString(); e.lateMin = 0; e.by = { uid: who.uid, name: who.name + ' (recorded)' };
+        e.note = 'Taught (recorded by the director)'; e.correctedAt = now; e.correctedBy = who.name; lines.push(`${l.key}: taught (${min || tt} min)`);
+      } else if (done(l)) { lines.push(`${l.key}: clocked in, kept (listed as ${kind})`); }
+      else if (kind === 'late') {
+        if (!CH.cancel[l.key]) CH.cancel[l.key] = { note: 'Late cancellation by the student (less than 8 hours) — charged (UA)', by: who.name, at: now, reason: 'slate', noMakeup: true, lateCancel: true };
+        delete e.checkIn; e.cancelled = true; e.cancelReason = 'slate'; e.note = 'Late cancellation (recorded by the director)'; e.correctedAt = now; e.correctedBy = who.name; lines.push(`${l.key}: late cancellation`);
+      } else {
+        if (!CH.cancel[l.key]) CH.cancel[l.key] = { note: 'Cancelled (recorded by the director)', by: who.name, at: now };
+        delete e.checkIn; e.cancelled = true; e.cancelReason = 'cancelled'; e.note = 'Cancelled on time (recorded by the director)'; e.correctedAt = now; e.correctedBy = who.name; lines.push(`${l.key}: cancelled on time`);
+      }
+    }
+    for (const l of hers) {   // her timetabled lessons that are not in the list
+      if (used.has(l)) continue;
+      if (done(l)) { lines.push(`${l.key}: clocked in but not in the list, kept`); continue; }
+      if (l.cancelled || Date.parse(l.endAt) > Date.now()) continue;
+      const e = entry(L, l); delete e.checkIn; e.cancelled = true; e.cancelReason = 'notheld'; e.note = 'No lesson (recorded by the director)'; e.correctedAt = now; e.correctedBy = who.name; lines.push(`${l.key}: not held`);
+    }
+  }
+  await saveChanges(CH);
+  for (const [mo, L] of Object.entries(logs)) await W.setJSON('lessonlog/' + mo, L);
+  for (const x of R.extra || []) if (!X.some(y => y.id === x.id)) { X.push({ ...x, teacherId: R.teacher }); lines.push(`${x.date}: ${x.label}`); }
+  await W.setJSON('payextra', X);
+  return lines.length ? lines : ['no change'];
+}
+const MIGRATIONS = [['timetable-2026-11-14', () => applyTimetable(TT_2026_11_14)], ['timetable-2026-11-14-pending', () => applyPending(PENDING_2026_11_14), true], ['private-2026-11-15', () => grantPrivate(PRIVATE_2026_11_15)], ['schedule-2026-11-15', schedule20261115], ['ontime-2026-11-15', onTime20261115], ['teacher-phones-2026-11-15', teacherPhones], ['cover-2026-11-16', cover20261116], ['smm-2026-11-16', smm20261116], ['aitach-record-2026-11-16', () => recordLessons(AITACH_REC)], ['alina-record-2026-11-17', () => recordByTime(ALINA_REC)], ['olya-record-2026-11-17', () => recordByStudent(OLYA_REC, OLYA_FP)]];
 let running = null;
 /** Run any migration that has not run yet. Safe to call on every request (cached per instance). */
 let checkedAt = 0;
