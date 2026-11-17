@@ -1363,7 +1363,7 @@
   async function aLogins(head) {
     view.innerHTML = head + '<div class="panel wide"><span class="spin"></span></div>';
     var d; try { d = await api('admin/logins'); } catch (e) { view.innerHTML = head + '<div class="panel wide">Could not load.</div>'; return; }
-    var showFormer = aLogins.former, all = d.rows, formerN = all.filter(function (r) { return r.former; }).length;
+    var showFormer = false, all = d.rows.filter(function (r) { return !r.former; }), formerN = all.filter(function (r) { return r.former; }).length;
     var rows = all.filter(function (r) { return showFormer ? r.former : !r.former; }), none = rows.filter(function (r) { return !r.uid; }), pending = rows.filter(function (r) { return r.pw; });
     var site = location.origin + '/me/';
     function msg(r) {
@@ -1373,9 +1373,7 @@
     function wa(r) { var ph = String(r.phone || '').replace(/\D/g, ''); if (ph.length === 10) ph = '7' + ph; if (ph.length === 11 && ph[0] === '8') ph = '7' + ph.slice(1); return ph.length >= 11 ? 'https://wa.me/' + ph + '?text=' + encodeURIComponent(msg(r)) : null; }
     view.innerHTML = head +
       '<div class="panel wide"><h2>Student logins</h2><p class="sub">Make an account for every student in IF Admin. The login is the student\'s phone number; the password works once, then the student chooses their own. Send each student their details by WhatsApp or Telegram, or print them.</p>' +
-      '<div class="tabs2" style="margin:4px 0 14px"><a href="#" id="tcur" class="' + (showFormer ? '' : 'on') + '">Current students</a><a href="#" id="tfor" class="' + (showFormer ? 'on' : '') + '">🎓 Former students → IF Alumni (' + formerN + ')</a></div>' +
-      (showFormer ? '<p class="small" style="margin-bottom:10px">Students marked as left in IF Admin. Accounts made here join <b>IF Alumni</b>: they keep the apps, tests and IELTS Centre. To move an existing account to IF Alumni, tick 🎓 in Accounts.</p>' : '') +
-      '<div class="row" style="gap:10px;flex-wrap:wrap"><button class="btn" id="mkall"' + (none.length ? '' : ' disabled') + '>Create accounts for ' + none.length + ' student' + (none.length === 1 ? '' : 's') + '</button>' +
+            '<div class="row" style="gap:10px;flex-wrap:wrap"><button class="btn" id="mkall"' + (none.length ? '' : ' disabled') + '>Create accounts for ' + none.length + ' student' + (none.length === 1 ? '' : 's') + '</button>' +
       (pending.length ? '<button class="btn ghost" id="cpall">Copy all ' + pending.length + ' messages</button><button class="btn ghost" onclick="print()">Print</button>' : '') + '<span class="small" id="prog"></span></div>' +
       '<div style="overflow-x:auto;margin-top:14px"><table class="t"><thead><tr><th>Student</th><th>Phone</th><th>Login</th><th>One-time password</th><th>Status</th><th></th></tr></thead><tbody>' +
       rows.map(function (r) {
@@ -1385,8 +1383,6 @@
           (r.pw ? (w ? '<a class="linkbtn" target="_blank" rel="noopener" href="' + w + '">WhatsApp</a> · ' : '') + '<button class="linkbtn" data-cp="' + esc(r.sid) + '">Copy</button> · ' : '') +
           (!r.uid ? '<button class="linkbtn" data-mk="' + esc(r.sid) + '">Create</button>' : '<button class="linkbtn" data-rs="' + esc(r.sid) + '">New password</button>') + '</td></tr>';
       }).join('') + '</tbody></table></div></div>';
-    $('#tcur').onclick = function (e) { e.preventDefault(); aLogins.former = false; aLogins(head); };
-    $('#tfor').onclick = function (e) { e.preventDefault(); aLogins.former = true; aLogins(head); };
     var byId = {}; rows.forEach(function (r) { byId[r.sid] = r; });
     async function run(path, ids) {
       var p = $('#prog'), all = ids.slice(), errs = 0;

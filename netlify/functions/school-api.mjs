@@ -365,7 +365,7 @@ export async function makeLogins(sids, reset) {
   const dir = (await U().get('directory', { type: 'json' })) || {};
   const used = new Set(Object.values(L).map(l => l.login));
   const done = [], errors = [];
-  for (const st of list.filter(x => want.has(x.id))) {
+  for (const st of list.filter(x => want.has(x.id) && !/withdrawn|finished/i.test(x.status || ''))) {   // students who left never get a login
     try {
       const pw = otp();
       if (reset) {
@@ -1207,7 +1207,7 @@ export default async (req) => {
     if (path === 'admin/logins' && method === 'GET') {
       const list = await doc('students'), L = (await S().get('logins', { type: 'json' })) || {};
       const dir = (await U().get('directory', { type: 'json' })) || {};
-      return json({ rows: list.map(st => {
+      return json({ rows: list.filter(st => !/withdrawn|finished/i.test(st.status || '')).map(st => {
         const l = L[st.id], acc = st.uid && dir[st.uid];
         return { former: st.status === 'withdrawn', alumni: !!acc?.alumni, sid: st.id, name: `${st.first} ${st.last}`.trim(), phone: st.phone || '', classes: st.classes || [], uid: st.uid || null,
           email: acc?.email || null, login: l?.login || null, pw: l?.pw || null, made: l?.at || null, changed: l?.changed || null, own: !!(st.uid && !l) };
