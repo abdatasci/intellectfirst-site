@@ -48,7 +48,7 @@
     c.fillStyle = INK; c.font = '30px ' + SERIF; var rc = 'Recommended course: ' + d.course; fit(c, rc, '%px ' + SERIF, 30, W - 520); c.fillText(rc, cx, 1312);
     // signature (left) and date / place (right)
     var sx = 520, dx = W - 520, ly = 1420;
-    if (sign) { var sh = 130, sw = sign.width * sh / sign.height; if (sw > 420) { sw = 420; sh = sign.height * sw / sign.width; } c.drawImage(sign, sx - sw / 2, ly - sh + 14, sw, sh); }
+    if (sign) { var sh = 190, sw = sign.width * sh / sign.height; if (sw > 440) { sw = 440; sh = sign.height * sw / sign.width; } c.drawImage(sign, sx - sw / 2, ly - sh * 0.74, sw, sh); }   // the flourish crosses the line, as on paper
     c.strokeStyle = NAVY; c.lineWidth = 2; c.beginPath(); c.moveTo(sx - 230, ly); c.lineTo(sx + 230, ly); c.moveTo(dx - 230, ly); c.lineTo(dx + 230, ly); c.stroke();
     c.fillStyle = INK; c.font = 'bold 30px ' + SERIF; c.fillText('Abdoulie Manneh', sx, ly + 42);
     c.fillStyle = SOFT; c.font = '24px ' + SANS; c.fillText('Founder & Director, IF Academy', sx, ly + 76);
