@@ -716,6 +716,8 @@ async function unpack(code){{const mm=String(code).match(/IFA[01]\.[A-Za-z0-9_-]
   let bytes=unb64u(m[2]);if(m[1]==='1'){const ds=new Blob([bytes]).stream().pipeThrough(new DecompressionStream('deflate-raw'));bytes=new Uint8Array(await new Response(ds).arrayBuffer())}
   return JSON.parse(new TextDecoder().decode(bytes))}
 /* hand in (button or time up) also saves the result to the student's profile and the teachers' results page */
+function ifPullMarks(){try{if(RT.owner||!state||!state.tests)return;let ch=0;Promise.all(Object.keys(state.tests).map(async id=>{const st=state.tests[id];if(!st||!st.handed||!st.rid||!st.s||typeof st.s!=='object')return;const r=await fetch('/api/tests/marks/'+encodeURIComponent('ifr-'+st.rid));if(!r.ok)return;const j=await r.json();if(j&&j.s&&JSON.stringify(st.s)!==JSON.stringify(j.s)){st.s=Object.assign({},j.s);ch=1}})).then(()=>{if(ch){save();renderAll()}}).catch(()=>{})}catch(e){}}
+setTimeout(ifPullMarks,2500);document.addEventListener('visibilitychange',()=>{if(!document.hidden)ifPullMarks()});
 function ifSendNow(t){if(RT.owner)return;const st=ts(t.id),box=$('#codebox'),code='';if(!box)return;setTimeout(()=>{try{if(!window.IFR)return;if(!st.rid){st.rid=IFR.newId();try{(typeof _save==='function'?_save:save)()}catch(e){}}const S=secsFor(t).map(s=>[s.name,teacherSec(s.k)&&!secDone(t,s.k)?null:secScore(t,s.k),s.max]);const W=[isF(t)?(fw(t).text||''):''];box.innerHTML='';IFR.box(box,{id:st.rid,c:'English File Pre-intermediate Test Centre',lv:'A2',t:t.title,v:'',n:state.name,cl:state.cls,s:S,w:W,x:code})}catch(e){console.error('IFR',e)}},0)}
 async function showCode(){
   const t=T(),st=ts(t.id);

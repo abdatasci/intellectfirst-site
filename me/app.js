@@ -2137,7 +2137,7 @@
       });
       $('#rt').innerHTML = list.length ? '<div class="tscroll"><table class="t"><thead><tr><th>When</th><th>Student</th><th>Test</th><th>Score</th><th>Sections</th></tr></thead><tbody>' + list.slice(0, 300).map(function (r) {
         var cls = r.pct >= 85 ? 'ok' : r.pct >= 60 ? 'warn' : 'bad';
-        return '<tr><td class="small" style="white-space:nowrap">' + when(r.at) + '</td><td><b>' + (r.studentId ? '<a href="#/student/' + esc(r.studentId) + '">' + esc(r.name || '–') + '</a>' : esc(r.name || '–')) + '</b>' + (r.cls ? '<div class="small">' + esc(r.cls) + '</div>' : '') + '</td><td>' + esc(r.test) + (r.kind === 'ai' ? ' <span class="chip2 mute">AI</span>' : '') + '</td><td style="white-space:nowrap"><span class="chip2 ' + cls + '">' + r.pct + '%</span><div class="small">' + r.score + ' / ' + r.max + '</div></td><td class="small">' + esc(r.note || '') + (r.comment ? '<div style="margin-top:4px;color:var(--navy)">' + esc(r.comment) + '</div>' : '') + '</td></tr>';
+        return '<tr><td class="small" style="white-space:nowrap">' + when(r.at) + '</td><td><b>' + (r.studentId ? '<a href="#/student/' + esc(r.studentId) + '">' + esc(r.name || '–') + '</a>' : esc(r.name || '–')) + '</b>' + (r.cls ? '<div class="small">' + esc(r.cls) + '</div>' : '') + '</td><td>' + esc(r.test) + (r.kind === 'ai' ? ' <span class="chip2 mute">AI</span>' : '') + '</td><td style="white-space:nowrap"><span class="chip2 ' + cls + '">' + r.pct + '%</span><div class="small">' + r.score + ' / ' + r.max + '</div></td><td class="small">' + esc(r.note || '') + (r.comment ? '<div style="margin-top:4px;color:var(--navy)">' + esc(r.comment) + '</div>' : '') + (/^ifr-/.test(r.key || '') && /speak/i.test(r.note || '') ? '<div style="margin-top:6px"><a href="#" data-sm="' + esc(r.key) + '">Enter speaking marks</a></div>' : '') + '</td></tr>';
       }).join('') + '</tbody></table></div>' : '<div class="empty">No results yet. They appear here as soon as a student finishes a test.</div>';
     }
     view.innerHTML = '<section class="hero" style="padding-bottom:6px"><div class="eyebrow">Teachers</div><h1>Test results</h1><p class="lead">Every finished test, as soon as the student submits it: the Test Centres and the IF Test Centre. Results are also on each student\'s profile.</p></section>' +
@@ -2145,6 +2145,20 @@
       '<input class="inp" id="rq" placeholder="Search student, test or class" value="' + esc(q) + '" style="max-width:300px"></div><div id="rt"></div>';
     view.querySelectorAll('[data-f]').forEach(function (a) { a.onclick = function (e) { e.preventDefault(); vResults.f = f = a.dataset.f; view.querySelectorAll('[data-f]').forEach(function (b) { b.classList.toggle('on', b === a); }); draw(); }; });
     $('#rq').oninput = function () { vResults.q = q = this.value; draw(); };
+    $('#rt').onclick = function (e) {
+      var a = e.target.closest && e.target.closest('[data-sm]'); if (!a) return; e.preventDefault();
+      var key = a.dataset.sm, box = a.parentNode;
+      box.innerHTML = '<div class="small" style="margin-bottom:4px">Speaking, each task out of 10</div><div class="row" style="gap:6px;flex-wrap:wrap">' + [1, 2, 3].map(function (n) { return '<input class="inp smk" type="number" min="0" max="10" step="0.5" placeholder="Task ' + n + '" style="width:80px">'; }).join('') + '<button class="btn" type="button" id="smsave">Save</button></div>';
+      box.querySelector('#smsave').onclick = async function () {
+        var v = [].map.call(box.querySelectorAll('.smk'), function (x) { return x.value === '' ? null : +x.value; });
+        if (v.some(function (x) { return x == null || x < 0 || x > 10; })) return toast('Enter all three marks, 0 to 10');
+        try {
+          var r = await fetch('/api/tests/marks', { method: 'POST', credentials: 'same-origin', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ rid: key, marks: v }) }), j = await r.json();
+          if (!r.ok) throw new Error(j.error || r.status);
+          rows.forEach(function (x) { if (x.key === key) { x.score = j.score; x.pct = j.pct; x.note = j.note; } }); toast('Speaking marks saved'); draw();
+        } catch (er) { toast('Could not save: ' + er.message); }
+      };
+    };
     draw();
   }
 

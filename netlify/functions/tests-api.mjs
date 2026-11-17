@@ -206,6 +206,11 @@ export default async (req) => {
     return json({ result, review, test: slim(t) });
   }
 
+  // teacher's speaking marks for a handed-in test: the student's page asks for them by result id and shows the updated score
+  if (path.startsWith('marks/') && method_(req) === 'GET') {
+    const m = await T().get('marks/' + decodeURIComponent(path.slice(6)).slice(0, 60), { type: 'json' });
+    return m ? json({ s: m.s, total: m.total }) : json({});
+  }
   if (!user) return fail(401, 'login');
 
   // speaking task in a test centre, talked through with the IF examiner (NOVA/ATLAS): AI gives the mark straight away
@@ -268,6 +273,26 @@ export default async (req) => {
     await addRecent({ kind: 'centre', at: new Date().toISOString(), uid: user.id, studentId: profile?.studentId || null, name: studentName, cls: str(p.cl, 60), level: str(p.lv, 20),
       test: entry.test, score: entry.score, max, pct: max ? Math.round(score / max * 100) : 0, note: entry.note, comment: p.comment || '' }, rid);
     return json({ ok: true, score: entry.score, max, pending, aiMarked, aiSpeak, comment: spComment });
+  }
+  // staff enter the Speaking mark for each task (0-10) of a handed-in test; the result list, the student's record and the student's own page follow
+  if (path === 'marks' && method_(req) === 'POST') {
+    if (!staff) return fail(403, 'staff');
+    const rid = str(body.rid, 60), marks = (Array.isArray(body.marks) ? body.marks : []).slice(0, 6).map(v => Math.max(0, Math.min(10, Math.round((+v || 0) * 2) / 2)));
+    if (!rid || !marks.length) return fail(400, 'marks');
+    const list = (await T().get('recent', { type: 'json' })) || [], i = list.findIndex(r => r.key === rid);
+    if (i < 0) return fail(404, 'result');
+    const row = list[i], total = marks.reduce((a, b) => a + b, 0), re = /(speak\w*) (–|[\d.]+)\/(\d+)/i, mm = re.exec(row.note || '');
+    if (!mm) return fail(400, 'nospeaking');
+    const old = mm[2] === '–' ? 0 : +mm[2], max = +mm[3], tot = Math.min(max, total);
+    const note = row.note.replace(re, `${mm[1]} ${tot}/${max}`).replace(/ \(to be marked by the teacher\)/, '') + ' (speaking marked by the teacher)';
+    row.score = Math.round(((row.score || 0) - old + tot) * 10) / 10; row.pct = row.max ? Math.round(row.score / row.max * 100) : 0; row.note = note;
+    list[i] = row; await T().setJSON('recent', list);
+    await T().setJSON('marks/' + rid, { s: Object.fromEntries(marks.map((v, k) => [k, v])), total: tot, by: user.id, at: new Date().toISOString() });
+    if (row.studentId) {
+      try { const sl = await loadStudents(), st = sl.find(x => x.id === row.studentId), e = st && (st.tests || []).find(t => t.id === rid);
+        if (e) { e.score = row.score; e.note = note; await saveStudents(sl); } } catch (e) { console.error('marks record', e); }
+    }
+    return json({ ok: true, score: row.score, max: row.max, pct: row.pct, note });
   }
   if (path === 'recent' && method_(req) === 'GET') {
     if (!staff) return fail(403, 'staff');
