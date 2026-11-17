@@ -21,9 +21,20 @@ const MODEL = process.env.ELEVENLABS_MODEL || 'eleven_multilingual_v2';
 const MAX_LEN = 3000, DAILY_CHARS = +process.env.ELEVENLABS_DAILY_CHARS || 40000;
 const SITE = /^https:\/\/([a-z0-9-]+--)?(intellectfirst\.com|www\.intellectfirst\.com|intellect-first-academy\.netlify\.app)(\/|$)/;
 
-const audio = (buf, hit) => new Response(buf, { headers: {
+// iPhone / iPad (Safari and Telegram's in-app browser) ask for audio in byte ranges and refuse to play if the server ignores them.
+const audio = (buf, hit, range) => {
+  const size = buf.byteLength, m = /^bytes=(\d*)-(\d*)$/.exec(range || '');
+  let start = 0, end = size - 1, part = false;
+  if (m && (m[1] || m[2])) {
+    if (m[1]) { start = +m[1]; end = m[2] ? Math.min(+m[2], size - 1) : size - 1; } else { start = Math.max(0, size - +m[2]); }
+    if (start > end || start >= size) return new Response(null, { status: 416, headers: { 'Content-Range': 'bytes */' + size } });
+    part = true;
+  }
+  return new Response(part ? buf.slice(start, end + 1) : buf, { status: part ? 206 : 200, headers: {
+  'Accept-Ranges': 'bytes', ...(part ? { 'Content-Range': `bytes ${start}-${end}/${size}` } : {}),
   'Content-Type': 'audio/mpeg', 'Cache-Control': 'public, max-age=31536000, immutable',
-  'Netlify-CDN-Cache-Control': 'public, max-age=31536000, immutable', 'Netlify-Vary': 'query=t|v', 'X-Voice-Cache': hit ? 'hit' : 'new' } });
+  'Netlify-CDN-Cache-Control': 'public, max-age=31536000, immutable', 'Netlify-Vary': 'query=t|v,header=range', 'X-Voice-Cache': hit ? 'hit' : 'new' } });
+};
 const no = (status, error) => Response.json({ error }, { status, headers: { 'Cache-Control': 'no-store' } });
 
 export default async (req) => {
@@ -38,13 +49,15 @@ export default async (req) => {
   const voice = VOICES[kind], key = createHash('sha256').update(`${MODEL}|${voice}|${text}`).digest('hex');
   const store = V();
   const have = await store.get('a/' + key, { type: 'arrayBuffer' }).catch(() => null);
-  if (have) return audio(have, true);
+  const range = req.headers.get('range');
+  if (have) return audio(have, true, range);
 
   // New text: only for pages of this site, within the daily limit, and only with a key.
   const apiKey = process.env.ELEVENLABS_API_KEY;
   if (!apiKey) return no(503, 'no-key');
   const from = req.headers.get('referer') || req.headers.get('origin') || '';
-  if (!SITE.test(from) && !/^http:\/\/localhost/.test(from)) return no(403, 'site');
+  // Telegram's in-app browser often sends no Referer at all, so an empty one is allowed (the daily limit still protects the account).
+  if (from && !SITE.test(from) && !/^http:\/\/localhost/.test(from)) return no(403, 'site');
   const day = new Date(Date.now() + 5 * 3600e3).toISOString().slice(0, 10);
   const used = +(await store.get('usage/' + day).catch(() => 0) || 0);
   if (used + text.length > DAILY_CHARS) return no(503, 'daily-limit');
@@ -66,7 +79,7 @@ export default async (req) => {
     store.set('a/' + key, buf, { metadata: { text: text.slice(0, 200), kind, at: new Date().toISOString() } }),
     store.set('usage/' + day, String(used + text.length))
   ]);
-  return audio(buf, false);
+  return audio(buf, false, range);
 };
 
 export const config = { path: ['/api/voice', '/api/voice/*'] };
