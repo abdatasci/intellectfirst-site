@@ -1,4 +1,4 @@
-import { CENTRES, centreByUrl, SITE } from './testcentres.mjs';
+import { CENTRES, centreByUrl, SITE, matchTest } from './testcentres.mjs';
 // Homework and test dates, set by teachers per class (website → My classes → a class).
 // Store "school" → "homework": [{ id, classId, classLabel, kind: 'hw'|'test', text, due: 'YYYY-MM-DD', time: 'HH:MM'|'', by, at }]
 // Students see them on their profile and in the Telegram bot; reminders: homework the evening before it is due,
@@ -22,7 +22,8 @@ export function clean(b, cls, by) {
   const text = centre ? str(b.text, 300) || centre[1] : str(b.text, 600); if (!text) return null;
   const due = /^\d{4}-\d{2}-\d{2}$/.test(b.due || '') ? b.due : null; if (!due) return null;
   const time = /^\d{1,2}:\d{2}$/.test(b.time || '') ? b.time.padStart(5, '0') : '';
-  return { id: 'h' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), classId: cls.id, classLabel: cls.label, kind, text, due, time, ...(centre ? { url: centre[2], centre: centre[1] } : {}), by: str(by, 80), at: new Date().toISOString() };
+  const tst = centre ? matchTest(centre[2], b.test || (text !== centre[1] ? text : '')) : null;   // which test inside the centre: the link opens it directly
+  return { id: 'h' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), classId: cls.id, classLabel: cls.label, kind, text: tst && (!text || text === centre[1]) ? tst[1] : text, due, time, ...(centre ? { url: centre[2], centre: centre[1], ...(tst ? { test: tst[0], testTitle: tst[1] } : {}) } : {}), by: str(by, 80), at: new Date().toISOString() };
 }
 export async function addHomework(item) {
   const l = await loadHomework(); l.push(item); await saveHomework(l);
@@ -71,5 +72,5 @@ const ONLINE = {
   kk: h => `🖥 ${h.classLabel} тобына онлайн-тест: ${h.text}${h.centre && h.text !== h.centre ? ' (' + h.centre + ')' : ''}\nТөмендегі батырмамен ашыңыз — кіру автоматты. Speaking — NOVA не ATLAS-пен, баға бірден.`
 };
 export const hwText = (kind, h, lang, withLink) => h.url && kind === 'testNew'
-  ? (ONLINE[lang] || ONLINE.en)(h) + (withLink ? `\n${SITE}${h.url}` : '')
+  ? (ONLINE[lang] || ONLINE.en)(h) + (withLink ? `\n${SITE}${h.url}${h.test ? '?t=' + h.test + (h.classLabel ? '&cls=' + encodeURIComponent(h.classLabel) : '') : ''}` : '')
   : (T[lang] || T.en)[kind](h);

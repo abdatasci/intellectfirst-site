@@ -1,3 +1,4 @@
+import { testLink } from '../lib/testcentres.mjs';
 // Telegram webhook for the IF Academy bot (background function: Telegram gets an immediate 202, the AI reply follows).
 // Webhook URL and secret are set from Admin → Bot ("Connect bot"), which calls setWebhook with a secret derived from the token.
 import { S, getProfile, contextFor, reply, publicReply, allow, tgSecret, tgSend, tg, getLinks, saveLinks, linkChat, matchPhone, local, money, langOf, localise } from '../lib/bot-core.mjs';
@@ -341,7 +342,7 @@ export default async (req) => {
       const sid0 = ctx.student && ctx.student.id, checked = sid0 ? forClasses(await loadHomework(), ctx.classes.map(c => c.id), { past: 7 }).filter(h => !isUpcoming(h) && h.checks && h.checks[sid0]) : [];
       await tgSend(chatId, ctx.classes.length ? hwListText(items, lang, sid0, checked) : L[lang].unlinkedRecord, { reply_markup: isStaff(ctx.profile) ? kbFor(ctx.profile) : KB });
       const online = items.filter(h => h.url).slice(0, 6);   // online tests: open straight from here, signed in
-      if (online.length) await tgSend(chatId, { en: '🖥 Online tests', ru: '🖥 Онлайн-тесты', kk: '🖥 Онлайн-тесттер' }[lang] || '🖥 Online tests', { reply_markup: { inline_keyboard: online.map(h => [{ text: '🖥 ' + String(h.text).slice(0, 40), web_app: { url: 'https://intellectfirst.com' + h.url + '?tg=1' } }]) } });
+      if (online.length) await tgSend(chatId, { en: '🖥 Online tests', ru: '🖥 Онлайн-тесты', kk: '🖥 Онлайн-тесттер' }[lang] || '🖥 Online tests', { reply_markup: { inline_keyboard: online.map(h => [{ text: '🖥 ' + String(h.text).slice(0, 40), web_app: { url: testLink(h, ctx.student, true) } }]) } });
       return new Response('ok');
     }
     if (/^\/results\b|^📊/i.test(text)) { await tgSend(chatId, await resultsText(ctx, uid, lang), { reply_markup: KB }); return new Response('ok'); }

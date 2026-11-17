@@ -7,7 +7,7 @@ import { getStore } from '@netlify/blobs';
 import { doc, tg, tgSend, loadChanges, upcomingLessons, local } from './bot-core.mjs';
 import { addHomework, clean as cleanHw, loadHomework, forClasses } from './homework.mjs';
 import { tellClass } from './hwsend.mjs';
-import { CENTRES } from './testcentres.mjs';
+import { CENTRES, testsOf } from './testcentres.mjs';
 
 const S = () => getStore({ name: 'school', consistency: 'strong' });
 const KEY = chatId => `bot/hwflow/${chatId}`;
@@ -67,7 +67,17 @@ export async function hwCallback(q, p) {
     const today = local().toISOString().slice(0, 10);
     await putState(chatId, { ...st, step: 'text', kind: 'online', url: c[2], centre: c[1], due: today, time: '' });
     await answer(q, '');
-    await edit(q, `Class: ${st.label} · 🖥 ${c[1]}\nWhich test should they do? Type it, e.g. "File 3 Test A" — or press Send now.`, { inline_keyboard: [[{ text: '✅ Send now (no details)', callback_data: 'hw:tn' }], CANCEL] });
+    const list = testsOf(c[2]), rows = [];   // the centre's own tests: the students' link opens the chosen one directly
+    for (let i = 0; i < list.length; i += 2) rows.push(list.slice(i, i + 2).map((x, j) => ({ text: x[1].slice(0, 32), callback_data: 'hw:tt:' + (i + j) })));
+    await edit(q, `Class: ${st.label} · 🖥 ${c[1]}\nWhich test? Tap it below${list.length ? '' : ''} — or type it, e.g. "File 3 Test A".`, { inline_keyboard: [...rows, [{ text: '✅ Send the centre (students choose)', callback_data: 'hw:tn' }], CANCEL] });
+    return true;
+  }
+  if (data.startsWith('hw:tt:')) {
+    if (st.kind !== 'online') return true;
+    const x = testsOf(st.url)[+data.slice(6)]; if (!x) return true;
+    const next = { ...st, step: 'confirm', text: x[1], test: x[0] };
+    await putState(chatId, next); await answer(q, '');
+    await edit(q, preview(next), { inline_keyboard: [[{ text: '✅ Send to the class', callback_data: 'hw:send' }], CANCEL] });
     return true;
   }
   if (data === 'hw:tn') {
@@ -102,7 +112,7 @@ export async function hwCallback(q, p) {
     if (st.step !== 'confirm') { await answer(q, 'Not ready yet.', true); return true; }
     const cls = (await doc('classes')).find(c => c.id === st.classId);
     if (!cls) { await answer(q, 'Class not found.', true); return true; }
-    const item = cleanHw({ kind: st.kind, text: st.text, due: st.due, time: st.time, url: st.url }, cls, p.name);
+    const item = cleanHw({ kind: st.kind, text: st.text, due: st.due, time: st.time, url: st.url, test: st.test }, cls, p.name);
     if (!item) { await answer(q, 'Something is missing. Start again.', true); return true; }
     await answer(q, 'Sending…');
     await addHomework(item);
