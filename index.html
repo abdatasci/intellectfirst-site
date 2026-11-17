@@ -678,6 +678,12 @@
     </div>
     <div class="x-hero-media" aria-hidden="true"><img src="media/ai/hero.webp" alt="" width="1680" height="944" fetchpriority="high" onerror="this.onerror=null;this.src='media/7f7f038c702594ab6a115950d7a7662c.jpg';this.parentNode.classList.add('photo')"></div>
     <div class="wrap x-hero-in">
+      <a class="x-art3d" id="heroArt" href="/articles/#B2" hidden>
+        <span class="x-art3d-box" aria-hidden="false">
+          <span class="f front"><i data-i18n="art_title">Today's article</i><b id="heroArtT"></b><small id="heroArtM"></small></span>
+          <span class="f top"></span><span class="f side"></span>
+        </span>
+      </a>
       <p class="kicker"><span class="dot"></span><span data-i18n="hero_kicker">Intellect First Academy — established in Kostanay</span></p>
       <h1 class="x-display"><span data-i18n="hero_l1">Learn.</span> <span data-i18n="hero_l2">Think.</span> <em data-i18n="hero_l3">Lead.</em></h1>
       <p class="x-tag" data-i18n="hero_tagline">Elevating minds. Creating leaders.</p>
@@ -1273,6 +1279,8 @@
     var el = document.getElementById('dayArt'); el.href = '/articles/#B2';
     el.innerHTML = '<p class="m">' + esc(d) + ' · ' + esc(a.topic) + ' · ' + A.minutes(a) + ' min read</p><h3>' + esc(a.t) + '</h3><p>' + esc(ps[0]) + '</p>' + (ps[1] ? '<p>' + esc(ps[1]) + '</p>' : '') + '<span class="go">Continue reading →</span>';
     document.getElementById('article').hidden = false;
+    var h = document.getElementById('heroArt');
+    if (h) { document.getElementById('heroArtT').textContent = a.t; document.getElementById('heroArtM').textContent = a.topic + ' · ' + A.minutes(a) + ' min read'; h.hidden = false; }
   });
   </script>
 
