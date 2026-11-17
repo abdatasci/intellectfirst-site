@@ -9,6 +9,7 @@ import { getStore } from '@netlify/blobs';
 import { getUser, refreshSession } from '@netlify/identity';
 import bank from '../../a/placement-test/bank.json';
 import { loadStudents, saveStudents } from '../lib/students.mjs';
+import { notifyPlacement } from '../lib/placementnotify.mjs';
 
 const MODEL = process.env.PLACEMENT_MODEL || 'claude-sonnet-5-5';
 const S = () => getStore({ name: 'school', consistency: 'strong' });
@@ -111,12 +112,13 @@ export default async (req, context) => {
     };
     // link to a school record: the signed-in student's record, or a record with the same phone number
     const students = await loadStudents();
+    let linkedStudent = null;
     if (students) {
       const key = phoneKey(entry.phone);
       const s = (!staff && profile?.studentId && students.find(x => x.id === profile.studentId)) ||
         (key.length >= 10 && students.find(x => phoneKey(x.phone) === key || phoneKey(x.parentPhone) === key)) || null;
       if (s) {
-        entry.studentId = s.id;
+        entry.studentId = s.id; linkedStudent = s;
         s.tests = s.tests || [];
         const label = LEVELS[Math.floor(overall)] + (overall % 1 ? '+' : '');
         s.tests.push({ id: 't' + entry.id, test: 'IF Placement Test', date: entry.at.slice(0, 10), score: label, max: '', band: label,
@@ -127,6 +129,7 @@ export default async (req, context) => {
     const list = (await S().get('placements', { type: 'json' })) || [];
     list.push(entry);
     await S().setJSON('placements', list.slice(-3000));
+    await notifyPlacement(entry, linkedStudent);   // admins: website bell + Telegram bot
     return json({ id: entry.id, linked: !!entry.studentId });
   }
   return fail(404, 'route');
