@@ -132,6 +132,14 @@ export default async (req) => {
         delete b.id; Object.assign(r, b); await st.setJSON(sd[1], list); return json({ ok: true, record: r });
       }
     }
+    // placement test results (newest first), and school-made logins for students: {sids:[IF Admin ids], reset?} → one-time passwords
+    if (path === 'placements' && method === 'GET') return json(((await S().get('placements', { type: 'json' })) || []).slice(-40).reverse());
+    if (path === 'logins' && method === 'POST') {
+      const b = await req.json().catch(() => ({}));
+      const { makeLogins } = await import('./school-api.mjs');
+      const r = await makeLogins(b.sids, !!b.reset), L = (await S().get('logins', { type: 'json' })) || {};
+      return json({ ...r, logins: (b.sids || []).map(id => ({ sid: id, login: L[id]?.login || null, pw: L[id]?.pw || null, uid: L[id]?.uid || null })) });
+    }
     // the director's message to one class (Telegram; WhatsApp for students not on Telegram): {ru, en, kk?}
     const nc = path.match(/^notify\/([A-Za-z0-9_-]+)$/);
     if (nc && method === 'POST') {

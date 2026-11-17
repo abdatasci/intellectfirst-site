@@ -358,6 +358,45 @@ async function pdfResponse(id) {
   if (!bytes) return Response.json({ error: 'missing' }, { status: 404 });
   return new Response(bytes, { headers: { 'Content-Type': 'application/pdf', 'Content-Disposition': `attachment; filename="${PDF_FILES[id]}"`, 'Cache-Control': 'private, no-store' } });
 }
+/** School-made logins (login = phone number, one-time password) for IF Admin students; reset = new password. Also used by the IF Admin sync API. */
+export async function makeLogins(sids, reset) {
+  const want = new Set((sids || []).slice(0, 12));
+  const list = await doc('students'), L = (await S().get('logins', { type: 'json' })) || {};
+  const dir = (await U().get('directory', { type: 'json' })) || {};
+  const used = new Set(Object.values(L).map(l => l.login));
+  const done = [], errors = [];
+  for (const st of list.filter(x => want.has(x.id))) {
+    try {
+      const pw = otp();
+      if (reset) {
+        const uid2 = st.uid || L[st.id]?.uid; if (!uid2) throw new Error('no account');
+        await idAdmin.updateUser(uid2, { password: pw });
+        const pr = await getProfile(uid2); if (pr) { pr.mustChange = true; await U().setJSON(`u/${uid2}/profile`, pr); }
+        L[st.id] = { ...(L[st.id] || {}), uid: uid2, login: L[st.id]?.login || dir[uid2]?.email || '', pw, at: new Date().toISOString(), changed: null };
+        done.push(st.id); continue;
+      }
+      if (st.uid) continue;                                            // already has an account
+      let base = phoneKey(st.phone); if (base.length < 10) base = 'if' + st.id.replace(/[^a-z0-9]/gi, '').toLowerCase();
+      let login = base, n = 2; while (used.has(login)) login = `${base}-${n++}`;  // brothers and sisters can share a parent's phone
+      const email = `${login}@students.intellectfirst.com`;
+      let u;
+      try { u = await idAdmin.createUser({ email, password: pw, data: { user_metadata: { full_name: `${st.first} ${st.last}`.trim() } } }); }
+      catch (e) {   // made before, but the link was lost: find it and set a new password
+        const all = await idAdmin.listUsers({ perPage: 1000 }); u = all.find(x => x.email === email); if (!u) throw e;
+        await idAdmin.updateUser(u.id, { password: pw });
+      }
+      used.add(login);
+      const name = `${st.first} ${st.last}`.trim();
+      await putProfile(u.id, { name, email, phone: st.phone || '', role: 'student', since: new Date().toISOString(), studentId: st.id, mustChange: true, made: 'school', ...(st.status === 'withdrawn' ? { alumni: true, classChoice: 'IF Alumni' } : {}) });
+      st.uid = u.id;
+      L[st.id] = { uid: u.id, login, pw, at: new Date().toISOString() };
+      done.push(st.id);
+    } catch (e) { console.error('login', st.id, e); errors.push({ sid: st.id, error: String(e.message || e).slice(0, 120) }); }
+  }
+  await saveStudents(list);
+  await S().setJSON('logins', L);
+  return { done, errors };
+}
 export default async (req) => {
   await runMigrations();
   const url = new URL(req.url);
@@ -1174,44 +1213,7 @@ export default async (req) => {
           email: acc?.email || null, login: l?.login || null, pw: l?.pw || null, made: l?.at || null, changed: l?.changed || null, own: !!(st.uid && !l) };
       }) });
     }
-    if ((path === 'admin/logins/create' || path === 'admin/logins/reset') && method === 'POST') {
-      const want = new Set((b.sids || []).slice(0, 12));
-      const list = await doc('students'), L = (await S().get('logins', { type: 'json' })) || {};
-      const dir = (await U().get('directory', { type: 'json' })) || {};
-      const used = new Set(Object.values(L).map(l => l.login));
-      const done = [], errors = [];
-      for (const st of list.filter(x => want.has(x.id))) {
-        try {
-          const pw = otp();
-          if (path === 'admin/logins/reset') {
-            const uid2 = st.uid || L[st.id]?.uid; if (!uid2) throw new Error('no account');
-            await idAdmin.updateUser(uid2, { password: pw });
-            const pr = await getProfile(uid2); if (pr) { pr.mustChange = true; await U().setJSON(`u/${uid2}/profile`, pr); }
-            L[st.id] = { ...(L[st.id] || {}), uid: uid2, login: L[st.id]?.login || dir[uid2]?.email || '', pw, at: new Date().toISOString(), changed: null };
-            done.push(st.id); continue;
-          }
-          if (st.uid) continue;                                            // already has an account
-          let base = phoneKey(st.phone); if (base.length < 10) base = 'if' + st.id.replace(/[^a-z0-9]/gi, '').toLowerCase();
-          let login = base, n = 2; while (used.has(login)) login = `${base}-${n++}`;  // brothers and sisters can share a parent's phone
-          const email = `${login}@students.intellectfirst.com`;
-          let u;
-          try { u = await idAdmin.createUser({ email, password: pw, data: { user_metadata: { full_name: `${st.first} ${st.last}`.trim() } } }); }
-          catch (e) {   // made before, but the link was lost: find it and set a new password
-            const all = await idAdmin.listUsers({ perPage: 1000 }); u = all.find(x => x.email === email); if (!u) throw e;
-            await idAdmin.updateUser(u.id, { password: pw });
-          }
-          used.add(login);
-          const name = `${st.first} ${st.last}`.trim();
-          await putProfile(u.id, { name, email, phone: st.phone || '', role: 'student', since: new Date().toISOString(), studentId: st.id, mustChange: true, made: 'school', ...(st.status === 'withdrawn' ? { alumni: true, classChoice: 'IF Alumni' } : {}) });
-          st.uid = u.id;
-          L[st.id] = { uid: u.id, login, pw, at: new Date().toISOString() };
-          done.push(st.id);
-        } catch (e) { console.error('login', st.id, e); errors.push({ sid: st.id, error: String(e.message || e).slice(0, 120) }); }
-      }
-      await saveStudents(list);
-      await S().setJSON('logins', L);
-      return json({ done, errors });
-    }
+    if ((path === 'admin/logins/create' || path === 'admin/logins/reset') && method === 'POST') return json(await makeLogins(b.sids, path === 'admin/logins/reset'));
     if (path === 'admin/attendance' && method === 'GET') return json({ attendance: await loadAttendance() });
     if (path === 'admin/finance' && method === 'GET') return json({ entries: await finDoc() });
     if (path === 'admin/finance' && method === 'PUT') {
