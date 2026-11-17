@@ -56,7 +56,7 @@
   }
   var FREE_UNITS = 1;   // the first unit of every course is free without an account (2 with a free account)
   // without an account: unit 1 of every course; with a free account: units 1 and 2; members: everything
-  var unlocked = function (ui) { return ui < (access().signed ? 2 : FREE_UNITS) || access().member; };
+  var unlocked = function (ui, cid) { return (ui < (access().signed ? 2 : FREE_UNITS) || access().member) && classOpen(ui, cid); };
   /* Free taster without an account: the first unit of every course (above), the placement test and these.
      Everything else asks visitors to create a free account (which also starts the full-access trial). */
   var FREE_IDS = { 'voc-a1': 1, 'voc-b1': 1, 'voc-ket': 1, 'skill-games': 1, 'live': 1, 'if-kart': 1, 'kids-quest': 1, 'bq-kids': 1, 'g-skill': 1, 'placement': 1, 'ielts-centre': 1, 'timetable': 1 };
@@ -106,6 +106,7 @@
         var r2 = await fetch('/api/school/app/progress', { credentials: 'same-origin', headers: hdrs() });
         if (r2.ok) { var srv = (await r2.json()).progress; if (srv && srv.done) mergeProgress(srv); }
       } catch (e) {}
+      try { pushSoon(); await loadGate(); } catch (e) {}   // tell the class this student's Unit 1 status, and fetch the class's
     }
   }
   function mergeProgress(srv) {
@@ -116,7 +117,13 @@
     try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {}
   }
   var pushT;
-  function pushSoon() { if (!ME || !ME.profile) return; clearTimeout(pushT); pushT = setTimeout(function () { fetch('/api/school/app/progress', { method: 'PUT', credentials: 'same-origin', headers: hdrs({ 'Content-Type': 'application/json' }), body: JSON.stringify(S) }).catch(function () {}); }, 1500); }
+  function pushSoon() { if (!ME || !ME.profile) return; clearTimeout(pushT); pushT = setTimeout(function () { fetch('/api/school/app/progress', { method: 'PUT', credentials: 'same-origin', headers: hdrs({ 'Content-Type': 'application/json' }), body: JSON.stringify(Object.assign({}, S, { u1: unit1Done() })) }).then(function () { loadGate(); }).catch(function () {}); }, 1500); }
+  /** Courses whose Unit 1 (every lesson) this student has finished. */
+  function unit1Done() { var o = {}; COURSES.forEach(function (c) { var u = c.units && c.units[0]; if (u && u.lessons.length && u.lessons.every(function (l) { return isDone(c.id, u.id, l.id); })) o[c.id] = 1; }); return o; }
+  /** Class gate: Unit 2 opens only when the whole class has finished Unit 1 (teachers and students without a class are not held back). */
+  var GATE = null, gateAt = 0;
+  function loadGate() { if (!ME || !ME.profile || access().staff || S.teacher) { GATE = null; return Promise.resolve(); } gateAt = Date.now(); return fetch('/api/school/app/gate', { credentials: 'same-origin', headers: hdrs() }).then(function (r) { return r.ok ? r.json() : null; }).then(function (g) { var was = JSON.stringify(GATE); GATE = g && g.class ? g : null; if (JSON.stringify(GATE) !== was && /^#\/(course|lesson)/.test(location.hash)) route(); }).catch(function () {}); }
+  function classOpen(ui, cid) { return ui !== 1 || !GATE || (GATE.done[cid] || 0) >= GATE.total; }
 
   /* ---------- small helpers ---------- */
   function toast(m) { var el = $('#toast'); el.textContent = m; el.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(function () { el.classList.remove('on'); }, 2600); }
@@ -343,11 +350,11 @@
     if (/^(teens-a2|ge-(a1|a2|b1|b2|c1|c2))$/.test(c.id)) html += '<p style="margin:4px 0 14px;display:flex;gap:8px;flex-wrap:wrap"><a class="btn ghost" href="/a/coursebook/?c=' + c.id + '">📘 Coursebook (online · print)</a><a class="btn ghost" href="/a/block-quest/?course=' + c.id + '">⛏️ Block Quest</a></p>';
     if (sd) html += '<div class="std"><div class="std-l"><b>' + esc(sd.level) + '</b><span>Standard</span></div><div class="grow"><p class="std-ref">📐 Referenced to the ' + esc(sd.ref) + '</p><p>' + esc(sd.desc) + '</p><div class="std-m">' + sd.modes.map(function (m) { return '<span>' + esc(m) + '</span>'; }).join('') + '</div></div></div>';
     c.units.forEach(function (u, ui) {
-      var open = unlocked(ui);
-      html += '<section class="unit"><div class="unit-h">' + DOODLE(c.id, u.id, 'doodle uh') + '<div style="flex:1"><small>' + esc(t('unit')) + ' ' + (ui + 1) + ' · ' + esc(u.topic) + '</small><h3>' + esc(u.title) + '</h3>' + (window.IFStd && IFStd.unit(c.id, u.id) ? '<p class="cando">🎯 ' + esc(IFStd.unit(c.id, u.id)) + '</p>' : '') + '</div>' + (open ? '' : '<a class="btn sm gold" href="/me/#/upgrade">🔒 ' + esc(t('locked')) + '</a>') + '</div><div class="path">' +
+      var open = unlocked(ui, c.id), waitC = !open && ui === 1 && GATE && (GATE.done[c.id] || 0) < GATE.total;
+      html += '<section class="unit"><div class="unit-h">' + DOODLE(c.id, u.id, 'doodle uh') + '<div style="flex:1"><small>' + esc(t('unit')) + ' ' + (ui + 1) + ' · ' + esc(u.topic) + '</small><h3>' + esc(u.title) + '</h3>' + (window.IFStd && IFStd.unit(c.id, u.id) ? '<p class="cando">🎯 ' + esc(IFStd.unit(c.id, u.id)) + '</p>' : '') + '</div>' + (open ? '' : waitC ? '<span class="btn sm gold" style="cursor:default">🔒 Opens when your class finishes Unit 1 (' + (GATE.done[c.id] || 0) + ' of ' + GATE.total + ')</span>' : '<a class="btn sm gold" href="/me/#/upgrade">🔒 ' + esc(t('locked')) + '</a>') + '</div><div class="path">' +
         u.lessons.map(function (l) {
           var done = isDone(c.id, u.id, l.id), isNext = nx && nx.u.id === u.id && nx.l.id === l.id;
-          return '<a class="node' + (done ? ' done' : '') + (isNext ? ' next' : '') + (open ? '' : ' locked') + '" style="--c:' + COLORS[l.type] + '" href="' + (open ? '#/lesson/' + c.id + '/' + u.id + '/' + l.id : '/me/#/upgrade') + '"><span class="b">' + (open ? ICONS[l.type] : '🔒') + '</span><span>' + esc(l.title) + '</span><em>' + esc(TYPE[l.type]) + (done ? ' · ' + S.done[key3(c.id, u.id, l.id)].score + '%' : '') + '</em></a>';
+          return '<a class="node' + (done ? ' done' : '') + (isNext ? ' next' : '') + (open ? '' : ' locked') + '" style="--c:' + COLORS[l.type] + '" href="' + (open ? '#/lesson/' + c.id + '/' + u.id + '/' + l.id : waitC ? '#/course/' + c.id : '/me/#/upgrade') + '"><span class="b">' + (open ? ICONS[l.type] : '🔒') + '</span><span>' + esc(l.title) + '</span><em>' + esc(TYPE[l.type]) + (done ? ' · ' + S.done[key3(c.id, u.id, l.id)].score + '%' : '') + '</em></a>';
         }).join('') + '</div></section>';
     });
     if (a.teacher) html += '<p style="text-align:center;color:var(--soft)">👩‍🏫 Teacher: open a lesson and press <b>Teach mode</b> to show it on the projector.</p>';
@@ -362,7 +369,7 @@
     var ui = c.units.findIndex(function (u) { return u.id === uid; }); var u = c.units[ui]; if (!u) return go('#/course/' + cid);
     var l = u.lessons.filter(function (x) { return x.id === lid; })[0]; if (!l) return go('#/course/' + cid);
     if (c.daily) { if (!artOpen(c, u)) { if (!meLoaded) { view().innerHTML = '<p style="text-align:center;margin-top:40px">Loading…</p>'; return; } return go('#/articles'); } }
-    else if (!unlocked(ui)) { if (!meLoaded) { view().innerHTML = '<p style="text-align:center;margin-top:40px">Loading…</p>'; return; } return go('#/course/' + cid); }
+    else if (!unlocked(ui, cid)) { if (!meLoaded) { view().innerHTML = '<p style="text-align:center;margin-top:40px">Loading…</p>'; return; } return go('#/course/' + cid); }
     teach = !!teach && access().teacher;
     document.body.classList.toggle('teach', teach); document.body.classList.add('in-lesson');
     var items = [];
@@ -590,7 +597,7 @@
       '<div class="kpis"><div class="kpi"><b>+' + xp + '</b><span>XP</span></div><div class="kpi"><b>' + score + '%</b><span>accuracy</span></div><div class="kpi"><b>🔥 ' + S.streak + '</b><span>' + esc(t('streak')) + '</span></div></div>' +
       '<div class="bar" style="max-width:420px;margin:0 auto 6px;height:12px;background:var(--line)"><i style="width:' + st.p + '%"></i></div><p style="color:var(--soft);font-size:14px">' + esc(L.c.title) + ': ' + st.p + '%</p>' +
       '<p style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:20px"><a class="btn ghost" href="#/course/' + L.c.id + '">Course map</a>' +
-      (nx ? (unlocked(nx.ui) ? '<a class="btn gold" href="#/lesson/' + L.c.id + '/' + nx.u.id + '/' + nx.l.id + '">Next: ' + esc(nx.l.title) + ' →</a>' : '<a class="btn gold" href="/me/#/upgrade">🔒 Unlock the next unit</a>') : '<a class="btn gold" href="#/courses">🎉 Course complete — next level</a>') + '</p></div>';
+      (nx ? (unlocked(nx.ui, L.c.id) ? '<a class="btn gold" href="#/lesson/' + L.c.id + '/' + nx.u.id + '/' + nx.l.id + '">Next: ' + esc(nx.l.title) + ' →</a>' : '<a class="btn gold" href="/me/#/upgrade">🔒 Unlock the next unit</a>') : '<a class="btn gold" href="#/courses">🎉 Course complete — next level</a>') + '</p></div>';
     confetti(score >= 50 ? 120 : 40);
     setNav('courses');
   }
@@ -635,7 +642,7 @@
     return out;
   }
   function lessonCard(x) {
-    var done = isDone(x.c.id, x.u.id, x.l.id), open = unlocked(x.ui);
+    var done = isDone(x.c.id, x.u.id, x.l.id), open = unlocked(x.ui, x.c.id);
     return '<a class="card" href="' + (open ? '#/lesson/' + x.c.id + '/' + x.u.id + '/' + x.l.id : '/me/#/upgrade') + '">' + (open ? '' : '<span class="lock">🔒</span>') + '<span class="ic">' + ICONS[x.l.type] + '</span><h3>' + esc(x.l.title) + '</h3><p>' + esc(x.c.title) + ' · ' + esc(t('unit')) + ' ' + (x.ui + 1) + '</p><div class="meta"><span class="tag ' + tagFor(x.c.track) + '">' + esc(x.c.level) + '</span>' + (done ? '<span class="tag" style="background:var(--ok-bg);color:var(--ok)">✓ ' + S.done[key3(x.c.id, x.u.id, x.l.id)].score + '%</span>' : '') + '</div></a>';
   }
   function vSection(k, f) {
@@ -812,6 +819,7 @@
   function go(h) { if (location.hash === h) route(); else location.hash = h; }
   function route() {
     try { speechSynthesis.cancel(); } catch (e) {}
+    if (ME && Date.now() - gateAt > 20000) loadGate();
     var fb = $('#fb'); if (fb) fb.remove();
     document.body.classList.remove('teach');
     var p = location.hash.replace(/^#\/?/, '').split('?')[0].split('/'), qs = new URLSearchParams(location.hash.split('?')[1] || '');

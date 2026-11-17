@@ -335,7 +335,8 @@ async function appProgress(uid, method, req) {
     const old = (await U().get(`u/${uid}/ifx`, { type: 'json' })) || { done: {} };
     const done = { ...(old.done || {}) };
     for (const [k, v] of Object.entries(p.done || {})) if (/^[\w-]+\/[\w-]+\/[\w-]+$/.test(k) && v && (!done[k] || (+v.at || 0) > (+done[k].at || 0))) done[k] = { score: Math.max(0, Math.min(100, Math.round(+v.score || 0))), at: +v.at || Date.now() };
-    const out = { done, xp: Math.max(+old.xp || 0, Math.min(1e7, Math.round(+p.xp || 0))), streak: Math.min(5000, Math.round(+p.streak || 0)), last: String(p.last || '').slice(0, 10),
+    const u1 = {}; for (const [k, v] of Object.entries(p.u1 || {})) if (/^[\w-]{1,40}$/.test(k) && v) u1[k] = 1;   // courses whose Unit 1 this student has finished
+    const out = { done, u1, xp: Math.max(+old.xp || 0, Math.min(1e7, Math.round(+p.xp || 0))), streak: Math.min(5000, Math.round(+p.streak || 0)), last: String(p.last || '').slice(0, 10),
       goal: String(p.goal || '').slice(0, 20), level: String(p.level || '').slice(0, 4), at: Date.now() };
     await U().setJSON(`u/${uid}/ifx`, out);
     return json({ ok: true });
@@ -586,6 +587,19 @@ export default async (req) => {
   if (path === 'feedback' && method === 'DELETE') { await removeFeedback(uid); return json({ ok: true }); }
 
   /* ---------- IF English app progress (courses, XP, streak): kept with the account so it follows the student ---------- */
+  /* Unit 2 opens for a class only when every student in the class who has an account has finished Unit 1 of that course. */
+  if (path === 'app/gate' && method === 'GET') {
+    const me = await getProfile(uid);
+    if (!me?.studentId) return json({ class: false });
+    const students = await doc('students'), s = students.find(x => x.id === me.studentId);
+    const classes = s ? (await doc('classes')).filter(c => inClass(c, s)) : [];
+    if (!classes.length) return json({ class: false });
+    const live = x => !/withdrawn|finished|frozen/i.test(x.status || '');
+    const uids = [...new Set(students.filter(x => x.uid && live(x) && classes.some(c => inClass(c, x))).map(x => x.uid).concat([uid]))].slice(0, 80);
+    const done = {};
+    await Promise.all(uids.map(async id => { const g = await U().get(`u/${id}/ifx`, { type: 'json' }).catch(() => null); for (const k of Object.keys(g?.u1 || {})) done[k] = (done[k] || 0) + 1; }));
+    return json({ class: true, total: uids.length, done });
+  }
   if (path === 'app/progress') { const r = await appProgress(uid, method, req); if (r) return r; }
 
   // study PDFs (IELTS Studio vocabulary and writing language banks): students and teachers only
