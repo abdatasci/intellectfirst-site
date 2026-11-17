@@ -18,6 +18,7 @@ const json = (d, s = 200) => Response.json(d, { status: s, headers: { 'Cache-Con
 const fail = (s, error) => json({ error }, s);
 const str = (v, n = 80) => (v == null ? '' : String(v)).replace(/\s+/g, ' ').trim().slice(0, n);
 const ROOM_HOURS = 4;
+const PARTY = ['mafia', 'mystery'];
 
 function tokenRequest(clientId, capability) {
   const key = process.env.ABLY_API_KEY || '';
@@ -54,7 +55,7 @@ export default async (req) => {
     const pid = /^p-[a-z0-9]{6,16}$/.test(body.pid || '') ? body.pid : 'p-' + randomBytes(5).toString('hex');
     const { user, profile } = await who(req);
     const tr = tokenRequest(pid, { [`live:${pin}:h`]: ['subscribe'], [`live:${pin}:p`]: ['presence', 'publish'] });
-    return json({ pid, title: room.title, token: tr, account: user ? { uid: user.id, name: profile?.name || '' } : null });
+    return json({ pid, title: room.title, mode: room.mode || '', token: tr, account: user ? { uid: user.id, name: profile?.name || '' } : null });
   }
 
   const { user, profile } = await who(req);
@@ -71,6 +72,25 @@ export default async (req) => {
     }
     try { return json({ qs: await generate(body) }); }
     catch (e) { console.error('generate', e); return fail(502, 'ai'); }
+  }
+  // Party games (Mafia, Mystery): any signed-in person can host, students included. Staff have no daily limit.
+  if (path === 'host' && PARTY.includes(body.mode)) {
+    if (!ready) return fail(503, 'not-configured');
+    if (!isStaff(profile?.role)) {
+      const k = `quota/party/${user.id}/${new Date().toISOString().slice(0, 10)}`, used = (await L().get(k, { type: 'json' })) || 0;
+      if (used >= 12) return json({ error: 'quota' }, 429);
+      await L().setJSON(k, used + 1);
+    }
+    let pin = '';
+    for (let i = 0; i < 20 && !pin; i++) { const p = String(randomInt(100000, 999999)); if (!alive(await L().get('r/' + p, { type: 'json' }))) pin = p; }
+    if (!pin) return fail(500, 'busy');
+    const room = { pin, title: str(body.title, 120) || 'Mafia Live', mode: body.mode, party: true, host: user.id, hostName: profile?.name || 'Host', created: Date.now(), status: 'lobby' };
+    await L().setJSON('r/' + pin, room);
+    return json({ room, token: tokenRequest('host-' + user.id, hostCap(pin)) });
+  }
+  if (path === 'token' && body.as === 'host') {   // the host of a party game reconnects
+    const pin = str(body.pin, 8).replace(/\D/g, ''), room = pin && await L().get('r/' + pin, { type: 'json' });
+    if (alive(room) && room.party && room.host === user.id) return ready ? json({ room, token: tokenRequest('host-' + user.id, hostCap(pin)) }) : fail(503, 'not-configured');
   }
   if (!isStaff(profile?.role)) return fail(403, 'staff');
   const me = { uid: user.id, name: profile.name || user.email };
