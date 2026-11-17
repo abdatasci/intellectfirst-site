@@ -14,7 +14,7 @@
   }
   function examiner() {
     if (window.IFExaminer) return Promise.resolve(window.IFExaminer);
-    return new Promise(function (ok) { var x = document.createElement('script'); x.src = '/tests/examiner.js?v=5'; x.onload = function () { ok(window.IFExaminer || null); }; x.onerror = function () { ok(null); }; document.head.appendChild(x); });
+    return new Promise(function (ok) { var x = document.createElement('script'); x.src = '/tests/examiner.js?v=6'; x.onload = function () { ok(window.IFExaminer || null); }; x.onerror = function () { ok(null); }; document.head.appendChild(x); });
   }
   var txt = function (el) { return el ? String(el.textContent || '').replace(/\s+/g, ' ').trim() : ''; };
   function levelOf() {
@@ -52,9 +52,10 @@
       }).then(function (ans) {
                 if (!ans) return null;
         note('', '<b>Marking your speaking…</b>');
-        return fetch('/api/tests/speakmark', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' },
+        var post = function () { return fetch('/api/tests/speakmark', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ lv: levelOf(), title: document.title, task: head, max: max, answers: ans }) })
-          .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, status: r.status, d: d }; }); });
+          .then(function (r) { return r.json().catch(function () { return {}; }).then(function (d) { return { ok: r.ok, status: r.status, d: d }; }); }); };
+        return post().then(function (x) { return x.ok || x.status === 401 || x.status === 400 ? x : post(); });   // one automatic retry, so marking does not depend on a tap
       }).then(function (x) {
         if (!x) return;
         if (!x.ok) { note('no', x.status === 401 ? '<b>Sign in to get an AI mark.</b> <a href="/me/#/login" target="_blank" rel="noopener">Sign in</a>, then try again. Your teacher can also mark this task.' : '<b>The AI mark could not be given just now.</b> Try again, or your teacher will mark this task.'); return; }

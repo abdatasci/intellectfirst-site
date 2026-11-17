@@ -89,7 +89,7 @@
         }
         function intro() {
           frame(-1, '<p class="q">' + (kid ? 'Hello! I am ' + name + '. Let’s talk! I will ask you ' + (qs.length === 1 ? 'one question' : qs.length + ' questions') + '.' : 'Hello, I’m ' + name + ', your speaking examiner. ' + (qs.length === 1 ? 'I’ll give you one task — talk about it for about ' + (opt.mins || 2) + ' minutes.' : 'I’ll ask you ' + qs.length + ' questions.') + ' Answer in full sentences — about 30 to 60 seconds each.') + '</p>' +
-            '<p style="margin:0;color:#9fb3e6;font-size:14px">' + (SR || canRec ? 'Press the microphone and speak, then press Stop. Allow the microphone when you are asked.' : 'This browser cannot hear you, so type your answers instead.') + '</p>' +
+            '<p style="margin:0;color:#9fb3e6;font-size:14px">' + (SR || canRec ? 'Press the microphone and speak, then press Stop. Allow the microphone when you are asked. You can press the microphone again as many times as you need: there is no limit.' : 'This browser cannot hear you, so type your answers instead.') + '</p>' +
             '<div class="row"><button class="nx" id="ifx-go">Start speaking</button><button class="sk" id="ifx-sk">' + (opt.skip || 'Skip — my teacher will mark speaking') + '</button></div>');
           box.querySelector('#ifx-go').onclick = function () { ask(0); };
           box.querySelector('#ifx-sk').onclick = function () { end(null); };
@@ -100,7 +100,7 @@
           // SR: the browser hears speech itself (Chrome). REC: record and turn it into text on the server (Telegram mini-app, Safari).
           var REC = !SR && canRec, q = qs[i], text = '', rec = null, t0 = 0, timer = null, speechStart = 0, mr = null, chunks = [], stream = null, busy = false;
           frame(i, '<p class="q">' + esc(q) + '</p>' + (SR || REC ? '<div class="tr" id="ifx-tr">…</div><textarea id="ifx-ta" placeholder="Type your answer" style="display:none"></textarea>' : '<textarea id="ifx-ta" placeholder="Type your answer"></textarea>') +
-            '<div class="row">' + (SR || REC ? '<button class="mic" id="ifx-mic">🎙 Answer</button><span class="tm" id="ifx-tm"></span>' : '') + '<button class="nx" id="ifx-nx" ' + (SR || REC ? 'disabled' : '') + '>' + (i === qs.length - 1 ? 'Finish' : 'Next question') + '</button>' +
+            (SR || REC ? '<p style="margin:0 0 8px;color:#9fb3e6;font-size:13px">Not happy with your answer, or it was not heard? Press the microphone again. You can do it as many times as you need, more than twice if you want; each new answer is added to the last.</p>' : '') + '<div class="row">' + (SR || REC ? '<button class="mic" id="ifx-mic">🎙 Answer</button><span class="tm" id="ifx-tm"></span>' : '') + '<button class="nx" id="ifx-nx" ' + (SR || REC ? 'disabled' : '') + '>' + (i === qs.length - 1 ? 'Finish' : 'Next question') + '</button>' +
             (REC ? '<button class="sk" id="ifx-type">Type instead</button>' : '') + '</div>');
           var nx = box.querySelector('#ifx-nx'), mic = box.querySelector('#ifx-mic'), tr = box.querySelector('#ifx-tr'), tm = box.querySelector('#ifx-tm'), ta = box.querySelector('#ifx-ta'), ty = box.querySelector('#ifx-type');
           say((i === 0 ? '' : ACK[i % ACK.length] + ' ') + q, g);
