@@ -93,10 +93,19 @@
   function timeBox() {
     var M = L.mode(CFG.mode), race = !!(M.self || M.team);
     $('#modehelp').textContent = M.blurb + (M.team ? ' Teams are made automatically if you choose "Everyone for themselves".' : '');
-    $('#timebox').innerHTML = race ? '<label class="f">' + (M.team ? 'Time limit' : 'Game length') + '</label><div class="seg" id="tm">' + [3, 5, 8, 10, 15].map(function (m) { return '<button data-v="' + m + '" class="' + (+CFG.race === m ? 'on' : '') + '">' + m + ' min</button>'; }).join('') + '</div>'
-      : '<label class="f">Time per question</label><div class="seg" id="tm">' + [10, 20, 30, 60].map(function (s) { return '<button data-v="' + s + '" class="' + (+CFG.time === s ? 'on' : '') + '">' + s + ' s</button>'; }).join('') + '</div>';
+    $('#timebox').innerHTML = race ? '<label class="f">' + (M.team ? 'Time limit' : 'Game length') + '</label><div class="seg" id="tm">' + [3, 5, 8, 10, 15, 20, 30, 45].map(function (m) { return '<button data-v="' + m + '" class="' + (+CFG.race === m ? 'on' : '') + '">' + m + ' min</button>'; }).join('') + '<label class="seg-own" style="display:inline-flex;align-items:center;gap:6px;margin-left:6px">Other <input id="tmown" type="number" min="1" max="120" inputmode="numeric" style="width:70px;padding:8px;border-radius:10px;border:1px solid var(--line,#ccd)" value="' + ([3, 5, 8, 10, 15, 20, 30, 45].indexOf(+CFG.race) < 0 && CFG.race ? CFG.race : '') + '"> min</label></div><p class="small" style="margin:6px 0 0;opacity:.75">You can add time during the game too (+1 / +5 min).</p>'
+      : '<label class="f">Time per question</label><div class="seg" id="tm">' + [10, 20, 30, 45, 60, 90, 120].map(function (s) { return '<button data-v="' + s + '" class="' + (+CFG.time === s ? 'on' : '') + '">' + (s >= 90 ? (s / 60) + ' min' : s + ' s') + '</button>'; }).join('') + '</div>';
     $('#tm').querySelectorAll('button').forEach(function (b) { b.onclick = function () { $('#tm').querySelectorAll('button').forEach(function (x) { x.classList.toggle('on', x === b); }); CFG[race ? 'race' : 'time'] = +b.dataset.v; }; });
+    var own = $('#tmown'); if (own) own.oninput = function () { var v = Math.round(+own.value); if (v >= 1 && v <= 120) { CFG.race = v; $('#tm').querySelectorAll('button').forEach(function (x) { x.classList.remove('on'); }); } };
   }
+  /* more time while a timed game is running: +1 / +5 minutes for everyone */
+  function ADDT() { return '<button class="btn ghost sm" data-addmin="1">+1 min</button><button class="btn ghost sm" data-addmin="5">+5 min</button>'; }
+  function addTime(m) {
+    if (!H || !(H.phase === 'race' || H.phase === 'match' || (H.raceEnd && H.raceEnd > Date.now() && H.phase !== 'end'))) return;
+    H.raceEnd = Math.max(H.raceEnd, Date.now()) + m * 60000; H.race = (+H.race || 0) + m;
+    save(); render(); push(true); try { L.sfx('tick'); } catch (e) {}
+  }
+  document.addEventListener('click', function (e) { var b = e.target.closest && e.target.closest('[data-addmin]'); if (b) addTime(+b.dataset.addmin); });
   function count() {
     var el = $('#qcount');
     if (useAI()) { if (el) el.textContent = '✨ AI will write ' + (CFG.count === 'all' ? 30 : CFG.count) + ' new questions (takes a few seconds)' + (L.mode(CFG.mode).self || L.mode(CFG.mode).team ? ' + ' + L.bigPool(CFG, BANKS).length + ' from the course, shuffled' : ''); }
@@ -563,7 +572,7 @@
       }
       if (s.feed && s.feed.length) h += '<div class="kidfeed">' + s.feed.slice(-3).reverse().map(function (e) { return '<span>' + esc(e.t) + '</span>'; }).join('') + '</div>';
       h += '</div>';
-      if (host) h += '<div class="ctrl" style="justify-content:flex-end"><button class="btn ghost sm" id="endnow">End game</button></div>';
+      if (host) h += '<div class="ctrl" style="justify-content:flex-end">' + ADDT() + '<button class="btn ghost sm" id="endnow">End game</button></div>';
     } else if (s.phase === 'board' || s.phase === 'race') {
       var race = s.phase === 'race', MM = L.mode(s.mode), cur = MM.power ? ' ' + MM.cur : '', top = s.board.slice(0, race ? (MM.power ? 10 : 12) : 6), max = Math.max(1, s.board.length ? s.board[0][1] : 1);
       var cy = s.mode === 'hack' && race;
@@ -574,7 +583,7 @@
       if (race && s.mode === 'fish') h += lake(s, s.board.slice(0, 10)); else
       h += top.map(function (p, i) { return '<div class="brow' + (i === 0 ? ' first' : '') + '" style="--k:' + ROWC[i % ROWC.length] + '"><span class="fill" style="width:' + (p[1] / max * 100) + '%"></span><span class="r">' + (cy ? ('0' + (i + 1)).slice(-2) : i + 1) + '</span><span class="n">' + (cy ? esc(p[0].toUpperCase().replace(/\s+/g, '_')) + '<small class="ip">' + ip(p[0]) + '</small>' : esc(p[0])) + (p[2] >= 0 && s.teams.length ? ' <small style="color:' + teamColor(p[2]) + '">●</small>' : '') + '</span><span class="s">' + (MM.power ? L.fmtN(p[1]) + cur : p[1]) + '</span></div>'; }).join('') + '</div>';
       if (MM.power) h += '<div class="feed"><h3>' + (cy ? 'root@if-net:~$ tail -f breach.log' : 'Live feed') + '</h3>' + ((s.feed || []).slice().reverse().map(function (e) { return '<div class="fe ' + esc(e.k) + '">' + (cy ? (e.k === 'hack' || e.k === 'steal' ? '<b>ACCESS GRANTED</b> ' : '<b class="ok">&gt;</b> ') : '') + esc(e.t) + '</div>'; }).join('') || '<p class="mini" style="color:rgba(255,255,255,.6)">' + (s.mode === 'gold' ? 'Steals and swaps appear here…' : s.mode === 'hack' ? 'Hacks appear here…' : s.mode === 'mine' ? 'Gold and diamonds appear here…' : 'Big catches appear here…') + '</p>') + '</div></div>';
-      if (host) h += '<div class="ctrl" style="justify-content:flex-end">' + (race ? '<button class="btn ghost sm" id="endnow">End race now</button>' : '<button class="btn big" id="nextq">' + (s.i + 1 >= s.n ? 'Final results →' : 'Next question →') + '</button><button class="btn ghost sm" id="endnow">End game</button>') + '</div>';
+      if (host) h += '<div class="ctrl" style="justify-content:flex-end">' + (race ? ADDT() + '<button class="btn ghost sm" id="endnow">End race now</button>' : '<button class="btn big" id="nextq">' + (s.i + 1 >= s.n ? 'Final results →' : 'Next question →') + '</button><button class="btn ghost sm" id="endnow">End game</button>') + '</div>';
     } else if (s.phase === 'match') {
       h += '<div class="board" style="max-width:1000px"><h2>🤝 ' + esc(s.title) + '</h2><div style="text-align:center;margin-bottom:8px"><span class="pill" style="font-size:22px">⏱ <span id="rtime">' + fmt(s.left) + '</span></span> <span class="pill">First team to ' + s.goal + ' right in a row wins</span></div>';
       h += s.tm.map(function (T, t) {
@@ -584,7 +593,7 @@
           '<div class="track">' + Array.from({ length: s.goal }, function (_, i) { return '<span class="' + (i < T.prog ? 'on' : '') + '"></span>'; }).join('') + '<i style="left:calc(' + (T.prog / s.goal * 100) + '% - 18px)">' + ['🦊', '🐬', '🦉', '🐢'][t] + '</i></div>' +
           '<div class="lm ' + (lt ? lt.ok ? 'ok' : 'no' : '') + '">' + msg + '</div></div>';
       }).join('') + '</div>';
-      if (host) h += '<div class="ctrl" style="justify-content:flex-end"><button class="btn ghost sm" id="reround" title="Use this if a team is stuck, e.g. a student left">New question for every team</button><button class="btn ghost sm" id="endnow">End game</button></div>';
+      if (host) h += '<div class="ctrl" style="justify-content:flex-end"><button class="btn ghost sm" id="reround" title="Use this if a team is stuck, e.g. a student left">New question for every team</button>' + ADDT() + '<button class="btn ghost sm" id="endnow">End game</button></div>';
     } else if (s.phase === 'end') {
       var b = s.board, order = [1, 0, 2], hts = [210, 150, 110];
       h += '<div class="board"><h2>' + (s.mode === 'boss' ? (s.bossWin ? '🏆 The class beat Mumbleclaw!' : '👾 Mumbleclaw got away… next time!') : s.tboard.length ? esc(s.tboard[0][0]) + ' wins!' : 'Winners') + '</h2><div class="podium">' + order.map(function (k) { var p = b[k]; return p ? '<div class="p"><b>' + esc(p[0]) + '</b><small>' + (L.mode(s.mode).power ? L.fmtN(p[1]) + ' ' + L.mode(s.mode).unit : p[1] + ' points') + '</small><div class="blk" style="height:' + hts[k] + 'px">' + (k + 1) + '</div></div>' : ''; }).join('') + '</div>';
