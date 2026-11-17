@@ -2267,7 +2267,8 @@
         case '': return vProfile();
         case 'login': return USER && role() ? go('#/') : vLogin();
         case 'register': return USER && role() ? go(parts[1] === 'teacher' ? '#/upgrade' : '#/') : vRegister(false, parts[1]);
-        case 'staff': return USER && role() ? go('#/') : vRegister(true);
+        case 'staff': if (parts[1] && USER && role()) return vStaff(parts[1]);   // a staff member's page (Admin → Hours)
+          return USER && role() ? go('#/') : vRegister(true);   // staff registration
         case 'activate': return vActivate();
         case 'forgot': return vForgot();
         case 'reset': return vReset();
@@ -2283,7 +2284,6 @@
         case 'results': return vResults();
         case 'feedback': return vFeedback();
         case 'teacher': return vTeacher(parts[1]);
-        case 'staff': return vStaff(parts[1]);
         default: return go('#/');
       }
     } catch (e) { console.error(e); view.innerHTML = '<div class="empty" style="margin-top:30px">Something went wrong loading this page. <a href="#/">Back</a></div>'; }
