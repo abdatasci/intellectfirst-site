@@ -1142,7 +1142,7 @@
   function payItems(items, admin) {
     return '<table class="t small"><tr><th>Date</th><th>Lesson</th><th>Time</th><th></th><th style="text-align:right">Pay</th>' + (admin ? '<th></th>' : '') + '</tr>' + items.map(function (x) {
       var k = PAYK[x.kind] || ['mute', x.kind];
-      return '<tr><td>' + x.date.slice(8) + '.' + x.date.slice(5, 7) + '</td><td>' + esc(x.label) + (x.cover ? ' <span class="chip2 mute">cover</span>' : '') + (x.lateMin ? ' <span class="chip2 bad">' + x.lateMin + ' min late</span>' : '') + '<br><small class="mini">' + esc(x.note || x.how || '') + '</small></td><td>' + esc(x.start) + '–' + esc(x.end || '') + '</td><td><span class="chip2 ' + k[0] + '">' + k[1] + '</span></td><td style="text-align:right"><b>' + tg(x.pay) + '</b></td>' +
+      return '<tr><td>' + x.date.slice(8) + '.' + x.date.slice(5, 7) + '</td><td>' + esc(x.label) + (x.cover ? ' <span class="chip2 mute">cover</span>' : '') + (x.lateMin ? ' <span class="chip2 bad">' + x.lateMin + ' min late</span>' : '') + '<br><small class="mini">' + esc(x.note || x.how || '') + '</small></td><td>' + esc(x.start) + '–' + esc(x.end || '') + '</td><td><span class="chip2 ' + k[0] + '">' + k[1] + '</span></td><td style="text-align:right"><b>' + (x.pay == null ? '–' : tg(x.pay)) + '</b></td>' +
         (admin ? '<td>' + (x.kind === 'unrecorded' ? '<button class="btn ghost sm" data-rec="' + esc(x.key) + '">Record</button>' : '') + (x.kind === 'latecancel' ? '<button class="btn ghost sm" data-atschool="' + esc(x.key) + '" data-on="' + (x.pay ? '' : '1') + '">' + (x.pay ? 'Not at school' : '📍 Was at school') + '</button>' : '') + '</td>' : '') + '</tr>';
     }).join('') + '</table>';
   }

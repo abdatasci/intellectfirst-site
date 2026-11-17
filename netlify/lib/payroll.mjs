@@ -140,6 +140,7 @@ export async function payroll(month, only = null, now = new Date()) {
   const list = Object.values(byT).map(T => {
     const t = teachers.find(x => x.id === T.teacherId) || {};
     const r = (rates.teachers || {})[T.teacherId] || rates.default;
+    if (skip.has(T.teacherId)) T.items = T.items.map(x => ({ ...x, pay: null, full: null }));   // own pay arrangement: hours only, no per-lesson amounts
     return { ...T, name: t.name || T.teacherId, hours: Math.round(T.minutes / 6) / 10, own: skip.has(T.teacherId), rule: skip.has(T.teacherId) ? 'Own pay arrangement — hours only' : ruleText(r), total: skip.has(T.teacherId) ? 0 : T.total, items: T.items.sort((a, b) => (a.date + a.start).localeCompare(b.date + b.start)) };
   }).sort((a, b) => b.total - a.total || a.name.localeCompare(b.name));
   let fixed = [];
