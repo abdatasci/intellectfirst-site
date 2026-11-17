@@ -199,7 +199,7 @@ export default async (req) => {
         const all = await loadHomework(), it = all.find(h => h.id === item.id); Object.assign(it, { test: x[0], testTitle: x[1], text: x[1] });
         await getStore({ name: 'school', consistency: 'strong' }).setJSON('homework', all); Object.assign(item, it);
       }
-      const r = await tellClass(cls, item, null, { since: b.all ? '0' : (b.since || item.at), names: true });
+      const r = await tellClass(cls, item, null, { since: b.all || b.sids ? '0' : (b.since || item.at), sids: Array.isArray(b.sids) ? b.sids : null, names: true });
       return json({ ok: true, item: { id: item.id, text: item.text, at: item.at, test: item.test || null }, ...r });
     }
     // who taught one lesson (a cover): {key: '<classId>|<date>|<HH:MM>', teacherId | null} — pay and hours follow it

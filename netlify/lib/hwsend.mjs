@@ -18,6 +18,7 @@ export async function tellClass(c, item, attach, opts = {}) {   // opts.since: r
     const s = { ...s0, uid: s0.uid || bySid[s0.id] || (links['sid:' + s0.id] ? 'sid:' + s0.id : null) };
     const kind = item.kind === 'test' ? 'testNew' : 'hwNew', l = s.uid && links[s.uid], lang = l?.lang || prefs[s.id]?.lang || 'ru';
     if (opts.since && !(l && l.at && l.at > opts.since)) continue;
+    if (opts.sids && !opts.sids.includes(s.id)) continue;
     try {
       if (!opts.since && s.uid && !String(s.uid).startsWith('sid:')) await addNote(s.uid, { kind, text: hwText(kind, item, l ? lang : 'en', true), ...(item.url ? { url: testLink(item, s).replace('https://intellectfirst.com', '') } : {}) });
       if (l && tgToken()) {
