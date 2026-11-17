@@ -215,7 +215,64 @@ async function recordLessons(R) {
   await W.setJSON('payextra', X);
   return lines;
 }
-const MIGRATIONS = [['timetable-2026-11-14', () => applyTimetable(TT_2026_11_14)], ['timetable-2026-11-14-pending', () => applyPending(PENDING_2026_11_14), true], ['private-2026-11-15', () => grantPrivate(PRIVATE_2026_11_15)], ['schedule-2026-11-15', schedule20261115], ['ontime-2026-11-15', onTime20261115], ['teacher-phones-2026-11-15', teacherPhones], ['cover-2026-11-16', cover20261116], ['smm-2026-11-16', smm20261116], ['aitach-record-2026-11-16', () => recordLessons(AITACH_REC)]];
+/* 17 Nov 2026: Alina's lessons from 29 Oct to 17 Nov, as listed by the director: [date, start, minutes].
+   Lessons already clocked in (website or bot) are left as they are and never counted twice; a listed lesson that is on
+   her timetable is recorded as taught; one that is not on it is added as a recorded lesson; her timetabled lessons in
+   this range that are not listed did not take place. Only dates and times here, never names: this repository is public. */
+const ALINA_REC = {
+  teacher: 't-alina', from: '2026-10-29', to: '2026-11-17',
+  lessons: [['2026-11-02', '17:00', 60], ['2026-11-03', '15:00', 60], ['2026-11-04', '17:00', 60], ['2026-11-04', '18:00', 60], ['2026-11-06', '15:00', 60], ['2026-11-06', '18:00', 60],
+    ['2026-11-07', '13:00', 90], ['2026-11-08', '12:00', 90], ['2026-11-09', '16:00', 60], ['2026-11-09', '17:00', 60], ['2026-11-10', '15:00', 60], ['2026-11-10', '18:00', 60],
+    ['2026-11-11', '15:00', 90], ['2026-11-11', '17:00', 60], ['2026-11-11', '18:00', 60], ['2026-11-13', '15:00', 60], ['2026-11-13', '18:00', 60],
+    ['2026-11-16', '10:00', 60], ['2026-11-16', '16:00', 60], ['2026-11-16', '17:00', 60], ['2026-11-17', '15:00', 60], ['2026-11-17', '16:00', 60]],
+  extra: [{ id: 'trial-20261104-alina', date: '2026-11-04', start: '14:00', end: '15:00', label: 'Trial lesson (new student)', min: 60, factor: 0.5, note: 'Trial lesson: half pay' }]
+};
+async function recordByTime(R) {
+  const W = S(), classes = (await W.get('classes', { type: 'json' })) || [];
+  if (!classes.some(c => c.teacherId === R.teacher)) return null;   // her classes are not there yet: try again later
+  const CH = await loadChanges(), logs = {}, lines = [], who = { uid: 'director', name: 'Abdoulie Manneh' }, now = new Date().toISOString();
+  const log = async mo => logs[mo] || (logs[mo] = (await W.get('lessonlog/' + mo, { type: 'json' })) || {});
+  const hm = t => { const [h, m] = String(t).split(':').map(Number); return h * 60 + m; }, pad = t => String(t).padStart(5, '0');
+  const X = (await W.get('payextra', { type: 'json' })) || [];
+  for (let t = Date.parse(R.from + 'T00:00:00Z'); t <= Date.parse(R.to + 'T00:00:00Z'); t += 864e5) {
+    const date = new Date(t).toISOString().slice(0, 10), L = await log(date.slice(0, 7));
+    const hers = lessonsOn(classes, date, CH).filter(l => l.teacherId === R.teacher && !l.movedTo), recs = R.lessons.filter(x => x[0] === date);
+    const done = l => !!(L[l.key] && L[l.key].checkIn && !L[l.key].cancelled), pair = new Map(), usedL = new Set();
+    const take = (r, l) => { pair.set(r, l); usedL.add(l); };
+    for (const r of recs) { const l = hers.find(x => !usedL.has(x) && !x.cancelled && pad(x.start) === pad(r[1])); if (l) take(r, l); }   // same start time
+    for (const r of recs) {   // a different start time: first a lesson she clocked in for that day, then a timetabled one within an hour
+      if (pair.has(r)) continue;
+      const near = f => hers.filter(x => !usedL.has(x) && f(x)).sort((a, b) => Math.abs(hm(a.start) - hm(r[1])) - Math.abs(hm(b.start) - hm(r[1])))[0];
+      const l = near(done) || near(x => !x.cancelled && Math.abs(hm(x.start) - hm(r[1])) <= 60); if (l) take(r, l);
+    }
+    for (const r of recs) {
+      const l = pair.get(r), min = r[2];
+      if (!l) {   // not on her timetable: a recorded lesson, paid by its length
+        const id = 'rec-' + R.teacher + '-' + date + '-' + pad(r[1]);
+        if (!X.some(y => y.id === id)) { X.push({ id, teacherId: R.teacher, date, start: pad(r[1]), end: new Date(Date.parse('2000-01-01T' + pad(r[1]) + ':00Z') + min * 60000).toISOString().slice(11, 16), label: 'Lesson (recorded by the director)', min, note: 'Recorded by the director' }); lines.push(`${date} ${r[1]}: recorded lesson (${min} min)`); }
+        continue;
+      }
+      const tt = Math.round((Date.parse(l.endAt) - Date.parse(l.at)) / 60000);
+      const e = L[l.key] || (L[l.key] = { classId: l.classId, label: l.label, date: l.date, start: l.start, end: l.end, teacherId: R.teacher });
+      if (min !== tt) e.min = min; else delete e.min;
+      if (done(l)) { lines.push(`${l.key}: already clocked in, kept`); continue; }
+      e.cancelled = false; delete e.cancelReason; e.checkIn = new Date(l.at).toISOString(); e.lateMin = 0; e.by = { uid: who.uid, name: who.name + ' (recorded)' };
+      e.note = 'Taught (recorded by the director)'; e.correctedAt = now; e.correctedBy = who.name; lines.push(`${l.key}: taught (${min} min)`);
+    }
+    for (const l of hers) {   // her timetabled lessons that are not in the list
+      if (usedL.has(l)) continue;
+      if (done(l)) { lines.push(`${l.key}: clocked in but not in the list, kept`); continue; }
+      if (l.cancelled || Date.parse(l.endAt) > Date.now()) continue;
+      const e = L[l.key] || (L[l.key] = { classId: l.classId, label: l.label, date: l.date, start: l.start, end: l.end, teacherId: R.teacher });
+      delete e.checkIn; e.cancelled = true; e.cancelReason = 'notheld'; e.note = 'No lesson (recorded by the director)'; e.correctedAt = now; e.correctedBy = who.name; lines.push(`${l.key}: not held`);
+    }
+  }
+  for (const [mo, L] of Object.entries(logs)) await W.setJSON('lessonlog/' + mo, L);
+  for (const x of R.extra || []) if (!X.some(y => y.id === x.id)) { X.push({ ...x, teacherId: R.teacher }); lines.push(`${x.date}: ${x.label}`); }
+  await W.setJSON('payextra', X);
+  return lines.length ? lines : ['no change'];
+}
+const MIGRATIONS = [['timetable-2026-11-14', () => applyTimetable(TT_2026_11_14)], ['timetable-2026-11-14-pending', () => applyPending(PENDING_2026_11_14), true], ['private-2026-11-15', () => grantPrivate(PRIVATE_2026_11_15)], ['schedule-2026-11-15', schedule20261115], ['ontime-2026-11-15', onTime20261115], ['teacher-phones-2026-11-15', teacherPhones], ['cover-2026-11-16', cover20261116], ['smm-2026-11-16', smm20261116], ['aitach-record-2026-11-16', () => recordLessons(AITACH_REC)], ['alina-record-2026-11-17', () => recordByTime(ALINA_REC)]];
 let running = null;
 /** Run any migration that has not run yet. Safe to call on every request (cached per instance). */
 let checkedAt = 0;

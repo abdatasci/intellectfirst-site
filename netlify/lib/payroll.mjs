@@ -50,9 +50,13 @@ export async function saveRates(r) {
 }
 
 /** Pay period for a month: from the period-start day of the previous month to the day before it in this month
-    (periodStart 28: November = 28 Oct – 27 Nov); periodStart 1 = the calendar month. */
+    (periodStart 28: October = 28 Sep – 27 Oct); periodStart 1 = the calendar month. Used for months before November 2026. */
+// From November 2026 the pay period is the calendar month. Staff were paid on 28 October, so November 2026 counts the
+// lessons from 29 October to 30 November.
+export const CALENDAR_FROM = '2026-11', FIRST_FROM = '2026-10-29';
 export function period(month, rates) {
   const d = Math.min(28, Math.max(1, +(rates && rates.periodStart) || 28)), [y, m] = month.split('-').map(Number);
+  if (month >= CALENDAR_FROM) return { from: month === CALENDAR_FROM ? FIRST_FROM : `${month}-01`, to: new Date(Date.UTC(y, m, 0)).toISOString().slice(0, 10) };
   if (d === 1) return { from: `${month}-01`, to: new Date(Date.UTC(y, m, 0)).toISOString().slice(0, 10) };
   return { from: new Date(Date.UTC(y, m - 2, d)).toISOString().slice(0, 10), to: new Date(Date.UTC(y, m - 1, d - 1)).toISOString().slice(0, 10) };
 }
@@ -103,7 +107,8 @@ export async function payroll(month, only = null, now = new Date()) {
     const tid = l.teacherId; if (!tid || (only && tid !== only)) continue;
     if (l.state === 'upcoming' || l.state === 'open' || l.state === 'overdue' || l.state === 'moved') continue;
     const cls = classes.find(c => c.id === l.classId), r = (rates.teachers || {})[tid] || rates.default || { amount: 0, per: 60 };
-    const mm = mins(l), e = l.entry || {}, c = CH.cancel[l.from || l.key] || {};
+    const e = l.entry || {}, c = CH.cancel[l.from || l.key] || {};
+    const mm = +e.min > 0 ? Math.round(+e.min) : mins(l);   // entry.min: the length the director recorded, when it differs from the timetable
     // full pay for this lesson
     let full = per(r, mm), how = `${mm} min`;
     if (r.solo === 'share' && isSolo(cls) && (cls.studentIds || []).length) {
@@ -183,6 +188,8 @@ export async function payroll(month, only = null, now = new Date()) {
     const expenses = Object.values(ex).filter(i => i && !/salar/i.test(i.cat || '')).reduce((a, i) => a + (+i.amt || 0), 0);   // salaries come from the payroll below, not twice
     const staff = list.filter(T => T !== dT).reduce((a, T) => a + (T.total || 0), 0) + (only ? 0 : fixed.reduce((a, f) => a + (f.total || 0), 0));
     const own = Math.max(S2.base, S2.teaching), left = income - expenses - staff - own;
+    // the base is a minimum he is paid unless the school does badly: what the period's income covers after expenses and staff pay
+    S2.covered = Math.max(0, Math.min(own, Math.round(income - expenses - staff))); S2.short = own - S2.covered;
     S2.money = { income, expenses, staff, own, left, fixedIncluded: !only };
     S2.comp = Math.max(0, Math.min(S2.compMax, Math.round(left)));
     S2.total = own + S2.comp; dT.total = S2.total;
