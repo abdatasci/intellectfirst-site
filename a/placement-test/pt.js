@@ -24,7 +24,20 @@
     var rs = $('#restart'); if (!rs) { rs = document.createElement('button'); rs.id = 'restart'; rs.type = 'button'; rs.textContent = 'Start a new test'; rs.style.cssText = 'background:none;border:0;color:inherit;opacity:.6;font:inherit;font-size:12px;text-decoration:underline;margin:6px 0 0;cursor:pointer'; rs.onclick = function () { if (confirm('Start again from the beginning? Your answers so far will be deleted.')) { lsSet('pt:state', null); lsSet('pt:draft', null); T = null; vStart(); } }; $('#ptbar').appendChild(rs); }
     window.scrollTo(0, 0);
   }
-  function save() { if (T) lsSet('pt:state', T); }
+  function save() { if (!T) return; T.saved = Date.now(); lsSet('pt:state', T); push(); }
+  /* the unfinished test is also kept on the server (by account and by phone number), so the student can continue on
+     another browser or device — e.g. after the iPhone clears the page, or when switching between Telegram and Safari */
+  var pushT = null;
+  function push(now) {
+    clearTimeout(pushT);
+    var go = function () { if (!T || !T.started) return; try { fetch('/api/placement/progress', { method: 'POST', credentials: 'same-origin', keepalive: true, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ state: T }) }).catch(function () {}); } catch (e) {} };
+    if (now) go(); else pushT = setTimeout(go, 1200);
+  }
+  document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'hidden') push(true); });
+  async function serverState(phone, name) {
+    try { var r = await fetch('/api/placement/resume', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ phone: phone || '', name: name || '' }) }); var d = await r.json(); return d && d.state || null; } catch (e) { return null; }
+  }
+  var fresh = function (x) { return x && x.stage && x.stage !== 'done' && x.started && Date.now() - x.started < 7 * 864e5; };
 
   /* ---------- scoring: 3-parameter logistic model, expected a posteriori ability ---------- */
   var GRID = []; for (var g = -4; g <= 4.0001; g += 0.05) GRID.push(g);
@@ -61,6 +74,9 @@
     });
   }
   var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  var IOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  if (IOS || /Telegram/i.test(navigator.userAgent) || (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initData)) SR = null;   // unreliable there: record + server transcription instead
+  var CAN_REC = !!window.MediaRecorder;
 
   /* ---------- account ---------- */
   async function loadUser() {
@@ -95,8 +111,19 @@
       e.preventDefault();
       var nm = $('#nm').value.trim(), ag = $('#ag').value;
       if (!nm || !ag) { toast('Please enter your name and age group.'); return; }
-      T = { started: Date.now(), name: nm, age: ag, phone: $('#ph').value.trim(), stage: 'gv', gv: [], used: [], reading: [], listening: [], writing: null, speaking: [] };
-      save(); resume();
+      var ph = $('#ph').value.trim();
+      if (ph.replace(/\D/g, '').length >= 10) {   // an unfinished test with this phone number (another browser or device)?
+        serverState(ph, nm).then(function (sv) {
+          if (fresh(sv) && String(sv.name || '').trim().toLowerCase() === nm.toLowerCase()) {
+            $('#sf').insertAdjacentHTML('afterbegin', '<div class="banner2" id="srv">We found your unfinished test from ' + new Date(sv.started).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) + '. <button class="btn sm" type="button" id="srvgo">Continue it</button> <button class="btn ghost sm" type="button" id="srvnew">Start again</button></div>');
+            $('#srvgo').onclick = function () { T = sv; lsSet('pt:state', T); resume(); };
+            $('#srvnew').onclick = begin;
+          } else begin();
+        });
+        return;
+      }
+      begin();
+      function begin() { T = { started: Date.now(), name: nm, age: ag, phone: ph, stage: 'gv', gv: [], used: [], reading: [], listening: [], writing: null, speaking: [] }; save(); resume(); }
     };
   }
   function resume() {
@@ -236,7 +263,17 @@
         if (loud) { if (spoke && silentMs >= 1000) { rec.pauses++; if (silentMs >= 3000) rec.longPauses++; } silentMs = 0; spoke = true; rec.speechMs += tick; }
         else silentMs += tick;
       }, tick);
-      var r = new SR(); r.lang = 'en-GB'; r.continuous = true; r.interimResults = true; rec.r = r; rec.on = true;
+      rec.on = true;
+      if (CAN_REC) {   // always keep the audio too: if live recognition fails, the server transcribes it
+        try {
+          var mt = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4', 'audio/ogg'].filter(function (m) { return MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(m); })[0];
+          rec.mr = mt ? new MediaRecorder(stream, { mimeType: mt }) : new MediaRecorder(stream); rec.chunks = [];
+          rec.mr.ondataavailable = function (e) { if (e.data && e.data.size) rec.chunks.push(e.data); };
+          rec.mr.start(1000);
+        } catch (e) { rec.mr = null; }
+      }
+      if (!SR) { if (onText) onText('🎙 Recording… speak now'); return rec; }
+      var r = new SR(); r.lang = 'en-GB'; r.continuous = true; r.interimResults = true; rec.r = r;
       r.onresult = function (ev) {
         var interim = '';
         for (var i = ev.resultIndex; i < ev.results.length; i++) {
@@ -254,11 +291,22 @@
     this.stop = function (rec) {
       return new Promise(function (res) {
         rec.on = false; clearInterval(rec.meter);
-        try { rec.r.stop(); } catch (e) {}
-        setTimeout(function () {
-          res({ text: (rec.text + (rec.interim ? ' ' + rec.interim : '')).trim(), secs: (Date.now() - rec.started) / 1000, speechSecs: rec.speechMs / 1000,
-            pauses: rec.pauses, longPauses: rec.longPauses, conf: rec.conf.length ? rec.conf.reduce(function (a, b) { return a + b; }, 0) / rec.conf.length : null, err: rec.err });
-        }, 700);
+        try { rec.r && rec.r.stop(); } catch (e) {}
+        var mrDone = new Promise(function (ok) { if (!rec.mr || rec.mr.state === 'inactive') return ok(); rec.mr.onstop = function () { ok(); }; try { rec.mr.stop(); } catch (e) { ok(); } });
+        setTimeout(async function () {
+          await mrDone;
+          var text = (rec.text + (rec.interim ? ' ' + rec.interim : '')).trim(), err = rec.err, how = 'live';
+          if ((!text || err || !SR) && rec.chunks && rec.chunks.length) {   // transcribe the recording on the server
+            try {
+              var blob = new Blob(rec.chunks, { type: rec.mr.mimeType || 'audio/mp4' });
+              var r2 = await fetch('/api/stt', { method: 'POST', headers: { 'Content-Type': blob.type || 'audio/mp4' }, body: blob });
+              var d2 = await r2.json().catch(function () { return {}; });
+              if (r2.ok) { text = String(d2.text || '').trim(); err = null; how = 'server'; }
+            } catch (e) {}
+          }
+          res({ text: text, secs: (Date.now() - rec.started) / 1000, speechSecs: rec.speechMs / 1000, how: how,
+            pauses: rec.pauses, longPauses: rec.longPauses, conf: rec.conf.length ? rec.conf.reduce(function (a, b) { return a + b; }, 0) / rec.conf.length : null, err: text ? null : err });
+        }, SR ? 700 : 50);
       });
     };
     this.close = function () { try { stream.getTracks().forEach(function (t) { t.stop(); }); ctx.close(); } catch (e) {} };
@@ -280,7 +328,7 @@
     var qs = speakQs(), i = T.speaking.length;
     if (i >= qs.length) { if (MIC) { MIC.close(); MIC = null; } return nextStage('scoring'); }
     step(5, i / qs.length);
-    var q = qs[i], canMic = !!(SR && navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+    var q = qs[i], canMic = !!((SR || CAN_REC) && navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
     view.innerHTML = '<section class="qcard wide"><div class="eyebrow">Speaking · question ' + (i + 1) + ' of ' + qs.length + '</div>' +
       '<div class="ptex"><span class="bot" aria-hidden="true">' + botSvg() + '</span><p class="qtext" id="qt">' + esc(q) + '</p></div>' +
       '<div class="row"><button class="btn ghost sm" id="rep">🔊 Hear the question again</button></div>' +
@@ -305,7 +353,7 @@
       } else {
         clearInterval(timer); mic.disabled = true; mic.classList.remove('on'); $('#ms').textContent = 'Saving your answer…';
         var r = await MIC.stop(rec);
-        if (r.err) { $('#ms').textContent = 'Speech recognition was blocked.'; $('#mh').textContent = 'Allow the microphone and reload the page, or use Chrome.'; return; }
+        if (r.err) { $('#ms').textContent = 'We could not hear your answer.'; $('#mh').innerHTML = 'Allow the microphone and try again, or <button class="btn ghost sm" id="typeit" type="button">type your answer</button>'; mic.disabled = false; rec = null; left = 90; $('#typeit').onclick = function () { $('#live').outerHTML = '<textarea class="inp" id="tt" rows="5" placeholder="Type your answer as you would say it"></textarea>'; $('#nx').disabled = false; $('#nx').onclick = function () { T.speaking.push({ q: q, text: ($('#tt') || {}).value ? $('#tt').value.trim() : '', typed: true, secs: 0, speechSecs: 0, pauses: 0, longPauses: 0, conf: null }); save(); vSpeaking(); }; }; return; }
         T.speaking.push({ q: q, text: r.text, typed: false, secs: r.secs, speechSecs: r.speechSecs, pauses: r.pauses, longPauses: r.longPauses, conf: r.conf }); save();
         $('#ms').textContent = r.text ? 'Answer saved' : 'We did not hear anything'; $('#mh').textContent = r.text ? 'Click Next for the next question.' : 'That\'s all right, click Next to continue.';
         $('#nx').disabled = false;
@@ -392,7 +440,7 @@
       var r = await fetch('/api/placement/save', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ result: T.result, contact: { name: T.name, phone: T.phone, age: T.age } }) });
       var d = await r.json().catch(function () { return {}; });
-      if (r.ok) { T.savedId = d.id; save(); $('#sv').textContent = d.linked ? 'Saved to your IF Academy record.' : 'Result sent to IF Academy.'; }
+      if (r.ok) { T.savedId = d.id; save(); push(true); $('#sv').textContent = d.linked ? 'Saved to your IF Academy record.' : 'Result sent to IF Academy.'; }
       else $('#sv').textContent = 'Could not send the result. Show this page to your teacher.';
     } catch (e) { $('#sv').textContent = 'Could not send the result. Show this page to your teacher.'; }
   }
@@ -403,7 +451,9 @@
     await loadUser();
     var s = lsGet('pt:state');
     if (s && s.stage === 'done' && s.result) { T = s; showResult(); saveResult(); return; }
-    if (s && s.stage && s.stage !== 'done' && s.started && Date.now() - s.started < 36e5 * 24) { T = s; toast('Welcome back. Continuing where you stopped; your answers are saved.'); resume(); return; }
+    var sv = USER ? await serverState() : null;
+    if (fresh(sv) && (!fresh(s) || (sv.saved || 0) > (s.saved || 0))) s = sv;   // the newer copy wins (another device or browser)
+    if (fresh(s)) { T = s; lsSet('pt:state', T); toast('Welcome back. Continuing where you stopped; your answers are saved.'); resume(); return; }
     vStart();
   }
   boot();

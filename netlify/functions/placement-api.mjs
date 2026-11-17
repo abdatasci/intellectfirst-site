@@ -85,6 +85,24 @@ export default async (req, context) => {
   const { user, profile } = await whoami(req);
   const staff = profile && (profile.role === 'teacher' || profile.role === 'admin');
 
+  // an unfinished test, kept by account and by phone number so it can be continued on another browser or device
+  if (path === 'progress' || path === 'resume') {
+    const keys = [];
+    if (user && !staff) keys.push('pl/progress/u:' + user.id);
+    if (path === 'progress') {
+      const st = b.state && typeof b.state === 'object' ? b.state : null;
+      if (!st || !st.started) return fail(400, 'state');
+      const raw = JSON.stringify(st); if (raw.length > 200000) return fail(413, 'big');
+      const ph = phoneKey(st.phone); if (ph.length >= 10) keys.push('pl/progress/p:' + ph);
+      for (const k of keys) { if (st.stage === 'done') await S().delete(k).catch(() => {}); else await S().setJSON(k, { ...st, savedAt: Date.now() }); }
+      return json({ ok: true, kept: keys.length });
+    }
+    const ph = phoneKey(b.phone); if (ph.length >= 10) keys.push('pl/progress/p:' + ph);
+    const nm = str(b.name, 80).toLowerCase();   // by phone only together with the same name
+    let best = null;
+    for (const k of keys) { const v = await S().get(k, { type: 'json' }).catch(() => null); if (k.includes('/p:') && String(v?.name || '').trim().toLowerCase() !== nm) continue; if (v && v.stage !== 'done' && Date.now() - (v.started || 0) < 7 * 864e5 && (!best || (v.saved || 0) > (best.saved || 0))) best = v; }
+    return json({ state: best });
+  }
   if (path === 'score') {
     const task = TASKS.get(str(b.writing?.taskId, 10));
     const writing = task && words(b.writing?.text) >= 3 ? { task, text: String(b.writing.text) } : null;
