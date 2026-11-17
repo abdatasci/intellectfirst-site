@@ -21,6 +21,7 @@
     $('#ptbar').hidden = i === 0;
     $('#steps').innerHTML = STEPS.slice(1).map(function (s, k) { return '<span class="' + (k + 1 < i ? 'done' : k + 1 === i ? 'on' : '') + '">' + s + '</span>'; }).join('');
     $('#prog').style.width = Math.round(((i - 1) + (frac || 0)) / (STEPS.length - 1) * 100) + '%';
+    var rs = $('#restart'); if (!rs) { rs = document.createElement('button'); rs.id = 'restart'; rs.type = 'button'; rs.textContent = 'Start a new test'; rs.style.cssText = 'background:none;border:0;color:inherit;opacity:.6;font:inherit;font-size:12px;text-decoration:underline;margin:6px 0 0;cursor:pointer'; rs.onclick = function () { if (confirm('Start again from the beginning? Your answers so far will be deleted.')) { lsSet('pt:state', null); lsSet('pt:draft', null); T = null; vStart(); } }; $('#ptbar').appendChild(rs); }
     window.scrollTo(0, 0);
   }
   function save() { if (T) lsSet('pt:state', T); }
@@ -147,18 +148,23 @@
     var p = BANK.reading.filter(function (x) { return x.id === T.readingIds[i]; })[0];
     view.innerHTML = '<section class="split"><article class="text"><div class="eyebrow">Reading · text ' + (i + 1) + ' of 2</div><h2>' + esc(p.title) + '</h2>' +
       p.text.split(/\n\n+/).map(function (para) { return '<p>' + esc(para).replace(/\n/g, '<br>') + '</p>'; }).join('') + '</article>' +
-      '<form class="qs" id="qf">' + qsHtml(p.qs, 'r') + '<button class="btn" style="margin-top:8px">Next</button></form></section>';
+      '<form class="qs" id="qf">' + qsHtml(p.qs, 'r', p.id) + '<button class="btn" style="margin-top:8px">Next</button></form></section>';
     wireQs(p.qs, 'r', function (res) { T.reading.push({ id: p.id, lv: p.lv, res: res }); save(); vReading(); });
   }
-  function qsHtml(qs, pre) {
+  /* Answer order and every choice are kept on the device as soon as they are made, so a reload or a frozen page never loses work. */
+  function qsHtml(qs, pre, key) {
+    T.ord = T.ord || {}; T.sel = T.sel || {};
     return qs.map(function (q, k) {
-      var o = q._o || (q._o = shuffle(q.o.map(function (t, j) { return { t: t, ok: j === q.a }; })));
+      var id = key + ':' + k, ord = T.ord[id];
+      if (!ord) { ord = T.ord[id] = shuffle(q.o.map(function (t, j) { return j; })); save(); }
+      var o = q._o = ord.map(function (j) { return { t: q.o[j], ok: j === q.a }; }), chosen = T.sel[id];
       return '<fieldset class="q"><legend>' + (k + 1) + '. ' + esc(q.q) + '</legend>' + o.map(function (x, j) {
-        return '<label class="ro"><input type="radio" name="' + pre + k + '" value="' + j + '"> <span>' + esc(x.t) + '</span></label>';
+        return '<label class="ro"><input type="radio" name="' + pre + k + '" value="' + j + '" data-id="' + esc(id) + '"' + (chosen === j ? ' checked' : '') + '> <span>' + esc(x.t) + '</span></label>';
       }).join('') + '</fieldset>';
     }).join('');
   }
   function wireQs(qs, pre, done) {
+    $('#qf').onchange = function (e) { var t = e.target; if (t && t.dataset && t.dataset.id) { T.sel[t.dataset.id] = +t.value; save(); } };
     $('#qf').onsubmit = function (e) {
       e.preventDefault();
       var miss = qs.filter(function (q, k) { return !$('input[name="' + pre + k + '"]:checked'); }).length;
@@ -178,7 +184,7 @@
       '<p class="lead" style="font-size:16px">Read the questions first. Then press Play. You can listen <b>twice</b>.</p>' +
       '<div class="ptplay"><button class="btn gold" id="play">▶ Play</button><div class="pbarw"><i id="pb"></i></div><span id="pl" class="small">2 plays left</span></div>' +
       '<audio id="au" preload="auto" src="' + esc(c.src) + '"></audio><p class="small">Recording: ' + esc(c.credit) + ' (public domain)</p>' +
-      '<form class="qs" id="qf" style="margin-top:14px">' + qsHtml(c.qs, 'l') + '<button class="btn" style="margin-top:8px">Next</button></form></section>';
+      '<form class="qs" id="qf" style="margin-top:14px">' + qsHtml(c.qs, 'l', c.id) + '<button class="btn" style="margin-top:8px">Next</button></form></section>';
     var au = $('#au');
     au.ontimeupdate = function () { if (au.duration) $('#pb').style.width = (au.currentTime / au.duration * 100) + '%'; };
     au.onended = function () { $('#play').disabled = plays >= 2; $('#play').textContent = plays >= 2 ? 'No plays left' : '▶ Play again'; };
@@ -317,8 +323,9 @@
     var ai = T.ai || null;
     if (!ai) {
       try {
-        var r = await fetch('/api/placement/score', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ writing: T.writing, speaking: T.speaking }) });
-        ai = r.ok ? await r.json() : { error: r.status };
+        var ctl = new AbortController(), tm = setTimeout(function () { ctl.abort(); }, 60000);
+        var r = await fetch('/api/placement/score', { signal: ctl.signal, method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ writing: T.writing, speaking: T.speaking }) });
+        clearTimeout(tm); ai = r.ok ? await r.json() : { error: r.status };
       } catch (e) { ai = { error: 'network' }; }
       T.ai = ai; save();
     }
@@ -396,6 +403,7 @@
     await loadUser();
     var s = lsGet('pt:state');
     if (s && s.stage === 'done' && s.result) { T = s; showResult(); saveResult(); return; }
+    if (s && s.stage && s.stage !== 'done' && s.started && Date.now() - s.started < 36e5 * 24) { T = s; toast('Welcome back. Continuing where you stopped; your answers are saved.'); resume(); return; }
     vStart();
   }
   boot();
