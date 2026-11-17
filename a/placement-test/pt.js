@@ -345,7 +345,16 @@
     mic.onclick = async function () {
       if (!rec) {
         try { if (!MIC) MIC = new MicSession(await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } })); }
-        catch (e) { $('#mh').textContent = 'The microphone is blocked. Allow it in the browser address bar, then click again.'; return; }
+        catch (e) {
+          var tgw = window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initData;
+          var how = IOS ? (tgw ? 'iPhone: Settings → Telegram → turn on Microphone, then come back and tap the microphone again.' : 'iPhone: tap “aA” in the Safari address bar → Website Settings → Microphone → Allow (or Settings → Safari → Microphone → Allow), then tap the microphone again.')
+            : /Android/i.test(navigator.userAgent) ? 'Android: tap the lock icon next to the address → Permissions → Microphone → Allow (in Telegram: Settings → Apps → Telegram → Permissions → Microphone), then tap again.'
+            : 'Click the lock or microphone icon in the address bar → allow the microphone, then click the microphone again.';
+          $('#ms').textContent = 'The microphone is blocked on this device';
+          $('#mh').innerHTML = esc(how) + ' Your answers so far are saved. <button class="btn ghost sm" id="typeit2" type="button">Type my answer instead</button>';
+          $('#typeit2').onclick = function () { var lv = $('#live'); if (lv) lv.outerHTML = '<textarea class="inp" id="tt" rows="5" placeholder="Type your answer as you would say it"></textarea>'; mic.disabled = true; $('#nx').disabled = false; $('#nx').onclick = function () { T.speaking.push({ q: q, text: $('#tt') ? $('#tt').value.trim() : '', typed: true, secs: 0, speechSecs: 0, pauses: 0, longPauses: 0, conf: null }); save(); vSpeaking(); }; };
+          return;
+        }
         try { speechSynthesis.cancel(); } catch (e) {}
         rec = MIC.start(function (t) { $('#live').textContent = t; });
         mic.classList.add('on'); $('#ms').textContent = 'Recording… click to finish'; $('#nx').disabled = true;
