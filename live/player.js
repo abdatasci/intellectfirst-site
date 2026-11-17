@@ -231,7 +231,7 @@
   function outcome(m) {
     var r = Math.random(), cnt = S.race ? S.race.ok : 0, lvl = 1 + Math.floor(cnt / 6);
     if (m === 'hack') {
-      if (r < .62) { var v = pick([25, 50, 75, 100, 150, 200, 300]) * lvl; return { k: 'add', v: v, l: '+' + v + ' ₿', ic: '💾' }; }
+      if (r < .62) { var v = pick([100, 150, 200, 300, 400, 500]) * lvl; return { k: 'add', v: v, l: '+' + v + ' ₿', ic: '💾' }; }
       if (r < .72) return { k: 'mul', v: 2, l: 'Double!', ic: '⚡' };
       return { k: 'hack', l: 'HACK!', ic: '🕵️' };
     }

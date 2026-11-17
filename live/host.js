@@ -290,10 +290,10 @@
     if (name === 'pw') { var pw = String(d.pw || '').toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 14); if (pw.length >= 3) { p.pw = pw; p.pwo = pwOptions(pw); } scheduleRender(); return; }
     if (name === 'gain') {
       var v = +d.v || 0, before = p.score;
-      if (d.k === 'add') p.score += Math.max(0, Math.min(v, H.mode === 'fish' ? 400 : H.mode === 'cash' ? 50000 : 1000));
+      if (d.k === 'add') p.score += Math.max(0, Math.min(v, H.mode === 'fish' ? 400 : (H.mode === 'cash' || H.mode === 'hack') ? 1e12 : 1000));
       else if (d.k === 'mul' && (v === 2 || v === 3)) p.score *= v;
       else if (d.k === 'lose' && v > 0 && v <= .5) p.score = Math.round(p.score * (1 - v));
-      p.score = Math.max(0, Math.min(Math.round(p.score), 9999999));
+      p.score = Math.max(0, Math.min(Math.round(p.score), 1e15));
       if (d.k === 'mul' && v === 3 && p.score > 0) feed(p.name + ' tripled to ' + L.fmtN(p.score) + ' ' + cur + '!', pid, null, 'big');
       if (d.k === 'lose' && before > 0) feed(p.name + ' lost ' + L.fmtN(before - p.score) + ' ' + cur, pid, null, 'bad');
       if (H.mode === 'mine' && d.ore && v >= 60) feed(p.name + ' mined ' + String(d.ore).slice(0, 30) + ' (+' + Math.round(v) + ' 💎)!', pid, null, 'big');

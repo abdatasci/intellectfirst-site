@@ -172,7 +172,7 @@
     'falcon', 'meteor', 'pixel88', 'cobra', 'jupiter', 'waffle', 'blizzard', 'panda', 'neon77', 'avocado', 'vortex', 'koala', 'laser', 'mango', 'nebula', 'penguin',
     'quantum', 'raptor', 'saturn', 'tornado', 'violet', 'wizard', 'yeti', 'zebra', 'comet', 'donut', 'ember', 'glacier', 'hydra', 'icicle', 'jaguar', 'kiwi',
     'lynx', 'matrix', 'ninja', 'orbit', 'phoenix', 'robot', 'shadow', 'turbo', 'volcano', 'whale'];
-  LIVE.fmtN = function (n) { n = Math.round(+n || 0); return Math.abs(n) >= 10000 ? (n / 1000).toFixed(n >= 100000 ? 0 : 1).replace(/\.0$/, '') + 'k' : String(n); };
+  LIVE.fmtN = function (n) { n = Math.round(+n || 0); var A = Math.abs(n), T = [[1e12, 'tn'], [1e9, 'bn'], [1e6, 'M']]; for (var i = 0; i < 3; i++) if (A >= T[i][0]) return (n / T[i][0]).toFixed(A / T[i][0] >= 100 ? 0 : A / T[i][0] >= 10 ? 1 : 2).replace(/(\.\d*?)0+$/, '$1').replace(/\.$/, '') + T[i][1]; return A >= 10000 ? (n / 1000).toFixed(n >= 100000 ? 0 : 1).replace(/\.0$/, '') + 'k' : String(n); };
 
   /* little sound effects (no files): ok, no, coin, bad, win, hack, splash */
   var AC = null;
