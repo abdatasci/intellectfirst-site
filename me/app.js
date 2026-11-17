@@ -1213,13 +1213,33 @@
     month = month || new Date(Date.now() + 5 * 3600e3).toISOString().slice(0, 7);
     var d; try { d = await api('hours/team?month=' + month); } catch (e) { view.innerHTML = head + '<div class="empty">Could not load hours.</div>'; return; }
     view.innerHTML = head + '<div class="panel wide"><div class="row" style="gap:12px;align-items:center;flex-wrap:wrap"><h2 style="margin:0">Team hours</h2><input class="inp" type="month" id="hmon" value="' + d.month + '" style="max-width:180px"></div>' +
-      '<h3 style="margin-top:16px">Teaching (lessons that took place)</h3>' + (d.teaching.length ? '<table class="t"><tr><th>Teacher</th><th>Hours</th><th>Lessons</th><th>This week</th><th>Still planned</th>' + (PAYV ? '<th>Pay so far</th>' : '') + '</tr>' + d.teaching.map(function (t) { return '<tr><td><a href="#/staff/' + esc(t.id) + '"><b>' + esc(t.name) + '</b></a></td><td>' + hh(t.hours) + '</td><td>' + t.lessons + '</td><td>' + hh(t.week) + '</td><td>' + hh(t.planned) + '</td>' + (PAYV ? '<td>' + (t.pay == null ? '<span class="mini">own</span>' : '<b>' + tg(t.pay) + '</b>') + '</td>' : '') + '</tr>'; }).join('') + '</table>' : '<p class="sub">No lessons yet.</p>') +
+      '<h3 style="margin-top:16px">Teaching (lessons that took place)</h3>' + (d.teaching.length ? '<table class="t"><tr><th>Teacher</th><th>Hours</th><th>Lessons</th><th>This week</th><th>Still planned</th>' + (PAYV ? '<th>Pay so far</th>' : '') + '</tr>' + d.teaching.map(function (t) { return '<tr><td><a href="#/staff/' + esc(t.id) + '"' + (PAYV ? ' data-texp="' + esc(t.id) + '"' : '') + '><b>' + esc(t.name) + '</b></a></td><td>' + hh(t.hours) + '</td><td>' + t.lessons + '</td><td>' + hh(t.week) + '</td><td>' + hh(t.planned) + '</td>' + (PAYV ? '<td>' + (t.pay == null ? '<span class="mini">own</span>' : '<b>' + tg(t.pay) + '</b>') + '</td>' : '') + '</tr>'; }).join('') + '</table>' : '<p class="sub">No lessons yet.</p>') +
       '<h3 style="margin-top:18px">Administrative work (shifts)</h3>' + (d.admin.length ? '<table class="t"><tr><th>Name</th><th>Hours</th><th>Days</th><th>This week</th><th>Now</th></tr>' + d.admin.map(function (a) { return '<tr><td><a href="#/staff/' + esc(a.uid) + '"><b>' + esc(a.name) + '</b></a></td><td>' + hh(a.hours) + '</td><td>' + a.days + '</td><td>' + hh(a.week) + '</td><td>' + (a.open ? '<span class="chip2 ok">working since ' + hm(a.open.in) + '</span>' : '—') + '</td></tr>'; }).join('') + '</table>' : '<p class="sub">No shifts recorded this month. Administrators press “Start work” at the top of the admin page.</p>') +
       '<p class="small" style="margin-top:12px">WhatsApp and Instagram conversations are not tracked automatically; time worked on them away from the desk can be added with “+ Add time”.</p></div>' +
       (PAYV ? '<div class="panel wide" id="payroll"><span class="spin"></span></div>' : '');
     $('#hmon').onchange = function () { aHours(head, this.value); };
     if (PAYV) payroll(d.month);
   }
+  // Team hours (director): a teacher's name opens their lessons and pay right under their row
+  var PAYP = null;
+  document.addEventListener('click', function (e) {
+    var a = e.target.closest('a[data-texp]'); if (!a) return;
+    e.preventDefault();
+    var tr = a.closest('tr'), nx = tr.nextElementSibling;
+    if (nx && nx.classList.contains('texp')) { nx.remove(); return; }
+    var id = a.dataset.texp, row = document.createElement('tr'), td = document.createElement('td'), h;
+    row.className = 'texp'; td.colSpan = tr.children.length; td.style.cssText = 'background:#faf8f3;padding:14px 16px';
+    if (!PAYP) h = '<p class="small">Pay is still loading. Click the name again in a moment.</p>';
+    else {
+      var t = (PAYP.teachers || []).filter(function (x) { return x.teacherId === id; })[0];
+      if (!t) h = '<p class="small">No lessons recorded for this pay period yet.</p>';
+      else h = '<p style="margin:0 0 6px"><b>' + (t.own && !t.salary ? 'Own pay arrangement' : 'Pay so far: ' + tg(t.total)) + '</b> · ' + (t.lessons || 0) + ' lessons · ' + hh(t.hours || 0) + ' taught' + (PAYP.from ? ' <small class="mini">(' + esc(dm(PAYP.from) + ' – ' + dm(PAYP.to)) + ')</small>' : '') + '</p>' +
+        '<p class="small" style="margin:0 0 6px">Rate: ' + esc(t.rule || 'not set yet') + (t.late && t.late.n ? ' · ⏰ ' + t.late.n + ' late (' + t.late.min + ' min)' : '') + (t.unpaidLate ? ' · ' + t.unpaidLate + ' late cancellation' + (t.unpaidLate > 1 ? 's' : '') + ' not paid' : '') + '</p>' +
+        (t.salary ? salaryHTML(t.salary) : '') + recBar(t) + (t.items && t.items.length ? payItems(t.items.slice().reverse(), true) : '');
+    }
+    td.innerHTML = h + '<p class="small" style="margin:10px 0 0"><a href="#/staff/' + esc(id) + '">Open staff profile →</a></p>';
+    row.appendChild(td); tr.parentNode.insertBefore(row, tr.nextSibling);
+  });
   function recBar(t) {
     var u = t.items.filter(function (x) { return x.kind === 'unrecorded'; }).map(function (x) { return x.date; }).sort(); if (!u.length) return '';
     var d0 = u.indexOf('2026-10-30') >= 0 || u[0] < '2026-10-30' ? '2026-10-30' : u[0];
@@ -1227,7 +1247,8 @@
   }
   async function payroll(month) {
     var el = document.getElementById('payroll'); if (!el) return;
-    var P; try { P = await api('pay/month?month=' + month); } catch (e) { el.innerHTML = '<div class="empty">Could not load pay.</div>'; return; }
+    var P; PAYP = null; try { P = await api('pay/month?month=' + month); } catch (e) { el.innerHTML = '<div class="empty">Could not load pay.</div>'; return; }
+    PAYP = P;
     var tot = 0; P.teachers.forEach(function (t) { tot += t.total; }); P.fixed.forEach(function (f) { tot += f.total; });
     var h = '<h2 style="margin:0 0 4px">💰 Payroll · ' + esc(monthLabel(P.month)) + (P.from ? ' <small class="mini">(' + esc(dm(P.from) + ' – ' + dm(P.to)) + ')</small>' : '') + '</h2><p class="sub">Worked out automatically from clock-ins, registers, covers and cancellations. Each teacher sees their own total on their hours page. Total so far: <b>' + tg(tot) + '</b></p>';
     h += P.teachers.map(function (t) {
