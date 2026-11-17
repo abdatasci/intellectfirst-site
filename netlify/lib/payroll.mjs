@@ -15,7 +15,7 @@
 //  • Individual students with a "share" rule: the teacher gets that share of the lesson price (tuition ÷ 12 lessons)
 //    for every lesson taught in the pay period — 12 lessons = half the tuition, however they fall across months.
 import { getStore } from '@netlify/blobs';
-import { lessonsOn, loadLog, withEntry, since, today } from './lessons.mjs';
+import { lessonsOn, loadLog, saveLog, withEntry, since, today } from './lessons.mjs';
 import { doc, loadChanges, hidePrivate } from './bot-core.mjs';
 import { PACKAGES } from './prices.mjs';
 
@@ -167,4 +167,23 @@ export async function setAtSchool(key, on, by) {
   if (on) c.atSchool = { by: by || '', at: new Date().toISOString() }; else delete c.atSchool;
   await saveChanges(CH);
   return true;
+}
+
+// The director records lessons from before clock-in started (they are listed as "not recorded yet"): each one is
+// counted as taught at its timetable start. {keys} = chosen lessons, or {from, to, teacherId} = every unrecorded lesson in a range.
+export async function recordLessons(b, by) {
+  const P = await payroll(b.month), want = Array.isArray(b.keys) ? new Set(b.keys.map(String)) : null, logs = {}, now = new Date().toISOString();
+  let n = 0;
+  for (const T of P.teachers) {
+    if (b.teacherId && T.teacherId !== b.teacherId) continue;
+    for (const it of T.items) {
+      if (it.kind !== 'unrecorded') continue;
+      if (want ? !want.has(it.key) : ((b.from && it.date < b.from) || (b.to && it.date > b.to))) continue;
+      const [classId, date, start] = it.key.split('|'), mo = date.slice(0, 7), L = logs[mo] || (logs[mo] = await loadLog(mo));
+      const e = L[it.key] || (L[it.key] = { classId, label: it.label, date, start, end: it.end, teacherId: T.teacherId });
+      if (!e.checkIn) { e.checkIn = new Date(`${date}T${start.padStart(5, '0')}:00+05:00`).toISOString(); e.lateMin = 0; e.by = { name: by || '' }; e.recordedBy = by || ''; e.recordedAt = now; n++; }
+    }
+  }
+  for (const mo of Object.keys(logs)) await saveLog(mo, logs[mo]);
+  return n;
 }

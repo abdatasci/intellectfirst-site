@@ -1143,7 +1143,7 @@
     return '<table class="t small"><tr><th>Date</th><th>Lesson</th><th>Time</th><th></th><th style="text-align:right">Pay</th>' + (admin ? '<th></th>' : '') + '</tr>' + items.map(function (x) {
       var k = PAYK[x.kind] || ['mute', x.kind];
       return '<tr><td>' + x.date.slice(8) + '.' + x.date.slice(5, 7) + '</td><td>' + esc(x.label) + (x.cover ? ' <span class="chip2 mute">cover</span>' : '') + (x.lateMin ? ' <span class="chip2 bad">' + x.lateMin + ' min late</span>' : '') + '<br><small class="mini">' + esc(x.note || x.how || '') + '</small></td><td>' + esc(x.start) + '–' + esc(x.end || '') + '</td><td><span class="chip2 ' + k[0] + '">' + k[1] + '</span></td><td style="text-align:right"><b>' + tg(x.pay) + '</b></td>' +
-        (admin ? '<td>' + (x.kind === 'latecancel' ? '<button class="btn ghost sm" data-atschool="' + esc(x.key) + '" data-on="' + (x.pay ? '' : '1') + '">' + (x.pay ? 'Not at school' : '📍 Was at school') + '</button>' : '') + '</td>' : '') + '</tr>';
+        (admin ? '<td>' + (x.kind === 'unrecorded' ? '<button class="btn ghost sm" data-rec="' + esc(x.key) + '">Record</button>' : '') + (x.kind === 'latecancel' ? '<button class="btn ghost sm" data-atschool="' + esc(x.key) + '" data-on="' + (x.pay ? '' : '1') + '">' + (x.pay ? 'Not at school' : '📍 Was at school') + '</button>' : '') + '</td>' : '') + '</tr>';
     }).join('') + '</table>';
   }
   function payHTML(P) {
@@ -1155,6 +1155,14 @@
       '<details class="more"><summary>How pay is worked out</summary><ul class="small" style="margin:8px 0 0 18px;line-height:1.5">' + (P.rules || []).map(function (r) { return '<li>' + esc(r) + '</li>'; }).join('') + '</ul></details>';
     return h + '</div>';
   }
+  document.addEventListener('click', async function (e) {
+    var b = e.target.closest('[data-rec],[data-recall]'); if (!b) return;
+    var body = { month: (document.getElementById('hmon') || {}).value || undefined };
+    if (b.dataset.rec) body.keys = [b.dataset.rec]; else { var f = b.parentNode.querySelector('[data-recfrom]'); body.teacherId = b.dataset.recall; body.from = f && f.value; }
+    b.disabled = true;
+    try { var r = await api('pay/record', { method: 'POST', body: body }); toast(r.recorded + ' lesson' + (r.recorded === 1 ? '' : 's') + ' recorded ✓'); var m = document.getElementById('hmon'); if (m && m.onchange) m.onchange.call(m); else b.disabled = false; }
+    catch (er) { toast('Could not record.'); b.disabled = false; }
+  });
   document.addEventListener('click', async function (e) {
     var b = e.target.closest('[data-atschool]'); if (!b) return;
     b.disabled = true;
@@ -1195,13 +1203,18 @@
     $('#hmon').onchange = function () { aHours(head, this.value); };
     if (PAYV) payroll(d.month);
   }
+  function recBar(t) {
+    var u = t.items.filter(function (x) { return x.kind === 'unrecorded'; }).map(function (x) { return x.date; }).sort(); if (!u.length) return '';
+    var d0 = u.indexOf('2026-10-30') >= 0 || u[0] < '2026-10-30' ? '2026-10-30' : u[0];
+    return '<div class="row" style="gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0"><b class="small">' + u.length + ' lesson' + (u.length > 1 ? 's' : '') + ' not recorded</b><span class="small">from</span><input class="inp" type="date" data-recfrom value="' + d0 + '" style="max-width:150px"><button class="btn sm" data-recall="' + esc(t.teacherId) + '">Record them as taught</button></div>';
+  }
   async function payroll(month) {
     var el = document.getElementById('payroll'); if (!el) return;
     var P; try { P = await api('pay/month?month=' + month); } catch (e) { el.innerHTML = '<div class="empty">Could not load pay.</div>'; return; }
     var tot = 0; P.teachers.forEach(function (t) { tot += t.total; }); P.fixed.forEach(function (f) { tot += f.total; });
     var h = '<h2 style="margin:0 0 4px">💰 Payroll · ' + esc(monthLabel(P.month)) + (P.from ? ' <small class="mini">(' + esc(dm(P.from) + ' – ' + dm(P.to)) + ')</small>' : '') + '</h2><p class="sub">Worked out automatically from clock-ins, registers, covers and cancellations. Each teacher sees their own total on their hours page. Total so far: <b>' + tg(tot) + '</b></p>';
     h += P.teachers.map(function (t) {
-      return '<details class="more" style="margin-top:10px"><summary><b>' + esc(t.name) + '</b> — ' + (t.own ? 'own pay arrangement · ' + hh(t.hours) + ' taught' : '<b>' + tg(t.total) + '</b> · ' + t.lessons + ' lessons · ' + hh(t.hours)) + (t.unpaidLate ? ' · ' + t.unpaidLate + ' late cancellation' + (t.unpaidLate > 1 ? 's' : '') + ' not paid' : '') + (t.late.n ? ' · ⏰ ' + t.late.n + ' late (' + t.late.min + ' min)' : '') + '</summary><p class="small">Rate: ' + esc(t.rule) + '</p>' + payItems(t.items, true) + '</details>';
+      return '<details class="more" style="margin-top:10px"><summary><b>' + esc(t.name) + '</b> — ' + (t.own ? 'own pay arrangement · ' + hh(t.hours) + ' taught' : '<b>' + tg(t.total) + '</b> · ' + t.lessons + ' lessons · ' + hh(t.hours)) + (t.unpaidLate ? ' · ' + t.unpaidLate + ' late cancellation' + (t.unpaidLate > 1 ? 's' : '') + ' not paid' : '') + (t.late.n ? ' · ⏰ ' + t.late.n + ' late (' + t.late.min + ' min)' : '') + '</summary><p class="small">Rate: ' + esc(t.rule) + '</p>' + recBar(t) + payItems(t.items, true) + '</details>';
     }).join('');
     if (P.fixed.length) h += '<h3 style="margin-top:16px">Fixed monthly pay</h3><table class="t"><tr><th>Name</th><th>Duty</th><th>Salary</th><th>Deduction</th><th>To pay</th></tr>' + P.fixed.map(function (f) { return '<tr><td>' + esc(f.name) + '</td><td>' + (f.duty === 'smm' ? 'SMM' : 'Manager') + '</td><td>' + tg(f.amount) + '</td><td>' + (f.deduct ? tg(f.deduct) + (f.note ? ' <small class="mini">' + esc(f.note) + '</small>' : '') : '—') + '</td><td><b>' + tg(f.total) + '</b></td></tr>'; }).join('') + '</table>';
     // rates (director)

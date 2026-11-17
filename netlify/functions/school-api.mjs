@@ -779,6 +779,12 @@ export default async (req) => {
     const { setAtSchool } = await import('../lib/payroll.mjs');
     return (await setAtSchool(String(b.key || ''), !!b.on, profile.name || '')) ? json({ ok: true }) : fail(404, 'missing');
   }
+  if (path === 'pay/record' && method === 'POST') {
+    if (profile.role !== 'admin') return fail(403, 'admin');
+    const b = await req.json().catch(() => ({})), month = /^\d{4}-\d{2}$/.test(b.month || '') ? b.month : todayStr().slice(0, 7), d = x => /^\d{4}-\d{2}-\d{2}$/.test(x || '') ? x : null;
+    const { recordLessons } = await import('../lib/payroll.mjs');
+    return json({ ok: true, recorded: await recordLessons({ month, keys: Array.isArray(b.keys) ? b.keys.slice(0, 400) : null, from: d(b.from), to: d(b.to), teacherId: b.teacherId ? String(b.teacherId) : null }, profile.name || '') });
+  }
   if ((path === 'hours/shift' || path === 'hours/add' || path === 'hours/remove') && method === 'POST') {
     if (profile.role !== 'admin') return fail(403, 'admin');
     const b = await req.json().catch(() => ({}));
