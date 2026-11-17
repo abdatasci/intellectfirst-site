@@ -6,7 +6,7 @@
   var BANKS = null, ROOMS = null, H = null, BUS = null, ST = null, WATCH = null, timers = {};
   var CFG = Object.assign({ source: 'gen', level: 'B1', focus: 'mix', topic: '', ai: true, bank: 'v-A2', units: [], qtype: 'def', count: '15', mode: 'classic', time: 20, race: 5, teams: 0, custom: '', title: '' }, L.ls.get('live.cfg') || {});
 
-  if (qsp.get('bank')) { var pb = qsp.get('bank'); CFG.bank = pb; CFG.source = /^y-/.test(pb) ? 'y' : /^g-/.test(pb) ? 'g' : 'v'; CFG.units = []; if (CFG.source === 'y' && ['classic', 'race', 'tug', 'boss', 'balloon', 'kart'].indexOf(CFG.mode) < 0) CFG.mode = 'tug'; }
+  if (qsp.get('bank')) { var pb = qsp.get('bank'); CFG.bank = pb; CFG.source = /^y-/.test(pb) ? 'y' : /^g-/.test(pb) ? 'g' : 'v'; CFG.units = qsp.get('units') ? qsp.get('units').split(',') : []; if (CFG.source === 'y' && ['classic', 'race', 'tug', 'boss', 'balloon', 'kart'].indexOf(CFG.mode) < 0) CFG.mode = 'tug'; }
   function stage(on) { document.body.classList.toggle('light', !on); $('#fs').hidden = !on; $('#back').hidden = !!on; }
   $('#fs').onclick = function () { if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen().catch(function () {}); };
   function joinUrl(pin) { return location.origin + '/live/?pin=' + pin + (L.local ? '&bus=local' : ''); }

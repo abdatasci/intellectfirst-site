@@ -344,6 +344,8 @@ async function appProgress(uid, method, req) {
 }
 
 const PDF_FILES = { 'ielts-vocabulary-bank': 'IF Academy - IELTS Vocabulary Bank.pdf', 'ielts-writing-language-bank': 'IF Academy - IELTS Writing Language Bank.pdf' };
+// IF's own coursebooks (made from the IF App courses by a/coursebook/?print=1)
+for (const [id, t] of [['teens-a2', 'A2 English for Teens'], ['ge-a1', 'General English A1'], ['ge-a2', 'General English A2'], ['ge-b1', 'General English B1'], ['ge-b2', 'General English B2'], ['ge-c1', 'General English C1'], ['ge-c2', 'General English C2']]) PDF_FILES['coursebook-' + id] = `IF Academy - ${t} Coursebook.pdf`;
 function pdfSig(id, exp) {
   const k = (globalThis.Netlify?.env?.get('IFADMIN_SYNC_KEY')) || process.env.IFADMIN_SYNC_KEY || '';
   return k.length >= 32 ? createHmac('sha256', k).update('pdf|' + id + '|' + exp).digest('hex').slice(0, 32) : '';
@@ -401,7 +403,7 @@ export default async (req) => {
   }
 
   // signed PDF link (10 minutes): Telegram's own downloader fetches it without the site's sign-in cookie
-  const sdl = path.match(/^dl\/([a-z-]+)\/(\d+)\.([a-f0-9]{32})\.pdf$/);
+  const sdl = path.match(/^dl\/([a-z0-9-]+)\/(\d+)\.([a-f0-9]{32})\.pdf$/);
   if (sdl && method === 'GET') {
     const [, id, exp, sig] = sdl;
     if (!PDF_FILES[id] || +exp < Date.now() / 1000) return fail(410, 'expired');

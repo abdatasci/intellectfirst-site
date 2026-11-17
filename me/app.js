@@ -856,8 +856,17 @@
 
   /* ---------- IF Classroom: online lessons (Jitsi) + lesson slides (view-only) ---------- */
   var LESSONS = null, CKEY = null, VIEWER = null;
-  var BOOKS_ORDER = ['b-ef-a2', 'b-ef-b1', 'b-ef-b2', 'b-ef-c1', 'b-teens-b2', 'b-wl', 'b-ket', 'b-ielts', 'b-giu'];
+  var BOOKS_ORDER = ['b-teens-a2', 'b-ef-a2', 'b-ef-b1', 'b-ef-b2', 'b-ef-c1', 'b-teens-b2', 'b-ge-a1', 'b-ge-a2', 'b-ge-b1', 'b-ge-b2', 'b-ge-c1', 'b-ge-c2', 'b-wl', 'b-ket', 'b-ielts', 'b-giu'];
+  var COURSEBOOKS = { 'b-teens-a2': 1, 'b-ge-a1': 1, 'b-ge-a2': 1, 'b-ge-b1': 1, 'b-ge-b2': 1, 'b-ge-c1': 1, 'b-ge-c2': 1 };   // IF's own courses: online + PDF coursebook
   function meetUrl(c) { return 'https://meet.jit.si/' + encodeURIComponent(c.meet) + '#userInfo.displayName=%22' + encodeURIComponent((ME && ME.profile && ME.profile.name) || '') + '%22'; }
+  /** study PDF from /api/school/download/<id>: Telegram's own downloader in the mini-app, a normal download elsewhere */
+  async function pdfDownload(id) {
+    var TG = window.Telegram && Telegram.WebApp && Telegram.WebApp.initData ? Telegram.WebApp : null;
+    try {
+      if (TG) { var d = await api('download/' + id + '?link=1'); if (TG.downloadFile && TG.isVersionAtLeast && TG.isVersionAtLeast('8.0')) TG.downloadFile({ url: d.url, file_name: d.name }); else TG.openLink(d.url); return; }
+      location.href = '/api/school/download/' + id;
+    } catch (e) { toast('The PDF could not be downloaded. Please try again.'); }
+  }
   async function lessonsIndex() { if (!LESSONS) { var r = await fetch('/lessons/index.json', { cache: 'no-cache' }); LESSONS = r.ok ? await r.json() : { decks: [] }; } return LESSONS; }
   async function contentKey() {
     if (CKEY) return CKEY;
@@ -888,11 +897,13 @@
       tab = tab && books[tab] ? tab : (lsGet('ifc:book') && books[lsGet('ifc:book')] ? lsGet('ifc:book') : ids[0]);
       h += '<h3 style="margin:22px 0 4px">Lesson slides</h3><p class="small">' + idx.decks.length + ' lessons · updated ' + esc(idx.updated || '') + '. Slides open here for presenting and are not downloadable.</p>' +
         '<div class="tabs2">' + ids.map(function (b) { var bk = bookOf(b); return '<a href="#/classroom/' + b + '" class="' + (b === tab ? 'on' : '') + '">' + esc(bk ? bk.title.replace(/\s*\(.*\)$/, '') : b) + ' <small>' + books[b].length + '</small></a>'; }).join('') + '</div>' +
+        (tab && COURSEBOOKS[tab] ? '<div class="row" style="margin:12px 0 4px;gap:8px;flex-wrap:wrap"><a class="btn sm" target="_blank" rel="noopener" href="/a/coursebook/?c=' + tab.slice(2) + '">📘 Online coursebook ↗</a><button class="btn ghost sm" id="cbpdf" data-c="' + tab.slice(2) + '">⬇ Printable PDF</button><a class="btn ghost sm" target="_blank" rel="noopener" href="/a/block-quest/?course=' + tab.slice(2) + '">⛏️ Block Quest</a><a class="btn ghost sm" target="_blank" rel="noopener" href="/live/host/?bank=v-' + tab.slice(2) + '">🎮 IF Live</a></div>' : '') +
         (tab ? '<div class="decks">' + books[tab].map(function (d) { return '<a class="deck" href="#/present/' + d.id + '"><b>' + esc(d.unit) + '</b><span>' + esc(d.title) + '</span><small>' + d.slides + ' slides</small></a>'; }).join('') + '</div>' : '<div class="empty">No lesson slides yet.</div>');
       if (tab) lsSet('ifc:book', tab);
     }
     h += online;
     view.innerHTML = h;
+    var cbp = $('#cbpdf'); if (cbp) cbp.onclick = function () { pdfDownload('coursebook-' + cbp.dataset.c); };
     view.querySelectorAll('[data-copy]').forEach(function (b) { b.onclick = function () { (navigator.clipboard ? navigator.clipboard.writeText(b.dataset.copy) : Promise.reject()).then(function () { toast('Link copied'); }, function () { prompt('Copy this link', b.dataset.copy); }); }; });
   }
   function unlockBox() {
@@ -903,8 +914,8 @@
     view.innerHTML = '<p style="margin-top:30px"><span class="spin"></span></p>';
     var idx = await lessonsIndex(), d = idx.decks.filter(function (x) { return x.id === id; })[0];
     if (!d) { view.innerHTML = '<div class="empty" style="margin-top:30px">This lesson was not found. <a href="#/classroom">Back</a></div>'; return; }
-    var key = await contentKey();
-    if (!key) {
+    var key = d.plain ? null : await contentKey();   // plain: IF's own AI-written slides are not encrypted
+    if (!key && !d.plain) {
       view.innerHTML = '<div class="row" style="margin-top:18px"><a class="btn ghost sm" href="#/classroom">← IF Classroom</a></div>' + unlockBox();
       $('#uf').onsubmit = async function (ev) { ev.preventDefault(); try { await api('materials/unlock', { method: 'POST', body: { code: $('#uc').value } }); CKEY = null; toast('Slides unlocked'); vPresent(id); } catch (e) { err(ev.target, 'That code did not work.'); } };
       return;
@@ -924,6 +935,7 @@
     function img(name) {
       if (cache[name]) return cache[name];
       cache[name] = (async function () {
+        if (d.plain) { var rp = await fetch('/lessons/' + id + '/' + name + '.webp?v=' + d.v); if (!rp.ok) throw new Error('slide ' + name); return createImageBitmap(await rp.blob()); }
         var r = await fetch('/lessons/' + id + '/' + name + '.bin?v=' + d.v); if (!r.ok) throw new Error('slide ' + name);
         var buf = new Uint8Array(await r.arrayBuffer());
         var plain = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: buf.slice(0, 12) }, key, buf.slice(12));

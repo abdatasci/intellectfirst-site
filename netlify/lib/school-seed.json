@@ -83,6 +83,48 @@
    "title": "Work & Life B2–C1",
    "publisher": "IF Academy",
    "ebook": ""
+  },
+  {
+   "id": "b-teens-a2",
+   "title": "A2 English for Teens (IF Academy)",
+   "publisher": "IF Academy",
+   "ebook": "/a/coursebook/?c=teens-a2"
+  },
+  {
+   "id": "b-ge-a1",
+   "title": "General English A1 (IF Academy)",
+   "publisher": "IF Academy",
+   "ebook": "/a/coursebook/?c=ge-a1"
+  },
+  {
+   "id": "b-ge-a2",
+   "title": "General English A2 (IF Academy)",
+   "publisher": "IF Academy",
+   "ebook": "/a/coursebook/?c=ge-a2"
+  },
+  {
+   "id": "b-ge-b1",
+   "title": "General English B1 (IF Academy)",
+   "publisher": "IF Academy",
+   "ebook": "/a/coursebook/?c=ge-b1"
+  },
+  {
+   "id": "b-ge-b2",
+   "title": "General English B2 (IF Academy)",
+   "publisher": "IF Academy",
+   "ebook": "/a/coursebook/?c=ge-b2"
+  },
+  {
+   "id": "b-ge-c1",
+   "title": "General English C1 (IF Academy)",
+   "publisher": "IF Academy",
+   "ebook": "/a/coursebook/?c=ge-c1"
+  },
+  {
+   "id": "b-ge-c2",
+   "title": "General English C2 (IF Academy)",
+   "publisher": "IF Academy",
+   "ebook": "/a/coursebook/?c=ge-c2"
   }
  ],
  "teachers": [

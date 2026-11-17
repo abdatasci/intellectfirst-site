@@ -115,7 +115,7 @@
   LIVE.LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1'];
   LIVE.FOCUS = [['mix', 'Mixed'], ['vocab', 'Vocabulary'], ['grammar', 'Grammar'], ['speaking', 'Everyday English'], ['exam', 'Exam practice']];
   LIVE.TOPICS = ['Daily life', 'Food & drink', 'Travel', 'Family & friends', 'School & study', 'Work & jobs', 'Technology', 'Health & sport', 'Shopping & money', 'Nature & environment', 'Cities & places', 'Films, music & art', 'Feelings', 'Holidays & celebrations'];
-  var LEVEL_BANKS = { A1: ['v-A1', 'v-Movers'], A2: ['v-A2', 'v-Flyers', 'v-KET', 'g-A2'], B1: ['v-B1', 'v-PET', 'v-TeensB1', 'g-B1'], B2: ['v-B2', 'v-TeensB2', 'g-B2'], C1: ['v-C1', 'v-IELTS', 'g-C1', 'g-IELTS'] };
+  var LEVEL_BANKS = { A1: ['v-A1', 'v-Movers', 'v-ge-a1', 'g-ge-a1'], A2: ['v-A2', 'v-Flyers', 'v-KET', 'g-A2', 'v-ge-a2', 'g-ge-a2', 'v-teens-a2', 'g-teens-a2'], B1: ['v-B1', 'v-PET', 'v-TeensB1', 'g-B1', 'v-ge-b1', 'g-ge-b1'], B2: ['v-B2', 'v-TeensB2', 'g-B2', 'v-ge-b2', 'g-ge-b2'], C1: ['v-C1', 'v-IELTS', 'g-C1', 'g-IELTS', 'v-ge-c1', 'g-ge-c1'], C2: ['v-ge-c2', 'g-ge-c2', 'v-C1', 'g-C1'] };
   function seg(id, items, on) { return '<div class="seg" id="' + id + '">' + items.map(function (s) { return '<button type="button" data-v="' + LIVE.esc(s[0]) + '" class="' + (on === s[0] ? 'on' : '') + '">' + LIVE.esc(s[1]) + '</button>'; }).join('') + '</div>'; }
   LIVE.genForm = function (c) {
     var t = LIVE.TOPICS.indexOf(c.topic) >= 0 || !c.topic ? c.topic : '';

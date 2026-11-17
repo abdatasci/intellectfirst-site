@@ -19,11 +19,13 @@
     } catch (e) {}
   }
 
-  /* ---------------- question bank from the IF App courses ---------------- */
+  /* ---------------- question bank from the IF App courses ----------------
+     PICK: one course (and unit) chosen in the menu or with ?course=teens-a2&unit=u3 — e.g. from the IF Classroom slides */
+  var PICK = { c: '', u: '' };
   function bank(level) {
     var vocab = [], gram = [];
-    IFX_BANK.courses.filter(function (c) { return c.level === level; }).forEach(function (c) {
-      c.units.forEach(function (u) { u.lessons.forEach(function (l) {
+    IFX_BANK.courses.filter(function (c) { return PICK.c ? c.id === PICK.c : c.level === level; }).forEach(function (c) {
+      c.units.filter(function (u) { return !PICK.u || u.id === PICK.u; }).forEach(function (u) { u.lessons.forEach(function (l) {
         if (l.type === 'vocab') l.words.forEach(function (w) { if (w.d) vocab.push({ w: w.w, d: w.d, e: w.e }); });
         if (l.type === 'grammar' || l.type === 'check') (l.ex || []).forEach(function (x) { if (x.t === 'mc' && x.o && x.o.length >= 2 && x.q.indexOf('Choose the') !== 0) gram.push({ q: x.q, o: x.o, a: x.a, topic: l.title }); });
       }); });
@@ -341,11 +343,26 @@
 
   /* ---------------- menu ---------------- */
   var MODE = SAVE.mode || 'mine', LEVEL = SAVE.level || 'B1';
-  (function () { var q = new URLSearchParams(location.search); if (LEVELS.indexOf(q.get('level')) >= 0) LEVEL = q.get('level'); if (q.get('mode') === 'obby' || q.get('mode') === 'mine') MODE = q.get('mode'); })();
+  (function () { var q = new URLSearchParams(location.search); if (LEVELS.indexOf(q.get('level')) >= 0) LEVEL = q.get('level'); if (q.get('mode') === 'obby' || q.get('mode') === 'mine') MODE = q.get('mode');
+    var c = IFX_BANK.courses.filter(function (x) { return x.id === q.get('course'); })[0];
+    if (c) { PICK.c = c.id; LEVEL = c.level; if (c.units.some(function (u) { return u.id === q.get('unit'); })) PICK.u = q.get('unit'); }
+  })();
+  function courseMenu() {
+    var el = $('#crs'); if (!el) return;
+    var list = IFX_BANK.courses.filter(function (c) { return c.level === LEVEL; });
+    if (PICK.c && !list.some(function (c) { return c.id === PICK.c; })) { PICK.c = ''; PICK.u = ''; }
+    var esc = function (t) { return String(t).replace(/[&<>"]/g, function (m) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[m]; }); };
+    el.innerHTML = '<option value="">All ' + LEVEL + ' courses</option>' + list.map(function (c) {
+      return '<optgroup label="' + esc(c.title) + '"><option value="' + c.id + '|">' + esc(c.title) + ' · all units</option>' + c.units.map(function (u, i) { return '<option value="' + c.id + '|' + u.id + '">Unit ' + (i + 1) + ' · ' + esc(u.title) + '</option>'; }).join('') + '</optgroup>';
+    }).join('');
+    el.value = PICK.c ? PICK.c + '|' + PICK.u : '';
+    el.onchange = function () { var v = el.value.split('|'); PICK.c = v[0] || ''; PICK.u = v[1] || ''; };
+  }
   function showMenu() {
     paused = true; $('#start').style.display = 'flex';
     $('#levels').innerHTML = LEVELS.map(function (l) { var b1 = SAVE['mine:' + l], b2 = SAVE['obby:' + l]; return '<button data-lv="' + l + '" class="' + (l === LEVEL ? 'on' : '') + '">' + l + (b1 || b2 ? ' <small>★</small>' : '') + '</button>'; }).join('');
     [].forEach.call(document.querySelectorAll('[data-lv]'), function (b) { b.onclick = function () { LEVEL = b.dataset.lv; showMenu(); }; });
+    courseMenu();
     [].forEach.call(document.querySelectorAll('.mode'), function (b) { b.classList.toggle('on', b.dataset.mode === MODE); b.onclick = function () { MODE = b.dataset.mode; showMenu(); }; });
   }
   function begin(mode, level) {

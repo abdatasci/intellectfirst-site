@@ -340,6 +340,7 @@
     var s = courseStats(c), nx = nextLesson(c), a = access();
     var html = '<div class="course-head"><span class="ic">' + c.icon + '</span><div class="grow"><p class="h-eyebrow">' + esc(c.level) + ' · ' + esc(c.track === 'exam' ? 'Exam' : c.track === 'business' ? 'Business English' : c.track === 'kids' ? 'Young learners' : 'General English') + '</p><h1 style="font-size:28px">' + esc(c.title) + '</h1><p style="margin:4px 0 8px;color:var(--soft)">' + esc(c.blurb) + '</p><div class="bar" style="height:12px"><i style="width:' + s.p + '%"></i></div><p style="margin:6px 0 0;font-size:13.5px;color:var(--soft)">' + s.d + ' / ' + s.n + ' lessons · ' + s.p + '%' + (c.next ? ' · then: ' + esc(c.next) : '') + '</p></div></div>';
     var sd = window.IFStd && IFStd.course(c.id);
+    if (/^(teens-a2|ge-(a1|a2|b1|b2|c1|c2))$/.test(c.id)) html += '<p style="margin:4px 0 14px;display:flex;gap:8px;flex-wrap:wrap"><a class="btn ghost" href="/a/coursebook/?c=' + c.id + '">📘 Coursebook (online · print)</a><a class="btn ghost" href="/a/block-quest/?course=' + c.id + '">⛏️ Block Quest</a></p>';
     if (sd) html += '<div class="std"><div class="std-l"><b>' + esc(sd.level) + '</b><span>Standard</span></div><div class="grow"><p class="std-ref">📐 Referenced to the ' + esc(sd.ref) + '</p><p>' + esc(sd.desc) + '</p><div class="std-m">' + sd.modes.map(function (m) { return '<span>' + esc(m) + '</span>'; }).join('') + '</div></div></div>';
     c.units.forEach(function (u, ui) {
       var open = unlocked(ui);
