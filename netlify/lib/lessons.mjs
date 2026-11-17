@@ -58,6 +58,8 @@ export async function saveRegister(lesson, marks, lateBy, who) {
   if (who.role !== 'admin' && lesson.date !== today()) throw err('closed');   // teachers: the day of the lesson only
   const clean = {}, late = {};
   for (const [sid, m] of Object.entries(marks || {})) if (TO_IFA[m]) { clean[sid] = m; if (m === 'late') late[sid] = Math.max(1, Math.min(180, Math.round(+(lateBy || {})[sid] || 0))) || null; }
+  // students who cancelled themselves (lib/cancel.mjs): in time → excused, late → counts; unless they came after all
+  for (const [sid, c] of Object.entries(e.cancels || {})) if (clean[sid] !== 'on' && clean[sid] !== 'late') clean[sid] = c.early ? 'exc' : 'abs';
   e.marks = clean; e.lateBy = late; e.takenAt = new Date().toISOString(); e.takenBy = { uid: who.uid, name: who.name };
   await saveLog(month, L);
   if (!who.quiet) { const n = k => Object.values(clean).filter(m => m === k).length, { activity } = await import('./activity.mjs'); await activity(`📋 Register — ${lesson.label}, ${lesson.date.slice(8)}.${lesson.date.slice(5, 7)} ${lesson.start} (by ${who.name || 'a teacher'}): ${n('on')} present${n('late') ? ', ' + n('late') + ' late' : ''}${n('abs') ? ', ' + n('abs') + ' absent' : ''}${n('exc') ? ', ' + n('exc') + ' excused' : ''}`, who.uid); }

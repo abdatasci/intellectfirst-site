@@ -355,6 +355,45 @@
       '<dt>Speaking</dt><dd>' + (s ? 'latest ' + band(s.latest) + ' · best ' + band(s.best) + ' · ' + s.count + ' tests' : 'not started') + '</dd></dl>' +
       (link ? '<div class="row" style="margin-top:12px"><a class="btn sm" href="/a/ielts/">Open IELTS Centre</a></div>' : '') + '</div>';
   }
+  /* the student's next lessons, with "Can't come": free 8+ hours before, counted later; a reason is required; 2 a month */
+  async function lessonsBox(el) {
+    var d; try { d = await api('me/lessons'); } catch (e) { el.innerHTML = '<h3>My next lessons</h3><p class="small">Could not load your lessons.</p>'; return; }
+    var DN = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    var day = function (l) { return DN[new Date(l.date + 'T00:00:00Z').getUTCDay()] + ' ' + l.date.slice(8) + '.' + l.date.slice(5, 7); };
+    var rows = (d.lessons || []).slice(0, 6).map(function (l, i) {
+      var right = l.cancelled ? '<span class="chip2 ' + (l.cancelled.early ? 'mute' : 'bad') + '">' + (l.cancelled.early ? 'Cancelled · not counted' : 'Cancelled late · counted') + '</span>'
+        : l.left > 0 ? '<button class="btn ghost sm" data-cx="' + i + '">Can’t come</button>' : '<span class="chip2 mute" title="You have used your ' + d.max + ' cancellations this month">Limit reached</span>';
+      return '<div class="cls"><div style="flex:1"><b>' + esc(l.label) + '</b><p>' + esc(day(l)) + ' · ' + esc(l.start) + (l.end ? '–' + esc(l.end) : '') + (l.room ? ' · ' + esc(l.room) : '') + '</p>' +
+        (l.cancelled ? '<p class="small">Reason: ' + esc(l.cancelled.reason) + '</p>' : '') + '</div>' + right + '</div>';
+    }).join('');
+    el.innerHTML = '<h3>My next lessons</h3>' + (rows || '<p class="small">No lessons in the next two weeks.</p>') +
+      '<p class="small" style="margin-top:10px">Can’t come? Cancel at least <b>' + d.freeHours + ' hours</b> before the lesson and it is not counted. Later cancellations count as a lesson. Up to ' + d.max + ' cancellations a month.</p>';
+    el.querySelectorAll('[data-cx]').forEach(function (b) {
+      b.onclick = function () {
+        var l = d.lessons[+b.dataset.cx];
+        modal('<h2 style="margin-top:0">Cancel this lesson?</h2><p><b>' + esc(l.label) + '</b><br>' + esc(day(l)) + ' · ' + esc(l.start) + (l.end ? '–' + esc(l.end) : '') + '</p>' +
+          (l.free ? '<p class="chip2 ok" style="display:inline-block">' + d.freeHours + '+ hours before: this lesson will not be counted</p>' : '<p class="chip2 bad" style="display:inline-block">Less than ' + d.freeHours + ' hours before: this lesson will be counted</p>') +
+          '<p class="small">Cancellations left this month: ' + l.left + ' of ' + d.max + '. Your teacher, the manager and the director will be told.</p>' +
+          '<label class="small" for="cxr"><b>Reason</b> (required)</label><textarea class="inp" id="cxr" rows="3" maxlength="300" placeholder="e.g. I am ill / family trip / exam at school" style="width:100%;margin:6px 0 12px"></textarea>' +
+          '<div class="row" style="gap:8px"><button class="btn primary" id="cxok" disabled>Cancel the lesson</button><button class="btn ghost" id="cxno">Keep it</button></div>');
+        var r = $('#cxr'), ok = $('#cxok');
+        r.oninput = function () { ok.disabled = r.value.trim().length < 3; };
+        $('#cxno').onclick = closeModal;
+        ok.onclick = async function () {
+          ok.disabled = true;
+          try {
+            var x = await api('me/lessons/cancel', { method: 'POST', body: { key: l.key, reason: r.value.trim() } });
+            closeModal(); toast(x.early ? 'Lesson cancelled. It will not be counted.' : 'Lesson cancelled. It counts as a lesson (less than ' + d.freeHours + ' hours before).');
+            lessonsBox(el);
+          } catch (e) {
+            ok.disabled = false;
+            toast(e.code === 'limit' ? 'You have already cancelled ' + d.max + ' lessons this month. Please contact the school.' : e.code === 'started' ? 'This lesson has already started.' : e.code === 'already' ? 'You have already cancelled this lesson.' : e.code === 'reason' ? 'Please write the reason.' : 'Could not cancel. Please try again.');
+          }
+        };
+        r.focus();
+      };
+    });
+  }
   function classBox(classes) {
     if (!classes || !classes.length) return '';
     return '<div class="box"><h3>My classes</h3>' + classes.map(function (c) {
@@ -541,6 +580,7 @@
       h += goalBox(p);
       h += articleBox(p);
       if (r === 'student' || st) h += classBox(ME.classes);
+      if (r === 'student' && (ME.classes || []).length) h += '<div class="box" id="lsnbox"><h3>My next lessons</h3><p class="small"><span class="spin"></span></p></div>';
       h += '<div class="box"><h3>Test results</h3>' + testsTable(st && st.tests) + '</div>';
       h += attBox(ME.attendance);
       h += ieltsBox(ME.ielts, true);
@@ -562,6 +602,7 @@
     $('#ph').onclick = photoDialog; if ($('#editbtn')) $('#editbtn').onclick = function () { var d = $('#editp'); d.open = true; d.scrollIntoView({ behavior: 'smooth', block: 'start' }); }; wireDetails(); tgBand(); wirePro(); wireGoal();
     if (staff()) todayBox($('#todaybox'));
     if ($('#tuibox')) tuitionBox($('#tuibox'));
+    if ($('#lsnbox')) lessonsBox($('#lsnbox'));
   }
   /* Tuition on the profile: this month's status; pay by Kaspi and send the receipt to the bot, or report a cash payment */
   async function tuitionBox(el) {
@@ -725,8 +766,8 @@
     var opts = [['on', 'Present'], ['late', 'Late'], ['exc', 'Absent (EA)'], ['abs', 'Late cancellation (UA)']];
     // nobody is marked in advance: the teacher marks every student (or presses "All present"), so an absent student is never saved as present by mistake
     box.innerHTML = (l.students.length ? '<div class="row" style="gap:8px;align-items:center;margin-bottom:8px"><button type="button" class="btn ghost sm allp">✅ All present</button><span class="small regcount"></span></div><div class="regrows">' + l.students.map(function (s) {
-      var m = M[s.sid] || '';
-      return '<div class="regrow" data-sid="' + esc(s.sid) + '"><span class="rn">' + esc(s.name) + (s.frozen ? ' <span class="small">(frozen)</span>' : '') + '</span><span class="seg2">' + opts.map(function (o) { return '<button type="button" data-m="' + o[0] + '" class="' + (m === o[0] ? 'on ' + o[0] : '') + '">' + o[1] + '</button>'; }).join('') + '</span><input class="inp lm" type="number" min="1" max="180" placeholder="min" value="' + (LB[s.sid] || '') + '" ' + (m === 'late' ? '' : 'hidden') + ' title="Minutes late"></div>';
+      var cx = (e.cancels || {})[s.sid], m = M[s.sid] || (cx ? (cx.early ? 'exc' : 'abs') : '');
+      return '<div class="regrow" data-sid="' + esc(s.sid) + '"><span class="rn">' + esc(s.name) + (s.frozen ? ' <span class="small">(frozen)</span>' : '') + (cx ? ' <span class="small" title="' + esc(cx.reason) + '">🗓 cancelled' + (cx.early ? '' : ' late') + ': ' + esc(cx.reason) + '</span>' : '') + '</span><span class="seg2">' + opts.map(function (o) { return '<button type="button" data-m="' + o[0] + '" class="' + (m === o[0] ? 'on ' + o[0] : '') + '">' + o[1] + '</button>'; }).join('') + '</span><input class="inp lm" type="number" min="1" max="180" placeholder="min" value="' + (LB[s.sid] || '') + '" ' + (m === 'late' ? '' : 'hidden') + ' title="Minutes late"></div>';
     }).join('') + '</div><div class="row" style="gap:10px;margin-top:10px"><button class="btn primary savereg">Save the register</button><span class="small">Saved to IF Admin attendance straight away: present and late = P, absent = EA, late cancellation = UA.</span></div>' : '<p class="small">No students in this class.</p>');
     box.querySelectorAll('.regrow').forEach(function (r) {
       r.querySelectorAll('[data-m]').forEach(function (b) {

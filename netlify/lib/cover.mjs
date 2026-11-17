@@ -23,6 +23,7 @@ async function staffChats() {
   return out;
 }
 /** The director and the manager(s): website accounts with the admin role, or marked as manager. */
+export async function managerUids() { return adminUids(); }
 async function adminUids() {
   const dir = (await U().get('directory', { type: 'json' })) || {}, out = [];
   for (const [uid, a] of Object.entries(dir)) {

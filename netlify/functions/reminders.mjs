@@ -90,7 +90,8 @@ export default async () => {
     priv.push({ id: 'pv:' + u, first: d.name || 'Student', last: '', uid: u, phone: d.phone || '', status: c.paused || c.left ? 'withdrawn' : 'active', classes: [c.label], pay: c.pay && +c.pay.dueDay ? c.pay : null, private: true });
   }
   const changes = await loadChanges();
-  const due = dueReminders({ changes, students: [...students.map(s => s.uid || !bySid[s.id] ? s : { ...s, uid: bySid[s.id] }), ...priv], classes, homework, receipts, now });
+  const skip = await (await import('../lib/cancel.mjs')).cancelledSet().catch(() => null);
+  const due = dueReminders({ changes, students: [...students.map(s => s.uid || !bySid[s.id] ? s : { ...s, uid: bySid[s.id] }), ...priv], classes, homework, receipts, now, skip });
   if (!due.length) return new Response('nothing due');
   const sentKey = `bot/sent/${ymd(now).slice(0, 7)}`;
   const sent = (await S().get(sentKey, { type: 'json' })) || {};

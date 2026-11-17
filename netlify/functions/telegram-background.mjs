@@ -99,8 +99,8 @@ async function resultsText(ctx, uid, lang) {
    Updated automatically when the list changes (CMDV), so nobody has to press "Connect bot" again. */
 const CMDV = '2026-11-16e';
 const CMDS = {
-  en: [['app', 'Open IF English'], ['account', 'My account: results, attendance, payments'], ['next', 'Next lessons'], ['homework', 'Homework & tests'], ['results', 'My test results'], ['pay', 'Tuition status'], ['prices', 'Prices and packages'], ['help', 'What I can do'], ['stop', 'Disconnect this chat']],
-  ru: [['app', 'Открыть IF English'], ['account', 'Мой аккаунт: результаты, посещаемость, оплаты'], ['next', 'Ближайшие занятия'], ['homework', 'Домашние задания и тесты'], ['results', 'Мои результаты'], ['pay', 'Статус оплаты'], ['prices', 'Цены и пакеты'], ['help', 'Что я умею'], ['stop', 'Отключить чат']]
+  en: [['app', 'Open IF English'], ['account', 'My account: results, attendance, payments'], ['next', 'Next lessons'], ['cancel', "Can't come: cancel a lesson"], ['homework', 'Homework & tests'], ['results', 'My test results'], ['pay', 'Tuition status'], ['prices', 'Prices and packages'], ['help', 'What I can do'], ['stop', 'Disconnect this chat']],
+  ru: [['app', 'Открыть IF English'], ['account', 'Мой аккаунт: результаты, посещаемость, оплаты'], ['next', 'Ближайшие занятия'], ['cancel', 'Не смогу прийти: отменить занятие'], ['homework', 'Домашние задания и тесты'], ['results', 'Мои результаты'], ['pay', 'Статус оплаты'], ['prices', 'Цены и пакеты'], ['help', 'Что я умею'], ['stop', 'Отключить чат']]
 };
 const STAFF_CMDS = [['app', 'Open IF English (Teach mode too)'], ['account', 'My account: classes, registers, admin'], ['today', "Today's lessons: clock in, register"], ['register', 'Take or correct a register'], ['cover', 'Ask a colleague to cover a lesson'], ['task', 'Class task: quiz, poll, writing or speaking'], ['sendhw', 'Send homework or a test to a class'], ['next', 'Next lessons'], ['help', 'Help for teachers'], ['stop', 'Disconnect this chat']];
 const asCmds = l => l.map(([command, description]) => ({ command, description }));
@@ -202,6 +202,11 @@ export default async (req) => {
     if (/^(cov:|cow:|coa:|cod:|cou$|cox$|com:|cog:)/.test(String(q.data || ''))) {
       try { const uid = await S().get(`bot/chat/${q.message?.chat?.id || q.from?.id}`), p = uid && await getProfile(uid); await coverCallback(q, uid, p || null); }
       catch (e) { console.error('cover button', e.message); await tg('answerCallbackQuery', { callback_query_id: q.id, text: 'Something went wrong. Try again.' }).catch(() => {}); }
+      return new Response('ok');
+    }
+    if (/^lc:/.test(String(q.data || ''))) {   // a student cancels a lesson (lib/cancel.mjs)
+      try { const uid = await S().get(`bot/chat/${q.message?.chat?.id || q.from?.id}`), lk = uid && (await getLinks())[uid]; const { botCallback } = await import('../lib/cancel.mjs'); await botCallback(q, uid, (lk && lk.lang) || langOf(q.from?.language_code)); }
+      catch (e) { console.error('cancel button', e.message); await tg('answerCallbackQuery', { callback_query_id: q.id, text: 'Something went wrong. Try again.' }).catch(() => {}); }
       return new Response('ok');
     }
     if (/^(ci:|ro:|rt:\d|ra$|rs$|lx:|lr:|lt:|lu$|lw$)/.test(String(q.data || ''))) {
@@ -329,7 +334,8 @@ export default async (req) => {
     if (/^\/start\b|^\/help\b|^❓/i.test(text)) { await tgSend(chatId, L[lang].help, { reply_markup: KB }); return new Response('ok'); }
     const ctx = await contextFor(uid);
     if (!ctx) { await tgSend(chatId, L[lang].unlinked, { reply_markup: PHONE_KB(lang) }); return new Response('ok'); }
-    if (/^\/next\b|^📅/i.test(text)) { await tgSend(chatId, ctx.student || ctx.classes.length ? nextText(ctx, lang) : L[lang].unlinkedRecord, { reply_markup: isStaff(ctx.profile) ? kbFor(ctx.profile) : KB }); return new Response('ok'); }
+    if (!isStaff(ctx.profile) && await (await import('../lib/cancel.mjs')).botReason(chatId, uid, text, lang)) return new Response('ok');   // the reason for a cancellation
+    if (/^\/next\b|^📅|^\/cancel\b/i.test(text)) { await tgSend(chatId, ctx.student || ctx.classes.length ? nextText(ctx, lang) : L[lang].unlinkedRecord, { reply_markup: isStaff(ctx.profile) ? kbFor(ctx.profile) : KB }); if (!isStaff(ctx.profile)) await (await import('../lib/cancel.mjs')).botOffer(chatId, ctx, lang).catch(e => console.error('cancel offer', e.message)); return new Response('ok'); }
     if (/^\/hw\b|^\/homework\b|^📝/i.test(text)) {
       const items = ctx.classes.length ? forClasses(await loadHomework(), ctx.classes.map(c => c.id), { past: 0 }).filter(isUpcoming) : [];
       const sid0 = ctx.student && ctx.student.id, checked = sid0 ? forClasses(await loadHomework(), ctx.classes.map(c => c.id), { past: 7 }).filter(h => !isUpcoming(h) && h.checks && h.checks[sid0]) : [];

@@ -363,13 +363,14 @@ export const langOf = code => /^ru/i.test(code || '') ? 'ru' : /^kk/i.test(code 
 /* ---------- which reminders are due now ----------
    Run every 15 minutes. Lessons: 2 hours before (sent 60–125 min ahead) and the evening before (19:00–21:00 local).
    Payments (10:00–13:00 local): 3 days before, on the due day, 3 days after if still unpaid. Each reminder is sent once. */
-export function dueReminders({ students, classes, homework = [], receipts = {}, changes = NO_CHANGES, now = new Date() }) {
+export function dueReminders({ students, classes, homework = [], receipts = {}, changes = NO_CHANGES, now = new Date(), skip = null }) {
   const out = [], l = local(now), hour = l.getUTCHours();
   for (const s of students) {
     if (/withdrawn|finished|frozen/i.test(s.status || '')) continue;
     if (!s.uid && !s.phone && !s.parentPhone) continue;   // no account and no phone: nobody to tell
     const mine = classes.filter(c => inClass(c, s));
     for (const x of upcomingLessons(mine, now, 2, changes)) {
+      if (skip && skip.has(x.key + '|' + s.id)) continue;   // the student cancelled this lesson
       const mins = (x.at - now) / 60000;
       if (mins > 60 && mins <= 125) out.push({ uid: s.uid || null, studentId: s.id, phones: [s.phone, s.parentPhone].filter(Boolean), kind: 'lesson2h', key: `l2:${x.classId}:${x.date}:${x.start}`, lesson: x });
       if (hour >= 19 && hour < 21 && x.date === ymd(new Date(now.getTime() + 86400000)))

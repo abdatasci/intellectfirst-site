@@ -898,6 +898,16 @@ export default async (req) => {
     const h = await setCheck(hwk[1], str(b.sid, 40), b.s, profile.name || 'Teacher', x => mine.includes(x.classId));
     return h ? json({ item: h }) : fail(404, 'missing');
   }
+  // students cancel a lesson themselves (lib/cancel.mjs): free 8+ hours before, counted later; a reason is required; 2 a month
+  if ((path === 'me/lessons' && method === 'GET') || (path === 'me/lessons/cancel' && method === 'POST')) {
+    const { contextFor } = await import('../lib/bot-core.mjs'), C = await import('../lib/cancel.mjs');
+    const ctx = await contextFor(user.id);
+    if (!ctx || ctx.role !== 'student' || !ctx.classes.length) return json({ lessons: [], max: C.MAX_PER_MONTH, freeHours: C.FREE_HOURS });
+    if (method === 'GET') return json(await C.myLessons(C.who(ctx)));
+    const b = await req.json().catch(() => ({}));
+    try { return json(await C.cancelLesson(C.who(ctx), str(b.key, 120), str(b.reason, 300), 'site')); }
+    catch (e) { if (e.code) return fail(400, e.code, { max: e.max }); throw e; }
+  }
   // a student says they have done their homework; the teacher still has to confirm it
   const hwm = path.match(/^me\/homework\/([A-Za-z0-9-]+)\/done$/);
   if (hwm && method === 'POST') {
