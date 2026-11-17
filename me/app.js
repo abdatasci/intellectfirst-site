@@ -76,6 +76,23 @@
   document.addEventListener('change', function (e) { var i = e.target; if (!i.closest || !i.closest('#study') || !i.checked || i.value === 'placement') return; var book = /^book:/.test(i.value), n = [].slice.call(document.querySelectorAll('#study input:checked')).filter(function (x) { return x.value !== 'placement' && /^book:/.test(x.value) === book; }).length; if (n > (book ? 2 : 3)) { i.checked = false; toast(book ? 'You can choose up to 2 coursebooks.' : 'You can choose up to 3 courses. Untick one first.'); } });
   function studyValue() { return [].slice.call(document.querySelectorAll('#study input:checked')).map(function (i) { return i.value; }).filter(function (v) { return v !== 'placement'; }); }
   function studySummary(a) { return (a || []).map(function (k) { return STUDY_NAME[k] || k; }).join(', '); }
+  /* Today's article at the student's level (from their class, or the courses chosen in their account). Young learners have none. */
+  function articleBox(p) {
+    var A = window.IF_ARTICLES; if (!A) return '';
+    var keys = (window.IFClass && IFClass.keys(ME)) || p.study || [], lv = '', kids = false;
+    var BL = { 'ef-a0': 'A1', 'ef-a1': 'A1', 'ef-a2': 'A2', 'ef-b1': 'B1', 'ef-b2': 'B2', 'ef-c1': 'C1', 'ef-c2': 'C2', 'teens-b1': 'B1', 'teens-b2': 'B2', giu: 'B1' };
+    keys.forEach(function (k) {
+      if (/^yl:|^maths$/.test(k)) { kids = true; return; }
+      var l = /^(ge|be):/.test(k) ? k.split(':')[1].toUpperCase() : /^book:/.test(k) ? BL[k.slice(5)] : k === 'ielts' ? 'B2' : k === 'ket' ? 'A2' : k === 'pet' ? 'B1' : '';
+      if (l && !lv) lv = l;
+    });
+    if (!lv) { if (kids) return ''; try { lv = (JSON.parse(localStorage.getItem('ifx.v1')) || {}).artLv || ''; } catch (e) {} }
+    if (A.levels.indexOf(lv) < 0) lv = 'B1';
+    var a = A.today(lv); if (!a) return '';
+    var intro = a.text.split('\n')[0]; if (intro.length > 190) intro = intro.slice(0, 190).replace(/\s+\S*$/, '') + '…';
+    return '<div class="box"><h3>📰 Today\'s article · ' + lv + '</h3><p style="margin:0 0 6px"><b>' + esc(a.t) + '</b></p><p class="small" style="margin-bottom:12px">' + esc(intro) + '</p>' +
+      '<a class="btn sm" href="/app/#/lesson/art-' + lv.toLowerCase() + '/' + a.id + '/r">Read · ' + A.minutes(a) + ' min</a> <a class="btn ghost sm" href="/app/#/articles/' + lv + '">All articles</a></div>';
+  }
   function goalBox(p) {
     var st = p.study || [];
     return '<div class="box"><h3>' + (p.track === 'parent' ? 'My child\'s courses' + (p.child ? ': ' + esc(p.child) : '') : 'My courses and levels') + '</h3><p class="small" style="margin:0 0 8px">Choose one or more. Change them any time — IF App shows lessons, words, games and tests for what you choose.</p>' +
@@ -522,6 +539,7 @@
     h += '<section class="section cols">';
     if (r === 'student' || r === 'guest') {
       h += goalBox(p);
+      h += articleBox(p);
       if (r === 'student' || st) h += classBox(ME.classes);
       h += '<div class="box"><h3>Test results</h3>' + testsTable(st && st.tests) + '</div>';
       h += attBox(ME.attendance);
