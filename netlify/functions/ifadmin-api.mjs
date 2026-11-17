@@ -181,6 +181,13 @@ export default async (req) => {
       return json({ ok: true, profile: { name: p.name, role: p.role, studentId: p.studentId, phone }, record: { id: rec.id, name: `${rec.first} ${rec.last}`.trim(), ph: S2[rec.id] && S2[rec.id].ph } });
     }
     // lesson clock-in log: read a month, or correct one lesson's clock-in time (the director's corrections)
+    // who taught one lesson (a cover): {key: '<classId>|<date>|<HH:MM>', teacherId | null} — pay and hours follow it
+    if (path === 'cover' && method === 'POST') {
+      const b = await req.json().catch(() => ({}));
+      if (!/^[^|]+\|\d{4}-\d{2}-\d{2}\|\d{2}:\d{2}/.test(String(b.key || ''))) return fail(400, 'key');
+      const { setCover } = await import('../lib/cover.mjs');
+      return json({ ok: true, lesson: await setCover(String(b.key), b.teacherId ? String(b.teacherId) : null, 'Director (via Claude)') });
+    }
     const ll = path.match(/^lessonlog\/(\d{4}-\d{2})(?:\/(.+))?$/);
     if (ll) {
       const st = getStore({ name: 'school', consistency: 'strong' }), key = 'lessonlog/' + ll[1];
