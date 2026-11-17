@@ -1146,15 +1146,24 @@
         (admin ? '<td>' + (x.kind === 'unrecorded' ? '<button class="btn ghost sm" data-rec="' + esc(x.key) + '">Record</button>' : '') + (x.kind === 'latecancel' ? '<button class="btn ghost sm" data-atschool="' + esc(x.key) + '" data-on="' + (x.pay ? '' : '1') + '">' + (x.pay ? 'Not at school' : '📍 Was at school') + '</button>' : '') + '</td>' : '') + '</tr>';
     }).join('') + '</table>';
   }
-  function salaryHTML(S) {   // the director's salary: groups by size, the base and the director's compensation
-    return '<table class="t" style="margin-top:8px"><tr><th>Group</th><th>Students</th><th>Rate</th></tr>' + S.groups.map(function (g) { return '<tr><td>' + esc(g.label) + ' <small class="mini">' + esc(g.kind) + '</small></td><td>' + g.students + ' <small class="mini">(' + esc(g.size) + ')</small></td><td style="text-align:right">' + tg(g.amount) + '</td></tr>'; }).join('') +
-      '<tr><td colspan="2"><b>Groups total</b></td><td style="text-align:right"><b>' + tg(S.teaching) + '</b></td></tr>' +
-      '<tr><td colspan="2">Base (minimum)' + (S.teaching < S.base ? ' — applies this month' : '') + '</td><td style="text-align:right">' + tg(S.base) + '</td></tr>' +
-      '<tr><td colspan="2">Director\u2019s compensation <small class="mini">(up to ' + tg(S.compMax) + ', only from what is left after all expenses and staff pay' + (S.money ? ': income ' + tg(S.money.income) + ' − expenses ' + tg(S.money.expenses) + ' − staff pay ' + tg(S.money.staff) + ' − your teaching pay ' + tg(S.money.own) + ' = ' + tg(S.money.left) : '') + ')</small></td><td style="text-align:right">' + tg(S.comp) + '</td></tr>' +
-      '<tr><td colspan="2"><b>Salary</b> = ' + (S.teaching < S.base ? 'base' : 'groups') + ' + compensation</td><td style="text-align:right"><b>' + tg(S.total) + '</b></td></tr></table>';
+  function salaryHTML(S) {   // the director's salary: groups by size and lessons conducted, the base and the director's compensation
+    var T = S.terms || {}, ge = T.ge || {}, ie = T.ielts || {}, f = function (k, l, v) { return '<label class="small" style="display:block;margin:6px 0">' + l + '<br><input class="inp" data-sal="' + k + '" inputmode="numeric" value="' + (+v || 0) + '" style="width:150px"></label>'; };
+    return '<table class="t" style="margin-top:8px"><tr><th>Group</th><th>Students</th><th>Lessons conducted</th><th style="text-align:right">Rate</th><th style="text-align:right">Earned</th></tr>' + S.groups.map(function (g) { return '<tr><td>' + esc(g.label) + ' <small class="mini">' + esc(g.kind) + '</small></td><td>' + g.students + ' <small class="mini">(' + esc(g.size) + ')</small></td><td>' + (g.done || 0) + ' of ' + (g.planned || 0) + (g.full ? ' <span class="chip2 ok">all</span>' : '') + '</td><td style="text-align:right">' + tg(g.amount) + '</td><td style="text-align:right"><b>' + tg(g.earned || 0) + '</b></td></tr>'; }).join('') +
+      '<tr><td colspan="3"><b>Groups total</b> <small class="mini">(a group is paid in full only when all its lessons in the pay period are conducted)</small></td><td style="text-align:right">' + tg(S.full || 0) + '</td><td style="text-align:right"><b>' + tg(S.teaching) + '</b></td></tr>' +
+      '<tr><td colspan="4">Base (minimum)' + (S.teaching < S.base ? ' — applies for now' : '') + '</td><td style="text-align:right">' + tg(S.base) + '</td></tr>' +
+      '<tr><td colspan="4">Director’s compensation <small class="mini">(up to ' + tg(S.compMax) + ', only from what is left after all expenses and staff pay' + (S.money ? ': income ' + tg(S.money.income) + ' − expenses ' + tg(S.money.expenses) + ' − staff pay ' + tg(S.money.staff) + ' − your teaching pay ' + tg(S.money.own) + ' = ' + tg(S.money.left) : '') + ')</small></td><td style="text-align:right">' + tg(S.comp) + '</td></tr>' +
+      '<tr><td colspan="4"><b>Salary</b> = ' + (S.teaching < S.base ? 'base' : 'groups') + ' + compensation</td><td style="text-align:right"><b>' + tg(S.total) + '</b></td></tr></table>' +
+      '<details class="more"><summary>Change my salary terms</summary><div data-salform>' + f('base', 'Base (minimum), ₸', T.base) + f('geBig', 'General English, group of 5–6, ₸', ge.big) + f('geSmall', 'General English, group of 2–4, ₸', ge.small) + f('ieBig', 'IELTS, group of 5–6, ₸', ie.big) + f('ieSmall', 'IELTS, group of 3–4, ₸', ie.small) + f('comp', 'Director’s compensation, ₸', T.comp) + '<button class="btn sm" data-salsave>Save</button> <small class="mini">Only you can see or change this.</small></div></details>';
   }
+  document.addEventListener('click', async function (e) {
+    var b = e.target.closest('[data-salsave]'); if (!b) return;
+    var box = b.closest('[data-salform]'), v = function (k) { var el = box.querySelector('[data-sal="' + k + '"]'); return Math.max(0, Math.round(+String(el && el.value || '').replace(/[^\d.]/g, '') || 0)); };
+    b.disabled = true;
+    try { await api('pay/director', { method: 'PUT', body: { base: v('base'), comp: v('comp'), ge: { big: v('geBig'), small: v('geSmall') }, ielts: { big: v('ieBig'), small: v('ieSmall') } } }); toast('Salary terms saved ✓'); var m = document.getElementById('hmon'); if (m && m.onchange) m.onchange.call(m); else location.reload(); }
+    catch (er) { toast('Could not save.'); b.disabled = false; }
+  });
   function payHTML(P) {
-    var h = '<div class="paybox" style="margin-top:18px;border-top:1px solid var(--line,#e5e7eb);padding-top:16px"><div class="eyebrow">💰 My salary · ' + (P.from ? esc(dm(P.from) + ' – ' + dm(P.to)) : 'this month') + ' (so far)</div>';
+    var h = '<div class="salbox" style="margin-top:18px;border-top:1px solid var(--line,#e5e7eb);padding-top:16px"><div class="eyebrow">💰 My salary · ' + (P.from ? esc(dm(P.from) + ' – ' + dm(P.to)) : 'this month') + ' (so far)</div>';
     if (P.salary) return h + '<div class="hbig">' + tg(P.salary.total) + '</div><p class="sub">' + (P.lessons || 0) + ' lessons · ' + hh(P.hours || 0) + ' taught · ' + esc(P.salary.rule) + '</p>' + salaryHTML(P.salary) + '</div>';
     if (P.own) return h + '<p class="sub">' + esc(P.rule) + '.</p></div>';
     h += '<div class="hbig">' + tg(P.total) + '</div><p class="sub">' + (P.lessons || 0) + ' lesson' + (P.lessons === 1 ? '' : 's') + ' · ' + hh(P.hours || 0) + ' taught · your rate: ' + esc(P.rule || 'not set yet') + '</p>' +

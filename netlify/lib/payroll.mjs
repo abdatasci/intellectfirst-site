@@ -5,7 +5,8 @@
 //                teachers: { <teacherId>: { amount, per, solo: 'share', share: 0.5 } },
 //                skip: [teacherId],                               // own pay arrangement (not calculated)
 //                fixed: { manager: { amount, deduct, note }, smm: { amount } },
-//                director: { teacherId, base, comp, ge: { big, small }, ielts: { big, small } } }   // the director's salary (only he sees it)
+//                director: { teacherId, base, comp, ge: { big, small }, ielts: { big, small } } }   // the director's salary (only he sees it):
+//                a group's rate is paid in full only when all its lessons in the pay period were conducted, otherwise for the share conducted
 // Rules (shown to the teachers on their hours page):
 //  • A lesson is paid when it took place: the teacher clocked in (or it is from before clock-in started). Covers are paid
 //    to the teacher who covered. Missed lessons (no clock-in) and lessons cancelled on time or by the teacher are not paid.
@@ -150,16 +151,23 @@ export async function payroll(month, only = null, now = new Date()) {
   const DR = rates.director;
   if (DR && DR.teacherId) for (const T of list) {
     if (T.teacherId !== DR.teacherId) continue;
-    const cls = [...new Set(T.items.filter(x => x.kind !== 'extra').map(x => x.classId || String(x.key || '').split('|')[0]))].map(id => classes.find(c => c.id === id)).filter(Boolean);
+    const idOf = x => x.classId || String(x.key || '').split('|')[0];
+    // his groups: the classes he is the teacher of, and any other class he taught this period that was not a cover
+    const cls = [...new Set([...classes.filter(c => c.teacherId === DR.teacherId).map(c => c.id), ...T.items.filter(x => x.kind !== 'extra' && !x.cover).map(idOf)])].map(id => classes.find(c => c.id === id)).filter(Boolean);
+    // lessons of a group in the whole pay period (the timetable, whatever was cancelled or moved since) and those he conducted
+    const plannedOf = c => { let n = 0; for (let t = Date.parse(from + 'T00:00:00Z'); t <= Date.parse(to + 'T00:00:00Z'); t += 864e5) n += lessonsOn([c], new Date(t).toISOString().slice(0, 10)).length; return n; };
     const groups = cls.map(c => {
       const gid = c.group || String(c.id).replace(/^c-/, '');
       const n = Object.values(D.students).filter(st => st && !/left|withdrawn|finished|frozen/i.test(st.st || '') && (st.g === gid || (st.gs || []).includes(gid))).length;
       const ielts = /ielts/i.test(c.label || ''), R = (ielts ? DR.ielts : DR.ge) || {};
       const amount = n >= 5 ? (R.big || 0) : n >= 2 ? (R.small || 0) : 0;
-      return { classId: c.id, label: c.label, students: n, kind: ielts ? 'IELTS' : 'General English', size: n >= 5 ? '5–6' : n >= 2 ? '2–4' : 'individual', amount };
-    }).filter(g => g.size !== 'individual');
-    const teaching = groups.reduce((a, g) => a + g.amount, 0), base = +DR.base || 0, comp = +DR.comp || 0;
-    T.salary = { groups, teaching, base, comp, compMax: comp, total: Math.max(base, teaching) + comp, rule: `Groups (General English: 5–6 students ${fmt((DR.ge || {}).big || 0)} ₸, 2–4 students ${fmt((DR.ge || {}).small || 0)} ₸${DR.ielts ? `; IELTS: 5–6 ${fmt(DR.ielts.big || 0)} ₸, 3–4 ${fmt(DR.ielts.small || 0)} ₸` : ''}); at least ${fmt(base)} ₸; plus director's compensation ${fmt(comp)} ₸` };
+      // the group's rate is paid in full only when every lesson of the pay period was conducted; otherwise for the share conducted
+      const planned = plannedOf(c), done = Math.min(planned, T.items.filter(x => idOf(x) === c.id && (x.kind === 'taught' || x.kind === 'nobody')).length);
+      const earned = planned ? Math.round(amount * done / planned) : 0;
+      return { classId: c.id, label: c.label, students: n, kind: ielts ? 'IELTS' : 'General English', size: n >= 5 ? '5–6' : n >= 2 ? (ielts ? '3–4' : '2–4') : 'individual', amount, planned, done, earned, full: !!planned && done >= planned };
+    }).filter(g => g.size !== 'individual' && g.planned);
+    const full = groups.reduce((a, g) => a + g.amount, 0), teaching = groups.reduce((a, g) => a + g.earned, 0), base = +DR.base || 0, comp = +DR.comp || 0;
+    T.salary = { groups, full, teaching, base, comp, compMax: comp, total: Math.max(base, teaching) + comp, terms: { base, comp, ge: DR.ge || {}, ielts: DR.ielts || {} }, rule: `Groups (General English: 5–6 students ${fmt((DR.ge || {}).big || 0)} ₸, 2–4 students ${fmt((DR.ge || {}).small || 0)} ₸${DR.ielts ? `; IELTS: 5–6 ${fmt(DR.ielts.big || 0)} ₸, 3–4 ${fmt(DR.ielts.small || 0)} ₸` : ''}), each paid in full only when all its lessons in the pay period are conducted; at least ${fmt(base)} ₸; plus director's compensation ${fmt(comp)} ₸` };
     T.total = T.salary.total; T.rule = T.salary.rule;
   }
   let fixed = [];

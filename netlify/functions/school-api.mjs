@@ -773,6 +773,13 @@ export default async (req) => {
     const { saveRates } = await import('../lib/payroll.mjs');
     return json({ rates: await saveRates(await req.json().catch(() => ({}))) });
   }
+  // the director's own salary terms (base, group rates, compensation): only he can see or change them
+  if (path === 'pay/director' && method === 'PUT') {
+    if (profile.role !== 'admin' || profile.teacherId !== 't-abdoulie') return fail(403, 'director');
+    const b = await req.json().catch(() => ({})), { loadRates, saveRates } = await import('../lib/payroll.mjs');
+    const r = await loadRates(); r.director = { teacherId: 't-abdoulie', base: b.base, comp: b.comp, ge: b.ge || {}, ielts: b.ielts || {} };
+    return json({ ok: true, director: (await saveRates(r)).director });
+  }
   if (path === 'pay/atschool' && method === 'POST') {
     if (profile.role !== 'admin') return fail(403, 'admin');
     const b = await req.json().catch(() => ({}));
