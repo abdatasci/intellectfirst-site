@@ -1146,8 +1146,16 @@
         (admin ? '<td>' + (x.kind === 'unrecorded' ? '<button class="btn ghost sm" data-rec="' + esc(x.key) + '">Record</button>' : '') + (x.kind === 'latecancel' ? '<button class="btn ghost sm" data-atschool="' + esc(x.key) + '" data-on="' + (x.pay ? '' : '1') + '">' + (x.pay ? 'Not at school' : '📍 Was at school') + '</button>' : '') + '</td>' : '') + '</tr>';
     }).join('') + '</table>';
   }
+  function salaryHTML(S) {   // the director's salary: groups by size, the base and the director's compensation
+    return '<table class="t" style="margin-top:8px"><tr><th>Group</th><th>Students</th><th>Rate</th></tr>' + S.groups.map(function (g) { return '<tr><td>' + esc(g.label) + ' <small class="mini">' + esc(g.kind) + '</small></td><td>' + g.students + ' <small class="mini">(' + esc(g.size) + ')</small></td><td style="text-align:right">' + tg(g.amount) + '</td></tr>'; }).join('') +
+      '<tr><td colspan="2"><b>Groups total</b></td><td style="text-align:right"><b>' + tg(S.teaching) + '</b></td></tr>' +
+      '<tr><td colspan="2">Base (minimum)' + (S.teaching < S.base ? ' — applies this month' : '') + '</td><td style="text-align:right">' + tg(S.base) + '</td></tr>' +
+      '<tr><td colspan="2">Director\u2019s compensation <small class="mini">(up to ' + tg(S.compMax) + ', only from what is left after all expenses and staff pay' + (S.money ? ': income ' + tg(S.money.income) + ' − expenses ' + tg(S.money.expenses) + ' − staff pay ' + tg(S.money.staff) + ' − your teaching pay ' + tg(S.money.own) + ' = ' + tg(S.money.left) : '') + ')</small></td><td style="text-align:right">' + tg(S.comp) + '</td></tr>' +
+      '<tr><td colspan="2"><b>Salary</b> = ' + (S.teaching < S.base ? 'base' : 'groups') + ' + compensation</td><td style="text-align:right"><b>' + tg(S.total) + '</b></td></tr></table>';
+  }
   function payHTML(P) {
     var h = '<div class="paybox" style="margin-top:18px;border-top:1px solid var(--line,#e5e7eb);padding-top:16px"><div class="eyebrow">💰 My salary · ' + (P.from ? esc(dm(P.from) + ' – ' + dm(P.to)) : 'this month') + ' (so far)</div>';
+    if (P.salary) return h + '<div class="hbig">' + tg(P.salary.total) + '</div><p class="sub">' + (P.lessons || 0) + ' lessons · ' + hh(P.hours || 0) + ' taught · ' + esc(P.salary.rule) + '</p>' + salaryHTML(P.salary) + '</div>';
     if (P.own) return h + '<p class="sub">' + esc(P.rule) + '.</p></div>';
     h += '<div class="hbig">' + tg(P.total) + '</div><p class="sub">' + (P.lessons || 0) + ' lesson' + (P.lessons === 1 ? '' : 's') + ' · ' + hh(P.hours || 0) + ' taught · your rate: ' + esc(P.rule || 'not set yet') + '</p>' +
       (P.late && P.late.n ? '<p class="small">⏰ Late clock-ins this month: ' + P.late.n + ' (' + P.late.min + ' min in total).</p>' : '') +
@@ -1214,7 +1222,7 @@
     var tot = 0; P.teachers.forEach(function (t) { tot += t.total; }); P.fixed.forEach(function (f) { tot += f.total; });
     var h = '<h2 style="margin:0 0 4px">💰 Payroll · ' + esc(monthLabel(P.month)) + (P.from ? ' <small class="mini">(' + esc(dm(P.from) + ' – ' + dm(P.to)) + ')</small>' : '') + '</h2><p class="sub">Worked out automatically from clock-ins, registers, covers and cancellations. Each teacher sees their own total on their hours page. Total so far: <b>' + tg(tot) + '</b></p>';
     h += P.teachers.map(function (t) {
-      return '<details class="more" style="margin-top:10px"><summary><b>' + esc(t.name) + '</b> — ' + (t.own ? 'own pay arrangement · ' + hh(t.hours) + ' taught' : '<b>' + tg(t.total) + '</b> · ' + t.lessons + ' lessons · ' + hh(t.hours)) + (t.unpaidLate ? ' · ' + t.unpaidLate + ' late cancellation' + (t.unpaidLate > 1 ? 's' : '') + ' not paid' : '') + (t.late.n ? ' · ⏰ ' + t.late.n + ' late (' + t.late.min + ' min)' : '') + '</summary><p class="small">Rate: ' + esc(t.rule) + '</p>' + recBar(t) + payItems(t.items, true) + '</details>';
+      return '<details class="more" style="margin-top:10px"><summary><b>' + esc(t.name) + '</b> — ' + (t.salary ? '<b>' + tg(t.total) + '</b> · director\u2019s salary · ' + hh(t.hours) + ' taught' : t.own ? 'own pay arrangement · ' + hh(t.hours) + ' taught' : '<b>' + tg(t.total) + '</b> · ' + t.lessons + ' lessons · ' + hh(t.hours)) + (t.unpaidLate ? ' · ' + t.unpaidLate + ' late cancellation' + (t.unpaidLate > 1 ? 's' : '') + ' not paid' : '') + (t.late.n ? ' · ⏰ ' + t.late.n + ' late (' + t.late.min + ' min)' : '') + '</summary><p class="small">Rate: ' + esc(t.rule) + '</p>' + (t.salary ? salaryHTML(t.salary) : '') + recBar(t) + payItems(t.items, true) + '</details>';
     }).join('');
     if (P.fixed.length) h += '<h3 style="margin-top:16px">Fixed monthly pay</h3><table class="t"><tr><th>Name</th><th>Duty</th><th>Salary</th><th>Deduction</th><th>To pay</th></tr>' + P.fixed.map(function (f) { return '<tr><td>' + esc(f.name) + '</td><td>' + (f.duty === 'smm' ? 'SMM' : 'Manager') + '</td><td>' + tg(f.amount) + '</td><td>' + (f.deduct ? tg(f.deduct) + (f.note ? ' <small class="mini">' + esc(f.note) + '</small>' : '') : '—') + '</td><td><b>' + tg(f.total) + '</b></td></tr>'; }).join('') + '</table>';
     // rates (director)

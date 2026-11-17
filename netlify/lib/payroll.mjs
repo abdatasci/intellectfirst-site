@@ -4,7 +4,8 @@
 //   payrates = { default: { amount, per },                       // e.g. 3000 per 60 min → 90 min = 4500
 //                teachers: { <teacherId>: { amount, per, solo: 'share', share: 0.5 } },
 //                skip: [teacherId],                               // own pay arrangement (not calculated)
-//                fixed: { manager: { amount, deduct, note }, smm: { amount } } }
+//                fixed: { manager: { amount, deduct, note }, smm: { amount } },
+//                director: { teacherId, base, comp, ge: { big, small }, ielts: { big, small } } }   // the director's salary (only he sees it)
 // Rules (shown to the teachers on their hours page):
 //  • A lesson is paid when it took place: the teacher clocked in (or it is from before clock-in started). Covers are paid
 //    to the teacher who covered. Missed lessons (no clock-in) and lessons cancelled on time or by the teacher are not paid.
@@ -40,6 +41,8 @@ export async function saveRates(r) {
   out.periodStart = Math.min(28, Math.max(1, +r.periodStart || 28));
   out.solo = {}; for (const [sid, v] of Object.entries(r.solo || {})) if (/^[\w-]{1,40}$/.test(sid) && +v > 0) out.solo[sid] = Math.round(+v);
   for (const k of ['manager', 'smm']) if (r.fixed && r.fixed[k]) out.fixed[k] = { amount: num(r.fixed[k].amount), deduct: num(r.fixed[k].deduct), note: String(r.fixed[k].note || '').slice(0, 80) };
+  if (!r.director) { const prev = await S().get('payrates', { type: 'json' }).catch(() => null); if (prev && prev.director) r.director = prev.director; }   // the rates page does not show it: keep it
+  if (r.director && /^t-[\w-]+$/.test(r.director.teacherId || '')) { const g = x => x ? { big: num(x.big), small: num(x.small) } : undefined; out.director = { teacherId: r.director.teacherId, base: num(r.director.base), comp: num(r.director.comp), ge: g(r.director.ge), ielts: g(r.director.ielts) }; }
   out.updated = new Date().toISOString();
   await S().setJSON('payrates', out);
   return out;
@@ -143,10 +146,40 @@ export async function payroll(month, only = null, now = new Date()) {
     if (skip.has(T.teacherId)) T.items = T.items.map(x => ({ ...x, pay: null, full: null }));   // own pay arrangement: hours only, no per-lesson amounts
     return { ...T, name: t.name || T.teacherId, hours: Math.round(T.minutes / 6) / 10, own: skip.has(T.teacherId), rule: skip.has(T.teacherId) ? 'Own pay arrangement — hours only' : ruleText(r), total: skip.has(T.teacherId) ? 0 : T.total, items: T.items.sort((a, b) => (a.date + a.start).localeCompare(b.date + b.start)) };
   }).sort((a, b) => b.total - a.total || a.name.localeCompare(b.name));
+  // the director: a rate per group he teaches (the compensation is paid only from what is left after expenses and staff pay — below) (by group size), a monthly base (minimum) and a director's compensation
+  const DR = rates.director;
+  if (DR && DR.teacherId) for (const T of list) {
+    if (T.teacherId !== DR.teacherId) continue;
+    const cls = [...new Set(T.items.filter(x => x.kind !== 'extra').map(x => x.classId || String(x.key || '').split('|')[0]))].map(id => classes.find(c => c.id === id)).filter(Boolean);
+    const groups = cls.map(c => {
+      const gid = c.group || String(c.id).replace(/^c-/, '');
+      const n = Object.values(D.students).filter(st => st && !/left|withdrawn|finished|frozen/i.test(st.st || '') && (st.g === gid || (st.gs || []).includes(gid))).length;
+      const ielts = /ielts/i.test(c.label || ''), R = (ielts ? DR.ielts : DR.ge) || {};
+      const amount = n >= 5 ? (R.big || 0) : n >= 2 ? (R.small || 0) : 0;
+      return { classId: c.id, label: c.label, students: n, kind: ielts ? 'IELTS' : 'General English', size: n >= 5 ? '5–6' : n >= 2 ? '2–4' : 'individual', amount };
+    }).filter(g => g.size !== 'individual');
+    const teaching = groups.reduce((a, g) => a + g.amount, 0), base = +DR.base || 0, comp = +DR.comp || 0;
+    T.salary = { groups, teaching, base, comp, compMax: comp, total: Math.max(base, teaching) + comp, rule: `Groups (General English: 5–6 students ${fmt((DR.ge || {}).big || 0)} ₸, 2–4 students ${fmt((DR.ge || {}).small || 0)} ₸${DR.ielts ? `; IELTS: 5–6 ${fmt(DR.ielts.big || 0)} ₸, 3–4 ${fmt(DR.ielts.small || 0)} ₸` : ''}); at least ${fmt(base)} ₸; plus director's compensation ${fmt(comp)} ₸` };
+    T.total = T.salary.total; T.rule = T.salary.rule;
+  }
   let fixed = [];
   if (!only) {
     const { dayWatchers } = await import('./daydigest.mjs');
     fixed = (await dayWatchers()).map(w => { const f = (rates.fixed || {})[w.duty]; return f ? { uid: w.uid, name: w.name, duty: w.duty, amount: f.amount, deduct: f.deduct || 0, note: f.note || '', total: f.amount - (f.deduct || 0) } : null; }).filter(Boolean);
+  }
+  // director's compensation: only from what is left of the month's income after all expenses and all staff pay
+  const dT = DR && list.find(T => T.salary);
+  if (dT) {
+    const S2 = dT.salary, pays = ((D.payments[month] || {}).rows) || {}, ex = ((((await A().get('c/expenses', { type: 'json' })) || {})[month] || {}).items) || {};
+    const income = Object.values(pays).reduce((a, r) => a + (+(r && r.paid) || 0), 0);
+    const expenses = Object.values(ex).filter(i => i && !/salar/i.test(i.cat || '')).reduce((a, i) => a + (+i.amt || 0), 0);   // salaries come from the payroll below, not twice
+    const staff = list.filter(T => T !== dT).reduce((a, T) => a + (T.total || 0), 0) + (only ? 0 : fixed.reduce((a, f) => a + (f.total || 0), 0));
+    const own = Math.max(S2.base, S2.teaching), left = income - expenses - staff - own;
+    S2.money = { income, expenses, staff, own, left, fixedIncluded: !only };
+    S2.comp = Math.max(0, Math.min(S2.compMax, Math.round(left)));
+    S2.total = own + S2.comp; dT.total = S2.total;
+    S2.rule = S2.rule.replace(/plus director's compensation [^;]*$/, `plus director's compensation up to ${fmt(S2.compMax)} ₸, paid only from what is left after all expenses and staff pay`);
+    dT.rule = S2.rule;
   }
   return { month, from, to, teachers: list, fixed, rules: RULES, solo: Object.values(soloList) };
 }

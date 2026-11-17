@@ -202,6 +202,13 @@ export default async (req) => {
       const r = await tellClass(cls, item, null, { since: b.all || b.sids ? '0' : (b.since || item.at), sids: Array.isArray(b.sids) ? b.sids : null, names: true });
       return json({ ok: true, item: { id: item.id, text: item.text, at: item.at, test: item.test || null }, ...r });
     }
+    // the director's salary rule (kept with the pay rates; only the director sees it on the website)
+    if (path === 'payrates/director' && method === 'PUT') {
+      const b = await req.json().catch(() => ({}));
+      const { loadRates, saveRates } = await import('../lib/payroll.mjs');
+      const r = await loadRates(); r.director = { teacherId: 't-abdoulie', ...b };
+      return json({ ok: true, director: (await saveRates(r)).director });
+    }
     // who taught one lesson (a cover): {key: '<classId>|<date>|<HH:MM>', teacherId | null} — pay and hours follow it
     if (path === 'cover' && method === 'POST') {
       const b = await req.json().catch(() => ({}));
