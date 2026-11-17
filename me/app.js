@@ -1627,7 +1627,7 @@
   function aClasses(head) {
     simpleList(head, 'classes', [['label', 'Class'], ['teacherId', 'Teacher', function (c) { var t = teacherOf(c.teacherId); return t ? esc(t.name) : '–'; }], ['bookId', 'Book', function (c) { var b = bookOf(c.bookId); return b ? esc(b.title) : '–'; }], ['schedule', 'Schedule'], ['room', 'Room'],
       ['count', 'Students', function (c) { return ADMIN.students.filter(function (s) { return (s.classes || []).indexOf(c.label) >= 0 && !/withdrawn|finished/i.test(s.status || ''); }).length; }]],
-      [['label', 'Class name (as used in records)'], ['teacherId', 'Teacher', function (v) { return opts(ADMIN.teachers, v, function (t) { return t.name; }, '—'); }], ['bookId', 'Book', function (v) { return opts(ADMIN.books, v, function (b) { return b.title; }, '—'); }], ['schedule', 'Schedule (e.g. Mon 15:15–16:45 · Wed 15:15–16:45)'], ['room', 'Room']], 'class');
+      [['label', 'Class name (as used in records)'], ['teacherId', 'Teacher', function (v) { return opts(ADMIN.teachers, v, function (t) { return t.name; }, '—'); }], ['bookId', 'Book', function (v) { return opts(ADMIN.books, v, function (b) { return b.title; }, '—'); }], ['schedule', 'Schedule (e.g. Mon 15:15–16:45 · Wed 15:15–16:45)'], ['startDate', 'First lesson date (YYYY-MM-DD), only if the class started later than its timetable'], ['room', 'Room']], 'class');
   }
   function aTeachers(head) {
     simpleList(head, 'teachers', [['name', 'Name'], ['role', 'Title'], ['phone', 'Phone'], ['email', 'Email'], ['uid', 'Account', function (t) { return t.uid ? '<span class="chip2 ok">Linked</span> <a href="#/teacher/' + esc(t.uid) + '" onclick="event.stopPropagation()">Profile</a>' : '<span class="chip2 mute">—</span>'; }]],

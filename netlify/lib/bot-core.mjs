@@ -123,11 +123,15 @@ const mkLesson = (c, date, start, end, key, extra) => {
 /** Every lesson of these classes on a local date (YYYY-MM-DD): the timetable with cancellations and moves, plus lessons
     moved to this day and extra lessons. Cancelled lessons stay in the list with cancelled: true; a lesson moved away
     stays with movedTo: {date, start, end} (the calendar shows both; reminders skip them). */
+// A class that started later than the timetable says: its timetable lessons before the first lesson do not exist.
+// Normally set as "First lesson" on the class (Admin → Classes); these are the dates already known.
+const FIRST_LESSON = { 'A2 Teen B': '2026-11-17' };
+export const firstLesson = c => c.startDate || FIRST_LESSON[c.label] || '';
 export function dayLessons(classes, date, CH = NO_CHANGES) {
   const [y, m, d] = date.split('-').map(Number), dow = new Date(Date.UTC(y, m - 1, d)).getUTCDay(), out = [];
   for (const c of classes) {
     for (const s of parseSchedule(c.schedule)) {
-      if (s.dow !== dow || !s.start) continue;
+      if (s.dow !== dow || !s.start || (firstLesson(c) && date < firstLesson(c))) continue;
       const key = `${c.id}|${date}|${s.start}`, mv = CH.moves[key], cn = CH.cancel[key];
       out.push(mkLesson(c, date, s.start, s.end, key, { kind: 'timetable', ...(cn ? { cancelled: true, note: cn.note || '' } : {}), ...(mv && !cn ? { movedTo: { date: mv.date, start: mv.start, end: mv.end || '' }, note: mv.note || '' } : {}) }));
     }
