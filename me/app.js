@@ -1162,11 +1162,11 @@
     try { await api('pay/director', { method: 'PUT', body: { base: v('base'), comp: v('comp'), ge: { big: v('geBig'), small: v('geSmall') }, ielts: { big: v('ieBig'), small: v('ieSmall') } } }); toast('Salary terms saved ✓'); var m = document.getElementById('hmon'); if (m && m.onchange) m.onchange.call(m); else location.reload(); }
     catch (er) { toast('Could not save.'); b.disabled = false; }
   });
-  function payHTML(P) {
-    var h = '<div class="salbox" style="margin-top:18px;border-top:1px solid var(--line,#e5e7eb);padding-top:16px"><div class="eyebrow">💰 My salary · ' + (P.from ? esc(dm(P.from) + ' – ' + dm(P.to)) : 'this month') + ' (so far)</div>';
+  function payHTML(P, title) {
+    var h = '<div class="salbox" style="margin-top:18px;border-top:1px solid var(--line,#e5e7eb);padding-top:16px"><div class="eyebrow">💰 ' + (title || 'My salary') + ' · ' + (P.from ? esc(dm(P.from) + ' – ' + dm(P.to)) : 'this month') + ' (so far)</div>';
     if (P.salary) return h + '<div class="hbig">' + tg(P.salary.total) + '</div><p class="sub">' + (P.lessons || 0) + ' lessons · ' + hh(P.hours || 0) + ' taught · ' + esc(P.salary.rule) + '</p>' + salaryHTML(P.salary) + '</div>';
     if (P.own) return h + '<p class="sub">' + esc(P.rule) + '.</p></div>';
-    h += '<div class="hbig">' + tg(P.total) + '</div><p class="sub">' + (P.lessons || 0) + ' lesson' + (P.lessons === 1 ? '' : 's') + ' · ' + hh(P.hours || 0) + ' taught · your rate: ' + esc(P.rule || 'not set yet') + '</p>' +
+    h += '<div class="hbig">' + tg(P.total) + '</div><p class="sub">' + (P.lessons || 0) + ' lesson' + (P.lessons === 1 ? '' : 's') + ' · ' + hh(P.hours || 0) + ' taught · ' + (title ? 'rate: ' : 'your rate: ') + esc(P.rule || 'not set yet') + '</p>' +
       (P.late && P.late.n ? '<p class="small">⏰ Late clock-ins this month: ' + P.late.n + ' (' + P.late.min + ' min in total).</p>' : '') +
       (P.items && P.items.length ? '<details class="more"><summary>Lessons and pay (' + P.items.length + ')</summary>' + payItems(P.items.slice().reverse(), false) + '</details>' : '') +
       '<details class="more"><summary>How pay is worked out</summary><ul class="small" style="margin:8px 0 0 18px;line-height:1.5">' + (P.rules || []).map(function (r) { return '<li>' + esc(r) + '</li>'; }).join('') + '</ul></details>';
@@ -1283,7 +1283,13 @@
       h += '<div class="hcol"><div class="eyebrow">🗂️ Administrative work</div><div class="hbig">' + hh(A.hours) + '</div><p class="sub">' + A.days + ' days' + (A.open ? ' · working now since ' + hm(A.open.in) : '') + '</p><div class="hstats">' + stat(hh(A.week), 'this week') + '</div>' +
         '<button class="btn ghost sm" id="staddh">+ Add time for ' + esc(name.split(' ')[0]) + '</button>' +
         (A.list.length ? '<details class="more" open><summary>Entries (' + A.list.length + ')</summary><table class="t small">' + A.list.map(function (x) { return '<tr><td>' + x.day.slice(8) + '.' + x.day.slice(5, 7) + '</td><td>' + hm(x.in) + '–' + (x.out ? hm(x.out) : 'now') + '</td><td>' + hh(x.h) + '</td><td>' + esc(x.note || '') + (x.auto ? ' <span class="chip2 bad">closed after 8 h</span>' : '') + '</td><td><button class="btn ghost sm strm" data-id="' + esc(x.id) + '">Remove</button></td></tr>'; }).join('') + '</table></details>' : '') + '</div>'; }
-    h += '</div></div>';
+    h += '</div>';
+    if (d.pay) {   // the director sees the pay so far: lessons (it follows every clock-in) plus any fixed monthly pay
+      var fx = d.pay.fixed;
+      h += payHTML(d.pay, fx ? 'Pay for lessons' : 'Salary') +
+        (fx ? '<p style="margin-top:12px"><b>Fixed monthly pay:</b> ' + tg(fx.amount) + (fx.deduct ? ' − ' + tg(fx.deduct) + (fx.note ? ' <small class="mini">(' + esc(fx.note) + ')</small>' : '') + ' = <b>' + tg(fx.total) + '</b>' : '') + ' · <b>Total so far: ' + tg((fx.total || 0) + (d.pay.total || 0)) + '</b></p>' : '');
+    }
+    h += '</div>';
     if (d.classes.length) h += '<div class="panel wide"><h2>Classes</h2><table class="t">' + d.classes.map(function (c) { return '<tr><td><a href="#/class/' + esc(c.id) + '"><b>' + esc(c.label) + '</b></a></td><td>' + esc(c.schedule) + '</td><td>' + esc(c.room) + '</td></tr>'; }).join('') + '</table></div>';
     h += '<div class="panel wide"><h2>Details</h2><form id="stform">' + (d.teacher ? '<div class="g2">' + inp('t_name', 'Name (school records)', t.name) + inp('t_role', 'Title', t.role) + inp('t_phone', 'Phone', t.phone) + inp('t_email', 'Email', t.email) + '</div>' : '') +
       (p ? '<h3 style="margin-top:16px">Account profile</h3><div class="g2">' + inp('name', 'Full name', p.name) + inp('phone', 'Phone', p.phone) + inp('city', 'City', p.city) + inp('birth', 'Date of birth', p.birth) + '</div>' + inp('about', 'About', p.about, 1) +

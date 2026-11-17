@@ -1060,7 +1060,14 @@ export default async (req) => {
       }
       const month = /^\d{4}-\d{2}$/.test(url.searchParams.get('month') || '') ? url.searchParams.get('month') : todayStr().slice(0, 7);
       const cls = t ? (await doc('classes')).filter(c => c.teacherId === t.id) : [];
-      return json({ id, month, teacher: t, uid: suid,
+      // pay so far this period, worked out from the lesson log at this moment (the director only)
+      let pay = null;
+      if (profile.teacherId === 't-abdoulie') try {
+        const { payroll } = await import('../lib/payroll.mjs'); const P = await payroll(month);
+        const row = t ? P.teachers.find(x => x.teacherId === t.id) : null, fx = suid ? P.fixed.find(f => f.uid === suid) : null;
+        if (row || fx) pay = { ...(row || { total: 0, items: [], hours: 0, lessons: 0, rule: '' }), rules: P.rules, from: P.from, to: P.to, fixed: fx || null };
+      } catch (e) { console.error('staff pay', e.message); }
+      return json({ id, month, teacher: t, uid: suid, pay,
         profile: p2 ? { name: p2.name, role: p2.role, email: p2.email || '', phone: p2.phone || '', city: p2.city || '', birth: p2.birth || '', about: p2.about || '', photo: p2.photo, education: p2.education || '', experience: p2.experience || '', skillsHard: p2.skillsHard || '', skillsSoft: p2.skillsSoft || '', hobbies: p2.hobbies || '' } : null,
         classes: cls.map(c => ({ id: c.id, label: c.label, schedule: c.schedule || '', room: c.room || '' })),
         teaching: cls.length ? await teachingHours(cls, month) : null,
