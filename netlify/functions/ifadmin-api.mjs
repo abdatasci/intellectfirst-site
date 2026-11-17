@@ -188,7 +188,18 @@ export default async (req) => {
       const cls = (await doc('classes')).find(c => c.id === b.classId); if (!cls) return fail(404, 'class');
       const list = (await loadHomework()).filter(h => h.classId === cls.id && h.url && (!b.id || h.id === b.id));
       const item = list[list.length - 1]; if (!item) return fail(404, 'homework');
-      const r = await tellClass(cls, item, null, { since: b.all ? '0' : item.at, names: true });
+      if (b.dry) {   // who in the class is on the bot, and since when
+        const { getLinks, uidsByStudent, inClass } = await import('../lib/bot-core.mjs'), links = await getLinks(), bySid = await uidsByStudent(links);
+        const st = (await doc('students')).filter(s => inClass(cls, s) && !/withdrawn|finished|frozen/i.test(s.status || ''));
+        return json({ item, students: st.map(s => { const u = s.uid || bySid[s.id] || (links['sid:' + s.id] ? 'sid:' + s.id : null), l = u && links[u]; return { sid: s.id, name: `${s.first} ${s.last}`.trim(), bot: l ? l.at || 'yes' : null }; }) });
+      }
+      if (b.test) {   // the teacher's exact test (e.g. 'f3'): fix the item so every link opens it
+        const { matchTest } = await import('../lib/testcentres.mjs'), x = matchTest(item.url, String(b.test));
+        if (!x) return fail(400, 'test');
+        const all = await loadHomework(), it = all.find(h => h.id === item.id); Object.assign(it, { test: x[0], testTitle: x[1], text: x[1] });
+        await getStore({ name: 'school', consistency: 'strong' }).setJSON('homework', all); Object.assign(item, it);
+      }
+      const r = await tellClass(cls, item, null, { since: b.all ? '0' : (b.since || item.at), names: true });
       return json({ ok: true, item: { id: item.id, text: item.text, at: item.at, test: item.test || null }, ...r });
     }
     // who taught one lesson (a cover): {key: '<classId>|<date>|<HH:MM>', teacherId | null} — pay and hours follow it
