@@ -14,7 +14,7 @@ import { listReceipts, decideReceipt, receiptFile, cashInfo, cashClaim } from '.
 import { kaspiInfo, createInvoice } from '../lib/kaspi.mjs';
 import { publicFeedback, mine as myFeedback, submit as submitFeedback, removeMine as removeFeedback, decide as decideFeedback, loadFeedback } from '../lib/feedback.mjs';
 import { loadHomework, addHomework, removeHomework, forClasses, clean as cleanHw, hwText, setCheck, forStudent } from '../lib/homework.mjs';
-import { getLinks, tgSend, tgToken, addNote, uidsByStudent, inClass, loadChanges, saveChanges } from '../lib/bot-core.mjs';
+import { getLinks, tgSend, tgToken, addNote, uidsByStudent, inClass, loadChanges, saveChanges, hidePrivate } from '../lib/bot-core.mjs';
 import { waReady, waSend, waNumber } from '../lib/whatsapp.mjs';
 import { tellClass } from '../lib/hwsend.mjs';
 import { tier, isMember, TRACKS, paidActive, accessUntil, TRIAL_DAYS, ensureTrial } from '../lib/access.mjs';
@@ -157,9 +157,9 @@ async function tellLesson(c, textFor) {
 }
 async function classesForTeacher(profile) {
   const [classes, teachers] = await Promise.all([doc('classes'), doc('teachers')]);
-  if (profile.role === 'admin' || profile.smm) return classes;
+  if (profile.role === 'admin' || profile.smm) return hidePrivate(classes, profile).filter(c => !c.left);
   const t = teachers.find(x => x.id === profile.teacherId);
-  return classes.filter(c => t && (c.teacherId === t.id));
+  return classes.filter(c => t && (c.teacherId === t.id) && !c.left);
 }
 /** Classes where this teacher covers at least one lesson (Telegram bot cover requests, or set by the admin). */
 async function coverClasses(teacherId, CH) {
@@ -191,13 +191,13 @@ async function soloRooms(profile, mine) {
     if (d.track !== 'private' || d.studentId || d.role !== 'student') continue;
     const id = 'c-pv-' + uid;
     if (!classes.some(c => c.id === id)) add.push({ id, label: `${d.name || 'Student'} (individual)`, uids: [uid], teacherId: DIRECTOR_ID, schedule: '', room: '' });
-    else add.push(classes.find(c => c.id === id));
+    else if (!classes.find(c => c.id === id).left) add.push(classes.find(c => c.id === id));
   }
   if (!add.length) return [];
   const fresh = add.filter(a => !classes.some(c => c.id === a.id));
   if (fresh.length) { const all = await doc('classes'); for (const a of fresh) if (!all.some(c => c.id === a.id)) all.push(a); await save('classes', all); }
   const mineIds = new Set(mine.map(c => c.id));
-  return add.filter(a => !mineIds.has(a.id) && (profile.role === 'admin' || profile.smm || a.teacherId === profile.teacherId));
+  return hidePrivate(add, profile).filter(a => !mineIds.has(a.id) && (profile.role === 'admin' || profile.smm || a.teacherId === profile.teacherId));
 }
 const DIRECTOR_ID = 't-abdoulie';
 const plusCover = (list, extra) => list.concat(extra.filter(c => !list.some(x => x.id === c.id)));
@@ -368,7 +368,7 @@ export default async (req) => {
   if (path === 'feedback/public' && method === 'GET') return Response.json({ feedback: await publicFeedback() }, { headers: { 'Cache-Control': 'public, max-age=120' } });
   // classes for the registration form (names and times only)
   if (path === 'classes' && method === 'GET') {
-    const cl = await doc('classes');
+    const cl = hidePrivate(await doc('classes'), null);
     return json({ classes: [...cl.map(c => ({ id: c.id, label: c.label, schedule: c.schedule || '', kind: c.kind || '' })), { id: 'alumni', label: 'IF Alumni', schedule: 'Former students who finished their course', kind: 'alumni' }], membership: await membership() });
   }
   // new self-registered accounts: skip the email-confirmation step (students rarely open that email)
@@ -801,7 +801,8 @@ export default async (req) => {
   if (path === 'admin/lessons' && method === 'GET') {
     if (profile.role !== 'admin') return fail(403, 'admin');
     const date = /^\d{4}-\d{2}-\d{2}$/.test(url.searchParams.get('date') || '') ? url.searchParams.get('date') : todayStr();
-    const [classes, teachers, students] = await Promise.all([doc('classes'), doc('teachers'), doc('students')]);
+    const [classes0, teachers, students] = await Promise.all([doc('classes'), doc('teachers'), doc('students')]);
+    const classes = hidePrivate(classes0, profile);
     const now = new Date(), L = await loadLog(date.slice(0, 7)), cutoff = await checkSince(), CH = await loadChanges();
     const count = cid => students.filter(s => inClass(classes.find(c => c.id === cid), s) && s.status === 'active').length;
     const roster = cid => students.filter(s => inClass(classes.find(c => c.id === cid), s) && !/withdrawn|finished/i.test(s.status || '')).map(s => ({ sid: s.id, name: `${s.first} ${s.last}`.trim(), frozen: s.status === 'frozen' })).sort((a, b) => a.name.localeCompare(b.name));
@@ -956,7 +957,8 @@ export default async (req) => {
     if (path === 'admin/all' && method === 'GET') {
       const [students, classes, teachers, books] = await Promise.all([doc('students'), doc('classes'), doc('teachers'), doc('books')]);
       const dir = (await U().get('directory', { type: 'json' })) || {};
-      return json({ students, classes, teachers, books, accounts: Object.entries(dir).map(([id, d]) => ({ id, ...d })) });
+      const me = profile.teacherId === DIRECTOR_ID;   // the director's private students are his alone
+      return json({ students, classes: hidePrivate(classes, profile), teachers, books, accounts: Object.entries(dir).filter(([, d]) => me || d.track !== 'private' || d.studentId).map(([id, d]) => ({ id, ...d })) });
     }
     if (path === 'admin/tasks' && method === 'GET') return json({ tasks: await openTasks() });
     if (path === 'admin/tasks/done' && method === 'POST') { await dismissTask(b.key); return json({ tasks: await openTasks() }); }
@@ -1053,7 +1055,7 @@ export default async (req) => {
     const fbk = path.match(/^admin\/feedback\/([a-z0-9]+)$/);
     if (fbk && method === 'POST') { const r = await decideFeedback(fbk[1], b, profile.name); return r ? json({ feedback: r }) : fail(404, 'missing'); }
     /* payment receipts sent to the Telegram bot */
-    if (path === 'admin/receipts' && method === 'GET') return json({ receipts: (await listReceipts()).slice(-120).reverse().map(({ chatId, msgId, ...r }) => r) });
+    if (path === 'admin/receipts' && method === 'GET') return json({ receipts: (await listReceipts()).filter(r => !r.private || profile.teacherId === 't-abdoulie').slice(-120).reverse().map(({ chatId, msgId, ...r }) => r) });
     const rd = path.match(/^admin\/receipts\/([a-z0-9]+)$/);
     if (rd && method === 'POST') { const r = await decideReceipt(rd[1], !!b.ok, profile.name); return r ? json({ receipt: r }) : fail(404, 'missing'); }
     const rf = path.match(/^admin\/receipt-file\/([a-z0-9]+)$/);

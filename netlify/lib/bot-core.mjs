@@ -20,6 +20,11 @@ export const SCHOOL = {
 
 /** Is this student in this website class? A class can be a whole IF Admin group (by its label) or chosen students
     inside a group (studentIds: e.g. one individual student's own timetable inside "Individual (local teacher)"). */
+/* The director's own private students (not IF Academy students): their classes are seen only by him —
+   not by the manager, other admins or teachers — and stay out of school boards, digests, tasks and payroll. */
+export const DIRECTOR_TID = 't-abdoulie';
+export const isPrivateClass = c => !!c && (c.private === true || /^c-pv-/.test(c.id || ''));
+export const hidePrivate = (classes, p) => p && p.teacherId === DIRECTOR_TID ? classes : classes.filter(c => !isPrivateClass(c));
 export const inClass = (c, s) => !!c && !!s && (Array.isArray(c.studentIds) && c.studentIds.length ? c.studentIds.includes(s.id) : (s.classes || []).includes(c.label));
 export async function doc(name) {
   if (name === 'students') return loadStudents();
@@ -186,7 +191,16 @@ export async function contextFor(uid) {
     }
   } else if (profile.role === 'teacher' || profile.role === 'admin') {
     const t = teachers.find(x => x.id === profile.teacherId);
-    ctx.classes = profile.role === 'admin' ? classes : classes.filter(c => t && c.teacherId === t.id);
+    ctx.classes = profile.role === 'admin' ? hidePrivate(classes, profile) : classes.filter(c => t && c.teacherId === t.id);
+  }
+  // the director's private student: their own private class(es); payment from the class
+  if (!ctx.student && profile.role === 'student') {
+    const pc = classes.filter(c => isPrivateClass(c) && !c.left && (c.uids || []).includes(uid));
+    if (pc.length) {
+      ctx.classes = pc;
+      ctx.student = { id: 'pv:' + uid, first: profile.name || '', last: '', status: pc[0].paused ? 'frozen' : 'active', level: profile.level || '', classes: pc.map(c => c.label), pay: pc[0].pay && +pc[0].pay.dueDay ? pc[0].pay : null, private: true, tests: [] };
+      ctx.pay = payStatus(ctx.student);
+    }
   }
   ctx.lessons = upcomingLessons(ctx.classes, new Date(), 7, await loadChanges()).slice(0, 6);
   const now = local();

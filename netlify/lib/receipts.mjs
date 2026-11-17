@@ -4,7 +4,7 @@
 //   store "receipts" (blobs): <id> → the file      store "school": receipts/list, receipts/pending {studentId: {id, month}}
 import { getStore } from '@netlify/blobs';
 import Anthropic from '@anthropic-ai/sdk';
-import { S, tg, tgSend, tgToken, getLinks, getProfile, payStatus, addNote, money, local } from './bot-core.mjs';
+import { S, tg, tgSend, tgToken, getLinks, getProfile, payStatus, addNote, money, local, doc, isPrivateClass, DIRECTOR_TID } from './bot-core.mjs';
 import { loadStudents } from './students.mjs';
 import { run } from './ifadmin-ai.mjs';
 import { waReady, waSend, waNumber } from './whatsapp.mjs';
@@ -68,6 +68,8 @@ export async function handleReceipt({ chatId, uid, msg, lang }) {
   const ai = await readReceipt(bytes, type);
   const month = s ? monthFor(s) : local().toISOString().slice(0, 7);
   const rec = { id, uid, studentId: s?.id || null, name: s ? `${s.first} ${s.last}`.trim() : (profile?.name || ''), month, ...ai, type, chatId, msgId: msg.message_id, at: new Date().toISOString(), status: 'pending' };
+  // the director's private student: the receipt is for him only, and confirming it marks the month paid on their class
+  if (!s) { const pc = (await doc('classes')).find(c => isPrivateClass(c) && (c.uids || []).includes(uid)); if (pc) { rec.private = true; rec.classId = pc.id; } }
   const list = await listReceipts(); list.push(rec); await saveList(list);
   if (s) { const P = await pending(); P[s.id] = { id, month }; await S().setJSON('receipts/pending', P); }
   await tgSend(chatId, ai.isReceipt ? t.thanks(rec, mname(month, lang)) : t.notreceipt);
@@ -78,6 +80,7 @@ async function tellAdmins(rec) {
   const links = await getLinks();
   for (const [u, l] of Object.entries(links)) {
     const p = await getProfile(u); if (p?.role !== 'admin') continue;
+    if (rec.private && p.teacherId !== DIRECTOR_TID) continue;
     try {
       if (rec.msgId) await tg('copyMessage', { chat_id: l.chatId, from_chat_id: rec.chatId, message_id: rec.msgId });
       const net = await expected(rec);
@@ -112,6 +115,10 @@ export async function decideReceipt(id, ok, by) {
       const st = (await A().get('stamp', { type: 'json' })) || {}; st.payments = Date.now(); await A().setJSON('stamp', st);
     }
     rec.saved = res.lines.map(l => l.text).join('; ');
+  }
+  if (ok && rec.private && rec.classId) {
+    const C = (await S().get('classes', { type: 'json' })) || [], c = C.find(x => x.id === rec.classId);
+    if (c) { c.pay = c.pay || {}; c.pay.paid = c.pay.paid || {}; c.pay.paid[rec.month] = rec.date || local().toISOString().slice(0, 10); await S().setJSON('classes', C); rec.saved = 'Marked paid on the private class'; }
   }
   await saveList(list);
   if (rec.studentId) { const P = await pending(); if (P[rec.studentId]?.id === id) { delete P[rec.studentId]; await S().setJSON('receipts/pending', P); } }

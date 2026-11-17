@@ -3,7 +3,7 @@
 // (Admin → Teachers), which links the chat as 'tid:<teacherId>'. Everything is saved in the same lesson log the website
 // uses, so clock-ins and registers appear at once on the admin pages (Admin → Lessons, hours, IF Admin attendance).
 import { getStore } from '@netlify/blobs';
-import { doc, loadChanges, saveChanges, inClass, tg, tgSend, local, getLinks, addNote, uidsByStudent } from './bot-core.mjs';
+import { doc, loadChanges, saveChanges, inClass, tg, tgSend, local, getLinks, addNote, uidsByStudent, hidePrivate } from './bot-core.mjs';
 import { lessonsOn, loadLog, checkIn, saveRegister, today, EARLY_MIN } from './lessons.mjs';
 
 const S = () => getStore({ name: 'school', consistency: 'strong' });
@@ -73,7 +73,7 @@ const hm = iso => local(new Date(iso)).toISOString().slice(11, 16);
 
 /** "🕑 Today's lessons": one message per lesson, each with its own buttons. */
 export async function sendToday(chatId, uid, p, onlyMine) {
-  const date = today(), classes = await doc('classes'), teachers = await doc('teachers');
+  const date = today(), classes = hidePrivate(await doc('classes'), p), teachers = await doc('teachers');
   const all = lessonsOn(classes, date, await loadChanges()).filter(l => !l.cancelled && !l.movedTo);
   const list = all.filter(l => onlyMine ? l.teacherId === p.teacherId : (mine(p, l) || p.smm));
   if (!list.length) return tgSend(chatId, canAll(p) ? 'No lessons today.' : 'You have no lessons today. 🙂', { reply_markup: kbFor(p) });
@@ -278,7 +278,7 @@ async function tellStudents(cls, text) {
 const DOT = l => l.cancelled ? '❌' : l.movedTo ? '↪' : '';
 /** 🏫 School today: one board with every lesson and its status. */
 export async function sendSchoolDay(chatId, p) {
-  const date = today(), classes = await doc('classes'), teachers = await doc('teachers'), students = await doc('students');
+  const date = today(), classes = hidePrivate(await doc('classes'), p), teachers = await doc('teachers'), students = await doc('students');
   const tn = id => ((teachers.find(t => t.id === id) || {}).name || '').split(' ')[0] || '—';
   const { withEntry, since } = await import('./lessons.mjs');
   const list = withEntry(lessonsOn(classes, date, await loadChanges()), await loadLog(date.slice(0, 7)), new Date(), await since());
@@ -301,7 +301,7 @@ export async function sendTodo(chatId, p, only) {
 }
 /** 📆 This week: the next 7 days, compact. */
 export async function sendWeek(chatId, p) {
-  const classes = await doc('classes'), teachers = await doc('teachers'), CH = await loadChanges();
+  const classes = hidePrivate(await doc('classes'), p), teachers = await doc('teachers'), CH = await loadChanges();
   const tn = id => ((teachers.find(t => t.id === id) || {}).name || '').split(' ')[0] || '—', DN = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   const d0 = today(), out = [];
   for (let i = 0; i < 7; i++) {
@@ -313,7 +313,7 @@ export async function sendWeek(chatId, p) {
 }
 /** 🔔 Changes: cancellations, moves and covers today and tomorrow. */
 export async function sendChanges(chatId, p) {
-  const classes = await doc('classes'), teachers = await doc('teachers'), CH = await loadChanges();
+  const classes = hidePrivate(await doc('classes'), p), teachers = await doc('teachers'), CH = await loadChanges();
   const tn = id => ((teachers.find(t => t.id === id) || {}).name || '').split(' ')[0] || '—', out = [];
   for (let i = 0; i < 2; i++) {
     const date = new Date(Date.parse(today() + 'T00:00:00Z') + i * 864e5).toISOString().slice(0, 10);
@@ -330,7 +330,7 @@ export async function sendChanges(chatId, p) {
 }
 /** 🎬 Filming plan for the SMM: today's lessons ranked by what makes good content. */
 export async function sendFilming(chatId, p) {
-  const classes = await doc('classes'), teachers = await doc('teachers'), students = await doc('students'), date = today();
+  const classes = hidePrivate(await doc('classes'), p), teachers = await doc('teachers'), students = await doc('students'), date = today();
   const tn = id => ((teachers.find(t => t.id === id) || {}).name || '').split(' ')[0] || '—';
   const size = c => students.filter(s => inClass(c, s) && s.status === 'active').length;
   const now = Date.now(), ls = lessonsOn(classes, date, await loadChanges()).filter(l => !l.cancelled && !l.movedTo && Date.parse(l.endAt) > now);
@@ -343,7 +343,7 @@ export async function sendFilming(chatId, p) {
 
 /** 📋 Register: today's lessons with the right button — take/correct the register, clock in first, or when it opens. */
 export async function sendRegisterMenu(chatId, p) {
-  const date = today(), classes = await doc('classes'), teachers = await doc('teachers');
+  const date = today(), classes = hidePrivate(await doc('classes'), p), teachers = await doc('teachers');
   const tn = id => ((teachers.find(t => t.id === id) || {}).name || '').split(' ')[0];
   const all = lessonsOn(classes, date, await loadChanges()).filter(l => !l.cancelled && !l.movedTo && (canAll(p) || l.teacherId === p.teacherId));
   if (!all.length) return tgSend(chatId, canAll(p) ? 'No lessons today.' : 'You have no lessons today. 🙂', { reply_markup: kbFor(p) });

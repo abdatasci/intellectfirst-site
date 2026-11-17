@@ -7,7 +7,7 @@
 // website (notifications + the admin page) and on the school's WhatsApp — again every 2 hours (09:00–21:00 Kostanay
 // time) for as long as anything is still open, and at once whenever something new appears.
 import { getStore } from '@netlify/blobs';
-import { doc, getLinks, loadChanges, payStatus, money, tgSend, tgToken, addNote, local, ymd } from './bot-core.mjs';
+import { doc, getLinks, loadChanges, payStatus, money, tgSend, tgToken, addNote, local, ymd, hidePrivate } from './bot-core.mjs';
 import { lessonsOn, loadLog, withEntry, since, today } from './lessons.mjs';
 import { listReceipts } from './receipts.mjs';
 import { loadFeedback } from './feedback.mjs';
@@ -24,7 +24,8 @@ const addDays = (d, n) => new Date(Date.parse(d + 'T00:00:00Z') + n * 864e5).toI
 /** Everything open right now: [{key, kind, text, link}] */
 export async function openTasks(now = new Date()) {
   const out = [], d0 = today();
-  const [classes, teachers, students] = await Promise.all([doc('classes'), doc('teachers'), doc('students')]);
+  const [classes0, teachers, students] = await Promise.all([doc('classes'), doc('teachers'), doc('students')]);
+  const classes = hidePrivate(classes0, null);
   const CH = await loadChanges(), cutoff = await since(), tName = id => (teachers.find(t => t.id === id) || {}).name || 'no teacher';
   const logs = {};
   const logOf = async m => logs[m] || (logs[m] = await loadLog(m));
@@ -55,7 +56,7 @@ export async function openTasks(now = new Date()) {
     out.push({ key: `pay:${s.id}:${p.month}`, kind: 'payment', text: `Tuition overdue: ${`${s.first} ${s.last}`.trim()} — ${money(p.fee) || 'fee'} for ${p.month} (due ${dshort(p.dueDate)})`, link: '/me/#/admin/payments' });
   }
   // receipts waiting
-  for (const r of (await listReceipts()).filter(r => r.status === 'pending')) out.push({ key: `rc:${r.id}`, kind: 'payment', text: `Confirm payment receipt: ${r.name || 'a student'}${r.amount ? ' — ' + money(r.amount) : ''}`, link: '/me/#/admin/receipts' });
+  for (const r of (await listReceipts()).filter(r => r.status === 'pending' && !r.private)) out.push({ key: `rc:${r.id}`, kind: 'payment', text: `Confirm payment receipt: ${r.name || 'a student'}${r.amount ? ' — ' + money(r.amount) : ''}`, link: '/me/#/admin/receipts' });
   // access requests and feedback
   const dir = (await U().get('directory', { type: 'json' })) || {};
   for (const [uid, a] of Object.entries(dir)) if (a.request && !a.declined) out.push({ key: `acc:${uid}`, kind: 'accounts', text: `Approve or decline website access: ${a.name || 'new account'}`, link: '/me/#/admin/accounts' });

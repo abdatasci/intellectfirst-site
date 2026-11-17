@@ -16,7 +16,7 @@
 //    for every lesson taught in the pay period — 12 lessons = half the tuition, however they fall across months.
 import { getStore } from '@netlify/blobs';
 import { lessonsOn, loadLog, withEntry, since, today } from './lessons.mjs';
-import { doc, loadChanges } from './bot-core.mjs';
+import { doc, loadChanges, hidePrivate } from './bot-core.mjs';
 import { PACKAGES } from './prices.mjs';
 
 const S = () => getStore({ name: 'school', consistency: 'strong' });
@@ -79,7 +79,8 @@ function soloFee(sid, month, D) {
 
 /** Pay for one month: { month, teachers: [{teacherId, name, rule, total, hours, lessons, items, late}], fixed: [...] } */
 export async function payroll(month, only = null, now = new Date()) {
-  const [classes, teachers, rates, CH] = await Promise.all([doc('classes'), doc('teachers'), loadRates(), loadChanges()]);
+  const [classes0, teachers, rates, CH] = await Promise.all([doc('classes'), doc('teachers'), loadRates(), loadChanges()]);
+  const classes = hidePrivate(classes0, null);
   const D = { payments: (await A().get('c/payments', { type: 'json' })) || {}, students: (await A().get('c/students', { type: 'json' })) || {} };
   const { from, to } = period(month, rates), all = [], byT = {}, soloList = {}, cutoff = await since(), logs = {}, td = today();
   for (let t = Date.parse(from + 'T00:00:00Z'); t <= Date.parse(to + 'T00:00:00Z'); t += 864e5) {

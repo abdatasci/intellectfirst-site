@@ -3,7 +3,7 @@
 // notifications. People are chosen in Admin → Accounts → Duty (Manager / SMM); an administrator other than the
 // director counts as manager too.
 import { getStore } from '@netlify/blobs';
-import { doc, loadChanges, getLinks, tgSend, tgToken, addNote, local, ymd } from './bot-core.mjs';
+import { doc, loadChanges, getLinks, tgSend, tgToken, addNote, local, ymd, hidePrivate } from './bot-core.mjs';
 import { lessonsOn } from './lessons.mjs';
 import { waReady, waSend } from './whatsapp.mjs';
 
@@ -25,7 +25,8 @@ export async function dayWatchers() {
 }
 
 export async function dayText(date) {
-  const [classes, teachers] = await Promise.all([doc('classes'), doc('teachers')]);
+  const [classes0, teachers] = await Promise.all([doc('classes'), doc('teachers')]);
+  const classes = hidePrivate(classes0, null);
   const tn = id => ((teachers.find(t => t.id === id) || {}).name || '').split(' ')[0] || '—';
   const list = lessonsOn(classes, date, await loadChanges());
   const d = new Date(date + 'T00:00:00Z'), head = `📅 Lessons today — ${DN[d.getUTCDay()]} ${date.slice(8)}.${date.slice(5, 7)}`;
