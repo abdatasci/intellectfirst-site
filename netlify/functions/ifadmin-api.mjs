@@ -181,6 +181,16 @@ export default async (req) => {
       return json({ ok: true, profile: { name: p.name, role: p.role, studentId: p.studentId, phone }, record: { id: rec.id, name: `${rec.first} ${rec.last}`.trim(), ph: S2[rec.id] && S2[rec.id].ph } });
     }
     // lesson clock-in log: read a month, or correct one lesson's clock-in time (the director's corrections)
+    // resend a class's latest online test to the students who connected to the bot after it was sent: {classId, id?}
+    if (path === 'homework/resend' && method === 'POST') {
+      const b = await req.json().catch(() => ({}));
+      const { loadHomework } = await import('../lib/homework.mjs'), { tellClass } = await import('../lib/hwsend.mjs'), { doc } = await import('../lib/bot-core.mjs');
+      const cls = (await doc('classes')).find(c => c.id === b.classId); if (!cls) return fail(404, 'class');
+      const list = (await loadHomework()).filter(h => h.classId === cls.id && h.url && (!b.id || h.id === b.id));
+      const item = list[list.length - 1]; if (!item) return fail(404, 'homework');
+      const r = await tellClass(cls, item, null, { since: b.all ? '0' : item.at, names: true });
+      return json({ ok: true, item: { id: item.id, text: item.text, at: item.at, test: item.test || null }, ...r });
+    }
     // who taught one lesson (a cover): {key: '<classId>|<date>|<HH:MM>', teacherId | null} — pay and hours follow it
     if (path === 'cover' && method === 'POST') {
       const b = await req.json().catch(() => ({}));
