@@ -19,7 +19,7 @@ export async function dayWatchers() {
     if (a.role !== 'admin' && a.role !== 'teacher') continue;
     const p = await U().get(`u/${uid}/profile`, { type: 'json' }).catch(() => null); if (!p) continue;
     const duty = p.smm ? 'smm' : (p.manager || (p.role === 'admin' && p.teacherId !== DIRECTOR)) ? 'manager' : '';
-    if (duty) out.push({ uid, name: p.name || '', phone: p.phone || '', duty });
+    if (duty) out.push({ uid, name: p.name || '', phone: p.phone || '', duty, teacherId: p.teacherId || a.teacherId || '' });
   }
   return out;
 }

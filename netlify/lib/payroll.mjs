@@ -178,7 +178,7 @@ export async function payroll(month, only = null, now = new Date()) {
   let fixed = [];
   if (!only) {
     const { dayWatchers } = await import('./daydigest.mjs');
-    fixed = (await dayWatchers()).map(w => { const f = (rates.fixed || {})[w.duty]; return f ? { uid: w.uid, name: w.name, duty: w.duty, amount: f.amount, deduct: f.deduct || 0, note: f.note || '', total: f.amount - (f.deduct || 0) } : null; }).filter(Boolean);
+    fixed = (await dayWatchers()).map(w => { const f = (rates.fixed || {})[w.duty]; return f ? { uid: w.uid, teacherId: w.teacherId || '', name: w.name, duty: w.duty, amount: f.amount, deduct: f.deduct || 0, note: f.note || '', total: f.amount - (f.deduct || 0) } : null; }).filter(Boolean);
   }
   // director's compensation: only from what is left of the month's income after all expenses and all staff pay
   const dT = DR && list.find(T => T.salary);

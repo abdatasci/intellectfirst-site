@@ -337,7 +337,17 @@ async function recordByStudent(R, FP) {
   await W.setJSON('payextra', X);
   return lines.length ? lines : ['no change'];
 }
-const MIGRATIONS = [['timetable-2026-11-14', () => applyTimetable(TT_2026_11_14)], ['timetable-2026-11-14-pending', () => applyPending(PENDING_2026_11_14), true], ['private-2026-11-15', () => grantPrivate(PRIVATE_2026_11_15)], ['schedule-2026-11-15', schedule20261115], ['ontime-2026-11-15', onTime20261115], ['teacher-phones-2026-11-15', teacherPhones], ['cover-2026-11-16', cover20261116], ['smm-2026-11-16', smm20261116], ['aitach-record-2026-11-16', () => recordLessons(AITACH_REC)], ['alina-record-2026-11-17', () => recordByTime(ALINA_REC)], ['olya-record-2026-11-17', () => recordByStudent(OLYA_REC, OLYA_FP)]];
+/* 17 Nov 2026: fixed monthly pay (manager) entered by the director. The amounts are NOT in this public repository:
+   they come from the Netlify environment variable IF_FIXED_PAY, JSON { manager: { amount, deduct, note } }. */
+async function fixedPay() {
+  let v = null; try { v = JSON.parse(process.env.IF_FIXED_PAY || 'null'); } catch (e) { console.error('IF_FIXED_PAY', e.message); }
+  if (!v || !v.manager) return null;   // not set yet: try again later
+  const { loadRates, saveRates } = await import('./payroll.mjs');
+  const r = await loadRates(); r.fixed = { ...(r.fixed || {}), manager: v.manager };
+  await saveRates(r);
+  return ['fixed monthly pay: manager set'];
+}
+const MIGRATIONS = [['timetable-2026-11-14', () => applyTimetable(TT_2026_11_14)], ['timetable-2026-11-14-pending', () => applyPending(PENDING_2026_11_14), true], ['private-2026-11-15', () => grantPrivate(PRIVATE_2026_11_15)], ['schedule-2026-11-15', schedule20261115], ['ontime-2026-11-15', onTime20261115], ['teacher-phones-2026-11-15', teacherPhones], ['cover-2026-11-16', cover20261116], ['smm-2026-11-16', smm20261116], ['aitach-record-2026-11-16', () => recordLessons(AITACH_REC)], ['alina-record-2026-11-17', () => recordByTime(ALINA_REC)], ['olya-record-2026-11-17', () => recordByStudent(OLYA_REC, OLYA_FP)], ['fixed-pay-2026-11-17', fixedPay]];
 let running = null;
 /** Run any migration that has not run yet. Safe to call on every request (cached per instance). */
 let checkedAt = 0;

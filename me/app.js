@@ -1232,10 +1232,12 @@
     if (!PAYP) h = '<p class="small">Pay is still loading. Click the name again in a moment.</p>';
     else {
       var t = (PAYP.teachers || []).filter(function (x) { return x.teacherId === id; })[0];
-      if (!t) h = '<p class="small">No lessons recorded for this pay period yet.</p>';
+      var fx = (PAYP.fixed || []).filter(function (x) { return x.teacherId === id; })[0];
+      var fxh = fx ? '<p style="margin:8px 0 0"><b>Fixed monthly pay:</b> ' + tg(fx.amount) + (fx.deduct ? ' − ' + tg(fx.deduct) + (fx.note ? ' <small class="mini">(' + esc(fx.note) + ')</small>' : '') + ' = <b>' + tg(fx.total) + '</b>' : '') + ' · <b>Total so far: ' + tg((fx.total || 0) + ((t && t.total) || 0)) + '</b></p>' : '';
+      if (!t) h = '<p class="small">No lessons recorded for this pay period yet.</p>' + fxh;
       else h = '<p style="margin:0 0 6px"><b>' + (t.own && !t.salary ? 'Own pay arrangement' : 'Pay so far: ' + tg(t.total)) + '</b> · ' + (t.lessons || 0) + ' lessons · ' + hh(t.hours || 0) + ' taught' + (PAYP.from ? ' <small class="mini">(' + esc(dm(PAYP.from) + ' – ' + dm(PAYP.to)) + ')</small>' : '') + '</p>' +
         '<p class="small" style="margin:0 0 6px">Rate: ' + esc(t.rule || 'not set yet') + (t.late && t.late.n ? ' · ⏰ ' + t.late.n + ' late (' + t.late.min + ' min)' : '') + (t.unpaidLate ? ' · ' + t.unpaidLate + ' late cancellation' + (t.unpaidLate > 1 ? 's' : '') + ' not paid' : '') + '</p>' +
-        (t.salary ? salaryHTML(t.salary) : '') + recBar(t) + (t.items && t.items.length ? payItems(t.items.slice().reverse(), true) : '');
+        (t.salary ? salaryHTML(t.salary) : '') + fxh + recBar(t) + (t.items && t.items.length ? payItems(t.items.slice().reverse(), true) : '');
     }
     td.innerHTML = h + '<p class="small" style="margin:10px 0 0"><a href="#/staff/' + esc(id) + '">Open staff profile →</a></p>';
     row.appendChild(td); tr.parentNode.insertBefore(row, tr.nextSibling);

@@ -812,7 +812,7 @@ export default async (req) => {
       const cl = classes.filter(c => c.teacherId === t.id); if (!cl.length) continue;
       const h = await teachingHours(cl, month); rows.push({ id: t.id, name: t.name, hours: h.hours, lessons: h.lessons, week: h.week, planned: h.planned });
     }
-    if (profile.teacherId === 't-abdoulie') try { const { payroll } = await import('../lib/payroll.mjs'); const P = await payroll(month); for (const r of rows) { const x = P.teachers.find(y => y.teacherId === r.id); r.pay = x ? (x.own ? null : x.total) : 0; } } catch (e) { console.error('pay', e.message); }
+    if (profile.teacherId === 't-abdoulie') try { const { payroll } = await import('../lib/payroll.mjs'); const P = await payroll(month); for (const r of rows) { const x = P.teachers.find(y => y.teacherId === r.id), f = P.fixed.find(y => y.teacherId && y.teacherId === r.id); r.pay = x ? (x.own ? null : x.total) : 0; if (f && r.pay != null) { r.fixed = f.total; r.pay += f.total; } } } catch (e) { console.error('pay', e.message); }
     return json({ month, teaching: rows.sort((a, b) => b.hours - a.hours), admin: await teamAdmin(month) });
   }
   if (path === 'teach/lesson-change' && method === 'POST') {
