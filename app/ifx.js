@@ -250,7 +250,7 @@
     return m.some(function (k) { return fitsKey(it, k); }); }
   function myCourses() {
     var out = []; mine().forEach(function (k) { var c = planOf(k).course; if (c && out.indexOf(c) < 0) out.push(c); });
-    if (S.teacher || (!out.length && !S.cls)) COURSES.forEach(function (c) { if (out.indexOf(c) < 0) out.push(c); });
+    if (S.teacher || (!out.length && !S.cls)) COURSES.forEach(function (c) { if (!c.daily && out.indexOf(c) < 0) out.push(c); });
     return out;
   }
   function pickerHTML(sel, kidsFirst) {
@@ -297,6 +297,7 @@
         (lvPct != null ? '<div class="lvbar"><div class="row"><span>' + esc(P.level) + (nextLv ? ' → ' + nextLv : '') + '</span><span>' + lvPct + '%</span></div><div class="bar"><i style="width:' + lvPct + '%"></i></div></div>' : '') + '</div>' +
       '<div class="goal"><div class="ring" style="--p:' + goalPct + '"><b>' + (S.today.d === day() ? S.today.xp : 0) + '<small>/ ' + GOAL_XP + ' XP</small></b></div><div><h3>' + esc(t('dailyGoal')) + '</h3><p style="margin:4px 0 0;color:var(--soft)">🔥 ' + S.streak + ' ' + esc(t('streak')) + ' · ⚡ ' + S.xp + ' XP</p>' +
         '<p style="margin:8px 0 0;font-size:14px;color:var(--soft)">One lesson ≈ 12–15 XP. Two lessons a day keeps your streak alive.</p></div></div></div>' +
+      artHomeHTML() +
       '<div class="sec"><h2>Today\'s three steps</h2></div><div class="steps">' +
         step(1, main && nx ? { href: '#/lesson/' + main.id + '/' + nx.u.id + '/' + nx.l.id, t: nx.l.title, d: main.title + ' · ' + TYPE[nx.l.type] } : P.voc ? { href: '#/play/' + P.voc.id, t: P.voc.t, d: 'Next unit' } : null, 'Lesson') +
         step(2, P.voc && main ? { href: '#/play/' + P.voc.id, t: P.voc.t, d: 'Learn 10 new words' } : P.test ? { href: '#/play/' + P.test.id, t: P.test.t, d: 'Check your progress' } : null, 'Words') +
@@ -326,7 +327,7 @@
   var CTRACK = [['all', 'All'], ['general', 'General English'], ['business', 'Business English'], ['exam', 'IELTS'], ['kids', 'Young learners']];
   function vCourses(f) {
     setNav('courses'); f = f || 'all';
-    var full = fullView(), list = full ? COURSES.filter(function (c) { return f === 'all' || c.track === f; }) : myCourses();
+    var full = fullView(), list = full ? COURSES.filter(function (c) { return !c.daily && (f === 'all' || c.track === f); }) : myCourses();
     view().innerHTML = '<div class="page-h"><div><p class="h-eyebrow">' + esc(t('courses')) + '</p><h1>Real English courses</h1><p>Each unit: new words, the grammar, a reading with photos, and a unit check. Finish a level to unlock the next one.</p></div></div>' +
       (full ? '<div class="chips">' + CTRACK.map(function (x) { return '<button class="chip' + (x[0] === f ? ' on' : '') + '" data-f="' + x[0] + '">' + esc(x[1]) + '</button>'; }).join('') + '</div>' : goalBar()) +
       '<div class="grid">' + list.map(courseCard).join('') + '</div>' ;
@@ -335,6 +336,7 @@
   function vCourse(id) {
     setNav('courses');
     var c = BY[id]; if (!c) return go('#/courses');
+    if (c.daily) return go('#/articles');
     var s = courseStats(c), nx = nextLesson(c), a = access();
     var html = '<div class="course-head"><span class="ic">' + c.icon + '</span><div class="grow"><p class="h-eyebrow">' + esc(c.level) + ' · ' + esc(c.track === 'exam' ? 'Exam' : c.track === 'business' ? 'Business English' : c.track === 'kids' ? 'Young learners' : 'General English') + '</p><h1 style="font-size:28px">' + esc(c.title) + '</h1><p style="margin:4px 0 8px;color:var(--soft)">' + esc(c.blurb) + '</p><div class="bar" style="height:12px"><i style="width:' + s.p + '%"></i></div><p style="margin:6px 0 0;font-size:13.5px;color:var(--soft)">' + s.d + ' / ' + s.n + ' lessons · ' + s.p + '%' + (c.next ? ' · then: ' + esc(c.next) : '') + '</p></div></div>';
     var sd = window.IFStd && IFStd.course(c.id);
@@ -358,7 +360,8 @@
     var c = BY[cid]; if (!c) return go('#/courses');
     var ui = c.units.findIndex(function (u) { return u.id === uid; }); var u = c.units[ui]; if (!u) return go('#/course/' + cid);
     var l = u.lessons.filter(function (x) { return x.id === lid; })[0]; if (!l) return go('#/course/' + cid);
-    if (!unlocked(ui)) { if (!meLoaded) { view().innerHTML = '<p style="text-align:center;margin-top:40px">Loading…</p>'; return; } return go('#/course/' + cid); }
+    if (c.daily) { if (!artOpen(c, u)) { if (!meLoaded) { view().innerHTML = '<p style="text-align:center;margin-top:40px">Loading…</p>'; return; } return go('#/articles'); } }
+    else if (!unlocked(ui)) { if (!meLoaded) { view().innerHTML = '<p style="text-align:center;margin-top:40px">Loading…</p>'; return; } return go('#/course/' + cid); }
     teach = !!teach && access().teacher;
     document.body.classList.toggle('teach', teach); document.body.classList.add('in-lesson');
     var items = [];
@@ -580,6 +583,7 @@
     S.done[k] = { score: Math.max(score, (S.done[k] || {}).score || 0), at: Date.now() };
     if (L.l.words) L.l.words.forEach(function (w) { S.words[w.w] = 1; });
     addXP(xp);
+    if (L.c.daily) return artDone(score, xp);
     var nx = nextLesson(L.c), st = courseStats(L.c);
     view().innerHTML = '<div class="player done-box"><div class="big">' + (score >= 80 ? '🏆' : score >= 50 ? '⭐' : '💪') + '</div><h2>' + (score >= 80 ? 'Excellent!' : score >= 50 ? 'Well done!' : 'Good effort!') + '</h2><p style="color:var(--soft)">' + esc(L.l.title) + ' · ' + esc(L.c.title) + '</p>' + (window.IFStd && IFStd.unit(L.c.id, L.u.id) ? '<p class="cando done">🎯 Unit goal · ' + esc(IFStd.unit(L.c.id, L.u.id)) + '</p>' : '') +
       '<div class="kpis"><div class="kpi"><b>+' + xp + '</b><span>XP</span></div><div class="kpi"><b>' + score + '%</b><span>accuracy</span></div><div class="kpi"><b>🔥 ' + S.streak + '</b><span>' + esc(t('streak')) + '</span></div></div>' +
@@ -626,7 +630,7 @@
   }
   function lessonsOf(type) {   // course lessons of a kind, as cards
     var out = [];
-    COURSES.forEach(function (c) { c.units.forEach(function (u, ui) { u.lessons.forEach(function (l) { if (type.indexOf(l.type) >= 0) out.push({ c: c, u: u, ui: ui, l: l }); }); }); });
+    COURSES.forEach(function (c) { if (c.daily) return; c.units.forEach(function (u, ui) { u.lessons.forEach(function (l) { if (type.indexOf(l.type) >= 0) out.push({ c: c, u: u, ui: ui, l: l }); }); }); });
     return out;
   }
   function lessonCard(x) {
@@ -720,6 +724,7 @@
     setNav('more');
     view().innerHTML = '<div class="page-h"><div><h1>More</h1></div></div><div class="grid">' + IFX_DIR.filter(function (x) { return x.s === 'more' || x.s === 'kids'; }).map(itemCard).join('') +
       '<a class="card" href="#/onboard"><span class="ic">🎯</span><h3>My courses and levels</h3><p>' + esc(mine().map(function (k) { return SNAME[k]; }).join(', ') || 'Not chosen yet') + '</p></a>' +
+      '<a class="card" href="https://t.me/intellectfirst" target="_blank" rel="noopener"><span class="ic">📣</span><h3>IF Academy on Telegram</h3><p>Join the channel: news, daily English and school announcements.</p></a>' +
       '<a class="card" href="/me/#/upgrade"><span class="ic">⭐</span><h3>Plans</h3><p>Full access for students — and the Teacher plan for classes.</p></a></div>';
   }
 
@@ -731,7 +736,7 @@
     var words = n.split(' '), hit = function (s) { s = norm(s); return words.every(function (w) { return s.indexOf(w) >= 0; }); };
     var hl = function (s) { var out = esc(s); words.forEach(function (w) { if (w.length > 1) out = out.replace(new RegExp('(' + w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'ig'), '<mark>$1</mark>'); }); return out; };
     var R = { lessons: [], words: [], apps: [] };
-    COURSES.forEach(function (c) { c.units.forEach(function (u, ui) { u.lessons.forEach(function (l) {
+    COURSES.forEach(function (c) { if (c.daily) return; c.units.forEach(function (u, ui) { u.lessons.forEach(function (l) {
       if (hit(c.title + ' ' + u.title + ' ' + u.topic + ' ' + l.title + ' ' + TYPE[l.type] + ' ' + c.level)) R.lessons.push({ c: c, u: u, ui: ui, l: l });
       (l.words || []).forEach(function (w) { if (hit(w.w + ' ' + w.d + ' ' + (w.ru || ''))) R.words.push({ c: c, u: u, l: l, w: w }); });
     }); }); });
@@ -742,6 +747,64 @@
     if (R.apps.length) html += '<div class="res-grp"><h3>Courses, games and tests</h3>' + R.apps.slice(0, 16).map(function (x) { return '<a class="res" href="' + esc(x.href) + '"><i>' + x.icon + '</i><span><b>' + hl(x.t) + '</b><small>' + hl(x.d) + '</small></span></a>'; }).join('') + '</div>';
     if (!R.lessons.length && !R.words.length && !R.apps.length) html += '<div class="empty">Nothing found. Try another word — e.g. “past simple”, “IELTS”, “meeting”, “B1”.</div>';
     view().innerHTML = html;
+  }
+
+  /* ---------- daily articles (teens and adults): today's article at the student's level, plus the earlier ones ---------- */
+  var ART = null;   // set when the page is ready (app/articles.js loads after this file)
+  var fmtDate = function (iso) { try { return new Date(iso + 'T00:00:00Z').toLocaleDateString(lang === 'en' ? 'en-GB' : lang, { day: 'numeric', month: 'long', timeZone: 'UTC' }); } catch (e) { return iso; } };
+  /** The level for articles: the one chosen on the Articles page, or the level of the active course. null = young learner (no articles). */
+  function artLevel() {
+    if (!ART) return null;
+    if (S.artLv && LEVELS.indexOf(S.artLv) >= 0) return S.artLv;
+    var keys = mine(), act = keys.indexOf(S.active) >= 0 ? S.active : keys[0];
+    var plans = (act ? [act] : []).concat(keys).map(planOf).filter(function (P) { return !P.kids; });
+    if (!plans.length) return keys.length && !S.teacher ? null : 'B1';
+    var lv = plans[0].level;
+    return LEVELS.indexOf(lv) >= 0 ? lv : lv === 'IELTS' ? 'B2' : 'B1';
+  }
+  var artCourse = function (lv) { return BY['art-' + lv.toLowerCase()]; };
+  /** Today's article is open to everyone; earlier articles need a (free) account. Articles for later days are closed. */
+  function artOpen(c, u) {
+    if (!ART.open(c.level, u.id)) return false;
+    var td = ART.today(c.level); return (td && td.id === u.id) || access().signed;
+  }
+  function artHomeHTML() {
+    var lv = artLevel(), a = lv && ART.today(lv); if (!a) return '';
+    var cid = 'art-' + lv.toLowerCase(), done = isDone(cid, a.id, 'r');
+    return '<div class="sec"><h2>📰 Today\'s article</h2><a href="#/articles">All articles →</a></div>' +
+      '<a class="artcard' + (done ? ' done' : '') + '" href="#/lesson/' + cid + '/' + a.id + '/r"><div><p class="h-eyebrow">' + esc(fmtDate(ART.dateOf(a))) + ' · ' + esc(lv) + ' · ' + esc(a.topic) + '</p><h3>' + esc(a.t) + '</h3>' +
+      '<p>' + esc(a.text.split('\n')[0].slice(0, 150).replace(/\s+\S*$/, '')) + '…</p></div><span class="btn ' + (done ? 'ghost' : 'gold') + '">' + (done ? '✓ Read again' : 'Read · ' + ART.minutes(a) + ' min') + '</span></a>';
+  }
+  function vArticles(lvArg) {
+    setNav('home');
+    if (!ART) return go('#/');
+    if (lvArg && LEVELS.indexOf(lvArg.toUpperCase()) >= 0) { S.artLv = lvArg.toUpperCase(); save(); }
+    var lv = artLevel() || 'A1', cid = 'art-' + lv.toLowerCase(), list = ART.list(lv), td = list[0], signed = access().signed;
+    var html = '<div class="page-h"><div><p class="h-eyebrow">IF App · Daily articles</p><h1>A new article every day</h1><p>One original article at your level, with key words on flashcards and five questions. Reading it counts towards your daily goal.</p></div></div>' +
+      '<div class="chips">' + LEVELS.map(function (l) { return '<a class="chip' + (l === lv ? ' on' : '') + '" href="#/articles/' + l + '">' + l + '</a>'; }).join('') + '</div>';
+    if (!td) html += '<div class="empty">The first article arrives soon.</div>';
+    else {
+      var d0 = isDone(cid, td.id, 'r'), w0 = isDone(cid, td.id, 'v');
+      html += '<div class="arthero"><p class="h-eyebrow" style="color:var(--gold2)">Today · ' + esc(fmtDate(ART.dateOf(td))) + ' · ' + esc(td.topic) + '</p><h2>' + esc(td.t) + '</h2><p>' + esc(td.text.split('\n')[0]) + '</p>' +
+        '<p class="row" style="gap:10px;flex-wrap:wrap;margin-top:16px"><a class="btn gold" href="#/lesson/' + cid + '/' + td.id + '/r">' + (d0 ? '✓ Read again' : 'Read the article · ' + ART.minutes(td) + ' min') + ' →</a><a class="btn ghost light" href="#/lesson/' + cid + '/' + td.id + '/v">🔤 Key words' + (w0 ? ' ✓' : '') + '</a></p></div>';
+      if (list.length > 1) {
+        html += '<div class="sec"><h2>Earlier articles</h2></div>' + (signed ? '' : '<p class="artnote">Today\'s article is free for everyone. <a href="' + JOIN + '">Create a free account</a> to read the earlier ones.</p>') +
+          '<div class="artlist">' + list.slice(1).map(function (a) {
+            var dn = isDone(cid, a.id, 'r');
+            return '<a class="artrow' + (signed ? '' : ' locked') + '" href="' + (signed ? '#/lesson/' + cid + '/' + a.id + '/r' : JOIN) + '"><span class="d">' + esc(fmtDate(ART.dateOf(a))) + '</span><span class="t"><b>' + esc(a.t) + '</b><small>' + esc(a.topic) + ' · ' + ART.minutes(a) + ' min</small></span><span class="s">' + (signed ? (dn ? '✓ ' + S.done[key3(cid, a.id, 'r')].score + '%' : '→') : '🔒') + '</span></a>';
+          }).join('') + '</div>';
+      }
+    }
+    view().innerHTML = html;
+  }
+  function artDone(score, xp) {
+    var u = L.u, cid = L.c.id, other = u.lessons.filter(function (x) { return x.id !== L.l.id && !isDone(cid, u.id, x.id); })[0];
+    view().innerHTML = '<div class="player done-box"><div class="big">' + (score >= 80 ? '🏆' : score >= 50 ? '⭐' : '💪') + '</div><h2>' + (score >= 80 ? 'Excellent!' : score >= 50 ? 'Well done!' : 'Good effort!') + '</h2><p style="color:var(--soft)">' + esc(u.title) + ' · Daily article ' + esc(L.c.level) + '</p>' +
+      '<div class="kpis"><div class="kpi"><b>+' + xp + '</b><span>XP</span></div><div class="kpi"><b>' + score + '%</b><span>accuracy</span></div><div class="kpi"><b>🔥 ' + S.streak + '</b><span>' + esc(t('streak')) + '</span></div></div>' +
+      '<p style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:20px"><a class="btn ghost" href="#/articles">All articles</a>' +
+      (other ? '<a class="btn gold" href="#/lesson/' + cid + '/' + u.id + '/' + other.id + '">' + (other.type === 'vocab' ? '🔤 Learn the key words →' : '📖 Read the article →') + '</a>' : '<a class="btn gold" href="#/">Back to Home →</a>') + '</p></div>';
+    confetti(score >= 50 ? 120 : 40);
+    setNav('home');
   }
 
   /* ---------- router ---------- */
@@ -765,6 +828,7 @@
       case 'vocab': case 'grammar': case 'games': case 'tests': return vSection(p[0]);
       case 'play': return vPlay(p[1]);
       case 'ielts': return vIelts();
+      case 'articles': return vArticles(p[1]);
       case 'more': return vMore();
       case 'search': return vSearch(($('#q') || {}).value || qs.get('q') || '');
       default: return vHome();
@@ -774,6 +838,7 @@
      lesson: listen and choose, listen and write, which sentence is right, listen and order, then say it aloud. */
   function prepCourses() {
     COURSES.forEach(function (c) {
+      if (c.daily) return;
       var adv = /^C/.test(c.level || '');
       c.units.forEach(function (u) {
         u.lessons.forEach(function (l) { if (adv) (l.words || []).forEach(function (w) { delete w.ru; }); });
@@ -806,6 +871,7 @@
   document.addEventListener('DOMContentLoaded', async function () {
     document.documentElement.lang = lang;
     if (/[?&]embed=1/.test(location.search)) { document.body.classList.add('embed'); document.addEventListener('click', function (e) { var a = e.target.closest('a[href]'); if (a && a.getAttribute('href').charAt(0) !== '#') a.target = '_top'; }); }
+    ART = window.IF_ARTICLES || null;
     prepCourses(); frame(); route();
     await loadMe(); meLoaded = true; frame(); route();
   });

@@ -266,3 +266,19 @@ body.game-full .playwrap{box-sizing:border-box;padding:env(safe-area-inset-top,0
 body.game-full .playwrap .gfx{display:flex;gap:8px;position:absolute;top:calc(env(safe-area-inset-top,0px) + 8px);right:calc(env(safe-area-inset-right,0px) + 8px);z-index:2}
 .gfx button{width:38px;height:38px;border-radius:50%;border:1px solid rgba(255,255,255,.25);background:rgba(10,20,40,.55);color:#fff;font-size:17px;line-height:1;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);cursor:pointer}
 .playwrap:fullscreen{border-radius:0}
+
+/* ---------- daily articles ---------- */
+.artcard{display:flex;align-items:center;justify-content:space-between;gap:16px;background:var(--card);border:2px solid var(--line);border-left:6px solid var(--gold);border-radius:var(--r);padding:16px 18px;text-decoration:none;transition:transform .15s,border-color .15s}
+.artcard:hover{transform:translateY(-2px);border-color:var(--gold2)}.artcard h3{font-size:22px;margin:0 0 4px}.artcard p{margin:0;color:var(--soft);font-size:14.5px}.artcard .h-eyebrow{margin-bottom:4px}
+.artcard .btn{flex:none;white-space:nowrap}.artcard.done{border-left-color:var(--ok)}
+@media (max-width:620px){.artcard{flex-direction:column;align-items:flex-start}}
+.arthero{background:linear-gradient(135deg,var(--navy),var(--navy2));color:#fff;border-radius:24px;padding:24px;margin-top:14px}
+.arthero h2{font-size:clamp(24px,3.4vw,34px);margin:4px 0 8px}.arthero p{margin:0;opacity:.88;max-width:70ch;line-height:1.6}
+.btn.ghost.light{color:#fff;border-color:rgba(255,255,255,.45);background:transparent}
+.artnote{margin:0 0 10px;color:var(--soft);font-size:14.5px}.artnote a{color:var(--sky);font-weight:700}
+.artlist{display:grid;gap:8px}
+.artrow{display:flex;align-items:center;gap:14px;background:var(--card);border:2px solid var(--line);border-radius:16px;padding:12px 14px;text-decoration:none}
+.artrow:hover{border-color:var(--gold2)}.artrow .d{flex:none;width:96px;font-size:13px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:.06em}
+.artrow .t{flex:1;min-width:0}.artrow .t b{display:block;font-family:Fraunces,Georgia,serif;font-size:17px;font-weight:600}.artrow .t small{color:var(--soft);font-size:13px}
+.artrow .s{flex:none;font-weight:700;color:var(--soft)}.artrow.locked{opacity:.75}
+a.chip{text-decoration:none}
