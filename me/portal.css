@@ -299,3 +299,6 @@ tr.regrow-admin td{background:#fbf8f1}
 .hwckr{display:flex;flex-wrap:wrap;align-items:center;gap:6px}.hwckr>span{flex:1 1 160px;font-size:14px;font-weight:600}.hwckr .said{color:#3730a3;font-weight:700;margin-left:4px}
 .hwcko{border:1px solid #e3dccd;background:#fff;border-radius:99px;padding:5px 11px;font:600 13px system-ui,sans-serif;cursor:pointer}
 .hwcko.done.on{background:#1d6b3a;border-color:#1d6b3a;color:#fff}.hwcko.part.on{background:#c48a00;border-color:#c48a00;color:#fff}.hwcko.not.on{background:#b42318;border-color:#b42318;color:#fff}
+
+/* buttons inside tables keep their own text colour (table links are navy) */
+table.t a.btn:not(.ghost):not(.gold){color:#fff}
