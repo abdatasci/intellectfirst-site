@@ -18,7 +18,7 @@
 //    for every lesson taught in the pay period — 12 lessons = half the tuition, however they fall across months.
 import { getStore } from '@netlify/blobs';
 import { lessonsOn, loadLog, saveLog, withEntry, since, today } from './lessons.mjs';
-import { doc, loadChanges, hidePrivate, parseSchedule } from './bot-core.mjs';
+import { doc, loadChanges, hidePrivate, parseSchedule, ymd } from './bot-core.mjs';
 import { PACKAGES } from './prices.mjs';
 
 const S = () => getStore({ name: 'school', consistency: 'strong' });
@@ -90,7 +90,7 @@ export async function payroll(month, only = null, now = new Date()) {
   const [classes0, teachers, rates, CH] = await Promise.all([doc('classes'), doc('teachers'), loadRates(), loadChanges()]);
   const classes = hidePrivate(classes0, null);
   const D = { payments: (await A().get('c/payments', { type: 'json' })) || {}, students: (await A().get('c/students', { type: 'json' })) || {} };
-  const { from, to } = period(month, rates), all = [], byT = {}, soloList = {}, cutoff = await since(), logs = {}, td = today();
+  const { from, to } = period(month, rates), all = [], byT = {}, soloList = {}, cutoff = await since(), logs = {}, td = ymd(now);
   for (let t = Date.parse(from + 'T00:00:00Z'); t <= Date.parse(to + 'T00:00:00Z'); t += 864e5) {
     const date = new Date(t).toISOString().slice(0, 10); if (date > td) break;
     const mo = date.slice(0, 7), L = logs[mo] || (logs[mo] = await loadLog(mo));
@@ -161,6 +161,23 @@ export async function payroll(month, only = null, now = new Date()) {
     const cls = [...new Set([...classes.filter(c => c.teacherId === DR.teacherId).map(c => c.id), ...T.items.filter(x => x.kind !== 'extra' && !x.cover).map(idOf)])].map(id => classes.find(c => c.id === id)).filter(Boolean);
     // lessons of a group in the whole pay period (the timetable, whatever was cancelled or moved since) and those he conducted
     const plannedOf = c => { let n = 0, past = 0, len = 0; for (let t = Date.parse(from + 'T00:00:00Z'); t <= Date.parse(to + 'T00:00:00Z'); t += 864e5) for (const l of lessonsOn([c], new Date(t).toISOString().slice(0, 10))) { n++; if (Date.parse(l.endAt) <= now.getTime()) past++; len = Math.round((Date.parse(l.endAt) - Date.parse(l.at)) / 60000); } return { n, past, len }; };
+    // A month is 8 lessons of a group (90-minute lessons). Lessons conducted beyond that are forwarded to the next month:
+    // carry[classId] = lessons brought forward into this month, counted month by month from November 2026.
+    const perOf = (c, len) => len === 90 ? 8 : Math.max(1, (parseSchedule(c.schedule) || []).length * 4 || 8);
+    const carry = {}, prev = [];
+    for (let k = 1; k <= 6; k++) { const d = new Date(Date.UTC(y, m - 1 - k, 1)), pm = d.toISOString().slice(0, 7); if (pm < CALENDAR_FROM) break; prev.unshift(pm); }
+    for (const c of cls) {
+      let cr = 0; const per = perOf(c, plannedOf(c).len);
+      for (const pm of prev) {
+        const P = period(pm, rates); let n = 0;
+        for (let t = Date.parse(P.from + 'T00:00:00Z'); t <= Date.parse(P.to + 'T00:00:00Z'); t += 864e5) {
+          const date = new Date(t).toISOString().slice(0, 10), mo = date.slice(0, 7), L = logs[mo] || (logs[mo] = await loadLog(mo));
+          n += withEntry(lessonsOn([c], date, CH), L, now, cutoff).filter(l => l.teacherId === DR.teacherId && !l.movedTo && (l.state === 'in' || l.state === 'in-late') && (l.entry || {}).checkIn).length;
+        }
+        cr = Math.max(0, cr + n - per);
+      }
+      carry[c.id] = cr;
+    }
     const groups = cls.map(c => {
       const gid = c.group || String(c.id).replace(/^c-/, '');
       const n = Object.values(D.students).filter(st => st && !/left|withdrawn|finished|frozen/i.test(st.st || '') && (st.g === gid || (st.gs || []).includes(gid))).length;
@@ -170,13 +187,14 @@ export async function payroll(month, only = null, now = new Date()) {
       // He gets the group's full rate when all its lessons are conducted. Each lesson that was due and not conducted takes off
       // one lesson's share: the rate ÷ 8 for 90-minute lessons (8 a month), otherwise the rate ÷ (lessons a week × 4).
       const pl = plannedOf(c), planned = pl.n, taught = T.items.filter(x => idOf(x) === c.id && (x.kind === 'taught' || x.kind === 'nobody')).length;
-      const per = pl.len === 90 ? 8 : Math.max(1, (parseSchedule(c.schedule) || []).length * 4 || 8);
-      const missed = Math.max(0, pl.past - taught), done = Math.min(planned, taught);
-      const earned = planned ? Math.max(0, Math.round(amount - missed * amount / per)) : 0;
-      return { classId: c.id, label: c.label, students: n, kind: ielts ? 'IELTS' : 'General English', size: n >= 5 ? '5–6' : n >= 2 ? (ielts ? '3–4' : '2–4') : 'individual', amount, planned, done, missed, per, cut: amount - earned, earned, full: !!planned && !missed };
+      const per = perOf(c, pl.len), credit = carry[c.id] || 0, done = taught;
+      // short of the month's lessons that were due by now (lessons brought forward count first); extra lessons go to the next month
+      const missed = Math.max(0, Math.min(per, pl.past) - (credit + taught)), forward = Math.max(0, credit + taught - per);
+      const earned = planned || credit ? Math.max(0, Math.round(amount - missed * amount / per)) : 0;
+      return { classId: c.id, label: c.label, students: n, kind: ielts ? 'IELTS' : 'General English', size: n >= 5 ? '5–6' : n >= 2 ? (ielts ? '3–4' : '2–4') : 'individual', amount, planned, done, missed, per, credit, forward, cut: amount - earned, earned, full: !!planned && !missed };
     }).filter(g => g.size !== 'individual' && g.planned);
     const full = groups.reduce((a, g) => a + g.amount, 0), teaching = groups.reduce((a, g) => a + g.earned, 0), base = +DR.base || 0, comp = +DR.comp || 0;
-    T.salary = { groups, full, teaching, base, comp, compMax: comp, total: Math.max(base, teaching) + comp, terms: { base, comp, ge: DR.ge || {}, ielts: DR.ielts || {} }, rule: `Groups (General English: 5–6 students ${fmt((DR.ge || {}).big || 0)} ₸, 2–4 students ${fmt((DR.ge || {}).small || 0)} ₸${DR.ielts ? `; IELTS: 5–6 ${fmt(DR.ielts.big || 0)} ₸, 3–4 ${fmt(DR.ielts.small || 0)} ₸` : ''}), each paid in full when all its lessons are conducted, less one lesson's share (the rate ÷ 8 for 90-minute lessons) for every lesson missed; at least ${fmt(base)} ₸; plus director's compensation ${fmt(comp)} ₸` };
+    T.salary = { groups, full, teaching, base, comp, compMax: comp, total: Math.max(base, teaching) + comp, terms: { base, comp, ge: DR.ge || {}, ielts: DR.ielts || {} }, rule: `Groups (General English: 5–6 students ${fmt((DR.ge || {}).big || 0)} ₸, 2–4 students ${fmt((DR.ge || {}).small || 0)} ₸${DR.ielts ? `; IELTS: 5–6 ${fmt(DR.ielts.big || 0)} ₸, 3–4 ${fmt(DR.ielts.small || 0)} ₸` : ''}), each paid in full when all its lessons are conducted, less one lesson's share (the rate ÷ 8 for 90-minute lessons) for every lesson missed; lessons beyond the month's 8 are forwarded to the next month; at least ${fmt(base)} ₸; plus director's compensation ${fmt(comp)} ₸` };
     T.total = T.salary.total; T.rule = T.salary.rule;
   }
   let fixed = [];
