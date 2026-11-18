@@ -316,3 +316,7 @@ a.chip{text-decoration:none}
 .flip .fb2{display:none}.flip.on .ff{display:none}.flip.on .fb2{display:block}.flip{cursor:pointer}.flip .learn-card{min-height:230px}
 .p-top a.x{text-decoration:none;color:inherit;display:inline-grid;place-items:center}
 .rs{border-radius:6px;transition:background .15s;cursor:pointer}.rs.on{background:rgba(201,162,39,.32);box-shadow:0 0 0 3px rgba(201,162,39,.32)}
+
+/* say the word: green when it sounds right */
+.learn-card .w{transition:color .25s,transform .25s}.learn-card .w.listening{animation:lrrp 1.2s infinite}.learn-card .w.good{color:var(--ok);transform:scale(1.06)}.learn-card .w.good::after{content:' ✓';font-size:.6em}.learn-card .w.try{color:#d97706}
+.say-ok{display:block;color:var(--ok);font-family:Fraunces,Georgia,serif;font-size:24px;font-weight:700}

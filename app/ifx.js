@@ -511,6 +511,101 @@
     $('#rcMine').onclick = function () { try { speechSynthesis.cancel(); if (au) au.pause(); au = new Audio(REC.url); au.play(); } catch (e) {} };
     if ($('#rcModel')) $('#rcModel').onclick = function () { if (au) au.pause(); say(model); };
   }
+  /* ---------- Say the word: the student says it, the word turns green when it is clear, and listening stops by itself.
+     Chrome/Android browsers hear it live; iPhone and the Telegram mini-app record until the student stops speaking
+     and the server (/api/stt) writes down what it heard. ---------- */
+  var SAY_IOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  var SAY_TG = !!(window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initData) || /Telegram/i.test(navigator.userAgent);
+  var SAY_SR = (SAY_IOS || SAY_TG) ? null : (window.SpeechRecognition || window.webkitSpeechRecognition);
+  function sayTarget(w) { return String(w).split('/')[0].replace(/\(.*?\)/g, ' ').replace(/\b(sb|sth|someone|something)\b/gi, ' ').replace(/^\s*to\s+/i, '').replace(/\s+/g, ' ').trim(); }
+  function lev(a, b) { var m = a.length, n = b.length, d = []; for (var i = 0; i <= m; i++) { d[i] = [i]; } for (var j = 1; j <= n; j++) d[0][j] = j; for (i = 1; i <= m; i++) for (j = 1; j <= n; j++) d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1)); return d[m][n]; }
+  function sayMatch(target, heard) {
+    var want = words(target), got = words(heard); if (!want.length || !got.length) return false;
+    var hit = want.filter(function (x) { var tol = x.length >= 8 ? 2 : x.length >= 4 ? 1 : 0; return got.some(function (y) { return y === x || lev(x, y) <= tol; }); }).length;
+    return hit / want.length >= (want.length > 2 ? 0.75 : 1);
+  }
+  function sayBox(target) {
+    return '<div class="lrr say-it"><div class="lrr-steps"><button class="lrr-b" id="rcL"><b>1</b> 🔊 Listen</button><button class="lrr-b rec" id="rcR"><b>2</b> 🎙 Say it</button></div>' +
+      '<p class="lrr-msg" id="rcM">Press <b>Say it</b> and say “' + esc(target) + '”. It turns green when it sounds right.</p>' +
+      '<div class="lrr-play" id="rcP" hidden><button class="btn ghost sm" id="rcMine">▶ My voice</button><button class="btn ghost sm" id="rcModel">🔊 Model</button></div></div>';
+  }
+  function bindSay(target, wEl) {
+    var R = $('#rcR'), M = $('#rcM'), P = $('#rcP'), au = null, S = null;
+    $('#rcL').onclick = function () { say(target); };
+    $('#rcModel').onclick = function () { if (au) au.pause(); say(target); };
+    $('#rcMine').onclick = function () { try { speechSynthesis.cancel(); if (au) au.pause(); au = new Audio(REC.url); au.play(); } catch (e) {} };
+    function idle(label) { R.classList.remove('on'); R.innerHTML = '<b>2</b> ' + (label || '🎙 Say it'); wEl.classList.remove('listening'); }
+    function finish(ok, heard, why) {
+      if (!S || S.done) return; S.done = true; var s = S;
+      clearTimeout(s.to); try { if (s.sr) s.sr.abort(); } catch (e) {} try { if (s.ac && s.ac.state !== 'closed') s.ac.close().catch(function () {}); } catch (e) {}
+      if (s.mr && s.mr.state !== 'inactive') { s.keep = true; try { s.mr.stop(); } catch (e) {} } else if (s.st) s.st.getTracks().forEach(function (x) { x.stop(); });
+      idle(ok ? '🎙 Again' : '🎙 Try again');
+      wEl.classList.toggle('good', !!ok); wEl.classList.toggle('try', !ok && !why);
+      if (ok) { M.innerHTML = '<span class="say-ok">✅ ' + esc(target) + '</span> Great pronunciation!'; try { navigator.vibrate && navigator.vibrate(40); } catch (e) {} }
+      else M.innerHTML = why || (heard ? 'I heard “<b>' + esc(heard) + '</b>”. Listen to the model and try again.' : 'I didn’t hear the word. Press <b>Try again</b> and speak a little louder.');
+    }
+    function check(txt) { if (S && !S.done && sayMatch(target, txt)) finish(true, txt); }
+    R.onclick = function () {
+      if (S && !S.done) { S.stopNow ? S.stopNow() : finish(false, S.heard); return; }
+      try { speechSynthesis.cancel(); } catch (e) {} if (au) au.pause();
+      wEl.classList.remove('good', 'try'); wEl.classList.add('listening'); P.hidden = true;
+      R.classList.add('on'); R.innerHTML = '<b>2</b> ⏹ Listening…'; M.textContent = 'Say it now…';
+      S = { done: false, heard: '' }; var s = S;
+      var blocked = SAY_IOS && SAY_TG ? 'Telegram cannot use the microphone. On the iPhone: Settings → Telegram → Microphone on, then try again.' : 'The microphone is blocked. Allow it for this page, then try again.';
+      if (!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)) { if (!SAY_SR) return finish(false, '', 'Recording is not available here. Listen and repeat aloud.'); }
+      var gum = navigator.mediaDevices && navigator.mediaDevices.getUserMedia ? navigator.mediaDevices.getUserMedia({ audio: true }) : Promise.resolve(null);
+      gum.then(function (st) {
+        if (s.done) { if (st) st.getTracks().forEach(function (x) { x.stop(); }); return; }
+        s.st = st; var ch = [];
+        if (st && window.MediaRecorder) {
+          var mr = s.mr = new MediaRecorder(st);
+          mr.ondataavailable = function (ev) { if (ev.data && ev.data.size) ch.push(ev.data); };
+          mr.onstop = function () {
+            st.getTracks().forEach(function (x) { x.stop(); });
+            var blob = ch.length ? new Blob(ch, { type: mr.mimeType || 'audio/webm' }) : null;
+            if (blob) { if (REC.url) { try { URL.revokeObjectURL(REC.url); } catch (e) {} } REC.url = URL.createObjectURL(blob); P.hidden = false; }
+            if (!s.keep && !SAY_SR) send(blob);   // iPhone / Telegram: the server writes down what was said
+          };
+          mr.start();
+        }
+        if (SAY_SR) {   // live: green the moment the word is heard
+          var r = s.sr = new SAY_SR(); r.lang = 'en-GB'; r.continuous = true; r.interimResults = true; r.maxAlternatives = 5;
+          r.onresult = function (ev) { var all = []; for (var i = 0; i < ev.results.length; i++) for (var k = 0; k < ev.results[i].length; k++) { all.push(ev.results[i][k].transcript); } s.heard = ev.results[ev.results.length - 1][0].transcript.trim(); all.forEach(check); };
+          r.onerror = function (ev) { if (ev && /not-allowed|service/.test(ev.error)) finish(false, '', blocked); };
+          r.onend = function () { if (!s.done) finish(false, s.heard); };
+          try { r.start(); } catch (e) { finish(false, ''); }
+          s.to = setTimeout(function () { finish(false, s.heard); }, 7000);
+          return;
+        }
+        if (!st) return finish(false, '', 'Recording is not available here. Listen and repeat aloud.');
+        // no live recognition: stop by itself once the student has spoken and gone quiet
+        s.stopNow = function () { clearTimeout(s.to); try { if (s.ac && s.ac.state !== 'closed') s.ac.close().catch(function () {}); } catch (e) {} if (s.mr && s.mr.state !== 'inactive') s.mr.stop(); };
+        try {
+          var AC = window.AudioContext || window.webkitAudioContext, ac = s.ac = new AC(), an = ac.createAnalyser(); an.fftSize = 1024;
+          ac.createMediaStreamSource(st).connect(an);
+          var buf = new Float32Array(an.fftSize), spoke = 0, quiet = 0, t0 = Date.now(), base = 0.012;
+          (function tick() {
+            if (s.done || ac.state === 'closed' || !s.mr || s.mr.state === 'inactive') return;
+            an.getFloatTimeDomainData(buf); var e = 0; for (var i = 0; i < buf.length; i++) e += buf[i] * buf[i]; e = Math.sqrt(e / buf.length);
+            if (Date.now() - t0 < 300) base = Math.max(base, e * 1.8);
+            if (e > Math.max(0.02, base)) { spoke += 1; quiet = 0; } else if (spoke > 4) quiet += 1;
+            if ((spoke > 4 && quiet > 22) || Date.now() - t0 > 6000) return s.stopNow();
+            requestAnimationFrame(tick);
+          })();
+        } catch (e) { s.to = setTimeout(s.stopNow, 3500); }
+        s.to = setTimeout(s.stopNow, 6500);
+      }).catch(function () { finish(false, '', blocked); });
+      function send(blob) {
+        if (s.done) return;
+        if (!blob || blob.size < 800) return finish(false, '');
+        M.textContent = 'Checking…';
+        fetch('/api/stt', { method: 'POST', headers: { 'Content-Type': blob.type || 'audio/mp4' }, body: blob })
+          .then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); })
+          .then(function (d) { var txt = String(d.text || '').trim(); s.heard = txt; if (sayMatch(target, txt)) finish(true, txt); else finish(false, txt); })
+          .catch(function () { finish(false, '', 'I couldn’t check the recording just now. Play <b>My voice</b> and compare it with the model.'); });
+      }
+    };
+  }
   function drawLearn() {
     var w = L.l.words[L.card], v = view(), model = w.w + (w.e ? '. ' + w.e : ''), ruTxt = w.ru ? w.ru + (w.rd ? '\n' + w.rd : '') : '';
     recStop();
@@ -519,10 +614,10 @@
       (w.e ? '<div class="e">“' + esc(w.e) + '” <button class="say sm" id="sye" aria-label="Listen to the sentence">🔊</button></div>' : '') +
       (w.c ? '<div class="patt"><b>' + esc(w.c) + '</b>' + (w.ce ? '<span>' + esc(w.ce) + '</span>' : '') + '</div>' : '') +
       (ruTxt ? (ruLevel() || !w.ru ? ruChip(ruTxt) : '<span class="ru">🇷🇺 ' + esc(w.ru) + '</span>') : '') +
-      (L.teach || w.pic ? '' : recBox(model, 12)) + '</div>' +
+      (L.teach || w.pic ? '' : sayBox(sayTarget(w.w))) + '</div>' +
       '<div class="dots">' + L.l.words.map(function (_, k) { return '<i class="' + (k === L.card ? 'on' : '') + '"></i>'; }).join('') + '</div>' +
       '<div style="display:flex;gap:10px;justify-content:center"><button class="btn ghost" id="pv"' + (L.card ? '' : ' disabled') + '>‹</button><button class="btn" id="nx">' + (L.card < L.l.words.length - 1 ? t('next') + ' ›' : 'Practise →') + '</button></div></div>';
-    bindTop(); bindRu(); bindRec(model); say(w.w);
+    bindTop(); bindRu(); if ($('.say-it')) bindSay(sayTarget(w.w), $('.learn-card .w')); say(w.w);
     $('#sy').onclick = function () { say(w.w); };
     if ($('#sye')) $('#sye').onclick = function () { say(w.e); };
     $('#pv').onclick = function () { recStop(); L.card--; drawStep(); };
