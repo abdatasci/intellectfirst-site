@@ -345,7 +345,7 @@
         (other.length ? '<div class="sec"><h2>Word lists for young learners and Cambridge exams</h2></div><div class="grid">' + other.map(itemCard).join('') + '</div>' : '');
       return;
     }
-    if (c.ef && (!EF[c.id] || Date.now() - EF[c.id].at > 60000)) { var here = location.hash, had = !!EF[c.id]; efLoad(c.id).then(function () { if (location.hash === here && !had) vWords(cid, uid, mode); }); if (!had) { view().innerHTML = '<p style="text-align:center;margin-top:40px">Loading…</p>'; return; } }
+    if (c.ef && (!EF[c.id] || Date.now() - EF[c.id].at > 60000)) { var here = location.hash, had = !!(EF[c.id] && EF[c.id].at); efLoad(c.id).then(function () { if (location.hash === here && !had) vWords(cid, uid, mode); }); if (!had) { view().innerHTML = '<p style="text-align:center;margin-top:40px">Loading…</p>'; return; } }
     var ui = uid ? c.units.findIndex(function (x) { return x.id === uid; }) : -1, u = c.units[ui];
     if (!u) {
       view().innerHTML = '<div class="page-h"><div><p class="h-eyebrow"><a href="#/vocab">← Vocabulary</a></p><h1>' + esc(c.title) + '</h1><p>Choose a unit. Locked sets open with the unit itself.</p></div></div><div class="vsets">' + c.units.map(function (x, i) {

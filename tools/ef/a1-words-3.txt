@@ -1,0 +1,255 @@
+# English Files · Elementary (A1), units 9A to 12B and Practical English: original example sentences and patterns for the flashcards. Written by IF Academy.
+@9A
+bread | There is some bread on the table. | some bread | I need some bread.
+butter | I have butter on my toast. | some butter | There is some butter in the fridge.
+cereal | I have cereal for breakfast. | some cereal | Do you want some cereal?
+cheese | Is there any cheese? | some / any cheese | There isn't any cheese.
+eggs | There are some eggs in the fridge. | some eggs | I need some eggs.
+jam | I like bread and jam. | some jam | There is some jam.
+orange juice | I drink orange juice in the morning. | some orange juice | Would you like some orange juice?
+sugar | There isn't any sugar. | some / any sugar | I don't want any sugar.
+toast | I have toast and tea. | some toast | I'd like some toast.
+fish | We have fish on Friday. | some fish | There is some fish for dinner.
+meat | She doesn't eat meat. | some meat | We need some meat.
+pasta | I cook pasta twice a week. | some pasta | There is some pasta.
+rice | There is some rice in the cupboard. | some rice | I'd like some rice.
+seafood | I don't like seafood. | some seafood | They have some seafood.
+carrots | There are some carrots in the bag. | some carrots | We need some carrots.
+chips | The children love chips. | some chips | Can I have some chips?
+a lettuce | There is a lettuce in the fridge. | a lettuce | I need a lettuce.
+mushrooms | Are there any mushrooms? | some / any mushrooms | There aren't any mushrooms.
+onions | We need some onions. | some onions | There are some onions.
+peas | I don't like peas. | some peas | There are some peas.
+tomatoes | There are some tomatoes on the table. | some tomatoes | I need some tomatoes.
+strawberries | I love strawberries. | some strawberries | We have some strawberries.
+a pineapple | There is a pineapple in the kitchen. | a pineapple | I bought a pineapple.
+biscuits | Are there any biscuits? | some / any biscuits | There aren't any biscuits.
+crisps | I eat crisps at parties. | some crisps | Do you want some crisps?
+nuts | I have some nuts in my bag. | some nuts | I'd like some nuts.
+sweets | The children want some sweets. | some sweets | Don't eat any sweets.
+@9B
+a bottle | I drink a bottle of water every day. | a bottle of + noun | I need a bottle of juice.
+a box | There is a box of chocolates. | a box of + noun | I bought a box of tea.
+a can | How many cans of cola do you drink? | a can of + noun | I'd like a can of lemonade.
+a carton | We need a carton of milk. | a carton of + noun | There is a carton of juice.
+a jar | There is a jar of jam. | a jar of + noun | I bought a jar of honey.
+a packet | I eat a packet of crisps. | a packet of + noun | I need a packet of biscuits.
+a tin | We have a tin of tomatoes. | a tin of + noun | There is a tin of fish.
+salt | How much salt do you eat? | a little salt | I use a little salt.
+sugar | How much sugar is in it? | a lot of sugar | There is a lot of sugar.
+a lot of | I eat a lot of fruit. | a lot of + noun | She drinks a lot of water.
+a little | I have a little sugar in my tea. | a little + noun | I eat a little bread.
+none | How much salt do you eat? None. | None. | How many sweets do you eat? None.
+How much…? | How much water do you drink? | How much + uncountable noun | How much milk do you need?
+How many…? | How many eggs do you eat? | How many + plural noun | How many apples are there?
+healthy | Fruit is healthy. | healthy + food | I eat healthy food.
+unhealthy | Too much salt is unhealthy. | unhealthy + food | Crisps are unhealthy.
+fast food | I don't eat a lot of fast food. | eat fast food | How much fast food do you eat?
+olive oil | I cook with olive oil. | a little olive oil | Use a little olive oil.
+mineral water | I drink a lot of mineral water. | a bottle of mineral water | I'd like a bottle of mineral water.
+@9C
+a hundred and five | The room number is a hundred and five. | a hundred and + number | There are a hundred and five students.
+two hundred | The book has two hundred pages. | two hundred + noun | It costs two hundred dollars.
+a thousand | The town has a thousand people. | a thousand + noun | I have a thousand photos.
+one thousand five hundred | The phone costs one thousand five hundred dollars. | number + dollars | It costs one thousand five hundred.
+twenty-five thousand | The car costs twenty-five thousand dollars. | number + thousand | There are twenty-five thousand people.
+a hundred thousand | The city has a hundred thousand people. | a hundred thousand + noun | The house costs a hundred thousand.
+a million | A million people live here. | a million + noun | He has a million dollars.
+two million | Two million people live in the city. | two million + noun | The film cost two million.
+bigger | Russia is bigger than China. | bigger than + noun | My flat is bigger than yours.
+smaller | A cat is smaller than a dog. | smaller than + noun | My town is smaller than Almaty.
+hotter | July is hotter than May. | hotter than + noun | Today is hotter than yesterday.
+colder | January is colder than March. | colder than + noun | Astana is colder than Almaty.
+more expensive | A car is more expensive than a bike. | more expensive than + noun | Gold is more expensive than silver.
+better | This book is better than the film. | better than + noun | My phone is better than yours.
+worse | The weather is worse than yesterday. | worse than + noun | This café is worse than that one.
+further | The airport is further than the station. | further than + noun | My school is further than yours.
+a quiz | We did a quiz in class. | do a quiz | Let's do a quiz.
+a question | The question is easier than the last one. | ask a question | Can I ask a question?
+an answer | Your answer is better than mine. | the right / wrong answer | That is the right answer.
+a prize | The prize is bigger this year. | win a prize | I won a prize.
+@10A
+a chemist's | The chemist's is next to the bank. | at the chemist's | I buy medicine at the chemist's.
+a church | It is the oldest church in the city. | a church | There is a church in the square.
+a department store | It is the biggest department store in town. | a department store | I work in a department store.
+a hospital | It is the newest hospital in the country. | in hospital | My uncle is in hospital.
+a market | It is the cheapest market in the city. | at the market | I buy fruit at the market.
+a park | It is the most beautiful park. | in the park | We walk in the park.
+a police station | The police station is near the bank. | at the police station | He is at the police station.
+a post office | The post office is the oldest building. | at the post office | I buy stamps at the post office.
+a shopping centre | It is the biggest shopping centre. | at the shopping centre | We meet at the shopping centre.
+a supermarket | It is the cheapest supermarket. | at the supermarket | I shop at the supermarket.
+a town hall | The town hall is in the main square. | the town hall | We met at the town hall.
+an art gallery | It is the best art gallery in the country. | visit an art gallery | We visited an art gallery.
+a castle | It is the oldest castle in Europe. | visit a castle | We visited a castle.
+a museum | It is the most interesting museum. | visit a museum | I visited a museum.
+a theatre | It is the most famous theatre. | go to the theatre | We go to the theatre.
+a zoo | It is the biggest zoo in the country. | go to the zoo | The children go to the zoo.
+a bridge | It is the longest bridge in the world. | a bridge | We walked over a bridge.
+a river | It is the longest river in Europe. | a river | The city is on a river.
+a square | It is the most beautiful square. | in the square | The café is in the square.
+a bus station | The bus station is the busiest place. | at the bus station | I am at the bus station.
+a car park | It is the biggest car park. | in the car park | My car is in the car park.
+a railway station | It is the oldest railway station. | at the railway station | We met at the railway station.
+a mosque | It is the most beautiful mosque. | a mosque | There is a mosque near my house.
+the biggest | It is the biggest city in the country. | the + -est + noun | It is the tallest building.
+@10B
+rent a flat | We are going to rent a flat. | rent + noun | I am going to rent a car.
+stay in a hotel | I am going to stay in a hotel. | stay in + place | We are going to stay in a hostel.
+go sightseeing | We are going to go sightseeing. | go sightseeing | I am going to go sightseeing.
+take a tour | We are going to take a tour of the city. | take a tour of + place | I am going to take a tour of the museum.
+see the sights | We are going to see the sights. | see the sights | I want to see the sights.
+eat local food | I am going to eat local food. | eat + food | We are going to eat fish.
+buy souvenirs | She is going to buy souvenirs. | buy + noun | I am going to buy a map.
+go on a boat trip | We are going to go on a boat trip. | go on a + trip | I am going to go on a bus trip.
+a journey | It is going to be a long journey. | a long journey | It was a long journey.
+a guidebook | I am going to buy a guidebook. | a guidebook | I have a guidebook.
+a tourist | I am going to be a tourist in Rome. | be a tourist | I am a tourist here.
+next week | I am going to travel next week. | next + week / month / year | She is going to start next month.
+tonight | We are going to eat out tonight. | tonight | I am going to study tonight.
+this weekend | I am going to relax this weekend. | this weekend | We are going to travel this weekend.
+next summer | We are going to visit Italy next summer. | next summer | I am going to work next summer.
+the day after tomorrow | I am going to leave the day after tomorrow. | the day after tomorrow | She is going to arrive the day after tomorrow.
+an adventure | It is going to be an adventure. | an adventure | I love an adventure.
+a plan | I have a plan for the holiday. | have a plan | Do you have a plan?
+@10C
+a pack of cards | I have a pack of cards. | a pack of cards | Bring a pack of cards.
+shuffle | Shuffle the cards, please. | shuffle + the cards | He is going to shuffle the cards.
+spades | The card is the five of spades. | number + of spades | It is the two of spades.
+diamonds | The card is the ten of diamonds. | number + of diamonds | It is the six of diamonds.
+hearts | The card is the queen of hearts. | number + of hearts | It is the three of hearts.
+clubs | The card is the four of clubs. | number + of clubs | It is the nine of clubs.
+the jack | The jack is a good card. | the jack of + suit | It is the jack of clubs.
+the king | The king is a strong card. | the king of + suit | It is the king of hearts.
+the queen | The queen means love. | the queen of + suit | It is the queen of diamonds.
+a joker | There is a joker in the pack. | a joker | I have a joker.
+the ace | The ace is the best card. | the ace of + suit | It is the ace of spades.
+a fortune teller | The fortune teller looked at the cards. | a fortune teller | She is a fortune teller.
+fall in love | You are going to fall in love. | fall in love | He is going to fall in love.
+future | You are going to have a good future. | in the future | I want to travel in the future.
+lucky | You are going to be lucky. | be lucky | I am lucky.
+rich | You are going to be rich. | be rich | He is not rich.
+travel | You are going to travel a lot. | travel + adverb | She is going to travel abroad.
+@11A
+quickly | People eat quickly here. | verb + quickly | He walks quickly.
+slowly | Please speak slowly. | verb + slowly | She drives slowly.
+well | She speaks English well. | verb + well | He cooks well.
+badly | I sing badly. | verb + badly | He drives badly.
+loudly | They talk loudly. | verb + loudly | Don't speak loudly.
+quietly | People speak quietly on the train. | verb + quietly | Please talk quietly.
+carefully | He drives carefully. | verb + carefully | Listen carefully.
+safely | They drive safely. | verb + safely | Please drive safely.
+hard | People work hard here. | work hard | She works hard.
+fast | She runs fast. | verb + fast | He drives fast.
+openly | People talk openly about money. | talk openly | They talk openly.
+informally | People dress informally at work. | dress informally | We dress informally.
+warmly | They welcomed us warmly. | verb + warmly | She smiled warmly.
+incredibly | The trains are incredibly fast. | incredibly + adjective | It is incredibly cold.
+really | The food is really good. | really + adjective | I am really tired.
+a tip | People leave a tip in restaurants. | leave a tip | I left a tip.
+polite | People are very polite. | be polite | Please be polite.
+rude | It is rude to eat quickly. | It is rude to + verb | It is rude to talk loudly.
+manners | The children have good manners. | good manners | He has good manners.
+@11B
+decide | I decided to learn Spanish. | decide to + verb | We decided to go.
+forget | Don't forget to call me. | forget to + verb | I forgot to buy milk.
+hope | I hope to visit Japan. | hope to + verb | She hopes to pass.
+learn | I want to learn to swim. | learn to + verb | He is learning to cook.
+need | I need to save money. | need to + verb | You need to rest.
+plan | I plan to travel next year. | plan to + verb | We plan to move.
+promise | I promise to help. | promise to + verb | She promised to come.
+remember | Remember to bring a coat. | remember to + verb | I remembered to call.
+start | I want to start to run. | start to + verb | It started to rain.
+try | I try to walk every day. | try to + verb | Try to relax.
+want | I want to see the world. | want to + verb | She wants to dance.
+would like | I would like to learn the guitar. | would like to + verb | I would like to travel.
+a bucket list | I have a bucket list of ten things. | on my bucket list | It is on my bucket list.
+learn to drive | I want to learn to drive. | learn to + verb | She wants to learn to drive.
+run a marathon | I hope to run a marathon. | run a marathon | He wants to run a marathon.
+see the Northern Lights | I would like to see the Northern Lights. | see + noun | I want to see the sea.
+climb a mountain | I plan to climb a mountain. | climb + noun | We want to climb a mountain.
+write a novel | She wants to write a novel. | write + noun | I would like to write a book.
+@11C
+download an app | I want to download an app. | download + noun | Download the app.
+send an email | I send an email every morning. | send + noun | Send a message.
+take a photo | I take a photo of my lunch. | take a photo of + noun | Take a photo of us.
+make a video | I make a video for my friends. | make + noun | She makes videos.
+get directions | I get directions on my phone. | get directions to + place | I got directions to the hotel.
+read a book | I read a book on my phone. | read + noun | She reads the news.
+count your steps | The app can count your steps. | count + noun | I count my steps.
+listen to a playlist | I listen to a playlist at work. | listen to + noun | She listens to music.
+book a flight | I book a flight on the internet. | book + noun | Book a hotel.
+read the news headlines | I read the news headlines at breakfast. | read the news | He reads the news.
+play a game | I play a game on the bus. | play + noun | She plays games.
+share a photo | I share a photo with my family. | share + noun + with | Share it with me.
+videocall a friend | I videocall a friend in Canada. | videocall + person | I videocall my mother.
+stream a video | I stream a video in the evening. | stream + noun | We stream films.
+text a friend | I text a friend every day. | text + person | Text me later.
+a screen | The screen is very big. | a screen | My phone has a small screen.
+a second-hand phone | I bought a second-hand phone. | a second-hand + noun | It is a second-hand car.
+a landline | We don't have a landline at home. | a landline | My grandmother has a landline.
+almost never | I almost never use the phone at dinner. | almost never + verb | She almost never calls.
+@12A
+been | I have been to London. | have been to + place | She has been to Paris.
+seen | I have seen that film. | have seen + noun | Have you seen it?
+read | I have read the book. | have read + noun | She has read it twice.
+written | She has written three books. | have written + noun | I have written a letter.
+eaten | I have never eaten sushi. | have eaten + noun | Have you eaten lunch?
+drunk | I have drunk two cups of tea. | have drunk + noun | She has drunk her coffee.
+done | I have done my homework. | have done + noun | Have you done it?
+gone | She has gone home. | have gone + place | He has gone to work.
+made | I have made a cake. | have made + noun | She has made dinner.
+heard | I have heard that song. | have heard + noun | Have you heard the news?
+bought | I have bought a ticket. | have bought + noun | She has bought a book.
+met | I have met a famous actor. | have met + person | Have you met her?
+won | We have won the match. | have won + noun | She has won a prize.
+lost | I have lost my keys. | have lost + noun | He has lost his phone.
+flown | I have never flown in a plane. | have flown | Have you ever flown?
+driven | I have never driven a car. | have driven + noun | She has driven a bus.
+ridden | I have ridden a horse. | have ridden + noun | Have you ever ridden a camel?
+a classic | The film is a classic. | a classic | The book is a classic.
+ever | Have you ever seen this film? | Have you ever + past participle? | Have you ever been to Rome?
+never | I have never read it. | have never + past participle | She has never seen it.
+@12B
+become / became / become | She has become a doctor. | become + noun | He became a teacher.
+begin / began / begun | The film has begun. | begin + at + time | It began at seven.
+break / broke / broken | I have broken a glass. | break + noun | He broke a plate.
+choose / chose / chosen | Have you chosen your food? | choose + noun | I chose the fish.
+forget / forgot / forgotten | I have forgotten my wallet. | forget + noun | I forgot her name.
+give / gave / given | The waiter has given us the menu. | give + person + noun | He gave me the bill.
+know / knew / known | I have known him for a year. | know + person | I knew the answer.
+lose / lost / lost | I have lost my ticket. | lose + noun | She lost her bag.
+sing / sang / sung | She has sung in a restaurant. | sing + noun | He sang a song.
+speak / spoke / spoken | Have you spoken to the waiter? | speak to + person | I spoke to her.
+swim / swam / swum | I have swum in the sea. | swim in + place | We swam in a lake.
+take / took / taken | He has taken our order. | take + noun | She took my coat.
+wear / wore / worn | I have never worn a suit. | wear + noun | She wore a dress.
+write / wrote / written | I have written a review. | write + noun | He wrote a letter.
+a reservation | I have a reservation for two. | have a reservation | Do you have a reservation?
+the bill | Can we have the bill, please? | ask for the bill | I asked for the bill.
+a starter | I had soup for a starter. | for a starter | I'd like salad for a starter.
+a main course | I had fish for my main course. | for my main course | I'd like chicken for my main course.
+a dessert | I had ice cream for dessert. | for dessert | What would you like for dessert?
+@PE
+a single room | I'd like a single room, please. | I'd like + noun | I'd like a room for two nights.
+a double room | We have a double room for you. | a double room | I'd like a double room.
+reception | Please ask at reception. | at reception | I left my key at reception.
+a lift | The lift is next to reception. | take the lift | Take the lift to the second floor.
+check in | You can check in at two o'clock. | check in + at + time | We checked in at three.
+a latte | Can I have a latte, please? | Can I have + noun? | Can I have a tea?
+a cappuccino | A cappuccino and a sandwich, please. | a cappuccino | I'd like a cappuccino.
+Anything else? | A coffee, please. Anything else? | Anything else? | Here is your tea. Anything else?
+a shirt | I'd like a white shirt. | a + colour + shirt | He has a blue shirt.
+a dress | This dress is very nice. | a dress | She has a new dress.
+a jacket | How much is this jacket? | How much is + noun? | How much is this coat?
+jeans | These jeans are too big. | a pair of jeans | I need a pair of jeans.
+a skirt | Do you have this skirt in black? | Do you have this in + colour? | Do you have this in red?
+shoes | These shoes are too small. | a pair of shoes | I need a pair of shoes.
+trainers | I'd like these trainers, please. | a pair of trainers | I bought a pair of trainers.
+a sweater | This sweater is warm. | a sweater | I need a sweater.
+a T-shirt | I'd like a T-shirt in a medium. | a T-shirt | He has a red T-shirt.
+trousers | These trousers are too long. | a pair of trousers | I need a pair of trousers.
+a coat | It is cold. I need a coat. | a coat | She has a long coat.
+a size | What size are you? | What size? | What size is it?
+the changing rooms | The changing rooms are over there. | the changing rooms | Where are the changing rooms?
+Can I try it on? | I like this jacket. Can I try it on? | Can I + verb? | Can I pay by card?
