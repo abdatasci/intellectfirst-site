@@ -1,5 +1,5 @@
 /* IF Academy study report: draws one student's activity in the IF App (from /api/school … activity summary).
-   Used on the staff's student page (/me/#/student/<id>) and on the parents' page (/report/). English and Russian. */
+   Used on the staff's student page (/me/#/student/<id>) and on the parents' page (/report/). English, Russian and Kazakh. */
 (function () {
   var T = {
     en: { last: 'Last active', never: 'Not yet', today: 'Today', yesterday: 'Yesterday', week: 'This week', mins: 'min', days: 'days', onDays: 'on {n} of 7 days', done: 'Finished this week', items: 'lessons and games', streak: 'Streak', xp: 'XP in total',
@@ -9,7 +9,11 @@
     ru: { last: 'Последняя активность', never: 'Пока нет', today: 'Сегодня', yesterday: 'Вчера', week: 'За неделю', mins: 'мин', days: 'дн.', onDays: 'в {n} из 7 дней', done: 'Выполнено за неделю', items: 'уроков и игр', streak: 'Дней подряд', xp: 'Всего XP',
       chart: 'Минут в день, последние 4 недели', hours: 'Время дня', usual: 'Чаще всего занимается около {h}.', noTime: 'Время занятий пока не записано.', kinds: 'Чем занимался (4 недели)', courses: 'Прогресс по курсам', course: 'Курс', lessons: 'Уроки', avg: 'Средний балл', lastDone: 'Последний',
       recent: 'Последние занятия', none: 'Пока ничего не записано. Активность записывается, когда ученик вошёл в IF App под своим аккаунтом.', since: 'Записывается с {d}.',
-      k: { vocab: 'Слова', grammar: 'Грамматика', reading: 'Чтение', listening: 'Аудирование', article: 'Статья дня', game: 'Игры', test: 'Тесты', lesson: 'Уроки', speaking: 'Говорение', writing: 'Письмо', other: 'Другое' } }
+      k: { vocab: 'Слова', grammar: 'Грамматика', reading: 'Чтение', listening: 'Аудирование', article: 'Статья дня', game: 'Игры', test: 'Тесты', lesson: 'Уроки', speaking: 'Говорение', writing: 'Письмо', other: 'Другое' } },
+    kk: { last: 'Соңғы белсенділік', never: 'Әлі жоқ', today: 'Бүгін', yesterday: 'Кеше', week: 'Осы аптада', mins: 'мин', days: 'күн', onDays: '7 күннің {n} күнінде', done: 'Аптада орындалды', items: 'сабақ пен ойын', streak: 'Қатарынан күн', xp: 'Барлық XP',
+      chart: 'Күніне минут, соңғы 4 апта', hours: 'Тәулік уақыты', usual: 'Көбіне сағат {h} шамасында оқиды.', noTime: 'Оқу уақыты әлі жазылмаған.', kinds: 'Не істеді (4 апта)', courses: 'Курстар бойынша үлгерім', course: 'Курс', lessons: 'Сабақтар', avg: 'Орташа балл', lastDone: 'Соңғысы',
+      recent: 'Соңғы әрекеттер', none: 'Әзірге ештеңе жазылмаған. Оқушы IF App-қа өз аккаунтымен кірген кезде белсенділік жазылады.', since: '{d} бастап жазылып келеді.',
+      k: { vocab: 'Сөздер', grammar: 'Грамматика', reading: 'Оқылым', listening: 'Тыңдалым', article: 'Күн мақаласы', game: 'Ойындар', test: 'Тесттер', lesson: 'Сабақтар', speaking: 'Айтылым', writing: 'Жазылым', other: 'Басқа' } }
   };
   var ICON = { vocab: '🔤', grammar: '🧩', reading: '📖', listening: '🎧', article: '📰', game: '🎮', test: '📝', lesson: '📘', speaking: '🗣️', writing: '✍️', other: '•' };
   var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
@@ -34,7 +38,7 @@
     document.head.appendChild(s);
   }
   function html(a, lang) {
-    css(); var L = T[lang] || T.en, loc = lang === 'ru' ? 'ru-RU' : 'en-GB';
+    css(); var L = T[lang] || T.en, loc = lang === 'ru' ? 'ru-RU' : lang === 'kk' ? 'kk-KZ' : 'en-GB';
     if (!a || (!a.since && !a.courses.length && !a.xp)) return '<div class="av"><p class="av-note">' + L.none + '</p></div>';
     var dfmt = function (iso, o) { return new Date(iso + 'T00:00:00Z').toLocaleDateString(loc, o || { day: 'numeric', month: 'short', timeZone: 'UTC' }); };
     var todayIso = a.days[a.days.length - 1].date, yIso = a.days[a.days.length - 2].date;

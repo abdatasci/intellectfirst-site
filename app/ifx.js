@@ -324,6 +324,7 @@
         (lvPct != null ? '<div class="lvbar"><div class="row"><span>' + esc(P.level) + (nextLv ? ' → ' + nextLv : '') + '</span><span>' + lvPct + '%</span></div><div class="bar"><i style="width:' + lvPct + '%"></i></div></div>' : '') + '</div>' +
       '<div class="goal"><div class="ring" style="--p:' + goalPct + '"><b>' + (S.today.d === day() ? S.today.xp : 0) + '<small>/ ' + GOAL_XP + ' XP</small></b></div><div><h3>' + esc(t('dailyGoal')) + '</h3><p style="margin:4px 0 0;color:var(--soft)">🔥 ' + S.streak + ' ' + esc(t('streak')) + ' · ⚡ ' + S.xp + ' XP</p>' +
         '<p style="margin:8px 0 0;font-size:14px;color:var(--soft)">One lesson ≈ 12–15 XP. Two lessons a day keeps your streak alive.</p></div></div></div>' +
+      (a.signed && !S.actSeen ? '<div class="artnote" id="actNote" style="background:var(--card);border:2px solid var(--line);border-radius:16px;padding:12px 14px;margin:12px 0">📊 IF Academy now keeps a study report for your account: your time in the IF App and what you finish. Your teachers can see it, and the school can share it with your parents. You can open it from your profile. <a href="/privacy/">Privacy</a> · <a href="#" id="actOk">OK, got it</a></div>' : '') +
       artHomeHTML() +
       '<div class="sec"><h2>Today\'s three steps</h2></div><div class="steps">' +
         step(1, main && nx ? { href: '#/lesson/' + main.id + '/' + nx.u.id + '/' + nx.l.id, t: nx.l.title, d: main.title + ' · ' + TYPE[nx.l.type] } : P.voc ? { href: '#/play/' + P.voc.id, t: P.voc.t, d: 'Next unit' } : null, 'Lesson') +
@@ -335,6 +336,7 @@
     if (!S.teacher && addOns().length) html = '<div class="goalbar">✨ <span>Ready for more?</span>' + addOnHTML() + '</div>' + html;
     view().innerHTML = html;
     $$('[data-a]').forEach(function (b) { b.onclick = function () { S.active = b.dataset.a; save(); vHome(); }; });
+    var ok = $('#actOk'); if (ok) ok.onclick = function (e) { e.preventDefault(); S.actSeen = 1; save(); var n = $('#actNote'); if (n) n.remove(); };
   }
   function step(n, x, label) {
     if (!x) return '';
@@ -754,6 +756,7 @@
     setNav('more');
     view().innerHTML = '<div class="page-h"><div><h1>More</h1></div></div><div class="grid">' + IFX_DIR.filter(function (x) { return x.s === 'more' || x.s === 'kids'; }).map(itemCard).join('') +
       '<a class="card" href="#/onboard"><span class="ic">🎯</span><h3>My courses and levels</h3><p>' + esc(mine().map(function (k) { return SNAME[k]; }).join(', ') || 'Not chosen yet') + '</p></a>' +
+      '<a class="card" href="/privacy/"><span class="ic">🔒</span><h3>Privacy</h3><p>What IF Academy keeps about your study, and who can see it.</p></a>' +
       '<a class="card" href="https://t.me/intellectfirst" target="_blank" rel="noopener"><span class="ic">📣</span><h3>IF Academy on Telegram</h3><p>Join the channel: news, daily English and school announcements.</p></a>' +
       '<a class="card" href="/me/#/upgrade"><span class="ic">⭐</span><h3>Plans</h3><p>Full access for students — and the Teacher plan for classes.</p></a></div>';
   }
