@@ -6,7 +6,7 @@
 //                skip: [teacherId],                               // own pay arrangement (not calculated)
 //                fixed: { manager: { amount, deduct, note }, smm: { amount } },
 //                director: { teacherId, base, comp, ge: { big, small }, ielts: { big, small } } }   // the director's salary (only he sees it):
-//                a group's rate is paid in full only when all its lessons in the pay period were conducted, otherwise for the share conducted
+//                a group's rate is paid in full when all its lessons were conducted; every lesson missed takes off the rate ÷ 8 (90-minute lessons)
 // Rules (shown to the teachers on their hours page):
 //  • A lesson is paid when it took place: the teacher clocked in (or it is from before clock-in started). Covers are paid
 //    to the teacher who covered. Missed lessons (no clock-in) and lessons cancelled on time or by the teacher are not paid.
@@ -18,7 +18,7 @@
 //    for every lesson taught in the pay period — 12 lessons = half the tuition, however they fall across months.
 import { getStore } from '@netlify/blobs';
 import { lessonsOn, loadLog, saveLog, withEntry, since, today } from './lessons.mjs';
-import { doc, loadChanges, hidePrivate } from './bot-core.mjs';
+import { doc, loadChanges, hidePrivate, parseSchedule } from './bot-core.mjs';
 import { PACKAGES } from './prices.mjs';
 
 const S = () => getStore({ name: 'school', consistency: 'strong' });
@@ -160,19 +160,23 @@ export async function payroll(month, only = null, now = new Date()) {
     // his groups: the classes he is the teacher of, and any other class he taught this period that was not a cover
     const cls = [...new Set([...classes.filter(c => c.teacherId === DR.teacherId).map(c => c.id), ...T.items.filter(x => x.kind !== 'extra' && !x.cover).map(idOf)])].map(id => classes.find(c => c.id === id)).filter(Boolean);
     // lessons of a group in the whole pay period (the timetable, whatever was cancelled or moved since) and those he conducted
-    const plannedOf = c => { let n = 0; for (let t = Date.parse(from + 'T00:00:00Z'); t <= Date.parse(to + 'T00:00:00Z'); t += 864e5) n += lessonsOn([c], new Date(t).toISOString().slice(0, 10)).length; return n; };
+    const plannedOf = c => { let n = 0, past = 0, len = 0; for (let t = Date.parse(from + 'T00:00:00Z'); t <= Date.parse(to + 'T00:00:00Z'); t += 864e5) for (const l of lessonsOn([c], new Date(t).toISOString().slice(0, 10))) { n++; if (Date.parse(l.endAt) <= now.getTime()) past++; len = Math.round((Date.parse(l.endAt) - Date.parse(l.at)) / 60000); } return { n, past, len }; };
     const groups = cls.map(c => {
       const gid = c.group || String(c.id).replace(/^c-/, '');
       const n = Object.values(D.students).filter(st => st && !/left|withdrawn|finished|frozen/i.test(st.st || '') && (st.g === gid || (st.gs || []).includes(gid))).length;
       const ielts = /ielts/i.test(c.label || ''), R = (ielts ? DR.ielts : DR.ge) || {};
       const amount = n >= 5 ? (R.big || 0) : n >= 2 ? (R.small || 0) : 0;
       // the group's rate is paid in full only when every lesson of the pay period was conducted; otherwise for the share conducted
-      const planned = plannedOf(c), done = Math.min(planned, T.items.filter(x => idOf(x) === c.id && (x.kind === 'taught' || x.kind === 'nobody')).length);
-      const earned = planned ? Math.round(amount * done / planned) : 0;
-      return { classId: c.id, label: c.label, students: n, kind: ielts ? 'IELTS' : 'General English', size: n >= 5 ? '5–6' : n >= 2 ? (ielts ? '3–4' : '2–4') : 'individual', amount, planned, done, earned, full: !!planned && done >= planned };
+      // He gets the group's full rate when all its lessons are conducted. Each lesson that was due and not conducted takes off
+      // one lesson's share: the rate ÷ 8 for 90-minute lessons (8 a month), otherwise the rate ÷ (lessons a week × 4).
+      const pl = plannedOf(c), planned = pl.n, taught = T.items.filter(x => idOf(x) === c.id && (x.kind === 'taught' || x.kind === 'nobody')).length;
+      const per = pl.len === 90 ? 8 : Math.max(1, (parseSchedule(c.schedule) || []).length * 4 || 8);
+      const missed = Math.max(0, pl.past - taught), done = Math.min(planned, taught);
+      const earned = planned ? Math.max(0, Math.round(amount - missed * amount / per)) : 0;
+      return { classId: c.id, label: c.label, students: n, kind: ielts ? 'IELTS' : 'General English', size: n >= 5 ? '5–6' : n >= 2 ? (ielts ? '3–4' : '2–4') : 'individual', amount, planned, done, missed, per, cut: amount - earned, earned, full: !!planned && !missed };
     }).filter(g => g.size !== 'individual' && g.planned);
     const full = groups.reduce((a, g) => a + g.amount, 0), teaching = groups.reduce((a, g) => a + g.earned, 0), base = +DR.base || 0, comp = +DR.comp || 0;
-    T.salary = { groups, full, teaching, base, comp, compMax: comp, total: Math.max(base, teaching) + comp, terms: { base, comp, ge: DR.ge || {}, ielts: DR.ielts || {} }, rule: `Groups (General English: 5–6 students ${fmt((DR.ge || {}).big || 0)} ₸, 2–4 students ${fmt((DR.ge || {}).small || 0)} ₸${DR.ielts ? `; IELTS: 5–6 ${fmt(DR.ielts.big || 0)} ₸, 3–4 ${fmt(DR.ielts.small || 0)} ₸` : ''}), each paid in full only when all its lessons in the pay period are conducted; at least ${fmt(base)} ₸; plus director's compensation ${fmt(comp)} ₸` };
+    T.salary = { groups, full, teaching, base, comp, compMax: comp, total: Math.max(base, teaching) + comp, terms: { base, comp, ge: DR.ge || {}, ielts: DR.ielts || {} }, rule: `Groups (General English: 5–6 students ${fmt((DR.ge || {}).big || 0)} ₸, 2–4 students ${fmt((DR.ge || {}).small || 0)} ₸${DR.ielts ? `; IELTS: 5–6 ${fmt(DR.ielts.big || 0)} ₸, 3–4 ${fmt(DR.ielts.small || 0)} ₸` : ''}), each paid in full when all its lessons are conducted, less one lesson's share (the rate ÷ 8 for 90-minute lessons) for every lesson missed; at least ${fmt(base)} ₸; plus director's compensation ${fmt(comp)} ₸` };
     T.total = T.salary.total; T.rule = T.salary.rule;
   }
   let fixed = [];
