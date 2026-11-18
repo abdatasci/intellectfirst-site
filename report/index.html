@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Study report · IF Academy</title>
+<meta name="robots" content="noindex,nofollow">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#0F2342">
+<link rel="icon" href="/brand/favicon-64.png">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Instrument+Serif&display=swap">
+<style>
+*{box-sizing:border-box}body{margin:0;font:16px/1.55 Inter,system-ui,-apple-system,'Segoe UI',sans-serif;color:#121a26;background:#f5f3ef}
+header{background:#0a182f;color:#fff}header div{max-width:820px;margin:0 auto;padding:12px 18px;display:flex;align-items:center;gap:10px}
+header img{width:32px;height:42px;object-fit:contain}header b{font-size:17px}header small{display:block;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.62)}
+header button{margin-left:auto;background:transparent;border:1px solid rgba(255,255,255,.4);color:#fff;border-radius:99px;padding:7px 14px;font:600 13px Inter,sans-serif;cursor:pointer}
+main{max-width:820px;margin:0 auto;padding:22px 18px 60px}
+.eyebrow{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:#8e633a;font-weight:700;margin:0 0 6px}
+h1{font:400 clamp(34px,7vw,52px)/1.05 'Instrument Serif',Georgia,serif;margin:0 0 6px;color:#0f2342}
+.sub{color:#5b6472;margin:0 0 18px}.card{background:#fff;border:1px solid rgba(18,26,38,.1);border-radius:20px;padding:18px}
+footer{max-width:820px;margin:0 auto;padding:0 18px 40px;color:#5b6472;font-size:13px}
+</style>
+</head>
+<body>
+<header><div><img src="/brand/if-shield-3d-180.webp" alt=""><span><b>IF Academy</b><small>Intellect First · Kostanay</small></span><button id="lg" type="button">English</button></div></header>
+<main><p class="eyebrow" id="eb"></p><h1 id="nm"></h1><p class="sub" id="sb"></p><div class="card" id="out"></div></main>
+<footer id="ft"></footer>
+<script src="/me/activity-view.js?v=1"></script>
+<script>
+(function () {
+  var T = { ru: { eb: 'IF App · отчёт для родителей', sb: 'Сколько времени ученик занимается в приложении IF App, что выполнено и как идут курсы.', load: 'Загружаем отчёт…', bad: 'Эта ссылка не работает или её срок истёк. Попросите в IF Academy новую ссылку.', ft: 'Это личная страница: не пересылайте ссылку посторонним. Вопросы: IF Academy, проспект Аль-Фараби 19, Костанай · intellectfirst.com', other: 'English', until: 'Ссылка действует до ' },
+            en: { eb: 'IF App · report for parents', sb: 'How much time the student spends in the IF App, what they have finished and how their courses are going.', load: 'Loading the report…', bad: 'This link does not work or has expired. Please ask IF Academy for a new one.', ft: 'This is a private page: please do not pass the link on. Questions: IF Academy, Al-Farabi 19, Kostanay · intellectfirst.com', other: 'Русский', until: 'The link works until ' } };
+  var lang = 'ru', data = null, state = 'load', $ = function (id) { return document.getElementById(id); };
+  try { if (localStorage.getItem('if.report.lang') === 'en') lang = 'en'; } catch (e) {}
+  function draw() {
+    var L = T[lang]; document.documentElement.lang = lang; $('eb').textContent = L.eb; $('sb').textContent = L.sb; $('lg').textContent = L.other;
+    $('nm').textContent = data ? data.name : 'IF Academy';
+    $('out').innerHTML = state === 'ok' ? IFActView.html(data.activity, lang) : '<p style="margin:0;color:#5b6472">' + (state === 'load' ? L.load : L.bad) + '</p>';
+    $('ft').textContent = L.ft + (data ? ' · ' + L.until + new Date(data.until).toLocaleDateString(lang === 'ru' ? 'ru-RU' : 'en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) + '.' : '');
+  }
+  $('lg').onclick = function () { lang = lang === 'ru' ? 'en' : 'ru'; try { localStorage.setItem('if.report.lang', lang); } catch (e) {} draw(); };
+  draw();
+  fetch('/api/school/report' + location.search, { credentials: 'omit' }).then(function (r) { if (!r.ok) throw 0; return r.json(); }).then(function (d) { data = d; state = 'ok'; draw(); }).catch(function () { state = 'bad'; draw(); });
+})();
+</script>
+</body>
+</html>

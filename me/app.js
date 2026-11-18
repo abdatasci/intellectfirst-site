@@ -146,6 +146,7 @@
     $('[data-nav=classes]').hidden = !staff();
     var cn = $('[data-nav=calendar]'); if (cn) cn.hidden = !staff();
     var rn = $('[data-nav=results]'); if (rn) rn.hidden = !staff();
+    var an = $('[data-nav=activity]'); if (an) an.hidden = !staff();
     var fbn = $('[data-nav=feedback]'); if (fbn) fbn.hidden = !role() || staff();
     $('[data-nav=admin]').hidden = role() !== 'admin';
     if (role() === 'admin' && !window.__ifaAIload) { window.__ifaAIload = true; var sc = document.createElement('script'); sc.src = '/me/ifadmin/ai-chat.js'; document.body.appendChild(sc); }
@@ -589,6 +590,7 @@
     if (r === 'student' || r === 'guest') {
       h += goalBox(p);
       h += articleBox(p);
+      h += '<div class="box"><h3>' + (p.track === 'parent' ? 'My child\'s study report' : 'My study report') + '</h3><p class="small" style="margin-bottom:12px">Time in the IF App, what was finished and progress by course. Your teachers at IF Academy can see this report too.</p><a class="btn sm" href="#/activity/me">Open the report</a></div>';
       if (r === 'student' || st) h += classBox(ME.classes);
       if (r === 'student' && (ME.classes || []).length) h += '<div class="box" id="lsnbox"><h3>My next lessons</h3><p class="small"><span class="spin"></span></p></div>';
       h += '<div class="box"><h3>Test results</h3>' + testsTable(st && st.tests) + '</div>';
@@ -906,11 +908,47 @@
         '<div class="chips">' + statusChip(s.status) + (p ? '<span class="chip2 ok">Registered</span>' : '<span class="chip2 mute">Not registered</span>') + (s.level ? '<span class="chip2">Level ' + esc(s.level) + '</span>' : '') + (p && p.goals ? '<span class="chip2">Goal: ' + esc(p.goals) + '</span>' : '') + '</div></div></section>' +
         '<section class="section cols"><div class="box"><h3>Contact</h3><dl class="kv"><dt>Phone</dt><dd>' + esc(s.phone || '–') + '</dd><dt>Parent</dt><dd>' + esc(s.parent || '–') + '</dd><dt>Parent phone</dt><dd>' + esc(s.parentPhone || '–') + '</dd><dt>Email</dt><dd>' + esc((p && p.email) || s.email || '–') + '</dd><dt>Birthday</dt><dd>' + esc(s.birth || '–') + '</dd></dl>' + (p && p.about ? '<p style="margin-top:10px" class="small">' + esc(p.about) + '</p>' : '') + '</div>' +
         '<div class="box"><h3>Test results</h3>' + testsTable(s.tests) + '</div>' + attBox(v.attendance) + ieltsBox(v.ielts) +
+        '<div class="box" style="grid-column:1/-1"><h3>IF App activity</h3>' + (s.uid && window.IFActView ? IFActView.html(v.activity, 'en') + '<p style="margin-top:14px"><button class="btn ghost sm" id="actShare">Copy the report link for parents</button> <span class="small">A private page in Russian and English, with no sign-in. The link works for 90 days.</span></p>' : '<p class="small">This student has no account yet, so there is nothing to show. Activity is recorded once they sign in to the IF App.</p>') + '</div>' +
         '<div class="box"><h3>Teacher comments</h3><div id="cm">' + ((s.comments || []).slice().reverse().map(function (c) { return '<div class="comment">' + esc(c.text) + '<small>' + esc(c.by) + ' · ' + when(c.at) + '</small></div>'; }).join('') || '<p class="small">No comments yet.</p>') + '</div>' +
         '<form id="cf" style="margin-top:12px"><textarea class="inp" rows="2" id="ct" placeholder="Add a comment (visible to teachers and the school)"></textarea><button class="btn sm" style="margin-top:8px">Add comment</button></form></div></section>';
       view.innerHTML = h;
+      var sh = $('#actShare'); if (sh) sh.onclick = async function () {
+        try { var r = await api('teach/student/' + id + '/share', { method: 'POST' }); try { await navigator.clipboard.writeText(r.link); toast('Link copied. Send it to the parent.'); } catch (e) { prompt('Copy this link and send it to the parent:', r.link); } }
+        catch (e) { toast(e.code === 'not-configured' ? 'Report links are not switched on for this site yet.' : 'Could not make the link.'); }
+      };
       $('#cf').onsubmit = async function (ev) { ev.preventDefault(); var t = $('#ct').value.trim(); if (!t) return; await api('teach/student/' + id + '/note', { method: 'POST', body: { text: t } }); toast('Comment added'); vStudent(id); };
     } catch (e) { view.innerHTML = '<div class="empty" style="margin-top:30px">This student could not be loaded.</div>'; }
+  }
+
+  /* ---------- Study activity: who is studying in the IF App (the director and the manager see every student, a teacher their own classes) ---------- */
+  async function vActivity(sub) {
+    if (sub === 'me') {   // your own report (a student, or a parent whose child uses this account)
+      setNav('home'); view.innerHTML = '<p style="margin-top:30px"><span class="spin"></span></p>';
+      try { var mine = await api('app/activity'); view.innerHTML = '<div class="row" style="margin-top:18px"><a class="btn ghost sm" href="#/">← Back</a></div><section class="section"><div class="box"><h3>My study in the IF App</h3>' + IFActView.html(mine.activity, 'en') + '</div></section>'; }
+      catch (e) { view.innerHTML = '<div class="empty" style="margin-top:30px">Your report could not be loaded.</div>'; }
+      return;
+    }
+    setNav('activity'); if (!staff()) return go('#/');
+    view.innerHTML = '<p style="margin-top:30px"><span class="spin"></span> Loading activity…</p>';
+    var rows; try { rows = (await api('teach/activity')).rows || []; } catch (e) { view.innerHTML = '<div class="empty" style="margin-top:30px">Could not load the activity list.</div>'; return; }
+    var today = new Date(Date.now() + 5 * 3600e3).toISOString().slice(0, 10), ago = function (d) { return d ? Math.round((Date.parse(today) - Date.parse(d)) / 864e5) : null; };
+    rows.forEach(function (r) { r.ago = ago(r.last); });
+    rows.sort(function (a, b) { return (a.ago == null ? 1e6 : a.ago) - (b.ago == null ? 1e6 : b.ago) || a.name.localeCompare(b.name); });
+    var f = vActivity.f || 'all', q = '';
+    var n = { all: rows.length, week: rows.filter(function (r) { return r.ago != null && r.ago < 7; }).length, quiet: rows.filter(function (r) { return r.registered && (r.ago == null || r.ago >= 7); }).length, none: rows.filter(function (r) { return !r.registered; }).length };
+    view.innerHTML = '<section class="section"><h1 style="margin:18px 0 4px">Study activity</h1><p class="small">Time and finished work in the IF App, for ' + (role() === 'admin' ? 'every student' : 'the students in your classes') + '. Open a student for the full report and the link for parents.</p>' +
+      '<div class="chips" id="af" style="margin:14px 0">' + [['all', 'All'], ['week', 'Active this week'], ['quiet', 'Quiet for 7 days or more'], ['none', 'No account yet']].map(function (x) { return '<button class="chip2 ' + (f === x[0] ? 'ok' : 'mute') + '" data-f="' + x[0] + '" style="cursor:pointer;border:0">' + x[1] + ' · ' + n[x[0]] + '</button>'; }).join('') + '</div>' +
+      '<input class="inp" id="aq" placeholder="Search a name or a class" style="max-width:320px;margin-bottom:12px"><div id="at"></div></section>';
+    function draw() {
+      var list = rows.filter(function (r) { return (f === 'all' || (f === 'week' && r.ago != null && r.ago < 7) || (f === 'quiet' && r.registered && (r.ago == null || r.ago >= 7)) || (f === 'none' && !r.registered)) && (!q || (r.name + ' ' + (r.classes || []).join(' ')).toLowerCase().indexOf(q) >= 0); });
+      $('#at').innerHTML = list.length ? '<div class="tscroll"><table class="t"><thead><tr><th>Student</th><th>Last active</th><th>Minutes (7 days)</th><th>Days (of 7)</th><th>Finished (7 days)</th><th>Streak</th><th>Lessons in total</th></tr></thead><tbody>' + list.map(function (r) {
+        var w = r.week || { mins: 0, days: 0, items: 0 }, last = !r.registered ? '<span class="chip2 mute">No account</span>' : r.ago == null ? '<span class="chip2 mute">Never</span>' : r.ago === 0 ? '<span class="chip2 ok">Today</span>' : r.ago === 1 ? '<span class="chip2 ok">Yesterday</span>' : '<span class="chip2 ' + (r.ago < 7 ? 'ok' : 'warn') + '">' + r.ago + ' days ago</span>';
+        return '<tr><td><b><a href="#/student/' + esc(r.sid) + '">' + esc(r.name || '–') + '</a></b><div class="small">' + esc((r.classes || []).join(', ') || r.level || '') + '</div></td><td>' + last + '</td><td>' + (r.registered ? w.mins : '–') + '</td><td>' + (r.registered ? w.days : '–') + '</td><td>' + (r.registered ? w.items : '–') + '</td><td>' + (r.registered ? (r.streak || 0) : '–') + '</td><td>' + (r.registered ? (r.lessons || 0) : '–') + '</td></tr>';
+      }).join('') + '</tbody></table></div>' : '<div class="empty">Nobody in this list.</div>';
+    }
+    $('#af').onclick = function (e) { var b = e.target.closest('[data-f]'); if (!b) return; vActivity.f = b.dataset.f; vActivity(); };
+    $('#aq').oninput = function () { q = this.value.trim().toLowerCase(); draw(); };
+    draw();
   }
 
   /* ---------- IF Classroom: online lessons (Jitsi) + lesson slides (view-only) ---------- */
@@ -2305,6 +2343,7 @@
         case 'calendar': return vCalendar(parts[1]);
         case 'class': return vClass(parts[1]);
         case 'student': return vStudent(parts[1]);
+        case 'activity': return vActivity(parts[1]);
         case 'admin': return vAdmin(parts[1]);
         case 'classroom': return vClassroom(parts[1]);
         case 'present': return vPresent(parts[1]);

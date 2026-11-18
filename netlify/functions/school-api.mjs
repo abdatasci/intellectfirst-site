@@ -213,6 +213,7 @@ async function studentView(s) {
     const p = await getProfile(s.uid);
     if (p) out.profile = { name: p.name, email: p.email, photo: !!p.photo, about: p.about || '', goals: p.goals || '', lastActive: p.lastActive || null };
     out.ielts = await ieltsSummary(s.uid);
+    try { const { summary } = await import('../lib/studyact.mjs'); out.activity = await summary(s.uid); } catch (e) { console.error('activity', e.message); }
   }
   return out;
 }
@@ -347,6 +348,10 @@ async function appProgress(uid, method, req) {
 const PDF_FILES = { 'ielts-vocabulary-bank': 'IF Academy - IELTS Vocabulary Bank.pdf', 'ielts-writing-language-bank': 'IF Academy - IELTS Writing Language Bank.pdf' };
 // IF's own coursebooks (made from the IF App courses by a/coursebook/?print=1)
 for (const [id, t] of [['teens-a2', 'A2 English for Teens'], ['ge-a1', 'General English A1'], ['ge-a2', 'General English A2'], ['ge-b1', 'General English B1'], ['ge-b2', 'General English B2'], ['ge-c1', 'General English C1'], ['ge-c2', 'General English C2']]) PDF_FILES['coursebook-' + id] = `IF Academy - ${t} Coursebook.pdf`;
+function actSig(uid, exp) {
+  const k = (globalThis.Netlify?.env?.get('IFADMIN_SYNC_KEY')) || process.env.IFADMIN_SYNC_KEY || '';
+  return k.length >= 32 ? createHmac('sha256', k).update('act|' + uid + '|' + exp).digest('hex').slice(0, 40) : '';
+}
 function pdfSig(id, exp) {
   const k = (globalThis.Netlify?.env?.get('IFADMIN_SYNC_KEY')) || process.env.IFADMIN_SYNC_KEY || '';
   return k.length >= 32 ? createHmac('sha256', k).update('pdf|' + id + '|' + exp).digest('hex').slice(0, 32) : '';
@@ -405,6 +410,15 @@ export default async (req) => {
   const method = req.method;
 
   if (path === 'books' && method === 'GET') return json({ books: await doc('books') });
+
+  // a student's study report for the parents: a private signed link made by the school (no account needed)
+  if (path === 'report' && method === 'GET') {
+    const u = url.searchParams.get('u') || '', e = +url.searchParams.get('e') || 0, sg = url.searchParams.get('s') || '';
+    if (!/^[\w-]{6,80}$/.test(u) || e < Date.now() || !actSig(u, e) || sg !== actSig(u, e)) return fail(403, 'link');
+    const p = await getProfile(u); if (!p) return fail(404, 'missing');
+    const { summary } = await import('../lib/studyact.mjs');
+    return Response.json({ name: String(p.name || '').split(/\s+/)[0] || 'Student', until: e, activity: await summary(u) }, { headers: { 'Cache-Control': 'private, no-store' } });
+  }
 
   // student feedback approved by the director (homepage)
   if (path === 'feedback/public' && method === 'GET') return Response.json({ feedback: await publicFeedback() }, { headers: { 'Cache-Control': 'public, max-age=120' } });
@@ -601,6 +615,13 @@ export default async (req) => {
     return json({ class: true, total: uids.length, done });
   }
   if (path === 'app/progress') { const r = await appProgress(uid, method, req); if (r) return r; }
+  // what the IF App reports about study time and finished items (for the student's teachers and parents)
+  if (path === 'app/activity' && method === 'POST') {
+    const raw = await req.text(); if (raw.length > 20000) return fail(413, 'big');
+    let b; try { b = JSON.parse(raw); } catch { return fail(400, 'bad'); }
+    const { record } = await import('../lib/studyact.mjs'); return json(await record(uid, b));
+  }
+  if (path === 'app/activity' && method === 'GET') { const { summary } = await import('../lib/studyact.mjs'); return json({ activity: await summary(uid) }); }   // your own report
 
   // study PDFs (IELTS Studio vocabulary and writing language banks): students and teachers only
   if (path.startsWith('download/') && method === 'GET') {
@@ -950,6 +971,24 @@ export default async (req) => {
     const s = (await doc('students')).find(x => x.id === ts[1]);
     if (!s || !(await canSeeStudent(profile, s))) return fail(404, 'missing');
     return json(await studentView(s));
+  }
+  // everyone this member of staff may see, with their study activity: the director and the manager all students, a teacher their own classes
+  if (path === 'teach/activity' && method === 'GET') {
+    if (!isStaff(profile.role)) return fail(403, 'staff');
+    const [students, classes] = await Promise.all([doc('students'), classesForTeacher(profile)]);
+    const list = students.filter(s => !/withdrawn|finished/i.test(s.status || '') && (profile.role === 'admin' || classes.some(c => inClass(c, s))));
+    const { overview } = await import('../lib/studyact.mjs'), ov = await overview(list.map(s => s.uid).filter(Boolean));
+    return json({ rows: list.map(s => ({ sid: s.id, name: `${s.first || ''} ${s.last || ''}`.trim(), level: s.level || '', classes: classes.filter(c => inClass(c, s)).map(c => c.label || c.name || '').filter(Boolean), registered: !!s.uid, ...(s.uid ? ov[s.uid] || {} : {}) })) });
+  }
+  // a private link to one student's report, to send to the parents (works for 90 days)
+  const tsh = path.match(/^teach\/student\/([A-Za-z0-9-]+)\/share$/);
+  if (tsh && method === 'POST') {
+    if (!isStaff(profile.role)) return fail(403, 'staff');
+    const s = (await doc('students')).find(x => x.id === tsh[1]);
+    if (!s || !(await canSeeStudent(profile, s))) return fail(404, 'missing');
+    if (!s.uid) return fail(400, 'no-account');
+    const exp = Date.now() + 90 * 864e5, sig = actSig(s.uid, exp); if (!sig) return fail(503, 'not-configured');
+    return json({ link: `${url.origin}/report/?u=${encodeURIComponent(s.uid)}&e=${exp}&s=${sig}`, until: exp });
   }
   const tn = path.match(/^teach\/student\/([A-Za-z0-9-]+)\/note$/);
   if (tn && method === 'POST') {

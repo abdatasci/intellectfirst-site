@@ -117,6 +117,26 @@
     try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {}
   }
   var pushT;
+  /* ---------- study activity: time in the app and what was finished, saved to the account so the school, the
+     student's own teachers and the parents can see it (signed-in accounts only; nothing is sent for visitors) ---------- */
+  var ACT = { secs: 0, ev: [], touch: Date.now(), play: null, busy: false };
+  ['pointerdown', 'keydown', 'scroll', 'touchstart'].forEach(function (ev) { window.addEventListener(ev, function () { ACT.touch = Date.now(); }, { passive: true, capture: true }); });
+  setInterval(function () {   // count 15 seconds when the page is on screen and in use (a game runs in its own frame, so an open game counts while it is on screen)
+    if (document.visibilityState !== 'visible' || !ME || !ME.profile) return;
+    if (ACT.play ? Date.now() - ACT.play.t0 < 3 * 3600e3 : Date.now() - ACT.touch < 90000) ACT.secs += 15;
+  }, 15000);
+  function actEvent(k, id, title, score, secs) { if (!ME || !ME.profile) return; ACT.ev.push({ k: k, id: id, t: title, s: score, d: secs }); if (ACT.ev.length > 40) ACT.ev.shift(); actSend(); }
+  function actSend() {
+    if (!ME || !ME.profile || ACT.busy || (!ACT.secs && !ACT.ev.length)) return;
+    var body = { secs: ACT.secs, ev: ACT.ev.splice(0, 20) }; ACT.secs = 0; ACT.busy = true;
+    fetch('/api/school/app/activity', { method: 'POST', keepalive: true, credentials: 'same-origin', headers: hdrs({ 'Content-Type': 'application/json' }), body: JSON.stringify(body) })
+      .then(function (r) { if (!r.ok && r.status >= 500) throw 0; }).catch(function () { ACT.secs += body.secs; ACT.ev = body.ev.concat(ACT.ev).slice(0, 40); }).then(function () { ACT.busy = false; });
+  }
+  function actPlayEnd() { var g = ACT.play; if (!g) return; ACT.play = null; var d = Math.round((Date.now() - g.t0) / 1000); if (d >= 20) actEvent('game', g.id, g.t, null, Math.min(d, 3 * 3600)); }
+  setInterval(actSend, 120000);
+  window.addEventListener('pagehide', function () { actPlayEnd(); actSend(); });
+  document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'hidden') actSend(); });
+
   function pushSoon() { if (!ME || !ME.profile) return; clearTimeout(pushT); pushT = setTimeout(function () { fetch('/api/school/app/progress', { method: 'PUT', credentials: 'same-origin', headers: hdrs({ 'Content-Type': 'application/json' }), body: JSON.stringify(Object.assign({}, S, { u1: unit1Done() })) }).then(function () { loadGate(); }).catch(function () {}); }, 1500); }
   /** Courses whose Unit 1 (every lesson) this student has finished. */
   function unit1Done() { var o = {}; COURSES.forEach(function (c) { var u = c.units && c.units[0]; if (u && u.lessons.length && u.lessons.every(function (l) { return isDone(c.id, u.id, l.id); })) o[c.id] = 1; }); return o; }
@@ -381,7 +401,7 @@
     else if (l.type === 'listen') { items.push({ k: 'listen' }); items = items.concat(l.ex.map(function (e) { return { k: 'ex', e: e }; })); }
     else if (l.type === 'reading') { items.push({ k: 'read' }); items = items.concat(l.ex.map(function (e) { return { k: 'ex', e: e }; })); }
     else items = l.ex.map(function (e) { return { k: 'ex', e: e }; });
-    L = { c: c, u: u, ui: ui, l: l, items: items, i: 0, total: items.filter(function (x) { return x.k === 'ex'; }).length, right: 0, tried: {}, card: 0, teach: teach };
+    L = { t0: Date.now(), c: c, u: u, ui: ui, l: l, items: items, i: 0, total: items.filter(function (x) { return x.k === 'ex'; }).length, right: 0, tried: {}, card: 0, teach: teach };
     drawStep();
   }
   function kidsEx(words) {   // picture words: find it, name it, listen and choose
@@ -590,6 +610,7 @@
     var xp = (first ? 10 : 4) + Math.round(score / 20);
     S.done[k] = { score: Math.max(score, (S.done[k] || {}).score || 0), at: Date.now() };
     if (L.l.words) L.l.words.forEach(function (w) { S.words[w.w] = 1; });
+    actEvent(L.c.daily ? (L.l.type === 'vocab' ? 'vocab' : 'article') : (L.l.type || 'lesson'), k, L.c.title + ' · ' + L.l.title, score, L.t0 ? Math.min(7200, Math.round((Date.now() - L.t0) / 1000)) : null);
     addXP(xp);
     if (L.c.daily) return artDone(score, xp);
     var nx = nextLesson(L.c), st = courseStats(L.c);
@@ -703,6 +724,7 @@
     }
     if (/^mind-lab/.test(it.id)) { var mlv = myLevel(); if (mlv) it = Object.assign({}, it, { href: it.href + (it.href.indexOf('?') >= 0 ? '&' : '?') + 'lv=' + mlv }); }   // Mind Lab opens at the student's level
     view().innerHTML = '<div class="playbar"><a class="chip" href="#/' + (SEC[it.s] ? it.s : 'more') + '">← ' + esc(SEC[it.s] ? t(it.s) : t('more')) + '</a><b>' + it.icon + ' ' + esc(it.t) + '</b><a class="chip" href="' + esc(it.href) + '"' + (window.IF_TG ? '' : ' target="_blank" rel="noopener"') + ' data-gf="1">⛶ Full screen</a></div>' +
+      (ACT.play = { id: it.id, t: it.t, t0: Date.now() }, '') +
       '<div class="playwrap" id="pw"><iframe src="' + esc(it.href) + '" title="' + esc(it.t) + '" allow="autoplay; fullscreen; microphone" allowfullscreen></iframe>' +
       '<div class="gfx"><button type="button" id="gx" aria-label="Exit game">✕</button><button type="button" id="gf" aria-label="Full screen">⛶</button></div></div>';
     document.body.classList.add('playing');
@@ -819,6 +841,7 @@
   function go(h) { if (location.hash === h) route(); else location.hash = h; }
   function route() {
     try { speechSynthesis.cancel(); } catch (e) {}
+    actPlayEnd();
     if (ME && Date.now() - gateAt > 20000) loadGate();
     var fb = $('#fb'); if (fb) fb.remove();
     document.body.classList.remove('teach');
