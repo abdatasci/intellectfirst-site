@@ -12,6 +12,8 @@ for (const [lv, id, name, icon] of BOOKS) {
   const file = [...page.matchAll(/shared\/([0-9a-f]{12}\.js)/g)].map(m => m[1]).find(f => /^\s*const DATA = /.test(fs.readFileSync('a/if-english/shared/' + f, 'utf8')));
   const src = fs.readFileSync('a/if-english/shared/' + file, 'utf8'), DATA = JSON.parse(src.match(/const DATA = (\{[\s\S]*?\});?\s*\n/)[1]);
   let extra = {}; try { extra = (await import(`./ef/${lv.toLowerCase()}.mjs`)).default; } catch {}
+  // example sentences and patterns for the flashcards: tools/ef/<level>-words-*.txt  (@unit, then "word | example | pattern | pattern example")
+  const ctx = {}; for (const f of fs.readdirSync('tools/ef').filter(f => f.startsWith(lv.toLowerCase() + '-words-') && f.endsWith('.txt')).sort()) { let cur = ''; for (const ln of fs.readFileSync('tools/ef/' + f, 'utf8').split('\n')) { if (!ln.trim() || ln[0] === '#') continue; if (ln[0] === '@') { cur = ln.slice(1).trim(); ctx[cur] = ctx[cur] || {}; continue; } const p = ln.split(' | ').map(x => x.trim()); if (p.length >= 2) ctx[cur][p[0]] = p.slice(1); } }
   let read = {}; try { read = (await import(`./ef/${lv.toLowerCase()}-read.mjs`)).default; } catch {}
   let listen = {}; try { listen = (await import(`./ef/${lv.toLowerCase()}-listen.mjs`)).default; } catch {}
   const units = {}, out = [];
@@ -23,7 +25,7 @@ for (const [lv, id, name, icon] of BOOKS) {
     const rd = read[uid] || null; if (rd) lessons.push({ id: 'r', type: 'reading', title: 'Reading: ' + rd.title });
     const li = listen[uid] || null; if (li) lessons.push({ id: 'l', type: 'listen', title: 'Listening: ' + li.title });
     lessons.push({ id: 's', type: 'speaking', title: 'Speaking: ' + u.title }, { id: 'c', type: 'check', title: 'Unit check' });
-    units[uid] = { title: u.title, words: u.words.map(w => [w[0], w[1] || '', w[2] || '', w[3] || '']), ...(x ? { g: { title: x.g, rule: x.rule, ru: x.ru || '', ex: x.ex } } : {}), talk: x?.talk || null, ...(rd ? { r: { text: rd.text, ex: rd.ex } } : {}), ...(li ? { l: { intro: li.intro, script: li.script, ex: li.ex } } : {}), lessons };
+    units[uid] = { title: u.title, words: u.words.map(w => { const c = (ctx[uid] || {})[w[0]] || []; return [w[0], w[1] || '', w[2] || '', w[3] || '', ...(c.length ? [c[0] || '', c[1] || '', c[2] || ''] : [])]; }), ...(x ? { g: { title: x.g, rule: x.rule, ru: x.ru || '', ex: x.ex } } : {}), talk: x?.talk || null, ...(rd ? { r: { text: rd.text, ex: rd.ex } } : {}), ...(li ? { l: { intro: li.intro, script: li.script, ex: li.ex } } : {}), lessons };
     out.push({ id: uid, topic: uid, title: u.title, n: u.words.length, g: x ? x.g : '', obj: [`Use ${u.words.length} words and phrases on the topic “${u.title}”`, ...(x ? [`Use this grammar correctly: ${x.g.charAt(0).toLowerCase() + x.g.slice(1)}`] : []), 'Speak for about a minute on the unit topic'], lessons: lessons.map(l => ({ id: l.id, type: l.type, title: l.title })) });
   }
   fs.writeFileSync(`netlify/lib/ef/${id}.json`, JSON.stringify({ id, level: lv, units }));
