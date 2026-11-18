@@ -17,6 +17,7 @@
       if (/advanced/.test(t)) return 'ef-c1';
       if (/upper/.test(t)) return 'ef-b2';
       if (/pre[- ]?int/.test(t)) return 'ef-a2';
+      if (/intermediate ?(plus|\+)/.test(t)) return 'ef-b1p';
       if (/intermediate/.test(t)) return 'ef-b1';
       if (/beginner/.test(t)) return 'ef-a0';
       if (/elementary/.test(t)) return 'ef-a1';
@@ -26,8 +27,8 @@
     if (/grammar in use/.test(t)) return 'giu';
     return '';
   }
-  var SAME = { A0: ['ef-a0', 'ef-a1'], A1: ['ef-a1'], A2: ['ef-a2'], B1: ['ef-b1', 'teens-b1'], B2: ['ef-b2', 'teens-b2'], C1: ['ef-c1'], C2: ['ef-c2'] };
-  var BL = { 'ef-a0': 'A0', 'ef-a1': 'A1', 'ef-a2': 'A2', 'ef-b1': 'B1', 'ef-b2': 'B2', 'ef-c1': 'C1', 'ef-c2': 'C2', 'teens-b1': 'B1', 'teens-b2': 'B2', giu: 'B1' };
+  var SAME = { A0: ['ef-a0', 'ef-a1'], A1: ['ef-a1'], A2: ['ef-a2'], B1: ['ef-b1', 'ef-b1p', 'teens-b1'], B2: ['ef-b2', 'teens-b2'], C1: ['ef-c1'], C2: ['ef-c2'] };
+  var BL = { 'ef-a0': 'A0', 'ef-a1': 'A1', 'ef-a2': 'A2', 'ef-b1': 'B1', 'ef-b1p': 'B1', 'ef-b2': 'B2', 'ef-c1': 'C1', 'ef-c2': 'C2', 'teens-b1': 'B1', 'teens-b2': 'B2', giu: 'B1' };
   function keys(me) {
     if (!me || !me.profile || me.access === 'staff' || /teacher|admin/.test(me.profile.role || '')) return null;
     var cls = me.classes || [], st = me.student; if (!st || !cls.length) return null;
