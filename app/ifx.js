@@ -1051,13 +1051,14 @@
     if (k === 'games') { var TOP = ['mind-lab', 'mind-lab-kids']; items.sort(function (a, b) { var ia = TOP.indexOf(a.id), ib = TOP.indexOf(b.id); return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib); }); }   // IF Mind Lab first
     var EDITION = /^(kart|bq|obby|kq)-(ket|pet|flyers)$/;   // KET / PET / Flyers editions of the young learners' games
     if (k === 'games') {   // eight games in three groups; the exam and age editions are a level choice on the game itself
-      var gl = function (ids) { return ids.map(byId).filter(function (x) { return x && (full || fits(x)); }); };
+      var kidsOK = fullView() || mine().some(function (q) { return /^(yl:|maths|ket|pet)/.test(q); });   // children's games only for young learners, staff and visitors
+      var gl = function (ids) { return ids.map(byId).filter(function (x) { return x && (kidsOK || !/^(mind-lab-kids|if-kart|kids-quest)$/.test(x.id)); }); };
       var grp = function (title, d, list, more) { return list.length ? '<div class="sec"><h2>' + title + '</h2><p class="sec-d">' + d + '</p></div><div class="grid">' + list.map(itemCard).join('') + '</div>' + (more || '') : ''; };
       var adv = gl(['if-kart', 'block-quest', 'kids-quest']);
       view().innerHTML = '<div class="page-h"><div><p class="h-eyebrow">' + esc(t(k)) + '</p><h1>' + esc(sc.h) + '</h1><p>' + esc(sc.p) + '</p></div></div>' + (full ? '' : goalBar()) + gamesChip(k) +
         grp('👥 Play together', 'For the class or a group of friends: one screen or everyone on their phones.', gl(['live', 'mafia-live', 'mystery-live'])) +
         grp('🧠 Mind Lab', 'Daily mind training that uses every skill: words, grammar, memory and logic.', gl(['mind-lab', 'mind-lab-kids'])) +
-        grp('🏁 Adventure and racing', 'Play alone at your own level.', adv, adv.map(function (x) { return levelRow(x.id, x.id, true); }).join(''));
+        grp('🏁 Adventure and racing', 'Play alone at your own level.', adv, adv.map(function (x) { return levelRow(x.id, x.id, true, kidsOK); }).join(''));
       return;
     }
     if (k === 'games' && f !== 'fit') items = items.filter(function (x) { return !EDITION.test(x.id); });
@@ -1081,7 +1082,7 @@
   /* one game, several levels: the level is chosen on the game, not from separate entries in the list */
   var GLEVELS = { 'if-kart': [['if-kart', 'All levels'], ['kart-ket', 'A2 Key'], ['kart-pet', 'B1 PET']], 'block-quest': [['block-quest', 'All levels'], ['bq-kids', 'Kids A1'], ['bq-ket', 'A2 Key'], ['bq-pet', 'B1 PET']], 'kids-quest': [['kids-quest', 'All levels'], ['kq-flyers', 'Flyers'], ['kq-ket', 'A2 Key'], ['kq-pet', 'B1 PET']] };
   var GFAMILY = {}; Object.keys(GLEVELS).forEach(function (f) { GLEVELS[f].forEach(function (x) { GFAMILY[x[0]] = f; }); });
-  function levelRow(fam, cur, named) { var L2 = GLEVELS[fam]; if (!L2) return ''; var g = byId(fam); return '<div class="eds"><b>' + (named && g ? esc(g.t) + ' · level:' : 'Level:') + '</b> ' + L2.filter(function (x) { return byId(x[0]); }).map(function (x) { return '<a class="chip' + (x[0] === cur && !named ? ' on' : '') + '" href="#/play/' + x[0] + '">' + esc(x[1]) + '</a>'; }).join('') + '</div>'; }
+  function levelRow(fam, cur, named, kidsOK) { var L2 = GLEVELS[fam]; if (!L2) return ''; if (kidsOK === false) L2 = L2.filter(function (x) { return x[0] !== 'bq-kids'; }); var g = byId(fam); return '<div class="eds"><b>' + (named && g ? esc(g.t) + ' · level:' : 'Level:') + '</b> ' + L2.filter(function (x) { return byId(x[0]); }).map(function (x) { return '<a class="chip' + (x[0] === cur && !named ? ' on' : '') + '" href="#/play/' + x[0] + '">' + esc(x[1]) + '</a>'; }).join('') + '</div>'; }
   function vPlay(id) {
     if (OLD_IDS[id]) id = OLD_IDS[id];
     if (VREPL[id] && BY[VREPL[id]]) return go('#/words/' + VREPL[id]);
