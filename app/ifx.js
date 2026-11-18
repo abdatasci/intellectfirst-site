@@ -884,6 +884,7 @@
   function vSection(k, f) {
     setNav(k); var sc = SEC[k]; var full = fullView(); f = full ? (f || (mine().length ? 'fit' : 'all')) : 'fit';
     var items = IFX_DIR.filter(function (x) { return x.s === k && (APP ? appItem(x) : match(x, f)); });
+    if (k === 'games') { var TOP = ['mind-lab', 'mind-lab-kids']; items.sort(function (a, b) { var ia = TOP.indexOf(a.id), ib = TOP.indexOf(b.id); return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib); }); }   // IF Mind Lab first
     var EDITION = /^(kart|bq|obby|kq)-(ket|pet|flyers)$/;   // KET / PET / Flyers editions of the young learners' games
     if (k === 'games' && (f === 'all' || f === 'young')) {
       var shown = {}, grp = function (title, list) { list = list.filter(function (x) { return x && !shown[x.id]; }); list.forEach(function (x) { shown[x.id] = 1; }); return list.length ? '<div class="sec"><h2>' + title + '</h2></div><div class="grid">' + list.map(itemCard).join('') + '</div>' : ''; };
