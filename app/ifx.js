@@ -294,25 +294,161 @@
       };
     });
   }
+  function efFill(u, U) {
+    var words = U.words.map(function (w) { return { w: w[0], p: '', d: w[1], e: w[4] || '', c: w[5] || '', ce: w[6] || '', ru: w[2], rd: w[3] }; });
+    u.words = words; u.talk = U.talk;
+    u.lessons.forEach(function (x) {
+      var src = U.lessons.filter(function (y) { return y.id === x.id; })[0] || {};
+      if (x.type === 'vocab') x.words = words.slice(src.from || 0, src.to || words.length);
+      else if (x.type === 'grammar' && U.g) { x.rule = U.g.rule; x.ru = U.g.ru || ''; x.ex = U.g.ex; }
+      else if (x.type === 'listen' && U.l) { x.intro = U.l.intro; x.script = U.l.script; x.ex = U.l.ex; }
+      else if (x.type === 'speaking') x.ex = [];
+      else if (x.type === 'check') x.gen = efCheck(u, U.g);
+      x.ready = true;
+    });
+  }
+  function efFetch(c, u) { return fetch('/api/ef/' + c.id + '/' + encodeURIComponent(u.id), { credentials: 'same-origin', headers: hdrs() }).then(function (r) { if (r.status === 403) throw 'locked'; if (!r.ok) throw 'net'; return r.json(); }).then(function (d) { efFill(u, d.unit); (EF[c.id] = EF[c.id] || { open: {}, classes: [], at: 0 }).open[u.id] = 1; }); }
   // a lesson of the English Files track: ask the server for the unit (it refuses a unit that is not open), then build the lessons
   function efOpen(c, u, ui, l, teach) {
     view().innerHTML = '<p style="text-align:center;margin-top:40px">Loading…</p>';
     var here = location.hash;
     fetch('/api/ef/' + c.id + '/' + encodeURIComponent(u.id), { credentials: 'same-origin', headers: hdrs() }).then(function (r) { if (r.status === 403) throw 'locked'; if (!r.ok) throw 'net'; return r.json(); }).then(function (d) {
-      var U = d.unit, words = U.words.map(function (w) { return { w: w[0], p: '', d: w[1], e: w[4] || '', c: w[5] || '', ce: w[6] || '', ru: w[2], rd: w[3] }; });
-      u.words = words; u.talk = U.talk;
-      u.lessons.forEach(function (x) {
-        var src = U.lessons.filter(function (y) { return y.id === x.id; })[0] || {};
-        if (x.type === 'vocab') x.words = words.slice(src.from || 0, src.to || words.length);
-        else if (x.type === 'grammar' && U.g) { x.rule = U.g.rule; x.ru = U.g.ru || ''; x.ex = U.g.ex; }
-        else if (x.type === 'speaking') x.ex = [];
-        else if (x.type === 'check') x.gen = efCheck(u, U.g);
-        x.ready = true;
-      });
+      efFill(u, d.unit);
       (EF[c.id] = EF[c.id] || { open: {}, classes: [], at: 0 }).open[u.id] = 1;
       if (location.hash === here) vLesson(c.id, u.id, l.id, teach);
     }).catch(function (err) { if (location.hash !== here) return; if (err === 'locked') { toast('This unit is not open for you yet.'); if (EF[c.id]) delete EF[c.id].open[u.id]; return go('#/course/' + c.id); } view().innerHTML = '<p style="text-align:center;margin-top:40px">This lesson could not be loaded. Check your connection and <a href="' + esc(here) + '" onclick="location.reload();return false">try again</a>.</p>'; });
   }
+  /* ================= Vocabulary: every course's words by unit, with five ways to study =================
+     Replaces the old Vocabulary Arenas in the menus. Words come from the course lessons themselves (English Files
+     units are fetched from /api/ef, so a unit that is not open cannot be studied here either). */
+  var VREPL = { 'voc-a1': 'ef-a1', 'voc-a2': 'ef-a2', 'voc-b1': 'ef-b1', 'voc-b2': 'ef-b2', 'voc-c1': 'ef-c1', 'voc-ielts': 'ielts' };
+  var VMODES = [['cards', '🃏', 'Flashcards', 'Flip, listen and sort the words you know'], ['learn', '🧠', 'Learn', 'Each word comes back until you get it right twice'], ['write', '✍️', 'Write', 'Read the meaning and type the word'], ['match', '🧩', 'Match', 'Pair words and meanings against the clock'], ['test', '📝', 'Test', 'Ten mixed questions with a score']];
+  if (!S.vk) S.vk = {}; if (!S.vs) S.vs = {};
+  function wordsOf(u) { if (u.words) return u.words; var a = [], seen = {}; u.lessons.forEach(function (l) { if (l.type === 'vocab') (l.words || []).forEach(function (w) { if (w.w && w.d && !seen[w.w]) { seen[w.w] = 1; a.push(w); } }); }); return a; }
+  var wordCount = function (c, u) { return c.ef && !u.words ? (u.n || 0) : wordsOf(u).length; };
+  var ruC = function (c) { return /^(PA1|A0|A1|A2)/.test(c.level || ''); };
+  function vocCourses() { var list = APP ? appCourses() : fullView() ? COURSES.filter(function (c) { return !c.daily; }) : myCourses(); return list.filter(function (c) { return c.units.some(function (u) { return wordCount(c, u) > 0; }); }); }
+  function knownIn(c, u) { return wordsOf(u).filter(function (w) { return S.vk[w.w]; }).length; }
+  function vTop(back, pct, label) { return '<div class="p-top"><a class="x" href="' + back + '" aria-label="Close">✕</a><div class="bar"><i style="width:' + Math.round(pct) + '%"></i></div></div><p class="p-title">' + esc(label) + '</p>'; }
+  function vWords(cid, uid, mode) {
+    setNav('vocab'); recStop();
+    S.vk = S.vk || {}; S.vs = S.vs || {};
+    var c = cid && BY[cid];
+    if (!c || c.daily) {
+      var list = vocCourses(), other = APP ? [] : IFX_DIR.filter(function (x) { return x.s === 'vocab' && !VREPL[x.id] && (fullView() || fits(x)); });
+      view().innerHTML = '<div class="page-h"><div><p class="h-eyebrow">' + esc(t('vocab')) + '</p><h1>Vocabulary</h1><p>The words of your courses, unit by unit. Study each set five ways: flashcards, learn, write, match and test.</p></div></div>' +
+        '<div class="grid">' + list.map(function (k) {
+          var n = 0; k.units.forEach(function (u) { n += wordCount(k, u); });
+          return '<a class="card" href="#/words/' + k.id + '"><span class="ic">' + k.icon + '</span><h3>' + esc(k.title) + '</h3><p>' + k.units.length + ' sets · ' + n + ' words</p><div class="meta"><span class="tag ' + tagFor(k.track) + '">' + esc(k.level) + '</span>' + (k.ef || k.book ? '<span class="tag">English Files</span>' : '') + '</div></a>';
+        }).join('') + '</div>' + (list.length ? '' : '<p class="sec-d">Choose your courses first: <a href="#/onboard">My courses and levels</a>.</p>') +
+        (other.length ? '<div class="sec"><h2>Word lists for young learners and Cambridge exams</h2></div><div class="grid">' + other.map(itemCard).join('') + '</div>' : '');
+      return;
+    }
+    if (c.ef && (!EF[c.id] || Date.now() - EF[c.id].at > 60000)) { var here = location.hash, had = !!EF[c.id]; efLoad(c.id).then(function () { if (location.hash === here && !had) vWords(cid, uid, mode); }); if (!had) { view().innerHTML = '<p style="text-align:center;margin-top:40px">Loading…</p>'; return; } }
+    var ui = uid ? c.units.findIndex(function (x) { return x.id === uid; }) : -1, u = c.units[ui];
+    if (!u) {
+      view().innerHTML = '<div class="page-h"><div><p class="h-eyebrow"><a href="#/vocab">← Vocabulary</a></p><h1>' + esc(c.title) + '</h1><p>Choose a unit. Locked sets open with the unit itself.</p></div></div><div class="vsets">' + c.units.map(function (x, i) {
+        var n = wordCount(c, x); if (!n) return '';
+        var open = unlocked(i, c.id), k = x.words || !c.ef ? knownIn(c, x) : 0, sc = S.vs[c.id + '/' + x.id] || {};
+        return '<a class="vset' + (open ? '' : ' locked') + '" href="' + (open ? '#/words/' + c.id + '/' + encodeURIComponent(x.id) : c.ef && EF[c.id] && EF[c.id].mode === 'class' ? '#/course/' + c.id : '/me/#/upgrade') + '"><b>' + (open ? '' : '🔒 ') + esc(c.ef ? x.id + ' · ' + x.title : x.title) + '</b><span>' + n + ' words' + (k ? ' · ' + k + ' known' : '') + (sc.test != null ? ' · test ' + sc.test + '%' : '') + '</span><i style="width:' + Math.round(k / n * 100) + '%"></i></a>';
+      }).join('') + '</div>';
+      return;
+    }
+    if (!unlocked(ui, c.id)) { if (!meLoaded) { view().innerHTML = '<p style="text-align:center;margin-top:40px">Loading…</p>'; return; } return go('#/words/' + c.id); }
+    if (c.ef && !u.words) {
+      var h2 = location.hash; view().innerHTML = '<p style="text-align:center;margin-top:40px">Loading…</p>';
+      efFetch(c, u).then(function () { if (location.hash === h2) vWords(cid, uid, mode); }).catch(function (err) { if (location.hash !== h2) return; if (err === 'locked') { toast('This unit is not open for you yet.'); return go('#/words/' + c.id); } view().innerHTML = '<p style="text-align:center;margin-top:40px">These words could not be loaded. Check your connection and try again.</p>'; });
+      return;
+    }
+    var ws = wordsOf(u), base = '#/words/' + c.id + '/' + encodeURIComponent(u.id), key = c.id + '/' + u.id;
+    if (ws.length < 4) mode = '';
+    if (!mode) {
+      var sc2 = S.vs[key] || {}, kn = knownIn(c, u);
+      view().innerHTML = '<div class="page-h"><div><p class="h-eyebrow"><a href="#/words/' + c.id + '">← ' + esc(c.title) + '</a></p><h1>' + esc(u.title) + '</h1><p>' + ws.length + ' words · ' + kn + ' known' + (sc2.test != null ? ' · best test ' + sc2.test + '%' : '') + (sc2.match ? ' · best match ' + sc2.match + ' s' : '') + '</p></div></div>' +
+        (ws.length >= 4 ? '<div class="vmodes">' + VMODES.map(function (m) { return '<a class="vmode" href="' + base + '/' + m[0] + '"><span>' + m[1] + '</span><b>' + m[2] + '</b><small>' + m[3] + '</small></a>'; }).join('') + '</div>' : '') +
+        '<div class="vlist">' + ws.map(function (w, i) { return '<div class="vrow' + (S.vk[w.w] ? ' known' : '') + '"><button class="say sm" data-w="' + i + '" aria-label="Listen">🔊</button><div><b>' + esc(w.w) + '</b>' + (w.p ? ' <i>' + esc(w.p) + '</i>' : '') + '<p>' + esc(w.d) + '</p>' + (w.e ? '<p class="ve">“' + esc(w.e) + '”</p>' : '') + (w.c ? '<p class="ve"><b>' + esc(w.c) + '</b>' + (w.ce ? ' · ' + esc(w.ce) : '') + '</p>' : '') + (w.ru ? (ruC(c) ? ruChip(w.ru + (w.rd ? '\n' + w.rd : '')) : '<p class="ve">🇷🇺 ' + esc(w.ru) + '</p>') : '') + '</div><button class="vk" data-k="' + i + '" aria-label="I know this word" title="I know this word">✓</button></div>'; }).join('') + '</div>';
+      bindRu();
+      $$('[data-w]').forEach(function (b) { b.onclick = function () { var w = ws[+b.dataset.w]; say(w.w + (w.e ? '. ' + w.e : '')); }; });
+      $$('[data-k]').forEach(function (b) { b.onclick = function () { var w = ws[+b.dataset.k]; if (S.vk[w.w]) delete S.vk[w.w]; else S.vk[w.w] = 1; save(); b.parentNode.classList.toggle('known', !!S.vk[w.w]); }; });
+      return;
+    }
+    var V = { t0: Date.now(), n: 0, ok: 0 }, v = view(), mName = (VMODES.filter(function (m) { return m[0] === mode; })[0] || VMODES[0])[2], label = mName + ' · ' + u.title;
+    var three = function (x) { return shuffle([x].concat(shuffle(ws.filter(function (y) { return y !== x && y.d !== x.d; })).slice(0, 3))); };
+    var blank = function (w) { if (!w.e) return ''; var re = new RegExp(w.w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\w*', 'i'); return re.test(w.e) ? w.e.replace(re, '_____') : ''; };
+    var ruLine = function (w) { return w.ru ? (ruC(c) ? ruChip(w.ru + (w.rd ? '\n' + w.rd : '')) : '<p class="ve" style="text-align:center">🇷🇺 ' + esc(w.ru) + '</p>') : ''; };
+    var end = function (title, line, score) {
+      var secs = Math.round((Date.now() - V.t0) / 1000); addXP(5 + Math.round((score == null ? 100 : score) / 25)); save(); actEvent('vocab', key + '/' + mode, mName + ': ' + u.title, score == null ? null : score, secs);
+      v.innerHTML = '<div class="player">' + vTop(base, 100, label) + '<div class="learn-card"><div class="w">' + title + '</div><div class="d">' + line + '</div><p style="margin-top:18px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap"><a class="btn" href="' + base + '/' + mode + '" id="again">Again</a><a class="btn ghost" href="' + base + '">Back to the set</a></p></div></div>';
+      $('#again').onclick = function (ev) { ev.preventDefault(); vWords(cid, uid, mode); };
+    };
+    var mcQ = function (x, rev, done) {   // rev: show the meaning, choose the word
+      var o = three(x);
+      return { html: '<h2 class="qh">' + (rev ? esc(x.d) : esc(x.w) + ' <button class="say sm" id="vsay">🔊</button>') + '</h2>' + (rev && blank(x) ? '<p class="ve" style="text-align:center">“' + esc(blank(x)) + '”</p>' : '') + '<div class="opts">' + o.map(function (y, k) { return '<button class="opt" data-k="' + k + '">' + esc(rev ? y.w : y.d) + '</button>'; }).join('') + '</div>',
+        bind: function () { if ($('#vsay')) $('#vsay').onclick = function () { say(x.w); }; $$('.opts .opt').forEach(function (b) { b.onclick = function () { var ok = o[+b.dataset.k] === x; $$('.opts .opt').forEach(function (z, k) { z.disabled = true; if (o[k] === x) z.classList.add('ok'); }); if (!ok) b.classList.add('bad'); beep(ok); if (rev) say(x.w); setTimeout(function () { done(ok); }, ok ? 650 : 1500); }; }); } };
+    };
+    var wrQ = function (x, done) {
+      return { html: '<h2 class="qh">Type the word or phrase.</h2><div class="rule" style="text-align:center"><p style="font-size:19px;margin:0">' + esc(x.d) + '</p>' + (blank(x) ? '<p class="ve">“' + esc(blank(x)) + '”</p>' : '') + '</div>' + ruLine(x) + '<p class="gapq" style="text-align:center"><input id="gi" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Answer"></p><p class="lrr-msg" id="vm"></p><p style="text-align:center"><button class="btn" id="vck">Check</button> <button class="btn ghost sm" id="vdk">I don\'t know</button></p>',
+        bind: function () { bindRu(); var gi = $('#gi'), fin = false, go2 = function (ok) { if (fin) return; fin = true; gi.disabled = true; gi.classList.add(ok ? 'ok' : 'bad'); beep(ok); say(x.w); $('#vm').innerHTML = ok ? 'Correct!' : 'Answer: <b>' + esc(x.w) + '</b>'; setTimeout(function () { done(ok); }, ok ? 800 : 2000); };
+          setTimeout(function () { gi.focus(); }, 50); gi.onkeydown = function (ev) { if (ev.key === 'Enter' && gi.value.trim()) go2(norm(gi.value) === norm(x.w)); };
+          $('#vck').onclick = function () { if (gi.value.trim()) go2(norm(gi.value) === norm(x.w)); }; $('#vdk').onclick = function () { go2(false); }; } };
+    };
+    var show = function (pct, q) { v.innerHTML = '<div class="player">' + vTop(base, pct, label) + q.html + '</div>'; q.bind(); };
+    if (mode === 'cards') {
+      var q = shuffle(ws), i = 0, again = 0, knew = 0, seenAgain = {};
+      var card = function () {
+        if (i >= q.length) return end('Set finished 🎉', knew + ' known · ' + again + ' to practise again', null);
+        var w = q[i], model = w.w + (w.e ? '. ' + w.e : '');
+        v.innerHTML = '<div class="player">' + vTop(base, i / q.length * 100, label) + '<div class="flip" id="fl"><div class="learn-card ff"><button class="say" id="sy" aria-label="Listen">🔊</button><div class="w">' + esc(w.w) + '</div>' + (w.p ? '<div class="pos">' + esc(w.p) + '</div>' : '') + '<p class="lrr-msg">Tap the card to see the meaning</p></div>' +
+          '<div class="learn-card fb2"><div class="d">' + esc(w.d) + '</div>' + (w.e ? '<div class="e">“' + esc(w.e) + '”</div>' : '') + (w.c ? '<div class="patt"><b>' + esc(w.c) + '</b>' + (w.ce ? '<span>' + esc(w.ce) + '</span>' : '') + '</div>' : '') + ruLine(w) + recBox(model, 12) + '</div></div>' +
+          '<div style="display:flex;gap:10px;justify-content:center;margin-top:16px"><button class="btn ghost" id="vno">↺ Still learning</button><button class="btn" id="vyes">✓ Know it</button></div></div>';
+        var fl = $('#fl'); fl.onclick = function (ev) { if (ev.target.closest('button')) return; fl.classList.toggle('on'); };
+        $('#sy').onclick = function () { say(w.w); }; bindRu(); bindRec(model); say(w.w);
+        $('#vno').onclick = function () { recStop(); delete S.vk[w.w]; if (!seenAgain[w.w]) { seenAgain[w.w] = 1; again++; q.push(w); } i++; card(); };
+        $('#vyes').onclick = function () { recStop(); S.vk[w.w] = 1; knew++; i++; card(); };
+      };
+      return card();
+    }
+    if (mode === 'learn') {
+      var Q = shuffle(ws).slice(0, 12).map(function (w) { return { w: w, need: 2 }; }), total = Q.length * 2, got = 0, miss = 0;
+      var nextL = function () {
+        var it = Q.shift(); if (!it) return end('All learned 🎉', total / 2 + ' words · ' + miss + ' mistakes', Math.max(0, Math.round((1 - miss / (total + miss)) * 100)));
+        show(got / total * 100, mcQ(it.w, it.need === 1, function (ok) { if (ok) { got++; it.need--; if (it.need > 0) Q.push(it); else S.vk[it.w.w] = 1; } else { miss++; got -= 2 - it.need; it.need = 2; Q.splice(Math.min(3, Q.length), 0, it); } nextL(); }));
+      };
+      return nextL();
+    }
+    if (mode === 'write') {
+      var QW = shuffle(ws).slice(0, 10), nW = QW.length, okW = 0, redo = {};
+      var nextW = function () {
+        var w = QW.shift(); if (!w) return end('Writing finished', okW + ' of ' + nW + ' right first time', Math.round(okW / nW * 100));
+        show((nW - QW.length - 1) / nW * 100, wrQ(w, function (ok) { if (ok && !redo[w.w]) okW++; if (!ok && !redo[w.w]) { redo[w.w] = 1; QW.push(w); } nextW(); }));
+      };
+      return nextW();
+    }
+    if (mode === 'match') {
+      var six = shuffle(ws).slice(0, 6), left = shuffle(six.map(function (w, k) { return { s: w.w, k: k }; })), right = shuffle(six.map(function (w, k) { return { s: w.d, k: k }; })), sel = null, done = 0, tm = setInterval(function () { var el = $('#vtime'); if (!el) return clearInterval(tm); el.textContent = ((Date.now() - V.t0) / 1000).toFixed(1) + ' s'; }, 100);
+      v.innerHTML = '<div class="player">' + vTop(base, 0, label) + '<h2 class="qh">Match the pairs. <span id="vtime" style="float:right;font-size:16px">0.0 s</span></h2><div class="match"><div class="opts" id="ml">' + left.map(function (x) { return '<button class="opt" data-k="' + x.k + '">' + esc(x.s) + '</button>'; }).join('') + '</div><div class="opts" id="mr">' + right.map(function (x) { return '<button class="opt" data-k="' + x.k + '">' + esc(x.s) + '</button>'; }).join('') + '</div></div></div>';
+      var pick = function (b, side) {
+        if (side === 'l') { $$('#ml .opt').forEach(function (z) { z.classList.remove('sel'); }); b.classList.add('sel'); sel = b; return; }
+        if (!sel) return;
+        if (sel.dataset.k === b.dataset.k) { sel.classList.remove('sel'); sel.classList.add('gone'); b.classList.add('gone'); beep(true); sel = null; done++; if (done === six.length) { clearInterval(tm); var s = +((Date.now() - V.t0) / 1000).toFixed(1), o = S.vs[key] = S.vs[key] || {}; var best = !o.match || s < o.match; if (best) o.match = s; end(s + ' seconds', best ? 'Your best time for this set!' : 'Your best: ' + o.match + ' s', null); } }
+        else { V.t0 -= 2000; b.classList.add('bad'); beep(false); setTimeout(function () { b.classList.remove('bad'); }, 400); }
+      };
+      $$('#ml .opt').forEach(function (b) { b.onclick = function () { pick(b, 'l'); }; }); $$('#mr .opt').forEach(function (b) { b.onclick = function () { pick(b, 'r'); }; });
+      return;
+    }
+    // test
+    var QT = shuffle(ws).slice(0, 10), nT = QT.length, okT = 0, k = 0;
+    var nextT = function () {
+      if (k >= nT) { var sc3 = Math.round(okT / nT * 100), o = S.vs[key] = S.vs[key] || {}; o.test = Math.max(o.test || 0, sc3); return end(sc3 + '%', okT + ' of ' + nT + ' correct' + (sc3 >= 80 ? ' · well done!' : ' · study the set and try again'), sc3); }
+      var w = QT[k], kind = k % 4, after = function (ok) { if (ok) okT++; k++; nextT(); };
+      if (kind === 3) return show(k / nT * 100, wrQ(w, after));
+      if (kind === 2) { var other = shuffle(ws.filter(function (y) { return y.d !== w.d; }))[0], truth = Math.random() < .5 || !other, d = truth ? w.d : other.d;
+        return show(k / nT * 100, { html: '<h2 class="qh">True or false?</h2><div class="rule" style="text-align:center"><p style="font-size:19px;margin:0"><b>' + esc(w.w) + '</b> means: ' + esc(d) + '</p></div><div class="opts" style="margin-top:14px"><button class="opt" data-k="1">True</button><button class="opt" data-k="0">False</button></div>', bind: function () { $$('.opts .opt').forEach(function (b) { b.onclick = function () { var ok = (b.dataset.k === '1') === truth; $$('.opts .opt').forEach(function (z) { z.disabled = true; }); b.classList.add(ok ? 'ok' : 'bad'); beep(ok); setTimeout(function () { after(ok); }, ok ? 600 : 1300); }; }); } }); }
+      show(k / nT * 100, mcQ(w, kind === 1, after));
+    };
+    nextT();
+  }
+
   function efCheck(u, g) {   // ten fresh questions each time: the unit's words, then its grammar
     var pool = [], three = function (x) { return shuffle([x].concat(shuffle(u.words.filter(function (y) { return y !== x && y.d !== x.d; })).slice(0, 2))); };
     var item = function (i) {
@@ -483,7 +619,7 @@
     sel.push(k); S.study = sel; save(); saveStudy(sel); toast('Added: ' + SNAME[k]); route(); }; }); }
   function goalBar() { if (S.cls) return '<div class="goalbar">🏫 <span>Your class: <b>' + esc(mine().map(function (k) { return SNAME[k]; }).join(' · ')) + '</b></span>' + addOnHTML() + '</div>'; return '<div class="goalbar">🎯 <span>For your goals: <b>' + esc(mine().map(function (k) { return SNAME[k]; }).join(' · ')) + '</b></span>' + addOnHTML() + '<a href="#/onboard">Change goals</a></div>'; }
   function secCount(k) { if (k === 'ielts') return mine().indexOf('ielts') >= 0 ? 1 : 0; var n = IFX_DIR.filter(function (x) { return x.s === k && fits(x); }).length; if (k === 'grammar' || k === 'vocab') n += lessonsOf([k === 'grammar' ? 'grammar' : 'vocab']).filter(function (x) { return myCourses().indexOf(x.c) >= 0; }).length; return n; }
-  function focusNav() { if (APP) return; var full = fullView(); $$('a[data-k]').forEach(function (a) { var k = a.dataset && a.dataset.k; if (!k || ['vocab', 'grammar', 'games', 'tests', 'ielts'].indexOf(k) < 0) return; a.style.display = full || secCount(k) ? '' : 'none'; }); }
+  function focusNav() { if (APP) return; var full = fullView(); $$('a[data-k]').forEach(function (a) { var k = a.dataset && a.dataset.k; if (!k || ['grammar', 'games', 'tests', 'ielts'].indexOf(k) < 0) return; a.style.display = full || secCount(k) ? '' : 'none'; }); }
   function fits(it) { var m = mine(); if (!m.length || S.teacher) return true;
     if (S.cls && it.id === 'placement') return false;   // already placed in a class
     if (S.cls && (it.s === 'tests' || it.s === 'vocab')) {   // class tests and vocabulary: exactly their book / Cambridge level
@@ -919,6 +1055,7 @@
   }
   function vPlay(id) {
     if (OLD_IDS[id]) id = OLD_IDS[id];
+    if (VREPL[id] && BY[VREPL[id]]) return go('#/words/' + VREPL[id]);
     var it = IFX_DIR.filter(function (x) { return x.id === id; })[0];
     if (!it) return vSection('games');
     setNav(it.s === 'kids' ? 'more' : it.s);
@@ -1072,9 +1209,11 @@
       case 'courses': return vCourses(p[1]);
       case 'course': return vCourse(p[1]);
       case 'lesson': return vLesson(p[1], p[2], p[3], qs.get('teach') === '1');
-      case 'vocabulary': return vSection('vocab');
+      case 'vocabulary': return vWords();
+      case 'words': return vWords(p[1], p[2] && decodeURIComponent(p[2]), p[3]);
       case 'join': return mine().length ? vHome() : vOnboard();
-      case 'vocab': case 'grammar': case 'games': case 'tests': return vSection(p[0]);
+      case 'vocab': return vWords();
+      case 'grammar': case 'games': case 'tests': return vSection(p[0]);
       case 'play': return vPlay(p[1]);
       case 'ielts': return vIelts();
       case 'articles': return vArticles(p[1]);
