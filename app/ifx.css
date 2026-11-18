@@ -314,3 +314,4 @@ a.chip{text-decoration:none}
 .vk{width:34px;height:34px;border-radius:50%;border:2px solid var(--line);background:transparent;color:transparent;font-weight:800}.vrow.known .vk{background:var(--ok);border-color:var(--ok);color:#fff}
 .flip .fb2{display:none}.flip.on .ff{display:none}.flip.on .fb2{display:block}.flip{cursor:pointer}.flip .learn-card{min-height:230px}
 .p-top a.x{text-decoration:none;color:inherit;display:inline-grid;place-items:center}
+.rs{border-radius:6px;transition:background .15s;cursor:pointer}.rs.on{background:rgba(201,162,39,.32);box-shadow:0 0 0 3px rgba(201,162,39,.32)}

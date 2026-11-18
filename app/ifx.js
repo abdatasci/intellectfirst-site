@@ -583,7 +583,7 @@
     else if (/^book:/.test(k)) { var bk = k.slice(5), BL = { 'ef-a0': 'A1', 'ef-a1': 'A1', 'ef-a2': 'A2', 'ef-b1': 'B1', 'ef-b2': 'B2', 'ef-c1': 'C1', 'ef-c2': 'C2', 'teens-b1': 'B1', 'teens-b2': 'B2', giu: 'B1' }; P.level = BL[bk]; P.book = true;
       if (bk === 'ef-a0') { P.test = byId('ef-a1'); P.voc = byId('voc-a1'); P.game = byId('mind-lab'); }   // Beginner (A0): the Elementary materials until Beginner ones exist
       else if (/^ef-/.test(bk)) { P.test = byId(bk); P.voc = byId('voc-' + bk.slice(3)); P.game = byId('mind-lab'); }
-      else if (/^teens-/.test(bk)) { P.test = byId(bk); P.voc = byId(bk === 'teens-b1' ? 'voc-tb1' : 'voc-tb2'); P.game = byId('gameroom'); }
+      else if (/^teens-/.test(bk)) { P.test = byId(bk); P.voc = byId(bk === 'teens-b1' ? 'voc-tb1' : 'voc-tb2'); P.game = byId('mafia-live'); }
       else { P.voc = byId('gram-centre'); P.game = byId('mind-lab'); P.test = byId('test-centre'); }
       P.course = BY[bk] || BY['ge-' + (P.level || '').toLowerCase()]; }
     if (!P.game) P.game = IFX_DIR.filter(function (x) { return x.s === 'games' && fitsKey(x, k); })[0];
@@ -845,11 +845,31 @@
       $('#nx').onclick = function () { V.on = false; try { speechSynthesis.cancel(); } catch (e) {} L.i++; drawStep(); }; ui(); return;
     }
     if (it.k === 'read') {
-      v.innerHTML = '<div class="player">' + pTop() + '<article class="reading">' + (L.l.chart ? '<div class="chart">' + chartSVG() + '</div>' : photo(L.l.photo, L.l.alt)) + '<h3>' + esc(L.l.title) + '</h3><div class="txt">' + paras(L.l.text) + '</div></article>' +
+      v.innerHTML = '<div class="player">' + pTop() + '<article class="reading">' + (L.l.chart ? '<div class="chart">' + chartSVG() + '</div>' : photo(L.l.photo, L.l.alt)) + '<h3>' + esc(L.l.title) + '</h3><div class="txt" id="rtxt">' + parasS(L.l.text) + '</div></article>' +
         '<p style="text-align:center;margin-top:18px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap"><button class="btn ghost" id="sy">🔊 Listen</button><button class="btn" id="nx">Questions →</button></p></div>';
-      bindTop(); $('#sy').onclick = function () { say(L.l.text.replace(/\n+/g, ' ')); }; $('#nx').onclick = function () { try { speechSynthesis.cancel(); } catch (e) {} L.i++; drawStep(); }; return;
+      bindTop(); readAloud($('#rtxt'), $('#sy')); $('#nx').onclick = function () { try { speechSynthesis.cancel(); } catch (e) {} L.i++; drawStep(); }; return;
     }
     drawEx(it.e);
+  }
+  /* a text split into sentences, so "Listen" can highlight each sentence while it is read aloud */
+  var parasS = function (s) { var n = 0; return String(s).split(/\n\s*\n/).map(function (p) { return '<p>' + (p.replace(/\n/g, ' ').match(/[^.!?]+[.!?]+["”’)]*\s*|[^.!?]+$/g) || [p]).map(function (x) { return '<span class="rs" data-s="' + (n++) + '">' + esc(x) + '</span>'; }).join('') + '</p>'; }).join(''); };
+  function readAloud(root, btn) {
+    var on = false, tok = 0, spans = $$('.rs', root);
+    var clear = function () { spans.forEach(function (x) { x.classList.remove('on'); }); };
+    var stop = function () { on = false; tok++; try { speechSynthesis.cancel(); } catch (e) {} clear(); btn.textContent = '🔊 Listen'; };
+    var start = function (from) {
+      on = true; var my = ++tok; btn.textContent = '⏹ Stop'; try { speechSynthesis.cancel(); } catch (e) {}
+      spans.slice(from).forEach(function (el, k) {
+        try {
+          var u = new SpeechSynthesisUtterance(el.textContent.trim()); u.lang = 'en-GB'; u.rate = .95;
+          u.onstart = function () { if (my !== tok) return; clear(); el.classList.add('on'); try { var r = el.getBoundingClientRect(); if (r.top < 90 || r.bottom > innerHeight - 110) el.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch (e) {} };
+          if (from + k === spans.length - 1) u.onend = function () { if (my === tok) stop(); };
+          speechSynthesis.speak(u);
+        } catch (e) {}
+      });
+    };
+    btn.onclick = function () { if (on) stop(); else start(0); };
+    spans.forEach(function (el, k) { el.onclick = function () { start(k); }; });   // tap a sentence to listen from there
   }
   var paras = function (s) { return String(s).split(/\n\s*\n/).map(function (p) { return '<p>' + esc(p).replace(/\n/g, '<br>') + '</p>'; }).join(''); };
   function drawEx(e) {
@@ -1030,17 +1050,14 @@
     var items = IFX_DIR.filter(function (x) { return x.s === k && (APP ? appItem(x) : match(x, f)); });
     if (k === 'games') { var TOP = ['mind-lab', 'mind-lab-kids']; items.sort(function (a, b) { var ia = TOP.indexOf(a.id), ib = TOP.indexOf(b.id); return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib); }); }   // IF Mind Lab first
     var EDITION = /^(kart|bq|obby|kq)-(ket|pet|flyers)$/;   // KET / PET / Flyers editions of the young learners' games
-    if (k === 'games' && (f === 'all' || f === 'young')) {
-      var shown = {}, grp = function (title, list) { list = list.filter(function (x) { return x && !shown[x.id]; }); list.forEach(function (x) { shown[x.id] = 1; }); return list.length ? '<div class="sec"><h2>' + title + '</h2></div><div class="grid">' + list.map(itemCard).join('') + '</div>' : ''; };
-      var G = function (fn) { return IFX_DIR.filter(function (x) { return x.s === 'games' && !EDITION.test(x.id) && fn(x); }); };
-      var eds = IFX_DIR.filter(function (x) { return x.s === 'games' && EDITION.test(x.id); });
-      var edRow = '<div class="eds"><b>KET, PET and Flyers editions:</b> ' + eds.map(function (x) { return '<a class="chip" href="#/play/' + x.id + '">' + x.icon + ' ' + esc(x.t) + '</a>'; }).join('') + '</div>';
-      var body = f === 'young' ? grp('Young learners · Starters to PET', G(function (x) { return match(x, 'young'); })) + edRow
-        : grp('⭐ Start here', [byId('mind-lab'), byId('live')]) + grp('Class games', G(function (x) { return match(x, 'class'); })) + grp('Teens & adults', G(function (x) { return match(x, 'teens') && !match(x, 'young'); })) +
-          grp('Young learners · Starters to PET', G(function (x) { return match(x, 'young'); })) + edRow + grp('More', G(function () { return true; }));
-      view().innerHTML = '<div class="page-h"><div><p class="h-eyebrow">' + esc(t(k)) + '</p><h1>' + esc(sc.h) + '</h1><p>' + esc(sc.p) + '</p></div></div>' +
-        (full ? '<div class="chips">' + sc.f.map(function (x) { return '<button class="chip' + (x[0] === f ? ' on' : '') + '" data-f="' + x[0] + '">' + esc(x[1]) + '</button>'; }).join('') + '</div>' : goalBar()) + gamesChip(k) + body;
-      $$('[data-f]').forEach(function (b) { b.onclick = function () { vSection(k, b.dataset.f); }; });
+    if (k === 'games') {   // eight games in three groups; the exam and age editions are a level choice on the game itself
+      var gl = function (ids) { return ids.map(byId).filter(function (x) { return x && (full || fits(x)); }); };
+      var grp = function (title, d, list, more) { return list.length ? '<div class="sec"><h2>' + title + '</h2><p class="sec-d">' + d + '</p></div><div class="grid">' + list.map(itemCard).join('') + '</div>' + (more || '') : ''; };
+      var adv = gl(['if-kart', 'block-quest', 'kids-quest']);
+      view().innerHTML = '<div class="page-h"><div><p class="h-eyebrow">' + esc(t(k)) + '</p><h1>' + esc(sc.h) + '</h1><p>' + esc(sc.p) + '</p></div></div>' + (full ? '' : goalBar()) + gamesChip(k) +
+        grp('👥 Play together', 'For the class or a group of friends: one screen or everyone on their phones.', gl(['live', 'mafia-live', 'mystery-live'])) +
+        grp('🧠 Mind Lab', 'Daily mind training that uses every skill: words, grammar, memory and logic.', gl(['mind-lab', 'mind-lab-kids'])) +
+        grp('🏁 Adventure and racing', 'Play alone at your own level.', adv, adv.map(function (x) { return levelRow(x.id, x.id, true); }).join(''));
       return;
     }
     if (k === 'games' && f !== 'fit') items = items.filter(function (x) { return !EDITION.test(x.id); });
@@ -1061,6 +1078,10 @@
     for (i = 0; i < m.length; i++) { k = m[i]; if (/^(ge|be):/.test(k)) return k.split(':')[1]; if (Y[k]) return Y[k]; if (k === 'ket') return 'A2'; if (k === 'pet') return 'B1'; }
     return '';
   }
+  /* one game, several levels: the level is chosen on the game, not from separate entries in the list */
+  var GLEVELS = { 'if-kart': [['if-kart', 'All levels'], ['kart-ket', 'A2 Key'], ['kart-pet', 'B1 PET']], 'block-quest': [['block-quest', 'All levels'], ['bq-kids', 'Kids A1'], ['bq-ket', 'A2 Key'], ['bq-pet', 'B1 PET']], 'kids-quest': [['kids-quest', 'All levels'], ['kq-flyers', 'Flyers'], ['kq-ket', 'A2 Key'], ['kq-pet', 'B1 PET']] };
+  var GFAMILY = {}; Object.keys(GLEVELS).forEach(function (f) { GLEVELS[f].forEach(function (x) { GFAMILY[x[0]] = f; }); });
+  function levelRow(fam, cur, named) { var L2 = GLEVELS[fam]; if (!L2) return ''; var g = byId(fam); return '<div class="eds"><b>' + (named && g ? esc(g.t) + ' · level:' : 'Level:') + '</b> ' + L2.filter(function (x) { return byId(x[0]); }).map(function (x) { return '<a class="chip' + (x[0] === cur && !named ? ' on' : '') + '" href="#/play/' + x[0] + '">' + esc(x[1]) + '</a>'; }).join('') + '</div>'; }
   function vPlay(id) {
     if (OLD_IDS[id]) id = OLD_IDS[id];
     if (VREPL[id] && BY[VREPL[id]]) return go('#/words/' + VREPL[id]);
@@ -1084,7 +1105,7 @@
       return;
     }
     if (/^mind-lab/.test(it.id)) { var mlv = myLevel(); if (mlv) it = Object.assign({}, it, { href: it.href + (it.href.indexOf('?') >= 0 ? '&' : '?') + 'lv=' + mlv }); }   // Mind Lab opens at the student's level
-    view().innerHTML = '<div class="playbar"><a class="chip" href="#/' + (SEC[it.s] ? it.s : 'more') + '">← ' + esc(SEC[it.s] ? t(it.s) : t('more')) + '</a><b>' + it.icon + ' ' + esc(it.t) + '</b><a class="chip" href="' + esc(it.href) + '"' + (window.IF_TG ? '' : ' target="_blank" rel="noopener"') + ' data-gf="1">⛶ Full screen</a></div>' +
+    view().innerHTML = '<div class="playbar"><a class="chip" href="#/' + (SEC[it.s] ? it.s : 'more') + '">← ' + esc(SEC[it.s] ? t(it.s) : t('more')) + '</a><b>' + it.icon + ' ' + esc(it.t) + '</b><a class="chip" href="' + esc(it.href) + '"' + (window.IF_TG ? '' : ' target="_blank" rel="noopener"') + ' data-gf="1">⛶ Full screen</a></div>' + levelRow(GFAMILY[it.id], it.id) +
       (ACT.play = { id: it.id, t: it.t, t0: Date.now() }, '') +
       '<div class="playwrap" id="pw"><iframe src="' + esc(it.href) + '" title="' + esc(it.t) + '" allow="autoplay; fullscreen; microphone" allowfullscreen></iframe>' +
       '<div class="gfx"><button type="button" id="gx" aria-label="Exit game">✕</button><button type="button" id="gf" aria-label="Full screen">⛶</button></div></div>';
