@@ -301,6 +301,7 @@
       var src = U.lessons.filter(function (y) { return y.id === x.id; })[0] || {};
       if (x.type === 'vocab') x.words = words.slice(src.from || 0, src.to || words.length);
       else if (x.type === 'grammar' && U.g) { x.rule = U.g.rule; x.ru = U.g.ru || ''; x.ex = U.g.ex; }
+      else if (x.type === 'reading' && U.r) { x.text = U.r.text; x.ex = U.r.ex; }
       else if (x.type === 'listen' && U.l) { x.intro = U.l.intro; x.script = U.l.script; x.ex = U.l.ex; }
       else if (x.type === 'speaking') x.ex = [];
       else if (x.type === 'check') x.gen = efCheck(u, U.g);
