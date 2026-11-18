@@ -1,0 +1,131 @@
+# English Files · Intermediate Plus (B1+), units 6A to 10B. Written by IF Academy: only the unit order, titles and topics follow the coursebook.
+@6A | What the waiter really thinks
+menu | a list of the food in a restaurant | меню | - | You should look at the menu before you sit down. | look at the menu | Could we look at the menu?
+starter | a small dish before the main course | закуска | - | You don't have to order a starter. | for a starter | I'll have soup for a starter.
+main course | the biggest part of a meal | основное блюдо | - | We had fish for the main course. | for the main course | What would you like for the main course?
+dessert | sweet food at the end of a meal | десерт | - | You must try the dessert here. | for dessert | I'd like ice cream for dessert.
+bill | the paper that shows what you must pay | счёт | - | You have to ask for the bill in this country. | ask for the bill | Shall we ask for the bill?
+tip | extra money you give a waiter | чаевые | - | You don't have to leave a tip, but most people do. | leave a tip | We left a small tip.
+book a table | arrange to have a table at a restaurant | заказать столик | - | You should book a table at the weekend. | book a table for + number | I booked a table for four.
+order | ask for food or drink in a restaurant | заказывать | - | We mustn't order too much. | order + food | I ordered the pasta.
+serve | give food or drink to a customer | обслуживать, подавать | - | They have to serve forty tables a night. | serve + person / food | The waiter served us quickly.
+rare | (of meat) cooked for a short time | с кровью (о мясе) | - | I'd like my steak rare, please. | rare / medium / well done | How would you like your steak: rare or well done?
+complain | say that you are not happy with something | жаловаться | - | You should complain if the food is cold. | complain about + noun | He complained about the service.
+service charge | money added to the bill for the waiters | плата за обслуживание | - | You needn't tip; there's a service charge. | include a service charge | The bill includes a service charge.
+@6B | Do it yourself
+drill | a tool for making holes | дрель | - | I couldn't find the drill, so I borrowed one. | use a drill | Can you use a drill?
+hammer | a tool for hitting nails | молоток | - | I've never been able to use a hammer properly. | hit + noun + with a hammer | He hit the nail with a hammer.
+nail | a thin piece of metal for joining wood | гвоздь | - | Can you pass me a nail? | hammer in a nail | I hammered in a nail.
+screw | a metal pin that you turn into wood | шуруп, винт | - | I can't get this screw out. | tighten a screw | Tighten the screw.
+screwdriver | a tool for turning screws | отвёртка | - | You'll be able to fix it with a screwdriver. | a screwdriver | Have you got a screwdriver?
+paintbrush | a brush for painting | кисть | - | I could paint the whole room with this paintbrush. | a paintbrush | I need a bigger paintbrush.
+ladder | a thing you climb to reach high places | лестница (стремянка) | - | I can't reach the ceiling without a ladder. | climb a ladder | He climbed the ladder.
+tap | a thing you turn to get water | кран | - | The tap is dripping, and I can't fix it. | a dripping tap | We have a dripping tap.
+light bulb | the glass part of a lamp that gives light | лампочка | - | Even I can change a light bulb. | change a light bulb | Could you change the light bulb?
+put up | fix something to a wall | повесить, установить | - | I managed to put up a shelf. | put up + a shelf / a picture | She put up a picture.
+fix | repair | чинить | - | Will you be able to fix it today? | fix + noun | He fixed my bike.
+it's a kind of | words you use when you don't know the name | это что-то вроде | - | It's a kind of tool for cutting wood. | It's a kind of + noun | It's a kind of glue.
+@7A | Take your cash
+cash machine | a machine that gives you money | банкомат | - | I took fifty dollars out of the cash machine. | use a cash machine | Is there a cash machine near here?
+PIN | the secret number for your bank card | ПИН-код | - | I typed in my PIN, but nothing happened. | type in your PIN | Type in your PIN.
+take out | get money from a machine or bank | снимать (деньги) | - | I need to take out some cash. | take + money + out | I took out a hundred dollars.
+pay in | put money into a bank account | вносить (деньги) | - | She paid the cheque in yesterday. | pay + money + in | I paid in two hundred dollars.
+run out of | have no more of something | закончиться (о чём-то) | - | I've run out of cash. | run out of + noun | We've run out of milk.
+give back | return something | возвращать | - | The machine didn't give my card back. | give + noun + back | Give it back!
+pay back | return money that you borrowed | возвращать долг | - | I'll pay you back tomorrow. | pay + person + back | Did he pay you back?
+find out | discover information | выяснить | - | I found out that my account was empty. | find out + (that) clause | I found out that he had moved.
+look after | take care of | присматривать за | - | Look after your card; don't lose it. | look after + noun | Can you look after my bag?
+balance | the amount of money in an account | остаток на счёте | - | I checked my balance on my phone. | check your balance | I check my balance every week.
+withdraw | take money out of an account | снимать со счёта | - | You can withdraw up to five hundred dollars a day. | withdraw + money | She withdrew all her savings.
+contactless | paying by touching a card to a machine | бесконтактный | - | Most people pay by contactless card now. | pay by contactless | Can I pay by contactless?
+@7B | Shall we go out or stay in?
+gig | a live performance by a band | концерт (группы) | - | We decided to go to a gig on Friday. | go to a gig | I went to a gig last night.
+venue | the place where an event happens | место проведения | - | The venue is easy to find. | a concert venue | It's a great concert venue.
+stage | the place where actors or musicians perform | сцена | - | I enjoy standing near the stage. | on stage | The band came on stage at nine.
+audience | the people who watch a show | зрители, публика | - | The audience kept clapping. | the audience + verb | The audience loved it.
+performance | an act of showing a play or music | выступление, представление | - | I'd recommend seeing a live performance. | a live performance | It was a brilliant live performance.
+play | a story that actors perform in a theatre | пьеса | - | We managed to get tickets for the play. | see a play | We saw a play at the theatre.
+interval | a short break in the middle of a show | антракт | - | They sell ice cream in the interval. | in the interval | We had a drink in the interval.
+box office | the place where you buy theatre tickets | касса | - | You need to collect the tickets at the box office. | at the box office | I bought it at the box office.
+sold out | with no tickets left | распродано | - | I wanted to go, but it was sold out. | be sold out | The concert is sold out.
+live | performed in front of you, not recorded | вживую, живой | - | I prefer listening to live music. | live music | The café has live music.
+row | a line of seats | ряд | - | We were sitting in the front row. | in the front / back row | I like sitting in the back row.
+stay in | not go out in the evening | остаться дома | - | I feel like staying in tonight. | stay in + tonight | Let's stay in tonight.
+@8A | Treat yourself
+haircut | the act of cutting your hair | стрижка | - | I'm having a haircut on Saturday. | have a haircut | I need to have a haircut.
+manicure | a treatment for your hands and nails | маникюр | - | She has a manicure every month. | have a manicure | I had a manicure yesterday.
+massage | pressing and rubbing the body to relax it | массаж | - | He had his back massaged after the race. | have a massage | I'd love to have a massage.
+facial | a beauty treatment for your face | уход за лицом | - | She treated herself to a facial. | have a facial | I've never had a facial.
+dye | change the colour of hair | красить (волосы) | - | I had my hair dyed red. | have your hair dyed | She has her hair dyed every month.
+trim | cut a small amount from hair | подравнивать | - | I just want to have my beard trimmed. | have + noun + trimmed | I had my hair trimmed.
+spa | a place for health and beauty treatments | спа | - | We spent the day at a spa. | at a spa | I relaxed at a spa.
+gym | a place where you do exercise | спортзал | - | I go to the gym before work. | go to the gym | She goes to the gym three times a week.
+treat yourself | do something special for yourself | побаловать себя | - | I treated myself to a new coat. | treat yourself to + noun | Treat yourself to a day off.
+teeth whitened | made whiter by a dentist | отбеленные зубы | - | He had his teeth whitened before the wedding. | have your teeth whitened | I'd never have my teeth whitened.
+eyes tested | checked by an optician | проверка зрения | - | You should have your eyes tested every two years. | have your eyes tested | I had my eyes tested last week.
+appointment | an arranged time to see somebody | запись, приём | - | I've made an appointment at the hairdresser's. | make an appointment | I need to make an appointment.
+@8B | Sites and sights
+castle | a large old building with thick walls | замок | - | The castle was built in the twelfth century. | be built in + date | It was built in 1650.
+palace | a large house where a king or queen lives | дворец | - | The palace, which has two hundred rooms, is open to visitors. | a royal palace | We visited a royal palace.
+cathedral | a very large and important church | собор | - | The cathedral was designed by a local architect. | be designed by + person | It was designed by a student.
+monument | a statue or building to remember somebody | памятник | - | The monument was put up after the war. | a monument to + person | There's a monument to the poet.
+ruins | what remains of an old building | руины | - | The ruins that we visited were two thousand years old. | the ruins of + noun | We saw the ruins of a temple.
+tower | a tall narrow building | башня | - | The tower was destroyed in a storm. | climb a tower | We climbed the tower.
+battle | a fight between two armies | битва | - | The battle was fought near the river. | fight a battle | A battle was fought here.
+army | a large group of soldiers | армия | - | The army was led by a young general. | join the army | He joined the army.
+invade | enter a country with an army | вторгаться | - | The country was invaded three times. | invade + a country | They invaded the island.
+defeat | win against somebody in a war or game | победить, разгромить | - | The king, who was only twenty, was defeated. | defeat + enemy | They defeated the enemy.
+century | a period of a hundred years | век | - | The walls were built in the tenth century. | in the + number + century | It was built in the fifteenth century.
+restore | repair an old building | реставрировать | - | The palace has been restored. | be restored | The church is being restored.
+@9A | Total recall
+memory | the ability to remember things | память | - | He said that he had a terrible memory. | have a good / bad memory | I have a bad memory for names.
+memorize | learn something so that you remember it exactly | заучивать | - | She told me she had memorized the speech. | memorize + noun | I memorized the poem.
+remind | make somebody remember | напоминать | - | He asked me to remind him about the meeting. | remind + person + to + verb | Remind me to call her.
+forgetful | often forgetting things | забывчивый | - | She said that she was getting forgetful. | be forgetful | My father is forgetful.
+unforgettable | impossible to forget | незабываемый | - | They said it had been an unforgettable day. | an unforgettable + noun | It was an unforgettable trip.
+recognize | know somebody because you have seen them before | узнавать | - | He said he hadn't recognized me. | recognize + person | I didn't recognize her.
+recall | remember | вспоминать | - | She couldn't recall where she had left it. | recall + noun | I can't recall his name.
+by heart | from memory | наизусть | - | He told us that he knew the poem by heart. | know + noun + by heart | I know it by heart.
+vivid | very clear | яркий, живой | - | She said she had a vivid memory of that day. | a vivid memory | I have a vivid memory of it.
+remember | have in your mind | помнить | - | He asked me if I remembered him. | remember + noun or -ing | I remember meeting her.
+forget | not remember | забывать | - | She said she would never forget it. | forget + noun | I forgot her birthday.
+reminder | something that helps you remember | напоминание | - | I set a reminder on my phone. | set a reminder | Set a reminder for nine.
+@9B | Here comes the bride
+bride | a woman on her wedding day | невеста | - | If the bride hadn't been late, we would have started on time. | the bride | The bride wore white.
+groom | a man on his wedding day | жених | - | The groom had forgotten the rings. | the groom | The groom was nervous.
+best man | the friend who helps the groom | шафер, свидетель | - | The best man had prepared a funny speech. | the best man | His brother was the best man.
+bridesmaid | a girl or woman who helps the bride | подружка невесты | - | Her sister was a bridesmaid. | be a bridesmaid | I was a bridesmaid at her wedding.
+wedding | a marriage ceremony and party | свадьба | - | If it hadn't rained, the wedding would have been outside. | at a wedding | We met at a wedding.
+ceremony | the formal part of a wedding | церемония | - | The ceremony had already begun when we arrived. | a wedding ceremony | The wedding ceremony was short.
+reception | the party after a wedding | банкет | - | The reception was held in a hotel. | at the reception | We danced at the reception.
+honeymoon | a holiday after a wedding | медовый месяц | - | They had booked a honeymoon in Italy. | go on honeymoon | They went on honeymoon to Bali.
+guest | a person who is invited | гость | - | Two hundred guests had been invited. | a wedding guest | She was a wedding guest.
+propose | ask somebody to marry you | делать предложение | - | He had proposed on a mountain. | propose to + person | He proposed to her in Paris.
+get engaged | agree to marry | обручиться | - | They had got engaged a year before. | get engaged to + person | She got engaged to a doctor.
+vows | the promises made at a wedding | клятвы | - | They had written their own vows. | exchange vows | The couple exchanged vows.
+@10A | The land of the free?
+flat | a home on one floor of a building (British) | квартира | - | I do like my flat, but it is small. | flat (UK) · apartment (US) | Americans say "apartment".
+lift | a machine that carries people up and down (British) | лифт | - | The lift isn't working. | lift (UK) · elevator (US) | Americans say "elevator".
+pavement | the path at the side of a road (British) | тротуар | - | Don't cycle on the pavement. | pavement (UK) · sidewalk (US) | Americans say "sidewalk".
+petrol | the fuel for a car (British) | бензин | - | We have run out of petrol. | petrol (UK) · gas (US) | Americans say "gas".
+chips | long fried pieces of potato (British) | картофель фри | - | Do you have chips with it? | chips (UK) · fries (US) | Americans say "fries".
+crisps | thin fried slices of potato in a bag (British) | чипсы | - | I had a packet of crisps. | crisps (UK) · chips (US) | Americans say "chips".
+trousers | clothes for your legs (British) | брюки | - | Have you got black trousers? | trousers (UK) · pants (US) | Americans say "pants".
+queue | a line of people waiting (British) | очередь | - | There was a long queue. | queue (UK) · line (US) | Americans say "line".
+rubbish | things you throw away (British) | мусор | - | Did you take the rubbish out? | rubbish (UK) · garbage (US) | Americans say "garbage".
+autumn | the season before winter (British) | осень | - | It does rain a lot in autumn. | autumn (UK) · fall (US) | Americans say "fall".
+holiday | a time when you do not work (British) | отпуск, каникулы | - | We are having a holiday in May. | holiday (UK) · vacation (US) | Americans say "vacation".
+motorway | a wide fast road (British) | автомагистраль | - | We don't have a motorway near here. | motorway (UK) · freeway (US) | Americans say "freeway".
+@10B | Please turn over your papers
+revise | study again before an exam | повторять | - | I've been revising all week. | revise for + an exam | I'm revising for my finals.
+take an exam | do an exam | сдавать экзамен | - | I'm taking the exam tomorrow. | take an exam in + subject | She took an exam in maths.
+pass | be successful in an exam | сдать | - | If I pass, I'll celebrate. | pass + an exam | He passed all his exams.
+fail | not be successful in an exam | провалить | - | I would have failed if I hadn't revised. | fail + an exam | She failed her driving test.
+cheat | act dishonestly in an exam | списывать | - | He was caught cheating. | cheat in + an exam | Nobody cheats in this exam.
+mark | the number or letter you get for your work | оценка | - | I got a good mark in history. | get a good / bad mark | She got a bad mark.
+result | the mark you get in an exam | результат | - | The results will be sent next week. | get your results | I got my results today.
+essay | a piece of writing on a subject | эссе, сочинение | - | We had to write two essays. | write an essay | I wrote an essay about pollution.
+multiple choice | with several possible answers to choose from | с выбором ответа | - | The first part was multiple choice. | a multiple-choice + question | It's a multiple-choice test.
+invigilator | a person who watches students in an exam | наблюдатель на экзамене | - | The invigilator told us to stop writing. | the invigilator | Ask the invigilator.
+retake | take an exam again | пересдавать | - | I used to hate exams; now I'm retaking one. | retake + an exam | He had to retake the test.
+nervous | worried about something that will happen | нервничающий | - | I've never been so nervous. | be nervous about + noun | I'm nervous about the exam.
