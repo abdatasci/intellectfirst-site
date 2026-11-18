@@ -1,0 +1,270 @@
+# English Files · Elementary (A1), units 5A to 8C: original example sentences and patterns for the flashcards. Written by IF Academy.
+@5A
+buy a pizza | Can you buy a pizza for dinner? | buy + noun | I can buy the tickets.
+call a taxi | Can you call a taxi, please? | call + noun | I can call a doctor.
+dance the tango | She can dance the tango. | dance + noun | Can you dance salsa?
+draw a picture | He can draw a picture of a horse. | draw + noun | I can't draw people.
+find a parking space | I can't find a parking space. | find + noun | I can't find my keys.
+forget somebody's name | I sometimes forget somebody's name. | forget + noun | I never forget a face.
+give somebody flowers | You can give somebody flowers on their birthday. | give + person + noun | I give my mother flowers.
+hear a noise | Can you hear a noise? | hear + noun | I can hear music.
+help somebody | Can you help me, please? | help + person | I can help you.
+leave your bag on a train | Don't leave your bag on a train. | leave + noun + place | I leave my keys at home.
+look for your keys | I can't see them. I can look for your keys. | look for + noun | She is looking for her phone.
+meet a friend | I can meet a friend after work. | meet + person | We can meet at six.
+paint a picture | She can paint a picture of flowers. | paint + noun | He can paint very well.
+remember somebody's name | I can't remember her name. | remember + noun | Can you remember the address?
+run a race | He can run a race of ten kilometres. | run + noun | I can run fast.
+see a film | We can see a film tonight. | see + noun | I can see the sea.
+send a message | Can you send a message to Dana? | send + noun + to + person | I can send an email to him.
+sing a song | Can you sing a song in English? | sing + noun | She can sing well.
+swim in the sea | We can swim in the sea in summer. | swim in + place | I can swim in the lake.
+take a photo | Can you take a photo of us? | take a photo of + noun | I can take a photo of you.
+talk to a friend | I can talk to a friend about my problem. | talk to + person | Can I talk to you?
+tell somebody a secret | Can I tell you a secret? | tell + person + noun | I can tell you a story.
+try to open a door | I can't open it. Can you try to open the door? | try to + verb | Try to speak slowly.
+use an app | I can use an app to learn words. | use + noun | Can I use your phone?
+wait for a bus | We can wait for a bus here. | wait for + noun | I can wait for you.
+@5B
+bark | The dog is barking. | noun + is barking | Their dog is barking again.
+cry | The baby is crying. | noun + is crying | Why is she crying?
+shout | The children are shouting. | be shouting | Who is shouting?
+laugh | They are laughing at the film. | laugh at + noun | We are laughing at his joke.
+ring | My phone is ringing. | noun + is ringing | The bell is ringing.
+sneeze | He is sneezing. He has a cold. | be sneezing | I am sneezing a lot.
+snore | My father is snoring. | be snoring | The dog is snoring.
+cough | She is coughing. | be coughing | The child is coughing.
+knock | Somebody is knocking on the door. | knock on + noun | He is knocking on the window.
+play loud music | The neighbours are playing loud music. | play + music | They are playing music.
+talk loudly | The men are talking loudly. | talk + adverb | Please talk quietly.
+noisy | The street is very noisy. | be noisy | The children are noisy.
+quiet | The house is quiet today. | be quiet | Please be quiet.
+neighbours | My neighbours are having a party. | my neighbours | I like my neighbours.
+a party | They are having a party. | have a party | We are having a party.
+a baby | A baby is crying. | a baby | They have a baby.
+an alarm | An alarm is ringing. | an alarm + rings | The alarm is ringing.
+a plane | A plane is flying over the house. | a plane | I can hear a plane.
+traffic | The traffic is very noisy. | the traffic | I can hear the traffic.
+a noise | What is that noise? | hear a noise | I can hear a noise.
+@5C
+sunny | It is sunny today. | It's sunny. | It's often sunny in May.
+hot | It is hot in July. | It's hot. | It's hot today.
+cloudy | It is cloudy this morning. | It's cloudy. | It's cloudy in London.
+raining | It is raining now. | It's raining. | It's raining again.
+windy | It is windy today. | It's windy. | It's always windy here.
+foggy | It is foggy this morning. | It's foggy. | It's often foggy in autumn.
+cold | It is cold in winter. | It's cold. | It's cold today.
+snowing | Look! It is snowing. | It's snowing. | It's snowing in Astana.
+warm | It is warm in spring. | It's warm. | It's warm today.
+cool | It is cool in the evening. | It's cool. | It's cool in the mountains.
+wet | The streets are wet. | be wet | My shoes are wet.
+dry | The weather is dry in summer. | be dry | The road is dry.
+spring | Flowers come in spring. | in spring | It rains in spring.
+summer | We swim in summer. | in summer | It is hot in summer.
+autumn | The trees are yellow in autumn. | in autumn | It rains in autumn.
+winter | It snows in winter. | in winter | We ski in winter.
+What's the weather like? | What's the weather like today? | What's + noun + like? | What's your city like?
+a cloud | There is a big cloud in the sky. | a cloud | I can see a cloud.
+the wind | The wind is very cold. | the wind | I don't like the wind.
+a temperature | The temperature is twenty degrees. | the temperature is + number | The temperature is zero.
+@6A
+a story | I read a story to my son. | read a story | Tell me a story.
+a king | The king lives in a castle. | a king | The story is about a king.
+a queen | The queen loves her children. | a queen | She is a queen.
+a prince | The prince meets her in the forest. | a prince | He is a prince.
+a princess | The princess helps him. | a princess | She is a princess.
+a castle | They live in a castle. | in a castle | The king is in a castle.
+a forest | The wolf lives in a forest. | in a forest | We walk in a forest.
+a wolf | The wolf follows them. | a wolf | I can see a wolf.
+a witch | The witch doesn't like her. | a witch | She is a witch.
+magic | The witch uses magic. | use magic | He can do magic.
+once upon a time | Once upon a time, there was a king. | Once upon a time, … | Once upon a time, there was a little girl.
+happily ever after | They lived happily ever after. | live happily ever after | The prince and the princess lived happily ever after.
+brave | The prince is brave. | be brave | Be brave!
+kind | The queen is kind to them. | be kind to + person | She is kind to me.
+a hero | The boy is a hero. | be a hero | He is my hero.
+hide | The children hide from him. | hide from + person | The cat hides from us.
+kiss | The mother kisses her. | kiss + person | He kisses the baby.
+marry | The prince wants to marry her. | marry + person | She wants to marry him.
+a gift | The king gives them a gift. | give + person + a gift | I give her a gift.
+a wish | The girl has a wish. | make a wish | Make a wish!
+@6B
+first | The first of May is a holiday. | the first of + month | It is the first of June.
+second | My birthday is on the second of March. | the second of + month | It is the second of April.
+third | Today is the third of July. | the third of + month | It is the third of May.
+fourth | The party is on the fourth of June. | the fourth of + month | It is the fourth of July.
+fifth | The lesson is on the fifth of May. | the fifth of + month | It is the fifth of August.
+sixth | His birthday is on the sixth of January. | the sixth of + month | It is the sixth of March.
+seventh | We travel on the seventh of July. | the seventh of + month | It is the seventh of June.
+eighth | The eighth of March is a holiday. | the eighth of + month | It is the eighth of May.
+ninth | The exam is on the ninth of June. | the ninth of + month | It is the ninth of May.
+tenth | Today is the tenth of October. | the tenth of + month | It is the tenth of April.
+twelfth | The concert is on the twelfth of April. | the twelfth of + month | It is the twelfth of June.
+twentieth | Her birthday is on the twentieth of May. | the twentieth of + month | It is the twentieth of July.
+twenty-first | School ends on the twenty-first of June. | the twenty-first of + month | It is the twenty-first of March.
+thirtieth | The thirtieth of August is a holiday. | the thirtieth of + month | It is the thirtieth of April.
+love | I love cooking. | love + -ing | She loves dancing.
+like | I like reading in bed. | like + -ing | He likes running.
+don't mind | I don't mind getting up early. | don't mind + -ing | She doesn't mind waiting.
+don't like | I don't like shopping. | don't like + -ing | He doesn't like cooking.
+hate | I hate washing up. | hate + -ing | She hates driving.
+a birthday | My birthday is in May. | your birthday | When is your birthday?
+the date | What is the date today? | the date | I don't know the date.
+@6C
+an accordion | He plays an accordion. | play the accordion | Do you play the accordion?
+a bass guitar | She plays a bass guitar in a band. | play the bass guitar | Does he play the bass guitar?
+drums | Are the drums loud? | play the drums | Do you play the drums?
+a guitar | Is that your guitar? | play the guitar | Do you play the guitar?
+a keyboard | She has a keyboard at home. | play the keyboard | Does she play the keyboard?
+a piano | Is there a piano in your house? | play the piano | Do you play the piano?
+a saxophone | The saxophone is my favourite. | play the saxophone | Does he play the saxophone?
+a trumpet | He doesn't play the trumpet. | play the trumpet | Do you play the trumpet?
+a violin | Is the violin difficult? | play the violin | Does she play the violin?
+a guitarist | Is he a good guitarist? | be a guitarist | She is a guitarist.
+a pianist | She is a pianist. | be a pianist | Are you a pianist?
+a drummer | Is the drummer in the band? | be a drummer | He is a drummer.
+a violinist | He isn't a violinist. | be a violinist | She is a violinist.
+a saxophonist | Is she a saxophonist? | be a saxophonist | He is a saxophonist.
+a singer | Are you a singer? | be a singer | She is a singer.
+a band | Do you play in a band? | play in a band | I play in a band.
+classical music | Do you like classical music? | like + music | I like classical music.
+jazz | Does he listen to jazz? | listen to jazz | I listen to jazz.
+hip hop | Do they like hip hop? | like hip hop | My brother likes hip hop.
+a concert | Is the concert tonight? | go to a concert | We go to a concert.
+@7A
+a writer | She was a famous writer. | be a writer | He was a writer.
+a painter | He was a great painter. | be a painter | She was a painter.
+a player | He was a good tennis player. | a + sport + player | She was a football player.
+a teacher | My grandmother was a teacher. | be a teacher | He was a teacher.
+a dancer | She was a dancer in a theatre. | be a dancer | He was a dancer.
+a singer | He was a famous singer. | be a singer | She was a singer.
+a runner | She was a fast runner. | be a runner | He was a runner.
+a swimmer | He was a strong swimmer. | be a swimmer | She was a swimmer.
+an inventor | He was an inventor. | be an inventor | She was an inventor.
+a director | She was a film director. | a film director | He was a film director.
+a scientist | She was a great scientist. | be a scientist | He was a scientist.
+a politician | He was a politician. | be a politician | She was a politician.
+a photographer | She was a photographer. | be a photographer | He was a photographer.
+an artist | He was a famous artist. | be an artist | She was an artist.
+a composer | He was a great composer. | be a composer | She was a composer.
+a sailor | My grandfather was a sailor. | be a sailor | He was a sailor.
+famous | They were very famous. | be famous | She was famous.
+born | I was born in 1995. | be born + in + year / place | He was born in Almaty.
+a painting | It was a beautiful painting. | a painting | There was a painting on the wall.
+@7B
+yesterday | I worked yesterday. | verb + yesterday | We talked yesterday.
+last night | I watched a film last night. | verb + last night | I cooked last night.
+last week | We travelled last week. | verb + last week | I started last week.
+last month | I visited my aunt last month. | verb + last month | We moved last month.
+last year | I lived in Astana last year. | verb + last year | She worked there last year.
+two days ago | I arrived two days ago. | number + days ago | I called three days ago.
+a year ago | We moved here a year ago. | a year ago | I started a year ago.
+in 2010 | I finished school in 2010. | in + year | She was born in 2010.
+yesterday morning | I walked to work yesterday morning. | yesterday + morning / evening | I studied yesterday evening.
+the day before yesterday | I arrived the day before yesterday. | the day before yesterday | We talked the day before yesterday.
+a mistake | It was a big mistake. | a mistake | I didn't see the mistake.
+a problem | There was a problem at the airport. | have a problem | I had a problem.
+arrive | I arrived at ten. | arrive at + time | We arrived at six.
+decide | We decided to stay. | decide to + verb | I decided to walk.
+happen | What happened yesterday? | What happened? | It happened last week.
+try | I tried to call you. | try to + verb | She tried to help.
+travel | We travelled by train. | travel by + transport | I travelled by bus.
+book | I booked a hotel. | book + noun | She booked a ticket.
+miss | I missed the bus. | miss + noun | He missed the train.
+wrong | It was the wrong day. | the wrong + noun | It was the wrong bus.
+@7C
+go by bus | We went by bus. | go by + transport | I went by car.
+go for a walk | I went for a walk in the park. | go for a walk | We went for a walk.
+go home | I went home at ten. | go home + at + time | She went home early.
+go out | We went out last night. | go out | I went out with friends.
+go to a restaurant | We went to a restaurant. | go to a + place | I went to a café.
+go to church | They went to church on Sunday. | go to church | She went to church.
+go to the beach | We went to the beach in July. | go to the beach | I went to the beach.
+go back to work | I went back to work on Monday. | go back to + place | She went back to school.
+go on holiday | We went on holiday in August. | go on holiday | I went on holiday.
+have a car | We had a car in 2015. | have + noun | I had a bike.
+have long hair | She had long hair. | have + adjective + hair | He had short hair.
+have a drink | We had a drink in a café. | have a drink | I had a drink.
+have a good time | We had a good time. | have a good time | I had a good time.
+have a sandwich | I had a sandwich for lunch. | have + food | She had a pizza.
+get a newspaper | I got a newspaper at the shop. | get + noun | She got some bread.
+get a taxi | We got a taxi home. | get a taxi | I got a taxi.
+get an email | I got an email from my boss. | get + noun + from + person | She got a letter from him.
+get to the airport | We got to the airport at six. | get to + place | I got to work late.
+get up early | I got up early yesterday. | get up + adverb | She got up late.
+New Year's Eve | We had a party on New Year's Eve. | on New Year's Eve | I stayed at home on New Year's Eve.
+fireworks | We saw fireworks at midnight. | see fireworks | I saw fireworks.
+celebrate | We celebrated at home. | celebrate + noun | I celebrated my birthday.
+@8A
+break / broke | He broke the window. | break + noun | I broke a cup.
+buy / bought | I bought a new phone. | buy + noun | She bought a coat.
+come / came | She came home late. | come + place | He came to the party.
+drive / drove | He drove to work. | drive to + place | I drove to the shop.
+find / found | I found my keys. | find + noun | She found a wallet.
+get / got | I got a letter yesterday. | get + noun | He got a present.
+give / gave | She gave me a book. | give + person + noun | I gave him a pen.
+go / went | We went to the cinema. | go to + place | I went to school.
+have / had | I had breakfast at eight. | have + noun | We had lunch.
+hear / heard | I heard a noise. | hear + noun | She heard music.
+know / knew | I knew the answer. | know + noun | He knew her name.
+leave / left | He left the house at nine. | leave + place | I left work at six.
+make / made | She made dinner. | make + noun | I made a cake.
+put / put | I put the keys on the table. | put + noun + place | She put the book in her bag.
+read / read | I read the newspaper. | read + noun | He read a book.
+say / said | She said hello. | say + noun | He said goodbye.
+see / saw | I saw a man in the garden. | see + noun | We saw a film.
+sit / sat | He sat on the sofa. | sit on + noun | I sat on a chair.
+take / took | She took the money. | take + noun | I took a photo.
+tell / told | He told me a story. | tell + person + noun | I told her the truth.
+think / thought | I thought it was Sunday. | think (that) + clause | She thought he was at home.
+a murder | There was a murder in the house. | a murder | The film was about a murder.
+a detective | The detective asked questions. | a detective | He was a detective.
+@8B
+a bathroom | There is a small bathroom. | there is a + room | There is a bathroom upstairs.
+a bedroom | There are two bedrooms. | there are + number + rooms | There are three bedrooms.
+a dining room | There isn't a dining room. | there isn't a + room | There isn't a study.
+a garage | There is a garage for the car. | there is a + noun | There is a garage.
+a garden | Is there a garden? | is there a + noun? | Is there a balcony?
+a hall | There is a mirror in the hall. | in the hall | The coats are in the hall.
+a kitchen | There is a big kitchen. | in the kitchen | We eat in the kitchen.
+a living room | There is a sofa in the living room. | in the living room | The TV is in the living room.
+a study | There is a desk in the study. | in the study | He works in the study.
+a balcony | There are some flowers on the balcony. | on the balcony | We sit on the balcony.
+a ceiling | The ceiling is high. | a high ceiling | There is a high ceiling.
+a floor | There is a carpet on the floor. | on the floor | The bag is on the floor.
+stairs | There are stairs to the bedrooms. | up / down the stairs | Go up the stairs.
+a wall | There are some pictures on the wall. | on the wall | The clock is on the wall.
+an armchair | There is an armchair near the window. | in an armchair | He sits in an armchair.
+a cooker | There is a new cooker in the kitchen. | a cooker | The cooker is hot.
+a cupboard | There are some cups in the cupboard. | in the cupboard | The plates are in the cupboard.
+a dishwasher | There isn't a dishwasher. | a dishwasher | We have a dishwasher.
+a fireplace | There is a fireplace in the living room. | a fireplace | I like the fireplace.
+a fridge | There is some milk in the fridge. | in the fridge | The cheese is in the fridge.
+a mirror | There is a mirror in the bathroom. | in the mirror | Look in the mirror.
+a shelf | There are some books on the shelf. | on the shelf | The lamp is on the shelf.
+a sink | There are some plates in the sink. | in the sink | The cups are in the sink.
+a sofa | There is a big sofa. | on the sofa | The cat is on the sofa.
+a wardrobe | There is a wardrobe in the bedroom. | in the wardrobe | My coat is in the wardrobe.
+a washing machine | There is a washing machine in the bathroom. | a washing machine | We need a washing machine.
+upstairs | The bedrooms are upstairs. | be upstairs | The bathroom is upstairs.
+downstairs | The kitchen is downstairs. | be downstairs | My parents are downstairs.
+@8C
+into | He went into the room. | go into + noun | She came into the kitchen.
+out of | She came out of the house. | come out of + noun | He ran out of the room.
+from … to | We walked from the hotel to the beach. | from + place + to + place | I drove from home to work.
+up | He went up the stairs. | go up + noun | We walked up the hill.
+down | She came down the stairs. | come down + noun | He ran down the hill.
+through | They walked through the door. | go through + noun | We walked through the park.
+in front of | There was a man in front of the door. | in front of + noun | There was a car in front of the house.
+behind | There was a garden behind the house. | behind + noun | There was a tree behind the wall.
+between | There was a table between the beds. | between + noun + and + noun | There was a door between the rooms.
+opposite | There was a mirror opposite the bed. | opposite + noun | There was a shop opposite the hotel.
+next to | There was a lamp next to the bed. | next to + noun | There was a chair next to the door.
+over | There was a bridge over the river. | over + noun | There was a light over the table.
+above | There was a picture above the bed. | above + noun | There was a clock above the door.
+below | There was a café below our room. | below + noun | There was a shop below the flat.
+a ghost | There was a ghost in the old hotel. | see a ghost | I saw a ghost.
+believe in | Do you believe in ghosts? | believe in + noun | I don't believe in ghosts.
+scared | I was scared in the dark room. | be scared | The children were scared.
+strange | There was a strange noise. | a strange + noun | There was a strange man.
+a noise | There was a noise upstairs. | hear a noise | I heard a noise.
