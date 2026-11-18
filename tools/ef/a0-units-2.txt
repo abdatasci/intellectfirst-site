@@ -1,0 +1,157 @@
+# English Files · Beginner (A0), units 7A to 12B. Written by IF Academy: only the unit order, titles and topics follow the coursebook.
+@7A | At the weekend
+go shopping | go to shops and buy things | ходить за покупками | ходить в магазины и покупать вещи | I go shopping on Saturday. | go shopping + on + day | We go shopping on Sunday.
+go to the cinema | go and watch a film | ходить в кино | идти смотреть фильм | Do you go to the cinema? | go to the + place | I go to the park.
+meet friends | see your friends | встречаться с друзьями | видеться с друзьями | Where do you meet friends? | meet + person | I meet my sister.
+play football | do the sport with a ball | играть в футбол | заниматься спортом с мячом | When do you play football? | play + sport | I play tennis.
+do sport | run, swim or play a game | заниматься спортом | бегать, плавать или играть | Do you do sport? | do sport | I do sport at the weekend.
+stay at home | not go out | оставаться дома | не выходить из дома | I stay at home on Sunday. | stay at home | We stay at home in the evening.
+cook | make food | готовить | делать еду | What do you cook? | cook + noun | I cook dinner.
+clean | make a place not dirty | убирать | делать место чистым | When do you clean your room? | clean + noun | I clean the house.
+visit | go and see a person or place | навещать, посещать | идти к человеку или в какое-то место | Who do you visit? | visit + person | I visit my grandmother.
+weekend | Saturday and Sunday | выходные | суббота и воскресенье | What do you do at the weekend? | at the weekend | I relax at the weekend.
+park | a green place in a city | парк | зелёное место в городе | I walk in the park. | in the park | We play in the park.
+when | a word to ask about time | когда | слово для вопроса о времени | When do you get up? | When do you + verb? | When do you work?
+@7B | Lights, camera, action!
+film | a story you watch at the cinema | фильм | история, которую смотрят в кино | Watch this film! | watch a film | I watch a film.
+comedy | a funny film | комедия | смешной фильм | I like this comedy. Watch it! | a comedy | It is a comedy.
+action film | a film with fast cars and fights | боевик | фильм с быстрыми машинами и драками | He likes action films. | an action film | It is an action film.
+horror film | a film that frightens you | фильм ужасов | фильм, который пугает | Don't watch horror films at night. | a horror film | I don't like horror films.
+cartoon | a film with drawings | мультфильм | фильм с рисунками | The children love cartoons. | watch a cartoon | They watch a cartoon.
+actor | a person who is in a film | актёр | человек, который играет в фильме | I like him. He is a good actor. | a good actor | She is a good actor.
+camera | a thing that takes photos or films | камера | вещь, которая снимает фото или фильмы | Look at the camera. | look at + noun | Look at me.
+open | make a door or a book not closed | открывать | делать дверь или книгу открытой | Open the door. | Open + noun | Open your book.
+close | make a door or a book not open | закрывать | делать дверь или книгу закрытой | Close the window. | Close + noun | Close the door.
+stop | not do it now | останавливаться, прекращать | не делать это сейчас | Stop! Don't go. | Stop! | Stop the car.
+help | do something good for a person | помогать | делать что-то хорошее для человека | Help me, please. | help + me / him / her | Help them.
+tell | say something to a person | говорить, рассказывать | сказать что-то человеку | Tell us your name. | tell + me / us | Tell me.
+@8A | Can I park here?
+park | stop your car in a place | парковаться | оставить машину в каком-то месте | Can I park here? | Can I + verb? | Can I sit here?
+drive | make a car go | водить машину | управлять машиной | I can drive. | can + verb | She can drive.
+swim | go in water | плавать | двигаться в воде | I can't swim. | can't + verb | He can't swim.
+sing | make music with your voice | петь | создавать музыку голосом | She can sing. | can sing | I can't sing.
+dance | move to music | танцевать | двигаться под музыку | Can you dance? | Can you + verb? | Can you swim?
+ride a bike | go on a bicycle | кататься на велосипеде | ехать на велосипеде | I can ride a bike. | ride + noun | She can ride a horse.
+pay | give money for a thing | платить | давать деньги за что-то | Can I pay by card? | pay by card | You can pay by card.
+use | do something with a thing | пользоваться | делать что-то с помощью предмета | Can I use your phone? | use + noun | You can use my pen.
+come in | go into a room | входить | войти в комнату | Can I come in? | Can I come in? | You can come in.
+sit | be on a chair | сидеть | находиться на стуле | Can I sit here? | sit + place | You can sit here.
+take a photo | make a picture with a camera | фотографировать | делать снимок камерой | Can I take a photo? | take a photo | You can't take a photo here.
+car park | a place for cars | парковка | место для машин | You can park in the car park. | in the car park | My car is in the car park.
+@8B | I love shopping
+shopping | going to shops and buying things | покупки | хождение по магазинам | I love shopping. | love + -ing | She loves shopping.
+cooking | making food | готовка | приготовление еды | I like cooking. | like + -ing | He likes cooking.
+reading | looking at books | чтение | чтение книг | I love reading. | love reading | We love reading.
+swimming | going in water | плавание | движение в воде | She likes swimming. | like swimming | I like swimming.
+running | going fast on your feet | бег | быстрое движение ногами | I hate running. | hate + -ing | He hates running.
+dancing | moving to music | танцы | движение под музыку | They love dancing. | love dancing | She loves dancing.
+travelling | going to new places | путешествия | поездки в новые места | I like travelling. | like travelling | We like travelling.
+cleaning | making a place not dirty | уборка | приведение места в порядок | I hate cleaning. | hate cleaning | She hates cleaning.
+walking | going on your feet | ходьба, прогулки | движение пешком | He likes walking. | like walking | I like walking.
+love | like very much | любить | очень нравиться | I love cooking. | love + -ing | I love reading.
+like | think something is good | нравиться | считать что-то хорошим | Do you like shopping? | Do you like + -ing? | Do you like dancing?
+hate | not like at all | ненавидеть | совсем не нравиться | I hate getting up early. | hate + -ing | I hate cleaning.
+@9A | What are they really doing?
+talk | say words to a person | разговаривать | говорить слова человеку | She is talking on the phone. | be talking | They are talking.
+eat | have food | есть | принимать пищу | He is eating a sandwich. | be eating | I am eating.
+drink | have water, tea or coffee | пить | принимать воду, чай или кофе | I am drinking tea. | be drinking | She is drinking coffee.
+wait | stay until something happens | ждать | оставаться, пока что-то не случится | They are waiting for a bus. | wait for + noun | I am waiting for you.
+look | use your eyes | смотреть | пользоваться глазами | He is looking at his phone. | look at + noun | She is looking at me.
+write | make words with a pen | писать | делать слова ручкой | She is writing an email. | be writing | I am writing.
+make | do or cook something | делать, готовить | делать или готовить что-то | I am making dinner. | make + noun | He is making coffee.
+sit | be on a chair | сидеть | находиться на стуле | They are sitting in a café. | be sitting | I am sitting.
+stand | be on your feet | стоять | находиться на ногах | He is standing at the door. | be standing | She is standing.
+smile | make a happy face | улыбаться | делать счастливое лицо | She is smiling. | be smiling | They are smiling.
+now | at this time | сейчас | в это время | I am working now. | verb + now | She is reading now.
+doing | the -ing form of do | делающий, делая | форма глагола do с -ing | What are you doing? | What is / are + subject + doing? | What is he doing?
+@9B | Watching and waiting
+jacket | a short coat | куртка, пиджак | короткое пальто | He is wearing a jacket. | be wearing + clothes | She is wearing a coat.
+coat | a long warm thing you wear outside | пальто | длинная тёплая вещь для улицы | She wears a coat in winter. | wear + clothes | I wear a hat in winter.
+shirt | a thing you wear on your body with buttons | рубашка | вещь с пуговицами для верхней части тела | He usually wears a shirt. | usually wear + clothes | I usually wear jeans.
+jeans | blue trousers | джинсы | синие брюки | I am wearing jeans today. | be wearing + clothes + today | He is wearing a suit today.
+dress | a thing a woman or girl wears | платье | вещь, которую носит женщина или девочка | She is wearing a red dress. | a + colour + dress | She has a blue dress.
+skirt | a thing a woman wears from the middle of the body | юбка | вещь, которую женщина носит ниже пояса | She wears a skirt to work. | wear a skirt | She is wearing a skirt.
+shoes | things you wear on your feet | туфли, обувь | вещи, которые носят на ногах | I am wearing new shoes. | new shoes | He has new shoes.
+trousers | a thing you wear on your legs | брюки | вещь, которую носят на ногах | He wears black trousers. | black trousers | She is wearing trousers.
+sweater | a warm thing you wear on your body | свитер | тёплая вещь для верхней части тела | I wear a sweater in winter. | wear a sweater | He is wearing a sweater.
+wear | have clothes on your body | носить | иметь одежду на теле | What are you wearing? | What + be + subject + wearing? | What is she wearing?
+today | this day | сегодня | этот день | I am not working today. | be + -ing + today | She is working today.
+every day | all days | каждый день | все дни | I work every day. | verb + every day | She walks every day.
+@10A | A room with a view
+room | a part of a house or hotel | комната, номер | часть дома или гостиницы | There is a big room. | There is a + noun | There is a small room.
+bed | a thing you sleep in | кровать | предмет, на котором спят | There is a bed in the room. | There is a + noun + in + place | There is a table in the room.
+bathroom | a room with a shower | ванная | комната с душем | There is a bathroom. | There is a bathroom | There is a small bathroom.
+shower | a place where you wash under water | душ | место, где моются под водой | There is a shower in the bathroom. | in the bathroom | There is a bath in the bathroom.
+window | a thing in a wall that you look out of | окно | то, через что смотрят на улицу | There are two windows. | There are + number + plural noun | There are two beds.
+door | a thing you open to go into a room | дверь | то, что открывают, чтобы войти | The key is in the door. | in the door | There is a key in the door.
+towel | a thing you use after a shower | полотенце | вещь, которой вытираются после душа | There are some towels. | There are some + plural noun | There are some chairs.
+lamp | a thing that gives light | лампа | вещь, которая даёт свет | There is a lamp on the table. | on the table | There is a book on the table.
+view | what you can see from a window | вид | то, что видно из окна | There is a nice view. | a nice view | There is a view of the sea.
+in | inside a thing | в | внутри чего-то | The bag is in the room. | in + noun | The keys are in the bag.
+on | touching the top of a thing | на | на поверхности чего-то | The phone is on the bed. | on + noun | The lamp is on the table.
+under | below a thing | под | ниже чего-то | The shoes are under the bed. | under + noun | The bag is under the chair.
+@10B | Where was he?
+at home | in your house | дома | в своём доме | I was at home. | be at home | She was at home.
+at work | in the place where you work | на работе | в месте, где вы работаете | He was at work. | be at work | They were at work.
+at school | in the place where you learn | в школе | в месте, где вы учитесь | The children were at school. | be at school | I was at school.
+in bed | sleeping or resting | в постели | спать или отдыхать | She was in bed. | be in bed | I was in bed.
+in a café | in a place where you drink coffee | в кафе | в месте, где пьют кофе | We were in a café. | be in a café | They were in a café.
+in the park | in a green place in the city | в парке | в зелёном месте города | They were in the park. | be in the park | I was in the park.
+on a bus | travelling by bus | в автобусе | ехать на автобусе | I was on a bus. | be on a bus | She was on a bus.
+on holiday | not working, in a new place | в отпуске | не работать, в новом месте | We were on holiday. | be on holiday | They were on holiday.
+yesterday | the day before today | вчера | день перед сегодняшним | I was at home yesterday. | was / were + place + yesterday | She was at work yesterday.
+last night | the night before today | вчера вечером, прошлой ночью | вечер перед сегодняшним днём | Where were you last night? | Where was / were + subject + time? | Where was he last night?
+was | the past of am and is | был, была | прошедшее время am и is | He was in bed. | I / he / she / it + was | She was at school.
+were | the past of are | были | прошедшее время are | We were at work. | you / we / they + were | They were at home.
+@11A | A new life in the USA
+live | have your home in a place | жить | иметь дом в каком-то месте | She lived in Almaty. | lived in + place | He lived in London.
+work | do a job | работать | делать работу | He worked in a shop. | worked in + place | She worked in a bank.
+start | begin | начинать | приступать | I started a new job. | started + noun | She started school.
+finish | stop at the end | заканчивать | закончить | I finished school in 2015. | finished + noun | He finished work.
+study | learn | учиться, изучать | получать знания | She studied English. | studied + subject | He studied maths.
+move | go and live in a new place | переезжать | уехать жить в новое место | They moved to the USA. | moved to + place | We moved to Astana.
+arrive | come to a place | приезжать | прибыть в какое-то место | We arrived in New York. | arrived in + city | She arrived in Paris.
+want | wish to have or do | хотеть | желать иметь или делать | I wanted a new life. | wanted + noun | He wanted a car.
+travel | go to a new place | путешествовать | ехать в новое место | They travelled by plane. | travelled by + transport | I travelled by train.
+stay | not leave a place | оставаться | не покидать место | We stayed in a hotel. | stayed in + place | She stayed at home.
+learn | get new knowledge | учить | получать новые знания | I learned English at school. | learned + noun | He learned to drive.
+ago | before now | назад | до настоящего времени | I moved here two years ago. | number + years ago | She arrived three days ago.
+@11B | How was your day?
+get up | leave your bed | вставать | покинуть кровать | I got up at seven. | got up + at + time | She got up at six.
+get home | arrive at your house | приходить домой | прибыть домой | I got home at six. | got home + at + time | He got home late.
+go to work | travel to your job | идти на работу | добираться до работы | I went to work by bus. | went to + place | She went to school.
+go shopping | go to shops and buy things | ходить за покупками | ходить в магазины | We went shopping. | went shopping | I went shopping.
+go to bed | go and sleep | ложиться спать | идти спать | I went to bed at eleven. | went to bed + at + time | She went to bed late.
+have breakfast | eat in the morning | завтракать | есть утром | I had breakfast at eight. | had + meal | We had lunch.
+have a shower | wash under water | принимать душ | мыться под водой | I had a shower. | had a shower | She had a shower.
+have a good day | enjoy your day | хорошо провести день | получить удовольствие от дня | I had a good day. | had a + adjective + day | She had a bad day.
+do homework | do school work at home | делать домашнее задание | делать школьную работу дома | I did my homework. | did + noun | He did his homework.
+do the shopping | buy food for the house | делать покупки | покупать еду для дома | She did the shopping. | did the shopping | I did the shopping.
+day | the time from morning to night | день | время с утра до вечера | How was your day? | How was + noun? | How was your weekend?
+tired | wanting to sleep | уставший | хотеть спать | I was tired. | was tired | She was tired.
+@12A | Strangers on a train
+see | know with your eyes | видеть | узнавать глазами | I saw a man on the train. | saw + noun | She saw a film.
+meet | see and talk to a person | встречать | видеть человека и говорить с ним | I met a woman on the train. | met + person | He met a friend.
+say | speak words | сказать | произнести слова | She said hello. | said + noun | He said goodbye.
+buy | get a thing with money | покупать | получать вещь за деньги | I bought a ticket. | bought + noun | She bought a book.
+sit | be on a chair | сидеть | находиться на стуле | He sat next to me. | sat + place | I sat on a chair.
+leave | go from a place | уходить, уезжать | покинуть место | The train left at ten. | left + at + time | She left at six.
+talk | speak with a person | разговаривать | говорить с человеком | We talked for an hour. | talked + for + time | They talked for two hours.
+ask | say a question | спрашивать | задавать вопрос | I asked his name. | asked + noun | She asked a question.
+open | make not closed | открывать | делать открытым | He opened the window. | opened + noun | I opened the door.
+train | a long thing that travels on a railway | поезд | длинный транспорт на железной дороге | I travelled by train. | by train | She went by train.
+ticket | a paper you buy to travel | билет | бумага, которую покупают для поездки | I bought a ticket. | a ticket to + place | I bought a ticket to Almaty.
+stranger | a person you do not know | незнакомец | человек, которого вы не знаете | I talked to a stranger. | a stranger | A stranger helped me.
+@12B | Revise the past
+last week | the week before this week | на прошлой неделе | неделя перед этой | I was at home last week. | verb + last week | I worked last week.
+last year | the year before this year | в прошлом году | год перед этим | We moved last year. | verb + last year | She started last year.
+in 2020 | in that year | в 2020 году | в том году | I finished school in 2020. | in + year | He was born in 2020.
+born | when your life started | родился | когда началась ваша жизнь | I was born in Kostanay. | was born in + place / year | She was born in 1999.
+story | words about what happened | история, рассказ | слова о том, что случилось | It was a good story. | a + adjective + story | It was a long story.
+party | a time when people eat, drink and dance | вечеринка | время, когда люди едят, пьют и танцуют | We went to a party. | went to a party | I had a party.
+trip | a journey to a place and back | поездка | путешествие куда-то и обратно | We had a good trip. | had a + adjective + trip | I had a long trip.
+happy | feeling good | счастливый | хорошо себя чувствовать | We were happy. | was / were happy | She was happy.
+late | after the right time | поздно, опоздавший | после нужного времени | I was late yesterday. | was late | He was late.
+did | the past of do | делал | прошедшее время do | What did you do? | What did + subject + verb? | What did she say?
+didn't | did not | не делал | отрицание в прошедшем времени | I didn't go. | didn't + verb | She didn't work.
+then | after that | потом, затем | после этого | I had dinner. Then I went to bed. | Then + clause | Then we went home.
