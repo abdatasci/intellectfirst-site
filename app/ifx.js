@@ -814,6 +814,14 @@
         '<p style="text-align:center;margin-top:18px"><button class="btn" id="nx">Questions →</button></p></div>';
       bindTop();
       var bots = $$('.vbots .ifbot'), vp = $('#vp');
+      // get every line ready first, so the whole dialogue is in the real voices (it does not turn robotic half-way)
+      if (window.IFVoice && IFVoice.warm && !L.l.warm) {
+        var hold = [$('#vbig'), $('#vpp'), $('#vre')]; hold.forEach(function (b) { b.disabled = true; }); $('#vcap').textContent = 'Preparing the voices…';
+        var lsn = L.l; IFVoice.warm(lines, function (n, m) { if (L && L.l === lsn && $('#vcap')) $('#vcap').textContent = 'Preparing the voices… ' + n + ' / ' + m; }).then(function (ok) {
+          lsn.warm = ok; if (!L || L.l !== lsn || !$('#vcap')) return;
+          hold.forEach(function (b) { b.disabled = false; }); $('#vcap').textContent = ok ? '' : 'The studio voices are not available just now, so this plays in your phone\'s own voice. Try again later for the real voices.';
+        });
+      }
       function ui() {
         $('#vpp').textContent = V.on ? '❚❚' : '▶'; $('#vbig').hidden = V.on; vp.classList.toggle('playing', V.on);
         $('#vprog').style.width = (V.i / lines.length * 100) + '%'; $('#vtime').textContent = Math.min(V.i + (V.on ? 1 : 0), lines.length) + ' / ' + lines.length;
