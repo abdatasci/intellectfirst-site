@@ -11,13 +11,14 @@ import { tgAccount } from '../lib/tgauth.mjs';
 import { tier } from '../lib/access.mjs';
 import { doc, inClass } from '../lib/bot-core.mjs';
 import { BOOKS, classBook, canOpen } from '../lib/efcourse.mjs';
+import A0 from '../lib/ef/ef-a0.json';
 import A1 from '../lib/ef/ef-a1.json';
 import A2 from '../lib/ef/ef-a2.json';
 import B1 from '../lib/ef/ef-b1.json';
 import B2 from '../lib/ef/ef-b2.json';
 import C1 from '../lib/ef/ef-c1.json';
 
-const DATA = { 'ef-a1': A1, 'ef-a2': A2, 'ef-b1': B1, 'ef-b2': B2, 'ef-c1': C1 };
+const DATA = { 'ef-a0': A0, 'ef-a1': A1, 'ef-a2': A2, 'ef-b1': B1, 'ef-b2': B2, 'ef-c1': C1 };
 const U = () => getStore({ name: 'ielts', consistency: 'strong' });
 const json = (d, s = 200) => Response.json(d, { status: s, headers: { 'Cache-Control': 'no-store' } });
 const fail = (s, error) => json({ error }, s);

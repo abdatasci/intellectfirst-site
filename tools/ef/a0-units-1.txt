@@ -1,0 +1,159 @@
+# English Files · Beginner (A0), units 1A to 6B. The app had no Beginner word lists, so these are written by IF Academy:
+# only the unit order, titles and topics follow the coursebook. Every word, meaning, translation and sentence is original.
+# @unit | title    then    word | meaning | Russian | Russian meaning | example | pattern | pattern example
+@1A | Nice to meet you
+hello | a word you say when you meet someone | привет, здравствуйте | слово, которое говорят при встрече | Hello, I am Anna. | Hello, I am + name | Hello, I am Tom.
+goodbye | a word you say when you leave | до свидания | слово, которое говорят при прощании | Goodbye, see you on Monday. | Goodbye, + name | Goodbye, Anna.
+name | what people call you | имя | то, как вас зовут | My name is Dana. | My name is + name | My name is Timur.
+one | the number 1 | один | число 1 | I have one book. | one + noun | I have one pen.
+two | the number 2 | два | число 2 | I have two bags. | two + noun | I have two books.
+five | the number 5 | пять | число 5 | I am in room five. | room + number | You are in room two.
+ten | the number 10 | десять | число 10 | I have ten pens. | ten + noun | I have ten books.
+Monday | the first day of the working week | понедельник | первый день рабочей недели | Today is Monday. | Today is + day | Today is Friday.
+Friday | the day before Saturday | пятница | день перед субботой | See you on Friday. | on + day | See you on Monday.
+Sunday | the day after Saturday | воскресенье | день после субботы | I am at home on Sunday. | on Sunday | You are at home on Sunday.
+teacher | a person who teaches | учитель | человек, который учит | I am a teacher. | I am a + job | I am a student.
+student | a person who learns | студент, ученик | человек, который учится | You are a student. | You are a + noun | You are a teacher.
+@1B | Music round the world
+country | a place like Kazakhstan or Japan | страна | место, например Казахстан или Япония | Brazil is a big country. | a + adjective + country | It is a small country.
+Kazakhstan | a big country in Asia | Казахстан | большая страна в Азии | She is from Kazakhstan. | from + country | He is from Kazakhstan.
+England | a country; London is there | Англия | страна, где находится Лондон | He is from England. | from England | She is from England.
+Spain | a country in Europe; Madrid is there | Испания | страна в Европе, где находится Мадрид | Madrid is in Spain. | in + country | It is in Spain.
+Turkey | a country; Istanbul is there | Турция | страна, где находится Стамбул | She is from Turkey. | from Turkey | He is from Turkey.
+China | a very big country in Asia | Китай | очень большая страна в Азии | He is from China. | from China | It is from China.
+Japan | a country in Asia; Tokyo is there | Япония | страна в Азии, где находится Токио | Tokyo is in Japan. | in Japan | She is in Japan.
+Brazil | a big country in South America | Бразилия | большая страна в Южной Америке | The music is from Brazil. | from Brazil | He is from Brazil.
+music | songs and sounds you listen to | музыка | песни и звуки, которые мы слушаем | The music is from Spain. | The music is + adjective | The music is good.
+singer | a person who sings | певец, певица | человек, который поёт | She is a singer. | He / She is a + job | He is a singer.
+city | a big town | город | большой населённый пункт | It is a big city. | a + adjective + city | It is a nice city.
+where | a word to ask about a place | где, откуда | слово для вопроса о месте | Where is she from? | Where is + he / she + from? | Where is he from?
+@2A | Are you on holiday?
+English | from England | английский, англичанин | из Англии | We are English. | We are + nationality | They are English.
+Spanish | from Spain | испанский, испанец | из Испании | They are Spanish. | They are + nationality | We are Spanish.
+Turkish | from Turkey | турецкий, турок | из Турции | We are Turkish. | be + nationality | You are Turkish.
+Chinese | from China | китайский, китаец | из Китая | They are Chinese. | be + nationality | We are Chinese.
+Japanese | from Japan | японский, японец | из Японии | We are Japanese. | be + nationality | They are Japanese.
+Kazakh | from Kazakhstan | казахский, казах | из Казахстана | We are Kazakh. | be + nationality | They are Kazakh.
+holiday | days when you do not work | отпуск, каникулы | дни, когда вы не работаете | We are on holiday. | on holiday | They are on holiday.
+hotel | a place where you sleep on holiday | гостиница | место, где живут в поездке | We are in a hotel. | in a hotel | They are in a hotel.
+friends | people you like and know well | друзья | люди, которых вы любите и хорошо знаете | They are my friends. | my friends | We are friends.
+tourist | a person on holiday in a new place | турист | человек на отдыхе в новом месте | We are tourists. | be a tourist | They are tourists.
+airport | a place where planes are | аэропорт | место, где находятся самолёты | We are at the airport. | at the airport | They are at the airport.
+here | in this place | здесь | в этом месте | We are here on holiday. | be here | They are here.
+@2B | What number is the bus?
+eleven | the number 11 | одиннадцать | число 11 | The bus is number eleven. | number + number | It is number eleven.
+twelve | the number 12 | двенадцать | число 12 | I am in room twelve. | room twelve | We are in room twelve.
+twenty | the number 20 | двадцать | число 20 | I am twenty. | I am + age | She is twenty.
+thirty | the number 30 | тридцать | число 30 | He is thirty. | be + age | I am thirty.
+fifty | the number 50 | пятьдесят | число 50 | The ticket is fifty dollars. | number + dollars | It is fifty dollars.
+a hundred | the number 100 | сто | число 100 | The hotel is a hundred dollars. | a hundred + noun | It is a hundred metres.
+phone number | the number of your phone | номер телефона | номер вашего телефона | What is your phone number? | What is your + noun? | What is your name?
+address | where your house is | адрес | где находится ваш дом | What is your address? | your address | My address is 5 Park Street.
+bus | a big car for many people | автобус | большая машина для многих людей | What number is the bus? | the + number + bus | It is the number ten bus.
+how old | a question about age | сколько лет | вопрос о возрасте | How old are you? | How old + is / are + subject? | How old is he?
+what | a word to ask about a thing | что, какой | слово для вопроса о предмете | What is your name? | What is + noun? | What is your address?
+how | a word to ask about the way | как | слово для вопроса о способе | How are you? | How + is / are + subject? | How is your mother?
+@3A | Where's my phone?
+phone | a thing you use to call people | телефон | вещь, по которой звонят | Where is my phone? | Where is my + noun? | Where is my bag?
+key | a small thing that opens a door | ключ | маленькая вещь, которая открывает дверь | It is a key. | It is a + noun | It is a pen.
+bag | a thing for your books and things | сумка | вещь для книг и других предметов | It is a bag. | a bag | It is a big bag.
+pen | a thing you write with | ручка | вещь, которой пишут | It is a pen. | a pen | I have a pen.
+book | a thing you read | книга | вещь, которую читают | They are books. | They are + plural noun | They are pens.
+umbrella | a thing you use in the rain | зонт | вещь, которой пользуются в дождь | It is an umbrella. | an + a, e, i, o, u | It is an apple.
+watch | a small clock on your arm | наручные часы | маленькие часы на руке | It is a watch. | a watch | They are watches.
+glasses | a thing you wear to see well | очки | вещь, которую носят, чтобы лучше видеть | They are my glasses. | They are my + plural noun | They are my keys.
+wallet | a small thing for your money | кошелёк | маленькая вещь для денег | It is a wallet. | a wallet | Where is my wallet?
+laptop | a small computer | ноутбук | небольшой компьютер | It is a laptop. | a laptop | They are laptops.
+table | a thing you eat or work at | стол | предмет, за которым едят или работают | The keys are on the table. | on the table | The pen is on the table.
+chair | a thing you sit on | стул | предмет, на котором сидят | The bag is on the chair. | on the chair | The book is on the chair.
+@3B | Souvenirs
+this | the thing here, near me | этот, эта, это | предмет здесь, рядом со мной | This is a cup. | This is a + noun | This is a hat.
+that | the thing there, not near me | тот, та, то | предмет там, не рядом со мной | That is a T-shirt. | That is a + noun | That is a map.
+these | the things here, near me | эти | предметы здесь, рядом со мной | These are postcards. | These are + plural noun | These are keys.
+those | the things there, not near me | те | предметы там, не рядом со мной | Those are hats. | Those are + plural noun | Those are cups.
+souvenir | a thing you buy on holiday | сувенир | вещь, которую покупают в поездке | This is a souvenir. | a souvenir | That is a souvenir.
+postcard | a card with a photo of a place | открытка | карточка с фотографией места | These are postcards. | a postcard | This is a postcard.
+T-shirt | a shirt with short arms | футболка | рубашка с короткими рукавами | That is a T-shirt. | a T-shirt | This is a T-shirt.
+cup | a thing you drink tea from | чашка | предмет, из которого пьют чай | This is a cup. | a cup | Those are cups.
+hat | a thing you wear on your head | шапка, шляпа | вещь, которую носят на голове | That is a hat. | a hat | These are hats.
+map | a picture of a city or country | карта | изображение города или страны | This is a map. | a map | That is a map.
+toy | a thing a child plays with | игрушка | вещь, с которой играет ребёнок | These are toys. | a toy | This is a toy.
+how much | a question about the price | сколько стоит | вопрос о цене | How much is this cup? | How much is + this / that + noun? | How much is that hat?
+@4A | This is my family
+mother | your mum | мать, мама | ваша мама | This is my mother. | This is my + noun | This is my father.
+father | your dad | отец, папа | ваш папа | His father is a doctor. | his + noun | His mother is a teacher.
+brother | a boy with the same parents as you | брат | мальчик, у которого те же родители | Her brother is ten. | her + noun | Her sister is twenty.
+sister | a girl with the same parents as you | сестра | девочка, у которой те же родители | This is my sister. | my sister | Her name is Dana.
+son | your boy child | сын | ваш ребёнок-мальчик | Their son is a student. | their + noun | Their daughter is five.
+daughter | your girl child | дочь | ваш ребёнок-девочка | Our daughter is three. | our + noun | Our son is ten.
+husband | the man a woman is married to | муж | мужчина, за которым замужем женщина | This is Anna's husband. | name + 's + noun | This is Tom's wife.
+wife | the woman a man is married to | жена | женщина, на которой женат мужчина | This is Tom's wife. | name + 's + noun | This is Anna's son.
+family | your mother, father, brothers and sisters | семья | мать, отец, братья и сёстры | This is my family. | my family | This is our family.
+boy | a young man or male child | мальчик | ребёнок мужского пола | The boy is my brother. | the boy | The boy is ten.
+girl | a young woman or female child | девочка | ребёнок женского пола | The girl is my sister. | the girl | The girl is five.
+children | boys and girls | дети | мальчики и девочки | They are my children. | my children | These are our children.
+@4B | The right car for me
+big | not small | большой | не маленький | It is a big car. | a big + noun | It is a big house.
+small | not big | маленький | не большой | It is a small bag. | a small + noun | It is a small car.
+new | not old | новый | не старый | It is a new phone. | a new + noun | It is a new car.
+old | not new, not young | старый | не новый, не молодой | It is an old car. | an old + noun | It is an old house.
+fast | not slow | быстрый | не медленный | It is a fast car. | a fast + noun | It is a fast bus.
+slow | not fast | медленный | не быстрый | It is a slow bus. | a slow + noun | It is a slow car.
+good | nice; not bad | хороший | приятный; не плохой | It is a good car. | a good + noun | It is a good book.
+cheap | not expensive | дешёвый | не дорогой | It is a cheap hotel. | a cheap + noun | It is a cheap phone.
+expensive | not cheap | дорогой | не дешёвый | It is an expensive car. | an expensive + noun | It is an expensive watch.
+red | the colour of a tomato | красный | цвет помидора | It is a red car. | a red + noun | It is a red bag.
+blue | the colour of the sky | синий, голубой | цвет неба | It is a blue car. | a blue + noun | It is a blue pen.
+black | the colour of the night | чёрный | цвет ночи | It is a black car. | a black + noun | It is a black hat.
+@5A | My favourite meal
+bread | a food made from flour | хлеб | еда из муки | I eat bread. | I eat + food | I eat rice.
+cheese | a food made from milk | сыр | еда из молока | I like cheese. | I like + food | I like bread.
+meat | food from animals | мясо | еда из животных | I don't eat meat. | I don't eat + food | I don't eat fish.
+fish | an animal from the sea that we eat | рыба | морское животное, которое мы едим | We eat fish. | We eat + food | We eat meat.
+rice | small white food from Asia | рис | мелкая белая еда из Азии | I eat rice. | eat rice | They eat rice.
+eggs | food from chickens | яйца | еда от кур | I have eggs. | have + food | We have eggs.
+fruit | apples, bananas and oranges | фрукты | яблоки, бананы и апельсины | I like fruit. | like fruit | We like fruit.
+vegetables | carrots, tomatoes and potatoes | овощи | морковь, помидоры и картофель | I eat vegetables. | eat vegetables | We eat vegetables.
+tea | a hot drink | чай | горячий напиток | I drink tea. | I drink + noun | I drink water.
+coffee | a hot black or brown drink | кофе | горячий чёрный или коричневый напиток | I don't drink coffee. | I don't drink + noun | I don't drink tea.
+water | a drink with no colour | вода | напиток без цвета | We drink water. | drink water | They drink water.
+breakfast | the food you eat in the morning | завтрак | еда, которую едят утром | I have breakfast. | have breakfast | We have breakfast.
+@5B | A very long flight
+read | look at words in a book | читать | смотреть на слова в книге | Do you read books? | Do you + verb? | Do you read?
+watch | look at a film or TV | смотреть | смотреть фильм или телевизор | Do you watch films? | watch + noun | I watch films.
+listen | hear music or people | слушать | слышать музыку или людей | Do you listen to music? | listen to + noun | I listen to music.
+sleep | close your eyes and rest at night | спать | закрыть глаза и отдыхать ночью | Do you sleep on a plane? | sleep + place | I sleep at home.
+work | do your job | работать | делать свою работу | Do you work? | work + place | I work in a bank.
+live | have your home in a place | жить | иметь дом в каком-то месте | Do you live in Almaty? | live in + place | I live in Astana.
+speak | say words | говорить | произносить слова | Do you speak English? | speak + language | I speak Russian.
+want | wish to have | хотеть | желать иметь | Do you want tea? | want + noun | I want coffee.
+have | own | иметь | владеть | Do you have a book? | have + noun | I have a phone.
+play | do a game or sport | играть | заниматься игрой или спортом | Do you play games? | play + noun | I play games.
+flight | a trip on a plane | рейс, полёт | поездка на самолёте | It is a long flight. | a long flight | It is a short flight.
+plane | a thing that flies in the sky | самолёт | то, что летает в небе | Do you like planes? | on a plane | I sleep on a plane.
+@6A | Old friends?
+doctor | a person who helps ill people | врач | человек, который помогает больным | She is a doctor. | She works in a + place | She works in a hospital.
+nurse | a person who helps a doctor | медсестра, медбрат | человек, который помогает врачу | He is a nurse. | He works in a + place | He works in a hospital.
+waiter | a person who brings food in a café | официант | человек, который приносит еду в кафе | He works in a café. | work in a café | She works in a café.
+driver | a person who drives a car or bus | водитель | человек, который водит машину или автобус | He drives a bus. | drive + noun | She drives a taxi.
+shop assistant | a person who works in a shop | продавец | человек, который работает в магазине | She works in a shop. | work in a shop | He works in a shop.
+office | a place where people work at desks | офис | место, где люди работают за столами | He works in an office. | in an office | She works in an office.
+hospital | a place for ill people | больница | место для больных | She works in a hospital. | in a hospital | He works in a hospital.
+school | a place where children learn | школа | место, где учатся дети | He teaches in a school. | in a school | She works in a school.
+factory | a place where people make things | завод, фабрика | место, где делают вещи | He works in a factory. | in a factory | She works in a factory.
+restaurant | a place where you eat | ресторан | место, где едят | She cooks in a restaurant. | in a restaurant | He works in a restaurant.
+job | the work you do | работа | то, чем вы занимаетесь | He likes his job. | like + your job | She likes her job.
+friend | a person you like and know well | друг | человек, которого вы любите и хорошо знаете | She has an old friend. | an old friend | He has a new friend.
+@6B | Good morning, goodnight
+get up | leave your bed in the morning | вставать | покидать кровать утром | I always get up at seven. | always + verb | I always get up early.
+have a shower | wash under water | принимать душ | мыться под водой | I usually have a shower. | usually + verb | I usually have a shower.
+go to work | travel to your job | идти на работу | добираться до работы | I go to work at eight. | go to work + at + time | She goes to work at nine.
+have lunch | eat in the middle of the day | обедать | есть в середине дня | I usually have lunch at one. | have lunch + at + time | We have lunch at twelve.
+go home | travel to your house | идти домой | добираться до дома | I go home at six. | go home + at + time | She goes home at five.
+have dinner | eat in the evening | ужинать | есть вечером | We always have dinner at seven. | have dinner + at + time | They have dinner at eight.
+watch TV | look at the television | смотреть телевизор | смотреть телевидение | I sometimes watch TV. | sometimes + verb | I sometimes watch TV.
+go to bed | go and sleep | ложиться спать | идти спать | I never go to bed late. | never + verb | I never go to bed early.
+morning | the first part of the day | утро | первая часть дня | I get up in the morning. | in the morning | I work in the morning.
+evening | the last part of the day | вечер | последняя часть дня | I watch TV in the evening. | in the evening | I read in the evening.
+always | every time | всегда | каждый раз | I always have breakfast. | always + verb | She always has tea.
+never | not at any time | никогда | ни в какое время | I never drink coffee. | never + verb | He never gets up late.

@@ -4,16 +4,23 @@
 // Writes: app/courses/ef-files.js   the public outline (unit titles, objectives, lesson list: no lesson content)
 //         netlify/lib/ef/<book>.json the lesson content, sent by /api/ef only for units the person may open
 import fs from 'node:fs';
-const BOOKS = [['A1', 'ef-a1', 'Elementary', '📗'], ['A2', 'ef-a2', 'Pre-intermediate', '📘'], ['B1', 'ef-b1', 'Intermediate', '📙'], ['B2', 'ef-b2', 'Upper-intermediate', '📕'], ['C1', 'ef-c1', 'Advanced', '📓']];
+const BOOKS = [['A0', 'ef-a0', 'Beginner', '📒'], ['A1', 'ef-a1', 'Elementary', '📗'], ['A2', 'ef-a2', 'Pre-intermediate', '📘'], ['B1', 'ef-b1', 'Intermediate', '📙'], ['B2', 'ef-b2', 'Upper-intermediate', '📕'], ['C1', 'ef-c1', 'Advanced', '📓']];
 const CHUNK = 12, outline = [];
 fs.mkdirSync('netlify/lib/ef', { recursive: true });
 for (const [lv, id, name, icon] of BOOKS) {
-  const page = fs.readFileSync(`a/if-english/courses/${lv}/index.html`, 'utf8');
-  const file = [...page.matchAll(/shared\/([0-9a-f]{12}\.js)/g)].map(m => m[1]).find(f => /^\s*const DATA = /.test(fs.readFileSync('a/if-english/shared/' + f, 'utf8')));
-  const src = fs.readFileSync('a/if-english/shared/' + file, 'utf8'), DATA = JSON.parse(src.match(/const DATA = (\{[\s\S]*?\});?\s*\n/)[1]);
+  // Unit order, titles and words: from the vocabulary arena of the level, or (Beginner, which has no arena) from tools/ef/<level>-units-*.txt:
+  //   "@unit | title", then "word | meaning | Russian | Russian meaning | example | pattern | pattern example"
+  let DATA = {}; const own = {};
+  if (fs.existsSync(`a/if-english/courses/${lv}/index.html`)) {
+    const page = fs.readFileSync(`a/if-english/courses/${lv}/index.html`, 'utf8');
+    const file = [...page.matchAll(/shared\/([0-9a-f]{12}\.js)/g)].map(m => m[1]).find(f => /^\s*const DATA = /.test(fs.readFileSync('a/if-english/shared/' + f, 'utf8')));
+    const src = fs.readFileSync('a/if-english/shared/' + file, 'utf8'); DATA = JSON.parse(src.match(/const DATA = (\{[\s\S]*?\});?\s*\n/)[1]);
+  } else {
+    for (const f of fs.readdirSync('tools/ef').filter(f => f.startsWith(lv.toLowerCase() + '-units-') && f.endsWith('.txt')).sort()) { let cur = ''; for (const ln of fs.readFileSync('tools/ef/' + f, 'utf8').split('\n')) { if (!ln.trim() || ln[0] === '#') continue; const p = ln.split(' | ').map(x => x.trim()); if (ln[0] === '@') { cur = p[0].slice(1).trim(); DATA[cur] = { title: p[1], words: [] }; own[cur] = {}; continue; } DATA[cur].words.push(p.slice(0, 4)); own[cur][p[0]] = p.slice(4); } }
+  }
   let extra = {}; try { extra = (await import(`./ef/${lv.toLowerCase()}.mjs`)).default; } catch {}
   // example sentences and patterns for the flashcards: tools/ef/<level>-words-*.txt  (@unit, then "word | example | pattern | pattern example")
-  const ctx = {}; for (const f of fs.readdirSync('tools/ef').filter(f => f.startsWith(lv.toLowerCase() + '-words-') && f.endsWith('.txt')).sort()) { let cur = ''; for (const ln of fs.readFileSync('tools/ef/' + f, 'utf8').split('\n')) { if (!ln.trim() || ln[0] === '#') continue; if (ln[0] === '@') { cur = ln.slice(1).trim(); ctx[cur] = ctx[cur] || {}; continue; } const p = ln.split(' | ').map(x => x.trim()); if (p.length >= 2) ctx[cur][p[0]] = p.slice(1); } }
+  const ctx = own; for (const f of fs.readdirSync('tools/ef').filter(f => f.startsWith(lv.toLowerCase() + '-words-') && f.endsWith('.txt')).sort()) { let cur = ''; for (const ln of fs.readFileSync('tools/ef/' + f, 'utf8').split('\n')) { if (!ln.trim() || ln[0] === '#') continue; if (ln[0] === '@') { cur = ln.slice(1).trim(); ctx[cur] = ctx[cur] || {}; continue; } const p = ln.split(' | ').map(x => x.trim()); if (p.length >= 2) ctx[cur][p[0]] = p.slice(1); } }
   let read = {}; try { read = (await import(`./ef/${lv.toLowerCase()}-read.mjs`)).default; } catch {}
   let listen = {}; try { listen = (await import(`./ef/${lv.toLowerCase()}-listen.mjs`)).default; } catch {}
   const units = {}, out = [];
