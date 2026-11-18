@@ -4,7 +4,7 @@
 // Writes: app/courses/ef-files.js   the public outline (unit titles, objectives, lesson list: no lesson content)
 //         netlify/lib/ef/<book>.json the lesson content, sent by /api/ef only for units the person may open
 import fs from 'node:fs';
-const BOOKS = [['A0', 'ef-a0', 'Beginner', '📒'], ['A1', 'ef-a1', 'Elementary', '📗'], ['A2', 'ef-a2', 'Pre-intermediate', '📘'], ['B1', 'ef-b1', 'Intermediate', '📙'], ['B1P', 'ef-b1p', 'Intermediate Plus', '📔'], ['B2', 'ef-b2', 'Upper-intermediate', '📕'], ['C1', 'ef-c1', 'Advanced', '📓']];
+const BOOKS = [['A0', 'ef-a0', 'Beginner', '📒'], ['A1', 'ef-a1', 'Elementary', '📗'], ['A2', 'ef-a2', 'Pre-intermediate', '📘'], ['B1', 'ef-b1', 'Intermediate', '📙'], ['B1P', 'ef-b1p', 'Intermediate Plus', '📔'], ['B2', 'ef-b2', 'Upper-intermediate', '📕'], ['C1', 'ef-c1', 'Advanced', '📓'], ['C2', 'ef-c2', 'Advanced Plus', '📕']];
 const CHUNK = 12, outline = [];
 fs.mkdirSync('netlify/lib/ef', { recursive: true });
 for (const [lv, id, name, icon] of BOOKS) {

@@ -103,7 +103,7 @@ async function ieltsSummary(uid) {
   return { writing: pick('writing'), speaking: pick('speaking'), recent: idx.slice(-8).reverse() };
 }
 /** What a person studies, chosen at registration and changeable any time: 'ge:B1', 'be:B1', 'ielts', 'ket', 'pet', 'yl:starters', 'yl:movers', 'yl:flyers', 'maths'. */
-const STUDY = /^(ge:(A1|A2|B1|B2|C1|C2)|be:(A2|B1|B2|C1)|ielts|ket|pet|yl:(starters|movers|flyers)|maths|book:(ef-a1|ef-a2|ef-b1|ef-b2|ef-c1|ef-c2|teens-b1|teens-b2|giu))$/;
+const STUDY = /^(ge:(A1|A2|B1|B2|C1|C2)|be:(A2|B1|B2|C1)|ielts|ket|pet|yl:(starters|movers|flyers)|maths|book:(ef-a0|ef-a1|ef-a2|ef-b1|ef-b1p|ef-b2|ef-c1|ef-c2|teens-b1|teens-b2|giu))$/;
 /** At most 3 courses and 2 coursebooks. */
 function cleanStudy(a) { const all = [...new Set(a.map(x => String(x || '').trim()).filter(x => STUDY.test(x)))]; return [...all.filter(x => !x.startsWith('book:')).slice(0, 3), ...all.filter(x => x.startsWith('book:')).slice(0, 2)]; }
 function publicStudent(s) { return s && { id: s.id, first: s.first, last: s.last, classes: s.classes || [], status: s.status, level: s.level || '', tests: s.tests || [], uid: s.uid || null }; }

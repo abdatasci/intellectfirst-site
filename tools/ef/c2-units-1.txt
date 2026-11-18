@@ -1,0 +1,107 @@
+# English Files · Advanced Plus (C2), units 1A to 4B. Written by IF Academy.
+# Only the unit order, unit titles and vocabulary topic follow the coursebook. Word choice, meanings, Russian and all sentences are original.
+# @unit | title, then: word | meaning | Russian | Russian meaning or - | example | pattern | pattern example
+@1A | Motivation and inspiration
+or so | Approximately; about | примерно | - | There were fifty or so people at the meeting. | number + or so | It'll take an hour or so.
+-ish | Added to numbers, times or adjectives to mean "about" or "fairly" | около; -ватый | - | Let's meet at sevenish, when the traffic is lighter. | adjective / number + -ish | The walls are a greenish colour.
+give or take | Plus or minus a small amount | плюс-минус | - | It takes two hours, give or take ten minutes. | amount + give or take + amount | He's forty, give or take a year.
+and so on | And other similar things | и так далее | - | We discussed budgets, deadlines and so on. | list + and so on | Bring pens, paper and so on.
+sort of | To some degree; in a way (informal) | вроде как | - | I sort of understand what she means. | sort of + verb / adjective | It was sort of embarrassing.
+stuff | Things in general, when the exact name is not important | вещи, всякое | - | Leave your stuff in the hall and come through. | and stuff (like that) | We talked about work and stuff.
+loads of | A large amount or number of (informal) | куча, масса | - | She's got loads of ideas for the project. | loads of + noun | We've got loads of time.
+whatsit | A word for a thing whose name you have forgotten | штуковина | - | Pass me the whatsit, the thing for opening tins. | the whatsit for + -ing | Where's the whatsit for charging the phone?
+roughly | Approximately; not exactly | приблизительно | - | Roughly a third of the team work from home. | roughly + number / amount | It costs roughly the same.
+somewhere in the region of | About (a number or amount), more formal | где-то в районе | - | The repairs will cost somewhere in the region of a thousand pounds. | in the region of + number | In the region of 300 people applied.
+or thereabouts | Or close to that number, time or place | или около того | - | She arrived at ten o'clock or thereabouts. | number / time + or thereabouts | It was built in 1900 or thereabouts.
+a couple of | Two, or a small number of | пара | - | Give me a couple of days to think it over. | a couple of + plural noun | I've read a couple of his books.
+@1B | The parent trap
+upbringing | The way a child is cared for and taught while growing up | воспитание | - | She had a strict but loving upbringing. | have a + adjective + upbringing | He had a sheltered upbringing.
+outcome | The result of an action or process | исход | - | The outcome of the case is still uncertain. | the outcome of + noun | Nobody could predict the outcome of the talks.
+breakdown | A failure of a relationship or system; a detailed list | срыв; разбивка | - | There was a breakdown in communication between the parents and the school. | a breakdown in / of + noun | Send me a breakdown of the costs.
+drawback | A disadvantage | недостаток | - | The main drawback of the plan is the price. | the drawback of / to + noun | The only drawback to living here is the noise.
+setback | A problem that delays progress | неудача | - | Losing the funding was a serious setback. | suffer a setback | The team suffered a setback in March.
+outburst | A sudden expression of strong emotion | вспышка | - | Her angry outburst shocked the whole class. | an outburst of + noun | There was an outburst of laughter.
+feedback | Comments on how well somebody has done something | отзыв | - | Thanks for the helpful feedback on my essay. | give feedback on + noun | Could you give me feedback on my talk?
+turnout | The number of people who come to an event or vote | явка | - | Turnout at the parents' evening was higher than expected. | a high / low turnout | There was a low turnout for the vote.
+downfall | The loss of success or power; the cause of it | падение, крах | - | His impatience was his downfall. | lead to somebody's downfall | The scandal led to the minister's downfall.
+outlook | The likely future; a general attitude to life | перспектива; взгляд на жизнь | - | The outlook for young families is improving. | an outlook on + noun | Becoming a father changed his outlook on life.
+input | Ideas, advice or effort that you contribute | вклад | - | We'd welcome your input at the meeting. | input from + person | We need more input from parents.
+onset | The beginning of something, especially something unpleasant | начало, наступление | - | The onset of adolescence can be hard for the whole family. | the onset of + noun | They left before the onset of winter.
+@2A | Overcoming adversity
+overcome | To succeed in dealing with a difficulty | преодолеть | - | She overcame her fear of flying after a year of practice. | overcome + difficulty | He overcame enormous obstacles.
+underestimate | To think something is smaller or less important than it is | недооценивать | - | Don't underestimate the challenge ahead. | underestimate + noun / how … | I underestimated how long it would take.
+misjudge | To form a wrong opinion about somebody or something | неверно оценить | - | I misjudged the distance and missed the step. | misjudge + noun | We completely misjudged him.
+resilience | The ability to recover quickly from difficulties | стойкость | - | Children often show remarkable resilience. | show / build resilience | Sport helps to build resilience.
+foolproof | So simple or well designed that it cannot go wrong | надёжный, безотказный | - | There is no foolproof plan for a mountain rescue. | a foolproof + noun | It's a foolproof method.
+outlive | To live or last longer than somebody or something | пережить | - | The idea outlived its inventor by a century. | outlive + noun | She outlived her husband by ten years.
+powerless | Without the ability or power to act | бессильный | - | We felt powerless to help. | powerless to + verb | They were powerless to stop it.
+hopeful | Believing that something good will happen | полный надежд | - | Doctors are hopeful about her recovery. | hopeful about / that … | I'm hopeful that we'll succeed.
+hardship | A situation that makes life very difficult | лишения, трудности | - | The family faced real hardship after the factory closed. | face / endure hardship | They endured years of hardship.
+childproof | Designed so that children cannot open, use or damage it (-proof = protected against) | защищённый от детей | - | The medicine comes in a childproof bottle. | noun + -proof | Is the phone waterproof?
+persevere | To continue trying in spite of difficulties | упорно продолжать | - | If you persevere, the language will come. | persevere with + noun | She persevered with the treatment.
+irreversible | Impossible to change back (ir- = not) | необратимый | - | The damage to his knee was irreversible. | an irreversible + noun | It was an irreversible decision.
+@2B | A big adventure
+stagger | To walk with weak, unsteady steps | шататься | - | He staggered to the door and fell. | stagger + direction | She staggered out of the tent.
+trudge | To walk slowly and heavily because you are tired | тащиться | - | We trudged through the snow for six hours. | trudge through / up + noun | They trudged up the hill.
+stroll | To walk in a slow, relaxed way | прогуливаться | - | They strolled along the river after dinner. | stroll along / through + noun | We strolled through the market.
+dash | To run somewhere very quickly | мчаться | - | I dashed across the road to catch the bus. | dash to / for + noun | He made a dash for the exit.
+crawl | To move on your hands and knees | ползти | - | We had to crawl through a narrow tunnel. | crawl through / under + noun | The baby crawled under the table.
+limp | To walk with difficulty because one leg is hurt | хромать | - | She limped off the pitch with an injured ankle. | limp + direction | He limped back to the camp.
+wander | To walk around slowly without a clear direction | бродить | - | We wandered round the old town for hours. | wander round / through + noun | She wandered through the forest.
+scramble | To climb or move quickly using hands and feet | карабкаться | - | They scrambled up the rocks to the top. | scramble up / over + noun | We scrambled over the wall.
+wade | To walk through water or mud with effort | идти вброд | - | We waded across the river with our bags above our heads. | wade across / through + noun | They waded through the mud.
+tiptoe | To walk quietly on your toes | идти на цыпочках | - | I tiptoed past the sleeping guide. | tiptoe + direction | She tiptoed out of the room.
+hike | To walk a long way in the countryside | ходить в поход | - | We hiked for three days without seeing a road. | hike + distance / through + noun | They hiked twenty kilometres.
+stride | To walk with long, confident steps | шагать широким шагом | - | She strode into the room and took control. | stride + direction | He strode across the square.
+@3A | Live your age
+findings | The information discovered as the result of research | результаты | - | The findings were published last month. | the findings of + noun | The findings of the study surprised everyone.
+sample | A group chosen to represent a larger group | выборка | - | The sample included two thousand adults. | a sample of + noun | They tested a sample of 500 teenagers.
+significant | Large enough to be important; not likely to be by chance | значимый | - | There was a significant difference between the two age groups. | a significant + noun | There was a significant increase.
+correlation | A connection between two things, not always cause and effect | корреляция | - | Researchers found a strong correlation between sleep and mood. | a correlation between A and B | There is a correlation between age and income.
+hypothesis | An idea that is tested by research | гипотеза | - | The data supported the hypothesis. | test / support a hypothesis | We need to test this hypothesis.
+conduct | To organise and carry out research or a survey | проводить | - | The study was conducted in five countries. | conduct + research / a survey | They conducted a survey of retired people.
+flawed | Having a mistake or weakness | с изъяном | - | The method was seriously flawed. | seriously / deeply flawed | The argument is deeply flawed.
+peer-reviewed | Checked by other experts before publication | рецензируемый | - | The article appeared in a peer-reviewed journal. | a peer-reviewed + noun | Only peer-reviewed studies were included.
+participant | A person who takes part in a study or activity | участник | - | Each participant was interviewed twice. | a participant in + noun | All participants in the study were over sixty.
+data | Facts or numbers collected for analysis | данные | - | The data suggest that people become happier after fifty. | the data show / suggest | The data show a clear trend.
+variable | Something that can change and affect a result | переменная | - | Income was the most important variable. | control for a variable | They controlled for the age variable.
+conclusive | Proving something without doubt | убедительный, окончательный | - | The evidence is far from conclusive. | conclusive evidence / proof | There is no conclusive proof.
+@3B | In love with Shakespeare
+break the ice | To make people feel more relaxed when they first meet | растопить лёд | - | A quick game helped to break the ice. | do something to break the ice | He told a joke to break the ice.
+wild-goose chase | A long, useless search | бесполезные поиски | - | It was a wild-goose chase, because the shop had closed years ago. | send somebody on a wild-goose chase | They sent us on a wild-goose chase.
+in a pickle | In a difficult situation (informal) | в затруднении | - | I'm in a bit of a pickle, as I've lost my keys. | be in a (bit of a) pickle | We're in a pickle without the car.
+wear your heart on your sleeve | To show your feelings openly | не скрывать чувств | - | He wears his heart on his sleeve, so you always know his mood. | wear your heart on your sleeve | She doesn't wear her heart on her sleeve.
+a laughing stock | Somebody everyone laughs at | посмешище | - | The decision made the club a laughing stock. | become / make somebody a laughing stock | He became a laughing stock.
+vanish into thin air | To disappear completely | испариться | - | The money seemed to vanish into thin air. | vanish into thin air | My glasses have vanished into thin air.
+the be-all and end-all | The most important thing | самое главное | - | Exams are not the be-all and end-all. | be the be-all and end-all (of) | Money isn't the be-all and end-all of life.
+green-eyed monster | Jealousy | ревность | - | The green-eyed monster appeared when her friend was promoted. | the green-eyed monster | Beware of the green-eyed monster.
+a foregone conclusion | A result that is certain before it happens | предрешённый исход | - | With their best player injured, the result was a foregone conclusion. | be a foregone conclusion | Her promotion was a foregone conclusion.
+a heart of gold | A very kind nature | золотое сердце | - | He looks stern, but he has a heart of gold. | have a heart of gold | My grandmother had a heart of gold.
+too much of a good thing | So much of something pleasant that it becomes unpleasant | хорошего понемножку | - | Three weeks of holiday was too much of a good thing. | be too much of a good thing | You can have too much of a good thing.
+love is blind | People in love do not see each other's faults | любовь слепа | - | She thinks he's perfect. Well, love is blind. | love is blind | They say love is blind.
+@4A | No more boys and girls
+pros and cons | Advantages and disadvantages | за и против | - | We weighed up the pros and cons before deciding. | the pros and cons of + noun | What are the pros and cons of single-sex schools?
+by and large | Generally; on the whole | в целом | - | By and large, the plan worked. | By and large, + clause | By and large, children copy what they see.
+sick and tired | Very annoyed and bored with something | сыт по горло | - | I'm sick and tired of excuses. | sick and tired of + noun / -ing | She's sick and tired of being ignored.
+safe and sound | Not hurt or damaged | цел и невредим | - | They arrived home safe and sound. | arrive / return safe and sound | The children were found safe and sound.
+peace and quiet | A calm, quiet situation | тишина и покой | - | I need some peace and quiet to finish this. | some peace and quiet | We moved here for peace and quiet.
+odds and ends | Small things of different kinds | всякая всячина | - | The drawer is full of odds and ends. | a few odds and ends | I need to buy a few odds and ends.
+give and take | Willingness to compromise | взаимные уступки | - | Every relationship needs give and take. | a bit of give and take | Sharing a flat requires a bit of give and take.
+first and foremost | Most importantly | прежде всего | - | First and foremost, stay calm. | First and foremost, + clause | She is, first and foremost, a teacher.
+ups and downs | Good and bad periods | взлёты и падения | - | Every family has its ups and downs. | have your ups and downs | Our business has had its ups and downs.
+trial and error | Trying different methods until one works | метод проб и ошибок | - | Children learn a great deal by trial and error. | by trial and error | I found the answer by trial and error.
+more or less | Almost; approximately | более или менее | - | The two groups were more or less equal in size. | more or less + adjective / past participle | The report is more or less finished.
+sooner or later | At some time in the future, even if not soon | рано или поздно | - | Sooner or later, attitudes will change. | Sooner or later, + clause | Sooner or later, he'll have to decide.
+@4B | Live to work?
+CEO | Chief executive officer: the head of a company | генеральный директор | - | The CEO announced a four-day week. | the CEO of + company | She became the CEO of a bank at forty.
+HR | Human resources: the department that deals with staff | отдел кадров | - | Talk to HR about your contract. | work in HR | He has worked in HR for ten years.
+ASAP | As soon as possible | как можно скорее | - | Please reply ASAP, as the client is waiting. | verb + ASAP | Send me the file ASAP.
+FAQ | Frequently asked questions | частые вопросы | - | Check the FAQ page before you email us. | the FAQ(s) | The answer is in the FAQs.
+KPI | Key performance indicator: a measure of success | ключевой показатель | - | Our main KPI is customer satisfaction. | meet a KPI | The team met all its KPIs.
+ROI | Return on investment | окупаемость | - | The ROI on staff training is high. | the ROI on + noun | What's the ROI on this campaign?
+WFH | Working from home | удалённая работа | - | I'm WFH on Fridays this month. | be WFH | Half the team are WFH today.
+TBC | To be confirmed | уточняется | - | The meeting is on 12 May, venue TBC. | noun + TBC | Start time TBC.
+PA | Personal assistant | личный помощник | - | Her PA arranges all her travel. | somebody's PA | Ask my PA for an appointment.
+CV | Curriculum vitae: a written record of your education and jobs | резюме | - | Attach your CV and a short covering letter. | send / update your CV | I need to update my CV.
+AGM | Annual general meeting | ежегодное общее собрание | - | The figures will be presented at the AGM. | at the AGM | The vote takes place at the AGM.
+FYI | For your information | к вашему сведению | - | FYI, the office will be closed on Monday. | FYI, + clause | FYI, I've forwarded the email.

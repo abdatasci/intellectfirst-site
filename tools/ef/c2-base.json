@@ -1,0 +1,1496 @@
+{
+ "note": "IF Academy original content carried over from the first Advanced Plus course (app/courses/ef-c2.js): grammar explanations and exercises for 16 units, and 8 listening scripts.",
+ "grammar": {
+  "1A": {
+   "g": "Modal verbs (1): will, would, should",
+   "rule": "<p>At C2, <b>will</b>, <b>would</b> and <b>should</b> do much more than talk about the future.</p><table><tr><td><b>will</b> — typical behaviour, annoying habits</td><td>She <b>will</b> sit for hours without saying a word. · He <b>will</b> keep interrupting! (stressed = irritation)</td></tr><tr><td><b>will</b> — deduction about now</td><td>That'<b>ll</b> be the courier. (I'm fairly sure)</td></tr><tr><td><b>would</b> — past habits, past refusal</td><td>As a child I <b>would</b> read under the covers. · The car <b>wouldn't</b> start.</td></tr><tr><td><b>would</b> — softening opinions</td><td>I <b>would</b> imagine / I'<b>d</b> say it's too late.</td></tr><tr><td><b>should</b> — expectation, probability</td><td>The results <b>should</b> be out by Friday.</td></tr><tr><td><b>should</b> — after <i>if</i>/<i>in case</i> (formal), subjunctive use</td><td><b>Should</b> you need help, call me. · It's vital that he <b>should</b> be told.</td></tr></table>",
+   "ex": [
+    {
+     "t": "mc",
+     "q": "My flatmate ___ leave the lights on — it drives me mad!",
+     "o": [
+      "would",
+      "will",
+      "should"
+     ],
+     "a": 1,
+     "why": "Stressed will = an irritating habit now."
+    },
+    {
+     "t": "mc",
+     "q": "When we were kids, Dad ___ take us fishing every Sunday.",
+     "o": [
+      "would",
+      "will",
+      "should"
+     ],
+     "a": 0
+    },
+    {
+     "t": "mc",
+     "q": "Someone at the door? That ___ be Aidos — he said he'd come at six.",
+     "o": [
+      "would",
+      "will",
+      "should"
+     ],
+     "a": 1
+    },
+    {
+     "t": "gap",
+     "q": "___ you require further information, do not hesitate to contact us.",
+     "a": [
+      "Should"
+     ]
+    },
+    {
+     "t": "mc",
+     "q": "I ___ say that the plan is a little ambitious. (polite opinion)",
+     "o": [
+      "will",
+      "would",
+      "should"
+     ],
+     "a": 1
+    },
+    {
+     "t": "order",
+     "a": "The parcel should arrive by the end of the week."
+    }
+   ]
+  },
+  "1B": {
+   "g": "Noun phrases",
+   "rule": "<p>Advanced writing packs a lot of information into the <b>noun phrase</b>.</p><table><tr><td>compound nouns</td><td>a <b>parenting</b> style, <b>screen-time</b> limits</td></tr><tr><td>noun + preposition phrase</td><td>a fear <b>of failure</b>, the role <b>of grandparents</b></td></tr><tr><td>noun + participle</td><td>children <b>raised</b> abroad, parents <b>working</b> long hours</td></tr><tr><td>noun + to-infinitive</td><td>the decision <b>to move</b>, an attempt <b>to help</b></td></tr><tr><td>possessive 's vs of</td><td><b>the children's</b> needs (people) · <b>the end of</b> the film (things)</td></tr><tr><td>hyphenated compound adjectives</td><td>a <b>ten-year-old</b> boy, a <b>well-meaning</b> parent</td></tr></table>",
+   "ex": [
+    {
+     "t": "mc",
+     "q": "Choose the most natural noun phrase.",
+     "o": [
+      "a boy who is ten years old",
+      "a ten-year-old boy",
+      "a ten-years-old boy"
+     ],
+     "a": 1
+    },
+    {
+     "t": "mc",
+     "q": "Parents ___ long hours often feel guilty.",
+     "o": [
+      "work",
+      "working",
+      "worked"
+     ],
+     "a": 1
+    },
+    {
+     "t": "mc",
+     "q": "Choose the correct form.",
+     "o": [
+      "the film's end",
+      "the end of the film"
+     ],
+     "a": 1,
+     "why": "For things, of is usually more natural."
+    },
+    {
+     "t": "gap",
+     "q": "Her decision ___ (leave) the company surprised everyone.",
+     "a": [
+      "to leave"
+     ]
+    },
+    {
+     "t": "mc",
+     "q": "Children ___ in two languages often code-switch.",
+     "o": [
+      "raising",
+      "raised",
+      "raise"
+     ],
+     "a": 1
+    },
+    {
+     "t": "order",
+     "a": "The role of grandparents is often overlooked."
+    }
+   ]
+  },
+  "2A": {
+   "g": "Modal verbs (2): can, could, be able to, may, might",
+   "rule": "<table><tr><td><b>can / could</b> — ability, general possibility</td><td>Stress <b>can</b> affect your sleep. · It <b>could</b> get cold at night.</td></tr><tr><td><b>was able to / managed to</b> — a specific past success</td><td>The climbers <b>were able to</b> reach the summit. (not <s>could</s>)</td></tr><tr><td><b>couldn't</b> — past inability (general or specific)</td><td>We <b>couldn't</b> find a way down.</td></tr><tr><td><b>may / might / could have</b> + past participle — speculation about the past</td><td>She <b>might have</b> missed the bus.</td></tr><tr><td><b>could have</b> — unrealised possibility, criticism</td><td>You <b>could have</b> told me!</td></tr><tr><td><b>may well / might well / could well</b> — strong likelihood</td><td>Prices <b>may well</b> rise again.</td></tr><tr><td><b>might as well</b> — no better alternative</td><td>The last bus has gone; we <b>might as well</b> walk.</td></tr></table>",
+   "ex": [
+    {
+     "t": "mc",
+     "q": "After six hours, the rescuers ___ reach the injured climber.",
+     "o": [
+      "could",
+      "were able to",
+      "can"
+     ],
+     "a": 1,
+     "why": "A specific past success: was/were able to or managed to."
+    },
+    {
+     "t": "mc",
+     "q": "You ___ have warned me about the exam — I had no idea!",
+     "o": [
+      "could",
+      "may",
+      "can"
+     ],
+     "a": 0
+    },
+    {
+     "t": "mc",
+     "q": "There's nothing on TV. We ___ as well go to bed.",
+     "o": [
+      "might",
+      "can",
+      "could have"
+     ],
+     "a": 0
+    },
+    {
+     "t": "gap",
+     "q": "She isn't answering. She ___ have left her phone at home. (possibility)",
+     "a": [
+      "may",
+      "might",
+      "could"
+     ]
+    },
+    {
+     "t": "mc",
+     "q": "Inflation ___ well rise again next year.",
+     "o": [
+      "can",
+      "may",
+      "is able to"
+     ],
+     "a": 1
+    },
+    {
+     "t": "order",
+     "a": "They managed to finish the race despite the injury."
+    }
+   ]
+  },
+  "2B": {
+   "g": "Participle clauses",
+   "rule": "<p>Participle clauses add information concisely, especially in narratives. The subject is usually the same as in the main clause.</p><table><tr><td>-ing — actions at the same time / reason</td><td><b>Walking</b> along the ridge, we saw an eagle. · <b>Feeling</b> exhausted, he stopped.</td></tr><tr><td>having + past participle — an earlier action</td><td><b>Having crossed</b> the desert, they rested for a week.</td></tr><tr><td>past participle — passive meaning</td><td><b>Exhausted</b> by the climb, she fell asleep.</td></tr><tr><td>after conjunctions</td><td><b>Before setting off</b>, check the weather. · <b>When asked</b>, he refused.</td></tr><tr><td>reduced relatives</td><td>The path <b>leading</b> to the lake was closed.</td></tr></table>",
+   "ex": [
+    {
+     "t": "mc",
+     "q": "___ the summit, they took photos and started down.",
+     "o": [
+      "Reaching",
+      "Having reached",
+      "Reached"
+     ],
+     "a": 1
+    },
+    {
+     "t": "mc",
+     "q": "___ by the storm, the hikers sheltered in a cave.",
+     "o": [
+      "Surprising",
+      "Surprised",
+      "Having surprised"
+     ],
+     "a": 1
+    },
+    {
+     "t": "gap",
+     "q": "Before ___ (set) off, make sure your phone is charged.",
+     "a": [
+      "setting"
+     ]
+    },
+    {
+     "t": "mc",
+     "q": "Which sentence is correct?",
+     "o": [
+      "Walking to the station, it started to rain.",
+      "Walking to the station, I got caught in the rain."
+     ],
+     "a": 1
+    },
+    {
+     "t": "mc",
+     "q": "The road ___ to the village was blocked by snow.",
+     "o": [
+      "leads",
+      "leading",
+      "led"
+     ],
+     "a": 1
+    },
+    {
+     "t": "order",
+     "a": "Having lost the map, they followed the river."
+    }
+   ]
+  },
+  "3A": {
+   "g": "Determiners: articles and quantifiers",
+   "rule": "<table><tr><td>zero article — general plural/uncountable</td><td><b>Older people</b> tend to sleep less. · <b>Research</b> shows…</td></tr><tr><td><b>the</b> + adjective — groups</td><td><b>the elderly</b>, <b>the young</b>, <b>the unemployed</b></td></tr><tr><td><b>a / an</b> with uncountables in a specific sense</td><td><b>a</b> good education, <b>a</b> knowledge of history</td></tr><tr><td>quantifiers + of + the/possessive</td><td><b>most of the</b> participants, <b>none of my</b> friends</td></tr><tr><td>few / a few, little / a little</td><td><b>Few</b> people knew (= almost none). · <b>A few</b> people knew (= some).</td></tr><tr><td>every / each, either / neither</td><td><b>Each</b> participant was tested. · <b>Neither</b> result was significant.</td></tr></table>",
+   "ex": [
+    {
+     "t": "mc",
+     "q": "___ elderly are often more satisfied with life than young adults.",
+     "o": [
+      "The",
+      "An",
+      "—"
+     ],
+     "a": 0
+    },
+    {
+     "t": "mc",
+     "q": "___ research suggests that happiness rises after fifty.",
+     "o": [
+      "A",
+      "The",
+      "—"
+     ],
+     "a": 2
+    },
+    {
+     "t": "mc",
+     "q": "Very ___ people realised the study had been flawed. (almost none)",
+     "o": [
+      "few",
+      "a few",
+      "little"
+     ],
+     "a": 0
+    },
+    {
+     "t": "gap",
+     "q": "___ of the two groups showed any improvement. (not one, not the other)",
+     "a": [
+      "Neither"
+     ]
+    },
+    {
+     "t": "mc",
+     "q": "She has ___ excellent knowledge of statistics.",
+     "o": [
+      "an",
+      "the",
+      "—"
+     ],
+     "a": 0
+    },
+    {
+     "t": "order",
+     "a": "Most of the participants were over sixty."
+    }
+   ]
+  },
+  "3B": {
+   "g": "Word order",
+   "rule": "<table><tr><td>fronting for emphasis</td><td><b>Strange</b> it may seem, but it's true. · <b>This</b> I cannot accept.</td></tr><tr><td>inversion after negative adverbials</td><td><b>Never had</b> the audience heard such language.</td></tr><tr><td>object + particle with pronouns</td><td>Turn <b>it</b> off. (not <s>turn off it</s>)</td></tr><tr><td>adverbs of frequency with modal/aux</td><td>He has <b>always</b> loved Shakespeare.</td></tr><tr><td>long objects moved to the end</td><td>She explained <b>to the class</b> what the play was really about.</td></tr><tr><td>indirect questions</td><td>Do you know <b>what time it starts</b>? (not <s>what time does it start</s>)</td></tr></table>",
+   "ex": [
+    {
+     "t": "mc",
+     "q": "Choose the correct order.",
+     "o": [
+      "Can you tell me where is the theatre?",
+      "Can you tell me where the theatre is?"
+     ],
+     "a": 1
+    },
+    {
+     "t": "mc",
+     "q": "Choose the correct sentence.",
+     "o": [
+      "Please put away it.",
+      "Please put it away."
+     ],
+     "a": 1
+    },
+    {
+     "t": "mc",
+     "q": "Rarely ___ a play so moving.",
+     "o": [
+      "I have seen",
+      "have I seen",
+      "I saw"
+     ],
+     "a": 1
+    },
+    {
+     "t": "gap",
+     "q": "She has ___ (always / admire) his sonnets.",
+     "a": [
+      "always admired"
+     ]
+    },
+    {
+     "t": "mc",
+     "q": "Choose the more natural sentence.",
+     "o": [
+      "He explained what the soliloquy meant to us.",
+      "He explained to us what the soliloquy meant."
+     ],
+     "a": 1
+    },
+    {
+     "t": "order",
+     "a": "Never had the audience heard such language."
+    }
+   ]
+  },
+  "4A": {
+   "g": "Cause and effect",
+   "rule": "<table><tr><td>verbs</td><td>Toy marketing <b>leads to</b> / <b>results in</b> / <b>gives rise to</b> stereotypes. · Stereotypes <b>stem from</b> / <b>arise from</b> early experiences.</td></tr><tr><td>nouns</td><td>The <b>root cause</b> of… · a <b>consequence</b> of… · <b>has an impact on</b>…</td></tr><tr><td>linkers</td><td><b>Owing to</b> / <b>due to</b> + noun · <b>consequently</b>, <b>as a result</b>, <b>thereby</b> + -ing</td></tr><tr><td>trigger / bring about / prompt</td><td>The report <b>prompted</b> a debate. · The law <b>brought about</b> real change.</td></tr></table><p>Note: <i>result <b>in</b></i> (cause → effect) but <i>result <b>from</b></i> (effect ← cause).</p>",
+   "ex": [
+    {
+     "t": "mc",
+     "q": "Gender stereotypes often stem ___ the toys children play with.",
+     "o": [
+      "to",
+      "from",
+      "in"
+     ],
+     "a": 1
+    },
+    {
+     "t": "mc",
+     "q": "The campaign resulted ___ a 20% rise in applications.",
+     "o": [
+      "from",
+      "in",
+      "to"
+     ],
+     "a": 1
+    },
+    {
+     "t": "gap",
+     "q": "The match was cancelled ___ to heavy rain.",
+     "a": [
+      "due",
+      "owing"
+     ]
+    },
+    {
+     "t": "mc",
+     "q": "The new policy ___ about a major change in hiring.",
+     "o": [
+      "brought",
+      "led",
+      "gave"
+     ],
+     "a": 0
+    },
+    {
+     "t": "mc",
+     "q": "They lowered prices, ___ attracting new customers.",
+     "o": [
+      "thereby",
+      "owing to",
+      "due"
+     ],
+     "a": 0
+    },
+    {
+     "t": "order",
+     "a": "The report prompted a national debate."
+    }
+   ]
+  },
+  "4B": {
+   "g": "Aspect: perfect and continuous tenses",
+   "rule": "<p><b>Perfect</b> aspect looks back from a point (completion, result, time up to now). <b>Continuous</b> aspect shows activity in progress, duration or temporariness.</p><table><tr><td>present perfect simple — result, number</td><td>I'<b>ve answered</b> forty emails today.</td></tr><tr><td>present perfect continuous — activity, duration</td><td>I'<b>ve been answering</b> emails all morning.</td></tr><tr><td>past perfect continuous — background duration</td><td>She <b>had been working</b> there for years when she quit.</td></tr><tr><td>future perfect / future continuous</td><td>By 2030 I'<b>ll have paid</b> off the loan. · This time tomorrow I'<b>ll be flying</b>.</td></tr><tr><td>stative verbs rarely continuous</td><td>I'<b>ve known</b> him for years. (not <s>been knowing</s>)</td></tr></table>",
+   "ex": [
+    {
+     "t": "mc",
+     "q": "I'm exhausted — I ___ all day.",
+     "o": [
+      "have worked",
+      "have been working",
+      "worked"
+     ],
+     "a": 1
+    },
+    {
+     "t": "mc",
+     "q": "She ___ three reports this week.",
+     "o": [
+      "has written",
+      "has been writing",
+      "wrote"
+     ],
+     "a": 0
+    },
+    {
+     "t": "gap",
+     "q": "By the end of the year, we ___ (open) five new offices.",
+     "a": [
+      "will have opened",
+      "'ll have opened"
+     ]
+    },
+    {
+     "t": "mc",
+     "q": "They ___ each other since university.",
+     "o": [
+      "have known",
+      "have been knowing",
+      "know"
+     ],
+     "a": 0
+    },
+    {
+     "t": "mc",
+     "q": "He ___ overtime for months before he burnt out.",
+     "o": [
+      "had worked",
+      "had been working",
+      "was working"
+     ],
+     "a": 1
+    },
+    {
+     "t": "order",
+     "a": "This time next week I will be lying on a beach."
+    }
+   ]
+  },
+  "5A": {
+   "g": "Prepositions and sentence patterns",
+   "rule": "<table><tr><td>adjective + preposition</td><td><b>apprehensive about</b>, <b>resentful of</b>, <b>indifferent to</b>, <b>overwhelmed by</b></td></tr><tr><td>verb + object + preposition</td><td>She <b>accused</b> him <b>of</b> lying. · They <b>congratulated</b> us <b>on</b> winning.</td></tr><tr><td>preposition + -ing</td><td>She left <b>without saying</b> goodbye. · <b>Instead of complaining</b>, act.</td></tr><tr><td>prepositions at the end of clauses</td><td>That's the film I told you <b>about</b>. · What are you worried <b>about</b>?</td></tr><tr><td>it + adjective + that / to</td><td><b>It's</b> only natural <b>to feel</b> nervous.</td></tr></table>",
+   "ex": [
+    {
+     "t": "mc",
+     "q": "She was apprehensive ___ moving abroad.",
+     "o": [
+      "of",
+      "about",
+      "with"
+     ],
+     "a": 1
+    },
+    {
+     "t": "mc",
+     "q": "He seemed completely indifferent ___ the news.",
+     "o": [
+      "to",
+      "for",
+      "about"
+     ],
+     "a": 0
+    },
+    {
+     "t": "gap",
+     "q": "They accused the manager ___ ignoring complaints.",
+     "a": [
+      "of"
+     ]
+    },
+    {
+     "t": "mc",
+     "q": "She left the room without ___ a word.",
+     "o": [
+      "say",
+      "saying",
+      "to say"
+     ],
+     "a": 1
+    },
+    {
+     "t": "mc",
+     "q": "What are you so anxious ___?",
+     "o": [
+      "for",
+      "about",
+      "of"
+     ],
+     "a": 1
+    },
+    {
+     "t": "order",
+     "a": "It is only natural to feel nervous before an exam."
+    }
+   ]
+  },
+  "5B": {
+   "g": "Advanced structures for comparing and contrasting",
+   "rule": "<table><tr><td><b>the … the …</b></td><td><b>The longer</b> you live abroad, <b>the more</b> you notice home.</td></tr><tr><td>modifiers</td><td><b>considerably / far / a great deal</b> more formal · <b>nowhere near as</b> polite · <b>not nearly as</b> direct</td></tr><tr><td>contrast linkers</td><td><b>whereas / while</b> + clause · <b>unlike</b> + noun · <b>as opposed to</b> · <b>by contrast</b></td></tr><tr><td>concession</td><td><b>Much as</b> I love Italy, … · <b>Although / Even though</b> … · <b>Despite / In spite of</b> + -ing / noun</td></tr><tr><td>similarity</td><td><b>Similarly</b>, … · <b>likewise</b> · <b>just as</b> … <b>so</b> …</td></tr></table>",
+   "ex": [
+    {
+     "t": "mc",
+     "q": "___ more you travel, the more tolerant you become.",
+     "o": [
+      "The",
+      "More",
+      "So"
+     ],
+     "a": 0
+    },
+    {
+     "t": "mc",
+     "q": "British English is ___ near as direct as Dutch.",
+     "o": [
+      "nowhere",
+      "not",
+      "far"
+     ],
+     "a": 0
+    },
+    {
+     "t": "gap",
+     "q": "___ the British, Kazakhs often greet everyone in the room.",
+     "a": [
+      "Unlike"
+     ]
+    },
+    {
+     "t": "mc",
+     "q": "___ I admire their punctuality, I find it a little rigid.",
+     "o": [
+      "Despite",
+      "Much as",
+      "Unlike"
+     ],
+     "a": 1
+    },
+    {
+     "t": "mc",
+     "q": "In Japan, bowing is common, ___ in Russia people usually shake hands.",
+     "o": [
+      "whereas",
+      "despite",
+      "unlike"
+     ],
+     "a": 0
+    },
+    {
+     "t": "order",
+     "a": "The longer you stay, the harder it is to leave."
+    }
+   ]
+  },
+  "6A": {
+   "g": "Position of adverbs",
+   "rule": "<table><tr><td>front (comment / linking)</td><td><b>Surprisingly</b>, the old phone outlasted the new one. · <b>However</b>, …</td></tr><tr><td>mid (frequency, certainty, focus)</td><td>She <b>rarely</b> uses apps. · They have <b>probably</b> left. · He <b>even</b> repairs his own laptop.</td></tr><tr><td>end (manner, place, time)</td><td>He fixed it <b>carefully</b> <b>in the garage</b> <b>last night</b>. (manner → place → time)</td></tr><tr><td>never between verb and object</td><td>She speaks English <b>fluently</b>. (not <s>speaks fluently English</s>)</td></tr><tr><td>meaning can change</td><td><b>Only</b> I saw it. · I <b>only</b> saw it. · I saw <b>only</b> it.</td></tr></table>",
+   "ex": [
+    {
+     "t": "mc",
+     "q": "Choose the correct sentence.",
+     "o": [
+      "She speaks fluently three languages.",
+      "She speaks three languages fluently."
+     ],
+     "a": 1
+    },
+    {
+     "t": "mc",
+     "q": "He has ___ forgotten to back up his files. (frequency)",
+     "o": [
+      "never",
+      "yesterday",
+      "carefully"
+     ],
+     "a": 0
+    },
+    {
+     "t": "mc",
+     "q": "Choose the correct order.",
+     "o": [
+      "He repaired it last night carefully.",
+      "He repaired it carefully last night."
+     ],
+     "a": 1
+    },
+    {
+     "t": "gap",
+     "q": "___, the old typewriter still works. (It is surprising)",
+     "a": [
+      "Surprisingly"
+     ]
+    },
+    {
+     "t": "mc",
+     "q": "They will ___ have arrived by now.",
+     "o": [
+      "probably",
+      "probable",
+      "in probability"
+     ],
+     "a": 0
+    },
+    {
+     "t": "order",
+     "a": "She rarely checks her phone in the evening."
+    }
+   ]
+  },
+  "6B": {
+   "g": "Singular and plural agreement",
+   "rule": "<table><tr><td>collective nouns (BrE)</td><td>The team <b>is / are</b> training. (singular = unit; plural = members)</td></tr><tr><td>always plural</td><td>The police <b>are</b>… · People <b>were</b>… · Cattle <b>graze</b>…</td></tr><tr><td>uncountable, look plural</td><td>The news <b>is</b>… · Mathematics <b>is</b>… · Economics <b>is</b>…</td></tr><tr><td>amounts as one unit</td><td>Ten kilometres <b>is</b> a long way. · Five thousand tenge <b>isn't</b> much.</td></tr><tr><td>a number of / the number of</td><td><b>A number of</b> students <b>are</b>… · <b>The number of</b> students <b>is</b>…</td></tr><tr><td>each / every / neither / none</td><td><b>Each</b> of the answers <b>is</b> correct. · None of us <b>is / are</b> sure (both used).</td></tr></table>",
+   "ex": [
+    {
+     "t": "mc",
+     "q": "Mathematics ___ my favourite subject.",
+     "o": [
+      "is",
+      "are"
+     ],
+     "a": 0
+    },
+    {
+     "t": "mc",
+     "q": "The police ___ investigating the accident.",
+     "o": [
+      "is",
+      "are"
+     ],
+     "a": 1
+    },
+    {
+     "t": "mc",
+     "q": "Twenty minutes ___ not long to wait.",
+     "o": [
+      "is",
+      "are"
+     ],
+     "a": 0
+    },
+    {
+     "t": "gap",
+     "q": "The number of users ___ (have) doubled.",
+     "a": [
+      "has"
+     ]
+    },
+    {
+     "t": "mc",
+     "q": "A number of people ___ complained.",
+     "o": [
+      "has",
+      "have"
+     ],
+     "a": 1
+    },
+    {
+     "t": "order",
+     "a": "Each of the answers is worth two points."
+    }
+   ]
+  },
+  "7A": {
+   "g": "Complex passive forms",
+   "rule": "<table><tr><td>reporting passives</td><td>The suspect <b>is said to have fled</b> abroad. · <b>It is believed that</b> …</td></tr><tr><td>passive infinitives</td><td>He expects <b>to be released</b> soon. · She hates <b>being told</b> what to do.</td></tr><tr><td>perfect / continuous passives</td><td>The case <b>has been reopened</b>. · The witness <b>is being questioned</b>.</td></tr><tr><td>modal passives</td><td>It <b>can't have been stolen</b> — the door was locked.</td></tr><tr><td>have / get something done</td><td>They <b>had</b> the locks <b>changed</b>. · He <b>got</b> his car <b>broken into</b>.</td></tr></table>",
+   "ex": [
+    {
+     "t": "mc",
+     "q": "The thief is thought ___ through the window.",
+     "o": [
+      "to escape",
+      "to have escaped",
+      "escaping"
+     ],
+     "a": 1
+    },
+    {
+     "t": "mc",
+     "q": "The witness ___ by the police at the moment.",
+     "o": [
+      "is questioned",
+      "is being questioned",
+      "has questioned"
+     ],
+     "a": 1
+    },
+    {
+     "t": "gap",
+     "q": "The painting can't ___ (steal) — it's still on the wall.",
+     "a": [
+      "have been stolen"
+     ]
+    },
+    {
+     "t": "mc",
+     "q": "We had our house ___ last year.",
+     "o": [
+      "burgled",
+      "burgle",
+      "burgling"
+     ],
+     "a": 0
+    },
+    {
+     "t": "mc",
+     "q": "She hates ___ what to do.",
+     "o": [
+      "telling",
+      "being told",
+      "to tell"
+     ],
+     "a": 1
+    },
+    {
+     "t": "order",
+     "a": "The case is expected to be closed next month."
+    }
+   ]
+  },
+  "7B": {
+   "g": "Special uses of tenses",
+   "rule": "<table><tr><td>past tenses for distance / politeness</td><td>I <b>was wondering</b> if you could help. · I <b>wanted</b> to ask you something.</td></tr><tr><td>past for unreal present</td><td>It's time we <b>left</b>. · I'd rather you <b>didn't</b> tell anyone. · If only I <b>had</b> more time.</td></tr><tr><td>present for narratives, jokes, headlines</td><td>So this man <b>walks</b> into a café… · <b>Hermit leaves</b> cave after 30 years.</td></tr><tr><td>present simple for timetables</td><td>The film <b>starts</b> at eight.</td></tr><tr><td>future in the past</td><td>I <b>was going to</b> call you, but… · We knew it <b>would</b> be hard.</td></tr></table>",
+   "ex": [
+    {
+     "t": "mc",
+     "q": "It's high time we ___ home.",
+     "o": [
+      "go",
+      "went",
+      "will go"
+     ],
+     "a": 1
+    },
+    {
+     "t": "mc",
+     "q": "I ___ wondering if you could lend me your notes.",
+     "o": [
+      "am",
+      "was",
+      "will be"
+     ],
+     "a": 1
+    },
+    {
+     "t": "gap",
+     "q": "I'd rather you ___ (not / mention) it to anyone.",
+     "a": [
+      "didn't mention",
+      "did not mention"
+     ]
+    },
+    {
+     "t": "mc",
+     "q": "Headline: \"Local woman ___ lottery twice\"",
+     "o": [
+      "wins",
+      "won",
+      "has won"
+     ],
+     "a": 0
+    },
+    {
+     "t": "mc",
+     "q": "I ___ phone you, but my battery died.",
+     "o": [
+      "was going to",
+      "will",
+      "am going to"
+     ],
+     "a": 0
+    },
+    {
+     "t": "order",
+     "a": "If only I had more time to read."
+    }
+   ]
+  },
+  "8A": {
+   "g": "Expressing conditionality",
+   "rule": "<table><tr><td>alternatives to if</td><td><b>provided / providing (that)</b>, <b>as long as</b>, <b>on condition that</b>, <b>unless</b>, <b>supposing</b>, <b>otherwise</b></td></tr><tr><td>inversion (formal)</td><td><b>Had</b> I known, I'd have come. · <b>Were</b> it not for her, … · <b>Should</b> you need help, …</td></tr><tr><td>but for / if it weren't for</td><td><b>But for</b> the recipe, the dish would have failed.</td></tr><tr><td>mixed conditionals</td><td>If I'd trained as a chef, I'<b>d be</b> running a restaurant now.</td></tr><tr><td>even if / only if</td><td>I wouldn't eat it <b>even if</b> you paid me. · <b>Only if</b> it's fresh <b>will</b> I buy it.</td></tr></table>",
+   "ex": [
+    {
+     "t": "mc",
+     "q": "___ I known you were vegetarian, I'd have cooked something else.",
+     "o": [
+      "If",
+      "Had",
+      "Should"
+     ],
+     "a": 1
+    },
+    {
+     "t": "mc",
+     "q": "You can borrow my car ___ you return it by six.",
+     "o": [
+      "unless",
+      "provided",
+      "otherwise"
+     ],
+     "a": 1
+    },
+    {
+     "t": "gap",
+     "q": "___ it not for her help, we would have failed.",
+     "a": [
+      "Were"
+     ]
+    },
+    {
+     "t": "mc",
+     "q": "___ the rain, the picnic would have been perfect.",
+     "o": [
+      "But for",
+      "Unless",
+      "Provided"
+     ],
+     "a": 0
+    },
+    {
+     "t": "mc",
+     "q": "I wouldn't eat insects ___ you paid me.",
+     "o": [
+      "only if",
+      "even if",
+      "as long as"
+     ],
+     "a": 1
+    },
+    {
+     "t": "order",
+     "a": "Only if the fish is fresh will I buy it."
+    }
+   ]
+  },
+  "8B": {
+   "g": "Adjective order",
+   "rule": "<p>Before a noun, adjectives usually follow this order (you rarely need more than three):</p><p><b>opinion → size → age → shape → colour → origin → material → purpose → NOUN</b></p><table><tr><td>example</td><td>a <b>beautiful</b> <b>small</b> <b>antique</b> <b>round</b> <b>Persian</b> <b>silk</b> rug</td></tr><tr><td>more natural</td><td>a <b>lovely old wooden</b> table · <b>huge black</b> boots</td></tr><tr><td>commas</td><td>between adjectives of the same type: a <b>cheerful, friendly</b> waiter</td></tr><tr><td>after the noun / verb</td><td>The view was <b>breathtaking</b>. · something <b>unusual</b></td></tr></table>",
+   "ex": [
+    {
+     "t": "mc",
+     "q": "Choose the correct order.",
+     "o": [
+      "a wooden old lovely table",
+      "a lovely old wooden table"
+     ],
+     "a": 1
+    },
+    {
+     "t": "mc",
+     "q": "Choose the correct order.",
+     "o": [
+      "a Japanese small ceramic bowl",
+      "a small Japanese ceramic bowl"
+     ],
+     "a": 1
+    },
+    {
+     "t": "mc",
+     "q": "Choose the correct order.",
+     "o": [
+      "a black leather huge sofa",
+      "a huge black leather sofa"
+     ],
+     "a": 1
+    },
+    {
+     "t": "gap",
+     "q": "I saw something ___ (strange) on the way home.",
+     "a": [
+      "strange"
+     ]
+    },
+    {
+     "t": "mc",
+     "q": "Choose the correct order.",
+     "o": [
+      "a red long silk dress",
+      "a long red silk dress"
+     ],
+     "a": 1
+    },
+    {
+     "t": "order",
+     "a": "She bought a beautiful old Italian painting."
+    }
+   ]
+  }
+ },
+ "listen": {
+  "1A": {
+   "title": "A coach on what really motivates us",
+   "intro": "A podcast interview with a performance coach.",
+   "script": [
+    {
+     "s": "Host",
+     "g": "f",
+     "t": "You've coached athletes and executives. What separates people who keep going from those who give up?"
+    },
+    {
+     "s": "Coach",
+     "g": "m",
+     "t": "Honestly? It's rarely talent. People who last tend to have a reason that's bigger than the result — they'll train in the rain because they love the process, not the medal."
+    },
+    {
+     "s": "Host",
+     "g": "f",
+     "t": "So rewards don't work?"
+    },
+    {
+     "s": "Coach",
+     "g": "m",
+     "t": "They work for routine tasks. But for anything creative, research suggests that big external rewards can actually reduce motivation. People start doing it for the prize, and when the prize goes, so does the drive."
+    },
+    {
+     "s": "Host",
+     "g": "f",
+     "t": "What would you say to a student who's lost interest in English, say?"
+    },
+    {
+     "s": "Coach",
+     "g": "m",
+     "t": "I'd ask them to find a small win every day — one film scene understood, one conversation without switching languages. Progress you can see is the most underrated motivator there is."
+    }
+   ],
+   "ex": [
+    {
+     "t": "mc",
+     "q": "According to the coach, people who keep going usually…",
+     "o": [
+      "are more talented",
+      "have a deeper reason than the result",
+      "want bigger rewards"
+     ],
+     "a": 1
+    },
+    {
+     "t": "mc",
+     "q": "When do external rewards work well?",
+     "o": [
+      "for creative tasks",
+      "for routine tasks",
+      "never"
+     ],
+     "a": 1
+    },
+    {
+     "t": "tf",
+     "q": "The coach thinks big prizes always increase motivation.",
+     "a": false
+    },
+    {
+     "t": "mc",
+     "q": "What does he recommend for a demotivated student?",
+     "o": [
+      "a long holiday",
+      "small daily wins",
+      "a stricter teacher"
+     ],
+     "a": 1
+    }
+   ]
+  },
+  "2B": {
+   "title": "A cyclist's journey across Central Asia",
+   "intro": "A traveller describes the hardest day of her trip.",
+   "script": [
+    {
+     "s": "Interviewer",
+     "g": "m",
+     "t": "You cycled from Almaty to Istanbul. What was the toughest moment?"
+    },
+    {
+     "s": "Elena",
+     "g": "f",
+     "t": "Day forty, in the desert. My back wheel broke, and having been warned there were no villages for eighty kilometres, I panicked."
+    },
+    {
+     "s": "Interviewer",
+     "g": "m",
+     "t": "What did you do?"
+    },
+    {
+     "s": "Elena",
+     "g": "f",
+     "t": "I pushed the bike — well, trudged, really — for six hours. Then a truck driver stopped. He couldn't speak English and I couldn't speak Turkmen, but we were able to fix the wheel together with wire."
+    },
+    {
+     "s": "Interviewer",
+     "g": "m",
+     "t": "Would you do it again?"
+    },
+    {
+     "s": "Elena",
+     "g": "f",
+     "t": "Absolutely. I might well have given up that day if he hadn't stopped. But that's what I learnt: you can't plan everything — sometimes strangers are the plan."
+    }
+   ],
+   "ex": [
+    {
+     "t": "mc",
+     "q": "What happened on day forty?",
+     "o": [
+      "She got lost.",
+      "Her back wheel broke.",
+      "She ran out of water."
+     ],
+     "a": 1
+    },
+    {
+     "t": "mc",
+     "q": "How did she move for six hours?",
+     "o": [
+      "She cycled quickly.",
+      "She walked, pushing the bike.",
+      "She got a lift."
+     ],
+     "a": 1
+    },
+    {
+     "t": "tf",
+     "q": "Elena and the driver had a language in common.",
+     "a": false
+    },
+    {
+     "t": "mc",
+     "q": "What lesson did she learn?",
+     "o": [
+      "Always plan everything.",
+      "Strangers can be part of the solution.",
+      "Never travel alone."
+     ],
+     "a": 1
+    }
+   ]
+  },
+  "3A": {
+   "title": "Do we really get happier with age?",
+   "intro": "Two researchers discuss a study on a radio science programme.",
+   "script": [
+    {
+     "s": "Presenter",
+     "g": "f",
+     "t": "Your study claims people become happier after their fifties. How big was the sample?"
+    },
+    {
+     "s": "Researcher",
+     "g": "m",
+     "t": "Just over forty thousand adults in twelve countries, followed for ten years. The pattern is a U-shape: satisfaction dips in middle age and rises again."
+    },
+    {
+     "s": "Presenter",
+     "g": "f",
+     "t": "Some critics say the finding is flawed — that unhappy people simply die earlier."
+    },
+    {
+     "s": "Researcher",
+     "g": "m",
+     "t": "That's a fair point, and we did control for health. The correlation remained significant even among people in good health."
+    },
+    {
+     "s": "Presenter",
+     "g": "f",
+     "t": "So what explains it?"
+    },
+    {
+     "s": "Researcher",
+     "g": "m",
+     "t": "We can't be certain — correlation isn't causation. But a likely factor is expectations: older people tend to compare themselves less with others."
+    }
+   ],
+   "ex": [
+    {
+     "t": "mc",
+     "q": "How many adults were in the study?",
+     "o": [
+      "about 4,000",
+      "just over 40,000",
+      "400,000"
+     ],
+     "a": 1
+    },
+    {
+     "t": "mc",
+     "q": "What shape describes the pattern?",
+     "o": [
+      "a straight line",
+      "a U-shape",
+      "a peak in middle age"
+     ],
+     "a": 1
+    },
+    {
+     "t": "tf",
+     "q": "The researcher completely rejects the critics' point.",
+     "a": false
+    },
+    {
+     "t": "mc",
+     "q": "What factor does he suggest?",
+     "o": [
+      "better health",
+      "lower expectations / less comparison",
+      "more money"
+     ],
+     "a": 1
+    }
+   ]
+  },
+  "4B": {
+   "title": "Can a four-day week work?",
+   "intro": "A manager and an employee discuss a trial at their company.",
+   "script": [
+    {
+     "s": "Dana",
+     "g": "f",
+     "t": "So, six months into the four-day-week trial — what's the verdict from HR?"
+    },
+    {
+     "s": "Marat",
+     "g": "m",
+     "t": "By and large, positive. Productivity hasn't dropped; in fact our main KPI, customer satisfaction, has gone up slightly."
+    },
+    {
+     "s": "Dana",
+     "g": "f",
+     "t": "And sick days?"
+    },
+    {
+     "s": "Marat",
+     "g": "m",
+     "t": "Down by almost a third. People have been coming in rested. The cons? Some clients expect replies on Fridays, so we've had to rota a small team."
+    },
+    {
+     "s": "Dana",
+     "g": "f",
+     "t": "Will the CEO make it permanent?"
+    },
+    {
+     "s": "Marat",
+     "g": "m",
+     "t": "The board meets in March — that's TBC. But I'd be surprised if they reversed it. Staff turnover has fallen too, which saves a fortune in recruitment."
+    }
+   ],
+   "ex": [
+    {
+     "t": "mc",
+     "q": "What happened to productivity?",
+     "o": [
+      "It dropped.",
+      "It stayed the same or improved.",
+      "It halved."
+     ],
+     "a": 1
+    },
+    {
+     "t": "mc",
+     "q": "By how much did sick days fall?",
+     "o": [
+      "by about a third",
+      "by half",
+      "not at all"
+     ],
+     "a": 0
+    },
+    {
+     "t": "mc",
+     "q": "What was one disadvantage?",
+     "o": [
+      "clients expecting Friday replies",
+      "lower pay",
+      "longer hours"
+     ],
+     "a": 0
+    },
+    {
+     "t": "tf",
+     "q": "The decision to make it permanent has already been made.",
+     "a": false
+    }
+   ]
+  },
+  "5B": {
+   "title": "Culture shock in reverse",
+   "intro": "Two people discuss coming home after years abroad.",
+   "script": [
+    {
+     "s": "Arman",
+     "g": "m",
+     "t": "Everyone warns you about culture shock abroad. Nobody warned me about coming home."
+    },
+    {
+     "s": "Sofia",
+     "g": "f",
+     "t": "Reverse culture shock! I felt it after Spain. The longer I'd been away, the stranger everything seemed — even queuing."
+    },
+    {
+     "s": "Arman",
+     "g": "m",
+     "t": "Exactly. In London people apologise constantly, whereas here we're more direct. At first I found it almost rude — my own culture!"
+    },
+    {
+     "s": "Sofia",
+     "g": "f",
+     "t": "And friends weren't nearly as interested in my stories as I expected. That made me feel quite resentful, honestly."
+    },
+    {
+     "s": "Arman",
+     "g": "m",
+     "t": "Much as I love being back, I miss being anonymous. Here everyone knows your business."
+    },
+    {
+     "s": "Sofia",
+     "g": "f",
+     "t": "It took me about a year to feel content again. You end up somewhere in between — not fully either."
+    }
+   ],
+   "ex": [
+    {
+     "t": "mc",
+     "q": "What surprised Arman?",
+     "o": [
+      "culture shock abroad",
+      "culture shock when returning home",
+      "the weather"
+     ],
+     "a": 1
+    },
+    {
+     "t": "mc",
+     "q": "How does Arman compare London and home?",
+     "o": [
+      "London is more direct.",
+      "People at home are more direct.",
+      "They are the same."
+     ],
+     "a": 1
+    },
+    {
+     "t": "mc",
+     "q": "Why did Sofia feel resentful?",
+     "o": [
+      "Friends weren't very interested in her stories.",
+      "She lost her job.",
+      "Prices had risen."
+     ],
+     "a": 0
+    },
+    {
+     "t": "tf",
+     "q": "Sofia felt completely settled within a month.",
+     "a": false
+    }
+   ]
+  },
+  "6B": {
+   "title": "When maths goes wrong",
+   "intro": "A science podcast about famous number mistakes.",
+   "script": [
+    {
+     "s": "Host",
+     "g": "f",
+     "t": "Today: tiny numbers, huge consequences. Daniel, you collect maths mistakes."
+    },
+    {
+     "s": "Daniel",
+     "g": "m",
+     "t": "I do! My favourite is a bridge that was built from both banks at once. One side used a reference height that differed by about half a metre, and the error was doubled instead of corrected."
+    },
+    {
+     "s": "Host",
+     "g": "f",
+     "t": "So the two halves didn't meet?"
+    },
+    {
+     "s": "Daniel",
+     "g": "m",
+     "t": "Not at first — they were nearly a metre apart. Then there's the case of a medicine dose where a decimal point was in the wrong place: ten times the amount."
+    },
+    {
+     "s": "Host",
+     "g": "f",
+     "t": "Frightening. What's the lesson?"
+    },
+    {
+     "s": "Daniel",
+     "g": "m",
+     "t": "Mathematics is rarely the problem; communication is. A number of disasters happen because two teams each assume the other has checked."
+    }
+   ],
+   "ex": [
+    {
+     "t": "mc",
+     "q": "What went wrong with the bridge?",
+     "o": [
+      "It was too short.",
+      "A height difference was doubled.",
+      "It used the wrong material."
+     ],
+     "a": 1
+    },
+    {
+     "t": "mc",
+     "q": "How far apart were the halves at first?",
+     "o": [
+      "about half a metre",
+      "nearly a metre",
+      "ten metres"
+     ],
+     "a": 1
+    },
+    {
+     "t": "mc",
+     "q": "What caused the medicine error?",
+     "o": [
+      "a decimal point in the wrong place",
+      "a broken machine",
+      "a translation"
+     ],
+     "a": 0
+    },
+    {
+     "t": "tf",
+     "q": "Daniel thinks most disasters are caused by bad maths.",
+     "a": false
+    }
+   ]
+  },
+  "7A": {
+   "title": "A true-crime podcast",
+   "intro": "Two hosts discuss an unsolved museum theft.",
+   "script": [
+    {
+     "s": "Host 1",
+     "g": "m",
+     "t": "So, the painting vanished from the gallery overnight. No alarm, no broken glass."
+    },
+    {
+     "s": "Host 2",
+     "g": "f",
+     "t": "Which is why the police think it must have been taken by someone with a key. The night guard was questioned for hours."
+    },
+    {
+     "s": "Host 1",
+     "g": "m",
+     "t": "And released without charge. It's now believed that the frame had been replaced weeks earlier with a copy."
+    },
+    {
+     "s": "Host 2",
+     "g": "f",
+     "t": "Meaning the original might already have been sold before anyone noticed. If it's ever recovered, the thief is expected to face at least ten years."
+    },
+    {
+     "s": "Host 1",
+     "g": "m",
+     "t": "Unless he's acquitted. The defence will argue that nobody can prove when the swap happened."
+    },
+    {
+     "s": "Host 2",
+     "g": "f",
+     "t": "It's time we heard from our listeners — who do you think did it?"
+    }
+   ],
+   "ex": [
+    {
+     "t": "mc",
+     "q": "How did the thief probably get in?",
+     "o": [
+      "by breaking a window",
+      "with a key",
+      "through the roof"
+     ],
+     "a": 1
+    },
+    {
+     "t": "tf",
+     "q": "The night guard was charged with the crime.",
+     "a": false
+    },
+    {
+     "t": "mc",
+     "q": "What is now believed?",
+     "o": [
+      "The painting was a copy all along.",
+      "A copy had replaced the original weeks earlier.",
+      "The guard sold it."
+     ],
+     "a": 1
+    },
+    {
+     "t": "mc",
+     "q": "What will the defence argue?",
+     "o": [
+      "The thief has an alibi.",
+      "Nobody can prove when the swap happened.",
+      "The painting is worthless."
+     ],
+     "a": 1
+    }
+   ]
+  },
+  "8A": {
+   "title": "Love at first bite",
+   "intro": "A chef and a food writer talk about food and relationships.",
+   "script": [
+    {
+     "s": "Writer",
+     "g": "f",
+     "t": "They say the way to someone's heart is through their stomach. As a chef, do you believe it?"
+    },
+    {
+     "s": "Chef",
+     "g": "m",
+     "t": "Provided the cooking is honest, yes. The first meal I made for my wife was a disaster — I burnt the rice. But for her sense of humour, we'd never have had a second date."
+    },
+    {
+     "s": "Writer",
+     "g": "f",
+     "t": "So it wasn't the food that won her over!"
+    },
+    {
+     "s": "Chef",
+     "g": "m",
+     "t": "Not that night. But food is about attention. If you notice someone sipping their tea slowly, savouring it, you learn what they love."
+    },
+    {
+     "s": "Writer",
+     "g": "f",
+     "t": "And acquired tastes?"
+    },
+    {
+     "s": "Chef",
+     "g": "m",
+     "t": "Ah — she couldn't stand kumis when we met. Had you told me she'd be drinking it every morning ten years later, I wouldn't have believed you."
+    }
+   ],
+   "ex": [
+    {
+     "t": "mc",
+     "q": "What went wrong at the first meal?",
+     "o": [
+      "He burnt the rice.",
+      "She was late.",
+      "The restaurant was closed."
+     ],
+     "a": 0
+    },
+    {
+     "t": "mc",
+     "q": "Why was there a second date?",
+     "o": [
+      "the delicious food",
+      "her sense of humour",
+      "a friend's advice"
+     ],
+     "a": 1
+    },
+    {
+     "t": "mc",
+     "q": "According to the chef, food is about…",
+     "o": [
+      "money",
+      "attention",
+      "presentation"
+     ],
+     "a": 1
+    },
+    {
+     "t": "tf",
+     "q": "His wife loved kumis from the start.",
+     "a": false
+    }
+   ]
+  }
+ }
+}

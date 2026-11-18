@@ -1,0 +1,106 @@
+# English Files · Advanced Plus (C2), units 5A to 8B. Written by IF Academy.
+# Only the unit order, unit titles and vocabulary topic follow the coursebook. Word choice, meanings, Russian and all sentences are original.
+@5A | An emotional roller coaster
+apprehensive | Worried that something bad will happen | встревоженный | - | I was apprehensive about the operation. | apprehensive about + noun | She felt apprehensive about the interview.
+elated | Extremely happy and excited | ликующий | - | She was elated by the result. | elated at / by + noun | He was elated at the news.
+resentful | Angry because you feel unfairly treated | обиженный | - | He felt resentful of his brother's success. | resentful of / about + noun | She was resentful about the decision.
+wistful | Thinking sadly about something you cannot have | тоскливый, задумчивый | - | She gave a wistful look at the old photos. | a wistful + noun | There was a wistful smile on his face.
+exasperated | Very annoyed, especially when you can do nothing | раздражённый | - | He gave an exasperated sigh and tried again. | exasperated by / with + noun | I was exasperated by the delays.
+ecstatic | Extremely happy | в восторге | - | The fans were ecstatic when the final whistle blew. | ecstatic about + noun | They were ecstatic about the win.
+dismayed | Worried, sad and shocked | расстроенный | - | We were dismayed by the decision. | dismayed at / by + noun | I was dismayed at the cost.
+content | Happy and satisfied | довольный | - | She seems content with her life. | content with + noun | He's content with a simple routine.
+devastated | Extremely upset and shocked | убитый горем, раздавленный | - | He was devastated by the news. | devastated by + noun | She was devastated by the loss.
+overwhelmed | Feeling an emotion so strongly that you cannot cope | переполненный, подавленный | - | I was overwhelmed by everyone's kindness. | overwhelmed by / with + noun | He was overwhelmed with relief.
+indifferent | Not interested; not caring | безразличный | - | She seemed indifferent to the criticism. | indifferent to + noun | He is indifferent to fashion.
+bewildered | Very confused | озадаченный | - | The tourists looked bewildered by the signs. | bewildered by + noun | I was bewildered by her reaction.
+@5B | Crossing cultures
+demographic | A particular group in a population; the statistics about it | демографическая группа | - | The app targets a younger demographic. | a + adjective + demographic | Their readers are an older demographic.
+ethnicity | Belonging to a group with a shared culture or origin | этническая принадлежность | - | The survey asked about age and ethnicity. | of different ethnicities | The city is home to people of many ethnicities.
+expatriate | Somebody living outside their own country (also "expat") | экспат | - | There is a large expatriate community in the capital. | an expatriate + noun | She writes for an expatriate newspaper.
+migrant | A person who moves to another place for work or better conditions | мигрант | - | Seasonal migrants arrive for the harvest. | a migrant + noun | Migrant workers built the railway.
+native | A person born in a particular place | уроженец | - | He is a native of Kostanay, though he lives abroad. | a native of + place | She's a native of Lisbon.
+community | People living in one area or sharing interests | сообщество | - | It is a close-knit community where everybody helps. | a + adjective + community | The local community raised the money.
+stereotype | A fixed, simplified idea about a type of person | стереотип | - | The film challenges several stereotypes. | challenge / reinforce a stereotype | Jokes like that reinforce stereotypes.
+assimilate | To become part of a society and accept its customs | ассимилироваться | - | Children usually assimilate faster than adults. | assimilate into + noun | They assimilated into the local culture.
+diaspora | People from one country who now live in many other countries | диаспора | - | The diaspora keeps its language alive through weekend schools. | the + nationality + diaspora | The Kazakh diaspora in Europe is growing.
+heritage | The traditions and culture that come from a group's past | наследие | - | She is proud of her cultural heritage. | cultural / family heritage | The festival celebrates our shared heritage.
+inhabitant | A person who lives in a particular place | житель | - | The village has fewer than a hundred inhabitants. | the inhabitants of + place | The inhabitants of the island speak two languages.
+integrate | To become a full member of a group or society | интегрироваться | - | It took him a year to integrate fully. | integrate into + noun | New students integrate into the class quickly.
+@6A | Hi-tech, lo-tech
+highly unlikely | Very improbable | крайне маловероятно | - | It's highly unlikely that paper books will disappear. | highly unlikely to + verb / that … | It's highly unlikely to rain.
+bitterly disappointed | Extremely disappointed | горько разочарован | - | The fans were bitterly disappointed by the new design. | bitterly disappointed by / with + noun | I was bitterly disappointed with the result.
+deeply rooted | Strongly established over a long time | глубоко укоренившийся | - | These are deeply rooted traditions. | deeply rooted in + noun | The craft is deeply rooted in village life.
+fully aware | Completely conscious of something | полностью осознаёт | - | I'm fully aware of the risks. | fully aware of / that … | She's fully aware that it will take time.
+assemble | To put the parts of something together | собирать | - | Assemble the shelves using the screws provided. | assemble + noun | The bikes are assembled by hand.
+carve | To make something by cutting wood or stone | вырезать | - | He carved a spoon from a piece of birch. | carve + object + from / out of + material | She carved a figure out of stone.
+weave | To make cloth by crossing threads | ткать | - | They still weave carpets by hand. | weave + noun | My grandmother wove baskets.
+mould | To shape a soft substance into a form | лепить | - | Mould the clay into a bowl. | mould + material + into + shape | He moulded the wax into a candle.
+widely available | Easy to find or buy in many places | широко доступный | - | Cheap sensors are now widely available. | widely available + in / to | The app is widely available in Europe.
+virtually impossible | Almost impossible | практически невозможно | - | It is virtually impossible to repair a modern phone at home. | virtually impossible to + verb | It's virtually impossible to get a ticket.
+stitch | To join pieces of cloth or leather with a needle and thread | шить, сшивать | - | Each bag is stitched by one worker. | stitch + noun + together | She stitched the two pieces together.
+forge | To shape metal by heating and hammering it | ковать | - | The blacksmith forged a knife from an old tool. | forge + object + from + material | They forge tools from steel.
+@6B | It all adds up
+approximately | Close to an exact number | приблизительно | - | Approximately three million people live in the region. | approximately + number | It takes approximately two hours.
+a fraction of | A small part of | малая доля | - | It costs a fraction of the original price. | a fraction of + noun | We used only a fraction of the budget.
+decimal point | The dot in numbers such as 2.5 ("two point five") | десятичная точка | - | He put the decimal point in the wrong place. | to two decimal places | Give your answer to two decimal places.
+square metre | A unit of area (m²) | квадратный метр | - | The flat is sixty square metres. | number + square metres | The garden is 200 square metres.
+round up | To change a number to the next whole number | округлить вверх | - | 7.6 rounded up is 8. | round + number + up / down (to) | Round the total up to the nearest ten.
+per cent | Out of every hundred (%) | процент | - | Forty per cent of the students agreed. | number + per cent of + noun | Ten per cent of the money was lost.
+dozens of | Many (a dozen = twelve) | десятки | - | There were dozens of mistakes in the report. | dozens of + plural noun | I've been there dozens of times.
+double | To become, or make something, twice as large | удвоить | - | Sales doubled in a single year. | double in + size / value | The town has doubled in size.
+halve | To reduce something by half | уменьшить вдвое | - | The new process halved our costs. | halve + noun | We need to halve the waiting time.
+ratio | The relationship between two amounts, shown by two numbers | соотношение | - | The ratio of teachers to students is one to twelve. | the ratio of A to B | The ratio of men to women was two to one.
+average | The result of adding amounts together and dividing by their number | среднее значение | - | The average age of the group is thirty-four. | on average | On average, we receive fifty calls a day.
+odds | The chance that something will happen | шансы | - | The odds of winning are about one in a million. | the odds of + -ing / against + noun | The odds are against us.
+@7A | Whodunnit?
+sentence | The punishment a judge gives; to give that punishment | приговор; приговорить | - | He was sentenced to five years in prison. | sentence somebody to + punishment | She was sentenced to community service.
+fine | Money paid as a punishment | штраф | - | She received a heavy fine for speeding. | a fine for + -ing | He got a fine for parking there.
+community service | Unpaid work in the community as a punishment | общественные работы | - | He was given 200 hours of community service. | do community service | She did community service at a hospital.
+acquit | To decide officially that somebody is not guilty | оправдать | - | The jury acquitted her after a three-week trial. | acquit somebody of + crime | He was acquitted of theft.
+convict | To decide officially that somebody is guilty | осудить | - | He was convicted of fraud. | convict somebody of + crime | She was convicted of forgery.
+on probation | Released but supervised for a fixed period | под надзором (с испытательным сроком) | - | She is on probation for a year. | put somebody on probation | The judge put him on probation.
+suspended sentence | A prison sentence that is served only if another crime is committed | условный срок | - | He was given a six-month suspended sentence. | give somebody a suspended sentence | The court gave her a suspended sentence.
+deterrent | Something that makes people decide not to do something | сдерживающее средство | - | Is prison an effective deterrent? | a deterrent to + noun | Cameras act as a deterrent to thieves.
+verdict | The decision of a jury or judge | вердикт | - | The jury reached its verdict in two hours. | reach / return a verdict | They returned a verdict of not guilty.
+appeal | A formal request to change a court's decision | апелляция | - | His lawyers have lodged an appeal. | appeal against + decision | She appealed against the sentence.
+parole | Permission to leave prison early on condition of good behaviour | условно-досрочное освобождение | - | He was released on parole after three years. | be released on parole | She was released on parole last month.
+custody | The state of being kept by the police or in prison | содержание под стражей | - | The suspect is being held in custody. | be held / remain in custody | He remained in custody until the trial.
+@7B | Alone or with friends?
+slim / skinny | Both mean thin: "slim" is positive, "skinny" can be negative | стройный / тощий | - | She is slim and fit, not skinny. | adjective with a positive / negative connotation | "Slim" has a positive connotation.
+thrifty / stingy | Careful with money (positive) / unwilling to spend (negative) | бережливый / скупой | - | He calls himself thrifty, but his friends say he is stingy. | be thrifty / stingy with + noun | She's thrifty with her salary.
+confident / arrogant | Sure of yourself (positive) / too proud (negative) | уверенный / высокомерный | - | She is a confident speaker, never an arrogant one. | come across as + adjective | He comes across as arrogant.
+solitude | Being alone, usually in a peaceful, positive way | уединение | - | She enjoys the solitude of early mornings. | in solitude | He wrote the book in solitude.
+loneliness | Being alone and unhappy about it | одиночество | - | Loneliness affects people of all ages. | suffer from loneliness | Many students suffer from loneliness.
+determined / stubborn | Not giving up (positive) / refusing to change (negative) | целеустремлённый / упрямый | - | A determined athlete listens to advice; a stubborn one does not. | determined to + verb | She's determined to finish.
+curious / nosy | Wanting to know (positive) / too interested in other people's lives (negative) | любознательный / чересчур любопытный | - | Children are curious; our neighbour is simply nosy. | curious about + noun | He's curious about everything.
+youthful / childish | Young in a good way / silly and immature | моложавый / ребяческий | - | He has youthful energy, but his jokes are childish. | youthful + noun | She has a youthful face.
+sociable | Enjoying the company of other people | общительный | - | He is a sociable man who knows the whole street. | a sociable + noun | We had a sociable evening.
+reserved | Slow to show feelings or opinions | сдержанный | - | She is reserved with strangers but warm with friends. | reserved with + person | He's reserved with new colleagues.
+aloof | Not friendly; keeping a distance from other people | отчуждённый | - | The new manager seemed cold and aloof. | remain / stay aloof from + noun | He stayed aloof from the group.
+self-sufficient | Able to manage without help from others | самодостаточный | - | Living alone has made her completely self-sufficient. | self-sufficient in + noun | The farm is self-sufficient in vegetables.
+@8A | Food of love
+savour | To eat or drink slowly to enjoy it fully | смаковать | - | Savour every bite, because the portion is small. | savour + noun | He savoured the moment.
+nibble | To eat in small bites | покусывать | - | She nibbled a biscuit while she waited. | nibble (at / on) + noun | He nibbled at his toast.
+gulp | To drink or swallow quickly | глотать | - | He gulped his coffee and ran for the bus. | gulp down + noun | She gulped down a glass of water.
+sip | To drink in very small amounts | отпивать маленькими глотками | - | She sipped her tea and said nothing. | sip + drink | He sipped the hot soup carefully.
+wolf down | To eat very quickly (informal) | проглотить, жадно съесть | - | The children wolfed down their pizza. | wolf down + food | I wolfed down a sandwich at my desk.
+peckish | Slightly hungry (informal, British) | немного голодный | - | I'm feeling a bit peckish. | feel / be a bit peckish | Are you peckish yet?
+mouth-watering | Looking or smelling delicious | аппетитный | - | The waiter brought a mouth-watering dessert. | a mouth-watering + noun | There was a mouth-watering smell of bread.
+acquired taste | Something you learn to like only after trying it several times | на любителя (к этому надо привыкнуть) | - | Kumis is an acquired taste for most visitors. | be an acquired taste | Strong blue cheese is an acquired taste.
+ravenous | Extremely hungry | голодный как волк | - | After the hike we were absolutely ravenous. | absolutely ravenous | I'm absolutely ravenous.
+bland | Without much flavour | пресный | - | The soup was rather bland, so I added pepper. | taste bland | The rice tasted bland.
+crave | To want something very strongly | страстно хотеть | - | I always crave something sweet after dinner. | crave + noun | She was craving chocolate.
+polish off | To finish all of some food quickly (informal) | умять, прикончить | - | They polished off the whole cake in ten minutes. | polish off + food | He polished off two bowls of soup.
+@8B | Seeing things differently
+glance | To look quickly | взглянуть | - | He glanced at his watch and stood up. | glance at + noun | She glanced at the headline.
+stare | To look for a long time | пристально смотреть | - | Don't stare at people; it's rude. | stare at + noun | He stared at the screen.
+glimpse | To see something very briefly | мельком увидеть | - | We glimpsed the lake between the trees. | catch a glimpse of + noun | I caught a glimpse of the painting.
+peer | To look carefully because it is difficult to see | вглядываться | - | She peered through the fog. | peer at / through / into + noun | He peered into the dark room.
+gaze | To look for a long time, often with admiration | смотреть, любоваться | - | They gazed at the stars for an hour. | gaze at + noun | She gazed at the view.
+squint | To look with your eyes partly closed | щуриться | - | He squinted in the bright sunlight. | squint at + noun | I squinted at the small print.
+scan | To look quickly over something to find information | просматривать | - | Scan the text for dates and names. | scan + noun + for + noun | She scanned the crowd for her son.
+witness | To see something happen, especially a crime or an accident | быть свидетелем | - | Did anyone witness the accident? | witness + noun | We witnessed a remarkable change.
+spot | To notice something that is not easy to see | заметить | - | Can you spot the difference between the two pictures? | spot + noun / somebody + -ing | I spotted him leaving the building.
+make out | To manage to see or hear something with difficulty | разобрать, различить | - | I could just make out a figure in the distance. | can / could make out + noun | I can't make out the signature.
+observe | To watch carefully, often in order to learn | наблюдать | - | The artist observed the birds for weeks. | observe + noun / how … | Observe how the light changes.
+catch sight of | To see something suddenly, for a moment | заметить, увидеть мельком | - | She caught sight of herself in the mirror. | catch sight of + noun | We caught sight of the coast at dawn.

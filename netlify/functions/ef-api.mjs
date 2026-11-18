@@ -18,8 +18,9 @@ import B1 from '../lib/ef/ef-b1.json';
 import B1P from '../lib/ef/ef-b1p.json';
 import B2 from '../lib/ef/ef-b2.json';
 import C1 from '../lib/ef/ef-c1.json';
+import C2 from '../lib/ef/ef-c2.json';
 
-const DATA = { 'ef-a0': A0, 'ef-a1': A1, 'ef-a2': A2, 'ef-b1': B1, 'ef-b1p': B1P, 'ef-b2': B2, 'ef-c1': C1 };
+const DATA = { 'ef-a0': A0, 'ef-a1': A1, 'ef-a2': A2, 'ef-b1': B1, 'ef-b1p': B1P, 'ef-b2': B2, 'ef-c1': C1, 'ef-c2': C2 };
 const U = () => getStore({ name: 'ielts', consistency: 'strong' });
 const json = (d, s = 200) => Response.json(d, { status: s, headers: { 'Cache-Control': 'no-store' } });
 const fail = (s, error) => json({ error }, s);
