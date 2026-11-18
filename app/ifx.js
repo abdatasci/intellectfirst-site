@@ -782,7 +782,7 @@
   }
   function pTop() {
     var p = L.items.length ? Math.round(L.i / L.items.length * 100) : 0;
-    return '<div class="p-top"><button class="x" id="px" aria-label="Close">✕</button><div class="bar"><i style="width:' + p + '%"></i></div>' + (access().teacher ? '<button class="chip' + (L.teach ? ' on' : '') + '" id="tm">👩‍🏫 ' + esc(t('teach')) + '</button>' : '') + '</div><p class="p-title">' + esc(TYPE[L.l.type]) + ' · ' + esc(L.l.title) + '</p>';
+    return '<div class="p-top"><button class="x pback" id="px" aria-label="Back">← Back</button><div class="bar"><i style="width:' + p + '%"></i></div>' + (access().teacher ? '<button class="chip' + (L.teach ? ' on' : '') + '" id="tm">👩‍🏫 ' + esc(t('teach')) + '</button>' : '') + '</div><p class="p-title">' + esc(TYPE[L.l.type]) + ' · ' + esc(L.l.title) + '</p>';
   }
   function bindTop() {
     $('#px').onclick = function () { document.body.classList.remove('teach'); go('#/course/' + L.c.id); };
@@ -1056,8 +1056,8 @@
       var grp = function (title, d, list, more) { return list.length ? '<div class="sec"><h2>' + title + '</h2><p class="sec-d">' + d + '</p></div><div class="grid">' + list.map(itemCard).join('') + '</div>' + (more || '') : ''; };
       var adv = gl(['if-kart', 'block-quest', 'kids-quest']);
       view().innerHTML = '<div class="page-h"><div><p class="h-eyebrow">' + esc(t(k)) + '</p><h1>' + esc(sc.h) + '</h1><p>' + esc(sc.p) + '</p></div></div>' + (full ? '' : goalBar()) + gamesChip(k) +
-        grp('👥 Play together', 'For the class or a group of friends: one screen or everyone on their phones.', gl(['live', 'mafia-live', 'mystery-live'])) +
         grp('🧠 Mind Lab', 'Daily mind training that uses every skill: words, grammar, memory and logic.', gl(['mind-lab', 'mind-lab-kids'])) +
+        grp('👥 Play together', 'For the class or a group of friends: one screen or everyone on their phones.', gl(['live', 'mafia-live', 'mystery-live'])) +
         grp('🏁 Adventure and racing', 'Play alone at your own level.', adv, adv.map(function (x) { return levelRow(x.id, x.id, true, kidsOK); }).join(''));
       return;
     }
@@ -1232,6 +1232,14 @@
     var p = location.hash.replace(/^#\/?/, '').split('?')[0].split('/'), qs = new URLSearchParams(location.hash.split('?')[1] || '');
     window.scrollTo(0, 0);
     try { focusNav(); } catch (e) {}
+    try {   // the lesson bar sits just under the sticky header; Telegram's own Back button works too
+      var tp = $('.top'); if (tp) document.documentElement.style.setProperty('--toph', tp.offsetHeight + 'px');
+      var BB = window.Telegram && Telegram.WebApp && Telegram.WebApp.BackButton;
+      if (BB && Telegram.WebApp.initData) {
+        if (!window.__ifBB) { window.__ifBB = 1; BB.onClick(function () { var px = $('#px'); if (px) px.click(); else if (history.length > 1) history.back(); else go('#/'); }); }
+        if (p[0]) BB.show(); else BB.hide();
+      }
+    } catch (e) {}
     setTimeout(function () { try { wireAddOns(); } catch (e) {} }, 0);
     switch (p[0]) {
       case '': if (APP) return vAppHome(); vHome(); if ((mine().length || S.teacher) && !$('.apps3') && view().firstElementChild) view().firstElementChild.insertAdjacentHTML('afterend', appsStrip()); return;
