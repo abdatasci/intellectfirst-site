@@ -1,0 +1,299 @@
+# English Files · Elementary (A1), units 1A to 4C: original example sentences and patterns for the flashcards. Written by IF Academy.
+@1A
+Monday | I have English on Monday. | on Monday | See you on Monday.
+Tuesday | My lesson is on Tuesday. | on Tuesday | I work on Tuesday.
+Wednesday | Today is Wednesday. | on Wednesday | We meet on Wednesday.
+Thursday | The shop is closed on Thursday. | on Thursday | I am free on Thursday.
+Friday | Friday is my favourite day. | on Friday | The party is on Friday.
+Saturday | I am at home on Saturday. | on Saturday | We play football on Saturday.
+Sunday | Sunday is a quiet day. | on Sunday | I sleep late on Sunday.
+the weekend | I am happy at the weekend. | at the weekend | See you at the weekend.
+a weekday | Monday is a weekday. | on a weekday | I get up early on a weekday.
+today | I am in class today. | today is + day | Today is Tuesday.
+tomorrow | See you tomorrow. | See you tomorrow. | Tomorrow is Friday.
+zero | My room number is zero five. | number + zero | My phone number has a zero.
+three | I am in room three. | three + noun | I have three books.
+seven | The lesson is at seven. | at seven | See you at seven.
+eight | We are eight students. | eight + noun | There are eight chairs.
+eleven | He is eleven years old. | eleven + noun | I have eleven pens.
+twelve | The class is in room twelve. | twelve + noun | There are twelve months.
+thirteen | She is thirteen. | thirteen + noun | I have thirteen messages.
+fifteen | The bus is number fifteen. | fifteen + noun | We have fifteen minutes.
+eighteen | My brother is eighteen. | eighteen + noun | There are eighteen people.
+twenty | I am twenty years old. | twenty + noun | She has twenty students.
+See you later | Goodbye, Anna. See you later. | See you + time | See you on Monday.
+Have a good weekend | Goodbye! Have a good weekend. | Have a good + noun | Have a good day!
+@1B
+Africa | Egypt is in Africa. | in Africa | Kenya is in Africa.
+Asia | Japan is in Asia. | in Asia | China is in Asia.
+Europe | France is in Europe. | in Europe | Italy is in Europe.
+North America | Canada is in North America. | in North America | Mexico is in North America.
+South America | Brazil is in South America. | in South America | Peru is in South America.
+Australasia | New Zealand is in Australasia. | in Australasia | Australia is in Australasia.
+north | Kostanay is in the north. | in the north | It is cold in the north.
+east | The city is in the east. | in the east | Japan is in the east.
+England | London is in England. | from England | He is from England.
+Spanish | She is Spanish. | be + nationality | They are Spanish.
+Turkish | My friend is Turkish. | be + nationality | Are you Turkish?
+German | He is German. | be + nationality | I am not German.
+Mexican | The food is Mexican. | be + nationality | She is Mexican.
+American | The film is American. | be + nationality | He is American.
+Brazilian | The player is Brazilian. | be + nationality | They are Brazilian.
+Egyptian | My teacher is Egyptian. | be + nationality | She is Egyptian.
+Italian | The pizza is Italian. | be + nationality | He is Italian.
+Russian | My mother is Russian. | be + nationality | We are Russian.
+Chinese | The phone is Chinese. | be + nationality | She is Chinese.
+Japanese | The car is Japanese. | be + nationality | He is Japanese.
+French | The cheese is French. | be + nationality | They are French.
+Swiss | My watch is Swiss. | be + nationality | She is Swiss.
+forty | My father is forty. | forty + noun | There are forty students.
+ninety | My grandmother is ninety. | ninety + noun | It is ninety kilometres.
+a hundred | The ticket is a hundred dollars. | a hundred + noun | There are a hundred people.
+@1C
+Open your books | Open your books at page ten. | Open + noun | Open the door, please.
+Look at the board | Look at the board, please. | Look at + noun | Look at the picture.
+Close the door | Close the door, please. It is cold. | Close + noun | Close your books.
+Work in pairs | Work in pairs and ask the questions. | Work in + pairs / groups | Work in groups of three.
+Answer the questions | Read the text and answer the questions. | Answer + noun | Answer the phone.
+Listen and repeat | Listen and repeat the words. | Listen and + verb | Listen and write.
+Stand up | Stand up, please. | Stand up. | Stand up and say your name.
+Sit down | Come in and sit down. | Sit down. | Sit down, please.
+Turn off your phone | Turn off your phone in class. | Turn off + noun | Turn off the light.
+Please stop talking | Please stop talking and listen. | Please stop + -ing | Please stop writing.
+Sorry I'm late | Sorry I'm late. The bus is slow. | Sorry I'm + adjective | Sorry I'm early.
+I don't understand | Sorry, I don't understand. | I don't + verb | I don't know.
+Can I have a copy? | Excuse me, can I have a copy? | Can I have + noun? | Can I have a pen?
+How do you spell it? | My name is Aigerim. How do you spell it? | How do you spell + noun? | How do you spell your surname?
+I don't know | What is the answer? I don't know. | I don't know. | I don't know her name.
+Can you help me? | Excuse me, can you help me? | Can you + verb? | Can you open the window?
+What page is it? | Sorry, what page is it? | What + noun + is it? | What time is it?
+Can you repeat that? | Sorry, can you repeat that? | Can you repeat + noun? | Can you repeat the question?
+first name | My first name is Dana. | your first name | What is your first name?
+surname | My surname is Akhmetova. | your surname | How do you spell your surname?
+email address | What is your email address? | your email address | My email address is short.
+@2A
+a bag | My books are in a bag. | in a bag | The keys are in my bag.
+a bank card | I have a bank card in my wallet. | pay by bank card | Can I pay by bank card?
+a calendar | There is a calendar on the wall. | on the calendar | The date is on the calendar.
+a charger | Where is my phone charger? | a phone charger | I need a phone charger.
+a coin | I have a coin in my pocket. | a coin | It is a small coin.
+a diary | I write in a diary. | in a diary | The date is in my diary.
+a dictionary | It is an English dictionary. | in a dictionary | Look in a dictionary.
+earphones | My earphones are in my bag. | wear earphones | I wear earphones on the bus.
+glasses | My glasses are on the table. | wear glasses | I wear glasses.
+headphones | These are my new headphones. | wear headphones | He wears headphones.
+an identity card | This is my identity card. | show an identity card | Please show an identity card.
+a key | The key is in the door. | a key | I have a key.
+a lamp | There is a lamp on my desk. | on a desk | The lamp is on the desk.
+a laptop | My laptop is on the bed. | a laptop | She has a new laptop.
+a magazine | There is a magazine on the sofa. | read a magazine | I read a magazine.
+a newspaper | My father has a newspaper. | read a newspaper | He reads a newspaper.
+a notebook | I write new words in a notebook. | in a notebook | Write it in a notebook.
+a pencil | Can I have a pencil? | a pencil | It is a red pencil.
+a purse | Her money is in a purse. | in a purse | The coins are in my purse.
+scissors | The scissors are in the kitchen. | a pair of scissors | I need a pair of scissors.
+sunglasses | These sunglasses are new. | wear sunglasses | I wear sunglasses in summer.
+a tablet | The children have a tablet. | a tablet | It is a big tablet.
+a tissue | Do you have a tissue? | a tissue | I need a tissue.
+an umbrella | Take an umbrella. It is raining. | an umbrella | It is a black umbrella.
+a wallet | My wallet is in my bag. | in a wallet | The card is in my wallet.
+a watch | This is a Swiss watch. | a watch | I have a new watch.
+in | The pen is in the bag. | in + noun | The keys are in the car.
+on | The book is on the table. | on + noun | The phone is on the chair.
+under | The cat is under the bed. | under + noun | The bag is under the desk.
+@2B
+beautiful | It is a beautiful city. | a beautiful + noun | She has a beautiful house.
+ugly | It is an ugly building. | an ugly + noun | It is an ugly colour.
+cheap | The bus is cheap. | a cheap + noun | It is a cheap hotel.
+expensive | The phone is expensive. | an expensive + noun | It is an expensive car.
+clean | The room is clean. | a clean + noun | I need a clean cup.
+dirty | My shoes are dirty. | a dirty + noun | It is a dirty plate.
+easy | The test is easy. | an easy + noun | It is an easy question.
+difficult | English is not difficult. | a difficult + noun | It is a difficult word.
+fast | The train is fast. | a fast + noun | It is a fast car.
+slow | The bus is slow. | a slow + noun | It is a slow computer.
+full | The bus is full. | be full | The cup is full.
+empty | The room is empty. | be empty | My bag is empty.
+high | The mountains are high. | a high + noun | It is a high wall.
+light | My bag is light. | a light + noun | It is a light room.
+dark | The room is dark. | a dark + noun | It is a dark colour.
+rich | He is a rich man. | be rich | They are rich.
+poor | They are not poor. | be poor | The family is poor.
+safe | The city is safe. | be safe | The water is safe.
+dangerous | The road is dangerous. | a dangerous + noun | It is a dangerous animal.
+the same | Our phones are the same. | be the same | The two bags are the same.
+different | Our cars are different. | be different | The colours are different.
+strong | The coffee is strong. | be strong | He is very strong.
+weak | The tea is weak. | be weak | I am weak today.
+tall | My brother is tall. | be tall | The building is tall.
+very | The film is very good. | very + adjective | It is very cold.
+quite | The test is quite easy. | quite + adjective | It is quite big.
+awful | The weather is awful. | be awful | The food is awful.
+fantastic | The party is fantastic. | be fantastic | The view is fantastic.
+@2C
+angry | My teacher is angry. | be angry | Don't be angry.
+bored | I am bored. | be bored | The children are bored.
+cold | I am cold. Close the window. | be cold | It is cold today.
+frightened | The child is frightened. | be frightened | Don't be frightened.
+happy | I am happy today. | be happy | Are you happy?
+hot | I am hot. Open the window. | be hot | It is hot in here.
+hungry | I am hungry. Let's eat. | be hungry | Are you hungry?
+sad | She is sad today. | be sad | Don't be sad.
+stressed | I am stressed at work. | be stressed | He is stressed.
+thirsty | I am thirsty. Let's have a drink. | be thirsty | Are you thirsty?
+tired | I am tired. Let's go home. | be tired | She is tired.
+worried | My mother is worried. | be worried | Don't be worried.
+Don't worry | Don't worry. It is easy. | Don't + verb | Don't be late.
+Let's go | It is late. Let's go. | Let's + verb | Let's eat.
+Be careful! | Be careful! The road is dangerous. | Be + adjective | Be quiet!
+Close the window | Close the window. I am cold. | Close + noun | Close the door.
+Have a drink | Sit down and have a drink. | Have + noun | Have a sandwich.
+Turn on the heating | It is cold. Turn on the heating. | Turn on + noun | Turn on the light.
+relaxed | I am relaxed at the weekend. | be relaxed | She is relaxed.
+excited | The children are excited. | be excited | I am excited.
+@3A
+cook | I cook dinner every day. | cook + noun | He cooks lunch.
+do housework | I do housework on Saturday. | do housework | She does housework.
+drink mineral water | I drink mineral water. | drink + noun | They drink tea.
+drive a car | My mother drives a car. | drive + noun | He drives a bus.
+eat vegetables | I eat vegetables every day. | eat + noun | We eat fish.
+go to the cinema | We go to the cinema on Friday. | go to the + place | I go to the park.
+have a coffee | I have a coffee in the morning. | have + noun | We have lunch at one.
+like animals | I like animals. | like + noun | She likes cats.
+listen to music | I listen to music in the car. | listen to + noun | He listens to the radio.
+live in a flat | I live in a flat. | live in + noun | They live in a house.
+need a new passport | I need a new passport. | need + noun | I need a pen.
+play tennis | She plays tennis. | play + sport | I play football.
+play the guitar | He plays the guitar. | play the + instrument | She plays the piano.
+read a book | I read a book in bed. | read + noun | She reads magazines.
+say sorry | He doesn't say sorry. | say + noun | Say hello!
+speak German | She speaks German. | speak + language | I speak English.
+study history | I study history. | study + subject | He studies maths.
+take an umbrella | I take an umbrella. | take + noun | Take a coat.
+want a car | I want a car. | want + noun | She wants a dog.
+watch TV | We watch TV in the evening. | watch + noun | I watch films.
+wear glasses | I wear glasses. | wear + noun | He wears a hat.
+work in an office | She works in an office. | work in + place | I work in a shop.
+do homework | The children do homework. | do + your homework | I do my homework.
+do exercise | I do exercise in the morning. | do exercise | She doesn't do exercise.
+@3B
+an accountant | She is an accountant. | be a / an + job | He is an accountant.
+an actor | He is an actor. | be a / an + job | She is an actor.
+an architect | My sister is an architect. | be a / an + job | I am an architect.
+a builder | He is a builder. | be a / an + job | My uncle is a builder.
+a chef | She is a chef in a restaurant. | a chef + in + place | He is a chef in a hotel.
+a cleaner | She is a cleaner. | be a / an + job | He is a cleaner.
+a dentist | My father is a dentist. | be a / an + job | She is a dentist.
+a doctor | She is a doctor in a hospital. | a doctor + in + place | He is a doctor in a clinic.
+an engineer | He is an engineer. | be a / an + job | I am an engineer.
+a factory worker | He is a factory worker. | be a / an + job | She is a factory worker.
+a flight attendant | She is a flight attendant. | be a / an + job | He is a flight attendant.
+a hairdresser | My aunt is a hairdresser. | be a / an + job | She is a hairdresser.
+a journalist | He is a journalist. | be a / an + job | She is a journalist.
+a lawyer | She is a lawyer. | be a / an + job | He is a lawyer.
+a manager | He is a manager in a bank. | a manager + in + place | She is a manager in a shop.
+a musician | He is a musician. | be a / an + job | She is a musician.
+a nurse | She is a nurse. | be a / an + job | He is a nurse.
+a pilot | He is a pilot. | be a / an + job | She is a pilot.
+a police officer | She is a police officer. | be a / an + job | He is a police officer.
+a receptionist | He is a receptionist in a hotel. | a receptionist + in + place | She is a receptionist in an office.
+a shop assistant | She is a shop assistant. | be a / an + job | He is a shop assistant.
+a soldier | He is a soldier. | be a / an + job | She is a soldier.
+a taxi driver | My father is a taxi driver. | be a / an + job | He is a taxi driver.
+a vet | She is a vet. | be a / an + job | He is a vet.
+a waiter | He is a waiter in a café. | a waiter + in + place | She is a waiter in a restaurant.
+part-time | She works part-time. | work part-time | I work part-time.
+unemployed | He is unemployed. | be unemployed | She is unemployed.
+retired | My grandfather is retired. | be retired | She is retired.
+@3C
+What | What do you do? | What + do / does + subject | What does she do?
+Where | Where do you live? | Where + do / does + subject | Where does he work?
+When | When do you have lunch? | When + do / does + subject | When does it start?
+Who | Who do you live with? | Who + do / does + subject | Who does she like?
+Why | Why do you like dogs? | Why + do / does + subject | Why does he work at night?
+How | How do you go to work? | How + do / does + subject | How does she go to school?
+How many | How many children do you have? | How many + noun + do you | How many pets do you have?
+How old | How old is your dog? | How old + is / are + subject | How old are you?
+What time | What time do you get up? | What time + do / does + subject | What time does it open?
+Which | Which do you like, cats or dogs? | Which + noun | Which bus do you take?
+What kind of | What kind of music do you like? | What kind of + noun | What kind of food do you like?
+How often | How often do you walk? | How often + do / does + subject | How often does she call?
+because | I like dogs because they are friendly. | because + clause | I am happy because it is Friday.
+a pet | Do you have a pet? | have a pet | I have a pet.
+a dog | I have a dog. | have a dog | She has a dog.
+a cat | My cat is black. | have a cat | We have a cat.
+Really? | I have ten cats. Really? | Really? | I am from Australia. Really?
+How interesting! | I am a pilot. How interesting! | How + adjective! | How nice!
+Me too | I like dogs. Me too. | Me too. | I am tired. Me too.
+Oh, no! | My cat is ill. Oh, no! | Oh, no! | I am late. Oh, no!
+@4A
+father | My father is a doctor. | my father's + noun | This is my father's car.
+mother | My mother is a teacher. | my mother's + noun | This is my mother's bag.
+brother | My brother is ten. | my brother's + noun | This is my brother's room.
+sister | My sister lives in Almaty. | my sister's + noun | This is my sister's phone.
+daughter | Their daughter is a student. | their daughter's + noun | This is their daughter's school.
+son | Her son is five. | her son's + noun | This is her son's toy.
+grandfather | My grandfather is eighty. | my grandfather's + noun | This is my grandfather's house.
+grandmother | My grandmother cooks well. | my grandmother's + noun | I love my grandmother's soup.
+aunt | My aunt is my mother's sister. | my aunt's + noun | This is my aunt's dog.
+uncle | My uncle is my father's brother. | my uncle's + noun | This is my uncle's car.
+nephew | My nephew is my sister's son. | my nephew's + noun | This is my nephew's bike.
+niece | My niece is my brother's daughter. | my niece's + noun | This is my niece's book.
+cousin | My cousin is my aunt's son. | my cousin's + noun | This is my cousin's flat.
+wife | His wife is a nurse. | his wife's + noun | This is his wife's car.
+husband | Her husband is a pilot. | her husband's + noun | This is her husband's office.
+parents | My parents live in a village. | my parents' + noun | This is my parents' house.
+grandparents | My grandparents are retired. | my grandparents' + noun | I like my grandparents' garden.
+children | They have three children. | have + number + children | She has two children.
+a couple | They are a nice couple. | a + adjective + couple | They are a young couple.
+parents-in-law | My parents-in-law are from Astana. | my parents-in-law | I visit my parents-in-law.
+stepfather | My stepfather is very kind. | my stepfather | I like my stepfather.
+partner | Her partner is called Tom. | my partner | This is my partner.
+@4B
+wake up | I wake up at six. | wake up + at + time | She wakes up at seven.
+get up | I get up at half past six. | get up + at + time | He gets up at eight.
+have a shower | I have a shower in the morning. | have a shower | She has a shower at night.
+get dressed | I get dressed after breakfast. | get dressed | He gets dressed quickly.
+put on make-up | She puts on make-up in the car. | put on + noun | I put on my coat.
+have breakfast | I have breakfast at seven. | have breakfast | We have breakfast together.
+go to work by bus | I go to work by bus. | go to work by + transport | She goes to work by car.
+walk to work | I walk to work every day. | walk to + place | He walks to school.
+get to work | I get to work at nine. | get to + place + at + time | She gets to school at eight.
+start work | I start work at nine. | start work + at + time | He starts work at eight.
+check emails | I check emails in the morning. | check + noun | She checks her phone.
+have lunch | I have lunch at one. | have lunch | We have lunch at work.
+finish work | I finish work at six. | finish work + at + time | She finishes work at five.
+go shopping | I go shopping on Saturday. | go shopping | We go shopping together.
+get home | I get home at seven. | get home + at + time | He gets home late.
+make dinner | I make dinner in the evening. | make + meal | She makes breakfast.
+relax | I relax in the evening. | relax + time / place | She relaxes at home.
+see friends | I see friends at the weekend. | see + person | He sees his family.
+have a bath | I have a bath on Sunday. | have a bath | She has a bath at night.
+take the dog for a walk | I take the dog for a walk at six. | take + noun + for a walk | She takes the dog for a walk.
+go to bed | I go to bed at eleven. | go to bed + at + time | He goes to bed late.
+have a shave | He has a shave every morning. | have a shave | My father has a shave.
+sleep for eight hours | I sleep for eight hours. | sleep for + time | She sleeps for six hours.
+@4C
+January | My birthday is in January. | in January | It is cold in January.
+February | February is a short month. | in February | We ski in February.
+March | Spring starts in March. | in March | I travel in March.
+April | It often rains in April. | in April | We meet in April.
+May | The weather is nice in May. | in May | I finish school in May.
+June | Summer starts in June. | in June | We have exams in June.
+July | July is very hot. | in July | I swim in July.
+August | We go on holiday in August. | in August | It is hot in August.
+September | School starts in September. | in September | I start work in September.
+October | It is cold in October. | in October | The trees are yellow in October.
+November | It usually snows in November. | in November | It is dark in November.
+December | New Year is in December. | in December | We ski in December.
+always | I always have breakfast. | always + verb | She always walks to work.
+usually | I usually get up at seven. | usually + verb | He usually has tea.
+often | I often eat fruit. | often + verb | We often see friends.
+sometimes | I sometimes go to the gym. | sometimes + verb | She sometimes cooks.
+hardly ever | I hardly ever eat sweets. | hardly ever + verb | He hardly ever drives.
+never | I never smoke. | never + verb | She never eats meat.
+every day | I walk every day. | verb + every day | She reads every day.
+once a week | I swim once a week. | verb + once a week | He calls once a week.
+twice a month | We meet twice a month. | verb + twice a month | I go twice a month.
+It's half past six | Get up! It's half past six. | It's half past + number | It's half past ten.
+It's a quarter to seven | Hurry! It's a quarter to seven. | It's a quarter to + number | It's a quarter to nine.
