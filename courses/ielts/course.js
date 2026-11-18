@@ -7,7 +7,7 @@ window.COURSE = {
  "blurb": "Start with a one-minute introduction, then eight units in the order of the test — Listening, Reading, Writing, Speaking — each taught on video, step by step: what the examiner wants, the language you need and a model answer, then homework your teacher marks, a unit project and a quiz.",
  "level": "B1+ → Band 6.5+",
  "hours": "≈ 24 hours of study",
- "practice": "/app/#/course/ielts",
+ "practice": "/app/ielts/#/course/ielts",
  "units": [
   {
    "id": "u0",

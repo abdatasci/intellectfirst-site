@@ -282,3 +282,21 @@ body.game-full .playwrap .gfx{display:flex;gap:8px;position:absolute;top:calc(en
 .artrow .t{flex:1;min-width:0}.artrow .t b{display:block;font-family:Fraunces,Georgia,serif;font-size:17px;font-weight:600}.artrow .t small{color:var(--soft);font-size:13px}
 .artrow .s{flex:none;font-weight:700;color:var(--soft)}.artrow.locked{opacity:.75}
 a.chip{text-decoration:none}
+
+/* ---------- three apps · English Files · Russian on tap · Listen → Repeat → Record ---------- */
+.apps3{margin-bottom:8px}.sec-d{margin:-4px 0 12px;color:var(--soft);font-size:14.5px;max-width:70ch}
+.roleplay{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 14px;margin:0 0 14px}.roleplay summary{font-weight:700;cursor:pointer}.roleplay p{margin:10px 0 0;line-height:1.55}
+.rp-ph{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.rp-ph b{flex-basis:100%;font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--soft)}
+.objs{list-style:none;margin:8px 0 0;padding:0;font-size:13.5px;opacity:.85;display:grid;gap:2px}
+.unit-locked{opacity:.72}.unit-locked .unit-h h3{color:var(--soft)}
+.cover{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}.cover label{cursor:pointer;display:inline-flex;gap:6px;align-items:center}.cover label.on{border-color:#16a34a;color:#15803d;background:rgba(22,163,74,.08)}
+.ru-tap{margin:12px 0 0;text-align:center}.ru-shown{display:inline-block;background:var(--sand);border-radius:10px;padding:6px 12px;font-weight:600;line-height:1.45;text-align:left}
+.say.sm{width:34px;height:34px;font-size:15px;vertical-align:middle}
+.learn-card .patt{margin:12px auto 0;display:inline-flex;flex-direction:column;gap:2px;background:rgba(201,162,39,.12);border-radius:12px;padding:8px 14px}.learn-card .patt span{color:var(--soft);font-size:15px}
+.lrr{margin-top:18px;padding-top:16px;border-top:1px dashed var(--line)}.lrr-steps{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.lrr-b{border:2px solid var(--line);background:var(--card);border-radius:999px;padding:8px 14px;font-weight:700;font-size:14px;color:inherit;display:inline-flex;gap:8px;align-items:center}
+.lrr-b b{width:22px;height:22px;border-radius:50%;background:var(--sand);display:inline-grid;place-items:center;font-size:12px}.lrr-b.idle{border-style:dashed;color:var(--soft)}
+.lrr-b.rec{border-color:#dc2626;color:#b91c1c}.lrr-b.rec.on{background:#dc2626;color:#fff;animation:lrrp 1s infinite}@keyframes lrrp{50%{opacity:.6}}
+.lrr-play{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:12px}.lrr-play[hidden]{display:none}.lrr-msg{margin:10px 0 0;font-size:13.5px;color:var(--soft);text-align:center;min-height:1.2em}
+.rule.talk ol{margin:10px 0;padding-left:22px;line-height:1.6;font-size:17px}.talk-w{display:flex;flex-wrap:wrap;gap:8px}
+.sec:has(.sec-d){flex-wrap:wrap}.sec .sec-d{flex-basis:100%;margin:0 0 4px}

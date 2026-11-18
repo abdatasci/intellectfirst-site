@@ -57,6 +57,7 @@
   var FREE_UNITS = 1;   // the first unit of every course is free without an account (2 with a free account)
   // without an account: unit 1 of every course; with a free account: units 1 and 2; members: everything
   var unlocked = function (ui, cid) { return (ui < (access().signed ? 2 : FREE_UNITS) || access().member) && classOpen(ui, cid); };
+  var _unlocked = unlocked; unlocked = function (ui, cid) { var c = BY[cid]; if (c && c.ef) { var u = c.units[ui]; return !!(u && EF[cid] && EF[cid].open[u.id]); } return _unlocked(ui, cid); };
   /* Free taster without an account: the first unit of every course (above), the placement test and these.
      Everything else asks visitors to create a free account (which also starts the full-access trial). */
   var FREE_IDS = { 'voc-a1': 1, 'voc-b1': 1, 'voc-ket': 1, 'skill-games': 1, 'live': 1, 'if-kart': 1, 'kids-quest': 1, 'bq-kids': 1, 'g-skill': 1, 'placement': 1, 'ielts-centre': 1, 'timetable': 1 };
@@ -168,7 +169,9 @@
   }
   var COLORS = { context: '#7c3aed', listen: '#0891b2', vocab: 'var(--c-vocab)', grammar: 'var(--c-grammar)', skill: 'var(--c-skill)', reading: 'var(--c-reading)', check: 'var(--c-check)', look: '#0ea5e9', maths: '#f59e0b' };
   var ICONS = { context: '🎯', listen: '🎧', vocab: '🔤', grammar: '🧠', skill: '🛠️', reading: '📖', check: '🏁', look: '👀', maths: '🔢' };
+  COLORS.speaking = '#db2777'; ICONS.speaking = '🗣️';
   var TYPE = { context: 'In context', listen: 'Listening', vocab: 'Vocabulary', grammar: 'Grammar', skill: 'Skills', reading: 'Reading', check: 'Unit check', look: 'Look and choose', maths: 'Maths' };
+  TYPE.speaking = 'Speaking';
   var UNIT_DOODLE = { 'ge-a2/u1': 'clock', 'ge-a2/u2': 'coffee', 'ge-a2/u3': 'suitcase', 'ge-b1/u1': 'laptop', 'ge-b1/u2': 'phone', 'be-b1/u1': 'talk', 'be-b1/u2': 'envelope', 'ielts/u1': 'chart', 'ielts/u2': 'pen', 'ielts/u3': 'book', 'ge-a1/u1': 'talk', 'ge-a1/u2': 'clock', 'ge-b2/u1': 'bulb', 'ge-b2/u2': 'phone', 'ge-c1/u1': 'talk', 'ge-c1/u2': 'laptop', 'ge-c2/u1': 'book', 'ge-c2/u2': 'globe', 'be-a2/u1': 'coffee', 'be-a2/u2': 'envelope', 'be-b2/u1': 'talk', 'be-b2/u2': 'chart', 'be-c1/u1': 'bulb', 'be-c1/u2': 'globe', 'ef-c2/u1': 'bulb', 'ef-c2/u2': 'suitcase', 'ef-c2/u3': 'book', 'ef-c2/u4': 'laptop', 'ef-c2/u5': 'globe', 'ef-c2/u6': 'chart', 'ef-c2/u7': 'pen', 'ef-c2/u8': 'coffee' };
   var DOODLE = function (c, u, cls) { var n = UNIT_DOODLE[c + '/' + u]; return n && window.IFX_DOODLE ? IFX_DOODLE(n, cls || 'doodle') : ''; };
   var PIC = function (n, c) { return window.IFX_PIC ? IFX_PIC(n, c) : ''; };
@@ -182,17 +185,233 @@
 
   /* ---------- frame ---------- */
   var NAV = [['home', '🏠'], ['courses', '📘'], ['vocab', '🔤'], ['grammar', '🧠'], ['games', '🎮'], ['tests', '📝'], ['ielts', '🎓']];
+
+  /* ================= IF General English · IF Business English · IF IELTS =================
+     Three apps on one account. Each app is this same shell opened with window.IFX_APP set (app/general, app/business,
+     app/ielts); progress, XP and the account are shared because they are stored under the same keys as before. */
+  var APP = window.IFX_APP || '';
+  var APPS = {
+    ge: { name: 'IF General English', icon: '🌍', path: '/app/general/', track: 'general', d: 'Two tracks for every level: AI-Generated General English and English Files', nav: [['home', '🏠'], ['courses', '📘'], ['vocab', '🔤'], ['grammar', '🧠'], ['tests', '📝']] },
+    be: { name: 'IF Business English', icon: '💼', path: '/app/business/', track: 'business', d: 'Meetings, presentations, emails, interviews and negotiations', nav: [['home', '🏠'], ['courses', '📘']] },
+    ielts: { name: 'IF IELTS', icon: '🎓', path: '/app/ielts/', track: 'exam', d: 'Listening, Reading, Writing and Speaking: lessons, then practice', nav: [['home', '🏠'], ['courses', '📘']] }
+  };
+  if (APP && APPS[APP]) NAV = APPS[APP].nav; else APP = '';
+  var appCourses = function () { return COURSES.filter(function (c) { return !c.daily && c.track === APPS[APP].track && !/^(ket|pet)/.test(c.id); }); };
+  var appItem = function (x) { return APP === 'ge' ? x.tr === 'general' : APP === 'ielts' ? (x.tags || []).indexOf('ielts') >= 0 : x.tr === 'business'; };
+  function appsStrip() { return '<div class="sec"><h2>IF Academy apps</h2></div><div class="grid apps3">' + ['ge', 'be', 'ielts'].map(function (k) { var a = APPS[k]; return '<a class="card" href="' + a.path + '"><span class="ic">' + a.icon + '</span><h3>' + esc(a.name) + '</h3><p>' + esc(a.d) + '</p></a>'; }).join('') + '</div>'; }
+  function unitCard(c, u, ui) {
+    var n = u.lessons.length, d = u.lessons.filter(function (l) { return isDone(c.id, u.id, l.id); }).length, open = unlocked(ui, c.id), nx = u.lessons.filter(function (l) { return !isDone(c.id, u.id, l.id); })[0] || u.lessons[0];
+    return '<a class="card" href="' + (open ? '#/lesson/' + c.id + '/' + u.id + '/' + nx.id : '#/course/' + c.id) + '"><span class="ic">' + (open ? c.icon : '🔒') + '</span><h3>' + esc(u.title) + '</h3><p>' + esc(c.title) + '</p><div class="bar" style="height:10px;margin-top:6px"><i style="width:' + Math.round(d / n * 100) + '%"></i></div><div class="meta"><span class="tag ' + tagFor(c.track) + '">' + esc(c.level) + '</span><span class="tag">' + d + ' / ' + n + ' lessons</span></div></a>';
+  }
+  function appHero(title, lead, list) {
+    var best = null; list.forEach(function (c) { var s = courseStats(c), nx = nextLesson(c); if (nx && s.d && (!best || s.d > best.s.d)) best = { c: c, s: s, nx: nx }; });
+    if (!best) { var P = mine().map(planOf).filter(function (p) { return p.course && list.indexOf(p.course) >= 0; })[0], c0 = (P && P.course) || list[0]; if (c0 && nextLesson(c0)) best = { c: c0, s: courseStats(c0), nx: nextLesson(c0) }; }
+    return '<div class="page-h"><div><p class="h-eyebrow">IF ACADEMY</p><h1>' + esc(title) + '</h1><p>' + esc(lead) + '</p></div></div>' +
+      (best ? '<div class="hello"><div class="plan"><p class="h-eyebrow" style="color:var(--gold2)">' + esc(best.c.title) + '</p><h2>' + esc(best.nx.l.title) + '</h2><p>' + best.s.d + ' / ' + best.s.n + ' lessons</p><a class="btn gold" href="#/course/' + best.c.id + '">' + (best.s.d ? t('cont') : t('start')) + ' →</a><div class="lvbar"><div class="bar"><i style="width:' + best.s.p + '%"></i></div></div></div></div>' : '');
+  }
+  var BE_TASKS = [
+    ['Meetings', '🗓️', /meeting/i, 'You lead the weekly team meeting. Sales fell by 12% last month. Open the meeting, ask two colleagues for their ideas, deal politely with an interruption, and close with clear action points and names.', ['Shall we get started?', 'Could I just come in here?', 'So, to sum up, …', 'Who is going to take this on?']],
+    ['Presentations', '📊', /present|pitch/i, 'You have five minutes to present last quarter\'s results to the directors. Give the headline number first, explain one success and one problem, and finish with your recommendation. Your partner asks two difficult questions.', ['I\'d like to start with the headline figure.', 'As you can see from this chart, …', 'This brings me to my next point.', 'That\'s a fair question. Let me explain.']],
+    ['Emails', '✉️', /email/i, 'A customer has written to complain that an order arrived two weeks late. Write a reply of 80–100 words: apologise, explain briefly, say what you will do and by when. Then read it to your partner, who answers as the customer.', ['Thank you for your email of …', 'I am sorry to hear that …', 'We will send a replacement by Friday.', 'Please let me know if you need anything else.']],
+    ['Interviews', '🤝', /interview|recruit/i, 'You are being interviewed for a job you really want. Your partner is the interviewer and asks about your experience, one strength, one weakness and why you want this job. Then change roles.', ['I have three years\' experience in …', 'One of my strengths is …', 'I am working on improving …', 'What I find most attractive about this role is …']],
+    ['Negotiations', '⚖️', /negotiat/i, 'You are buying 500 office chairs. The supplier wants $90 a chair and delivery in six weeks; you can pay $75 and need them in three. Find an agreement both sides can accept, and say it clearly at the end.', ['What if we ordered more?', 'I\'m afraid that is above our budget.', 'We could agree to that if you …', 'So, we have a deal: …']]
+  ];
+  var IELTS_SKILLS = [['Listening', '🎧', /listening/i, ['listen']], ['Reading', '📖', /reading/i, []], ['Writing', '✍️', /writing|essay|task 1|task 2/i, ['writing']], ['Speaking', '🗣️', /speaking/i, ['speaking']]];
+  function vAppHome() {
+    setNav('home');
+    var list = appCourses(), h = '';
+    if (APP === 'ge') {
+      var ai = list.filter(function (c) { return /^ge-/.test(c.id); }), bookOfMine = mine().filter(function (k) { return /^book:/.test(k); }).map(function (k) { return k.slice(5); });
+      var ef = list.filter(function (c) { return c.ef || c.book; }).sort(function (a, b) { return (bookOfMine.indexOf(b.id) >= 0) - (bookOfMine.indexOf(a.id) >= 0); });
+      var rest = list.filter(function (c) { return ai.indexOf(c) < 0 && ef.indexOf(c) < 0; });
+      h = appHero('IF General English', 'Choose a track. You can follow both: your progress is kept for each.', list) +
+        '<div class="sec"><h2>🤖 AI-Generated General English</h2><p class="sec-d">Original IF Academy units for every level, built around everyday communication: vocabulary, grammar, reading, listening and speaking in a clear order.</p></div><div class="grid">' + ai.map(courseCard).join('') + '</div>' +
+        '<div class="sec"><h2>📚 English Files</h2><p class="sec-d">The units of your coursebook, in the order you study them at IF Academy. A unit opens when your teacher has covered it in class.</p></div><div class="grid">' + ef.map(function (c) { return courseCard(c).replace('<h3>', bookOfMine.indexOf(c.id) >= 0 ? '<span class="tag" style="float:right">Your class book</span><h3>' : '<h3>'); }).join('') + '</div>' +
+        (rest.length ? '<div class="sec"><h2>More General English</h2></div><div class="grid">' + rest.map(courseCard).join('') + '</div>' : '');
+    } else if (APP === 'be') {
+      var used = {}, units = []; list.forEach(function (c) { c.units.forEach(function (u, ui) { units.push({ c: c, u: u, ui: ui }); }); });
+      h = appHero('IF Business English', 'Organised by what you do at work. Each task has lessons at several levels and a role-play to do with a partner or your teacher.', list);
+      BE_TASKS.forEach(function (T) {
+        var hit = units.filter(function (x) { if (used[x.c.id + x.u.id] || !T[2].test(x.u.title)) return false; used[x.c.id + x.u.id] = 1; return true; });
+        h += '<div class="sec"><h2>' + T[1] + ' ' + T[0] + '</h2></div><details class="roleplay"><summary>🎭 Role-play: ' + esc(T[0].toLowerCase()) + '</summary><p>' + esc(T[3]) + '</p><p class="rp-ph"><b>Useful language</b>' + T[4].map(function (p) { return '<button class="chip" data-say="' + esc(p) + '">🔊 ' + esc(p) + '</button>'; }).join('') + '</p></details>' + (hit.length ? '<div class="grid">' + hit.map(function (x) { return unitCard(x.c, x.u, x.ui); }).join('') + '</div>' : '<p class="sec-d">Lessons for this task are being written.</p>');
+      });
+      var other = units.filter(function (x) { return !used[x.c.id + x.u.id]; });
+      if (other.length) h += '<div class="sec"><h2>🧰 More workplace skills</h2></div><div class="grid">' + other.map(function (x) { return unitCard(x.c, x.u, x.ui); }).join('') + '</div>';
+      h += '<div class="sec"><h2>By level</h2></div><div class="grid">' + list.map(courseCard).join('') + '</div>';
+    } else {
+      var c = BY.ielts, tools = IFX_DIR.filter(function (x) { return x.s === 'ielts'; }), usedU = {};
+      h = appHero('IF IELTS', 'Four skills. In each one: learn the language and the strategy first, then practise with real-format tasks.', list);
+      IELTS_SKILLS.forEach(function (K) {
+        var us = c ? c.units.map(function (u, ui) { return { u: u, ui: ui }; }).filter(function (x) { if (!K[2].test(x.u.title)) return false; usedU[x.u.id] = 1; return true; }) : [];
+        var tl = tools.filter(function (x) { return K[3].some(function (g) { return (x.tags || []).indexOf(g) >= 0; }) || (K[0] === 'Reading' || K[0] === 'Listening' ? x.id === 'ielts-centre' : false); });
+        h += '<div class="sec"><h2>' + K[1] + ' ' + K[0] + '</h2></div><div class="grid">' + us.map(function (x) { return unitCard(c, x.u, x.ui); }).join('') + tl.map(itemCard).join('') + '</div>';
+      });
+      var lang = c ? c.units.map(function (u, ui) { return { u: u, ui: ui }; }).filter(function (x) { return !usedU[x.u.id]; }) : [];
+      h += (lang.length ? '<div class="sec"><h2>🧩 Language for IELTS</h2></div><div class="grid">' + lang.map(function (x) { return unitCard(c, x.u, x.ui); }).join('') + '</div>' : '') +
+        '<div class="sec"><h2>Full tests, video course and vocabulary</h2></div><div class="grid">' + tools.filter(function (x) { return x.id === 'ielts-centre' || x.id === 'ielts-video'; }).concat(IFX_DIR.filter(function (x) { return x.s === 'vocab' && (x.tags || []).indexOf('ielts') >= 0; })).map(itemCard).join('') + '</div>';
+    }
+    view().innerHTML = h + '<p style="text-align:center;margin:26px 0 8px"><a class="btn ghost sm" href="/app/">🧩 All IF Academy apps</a></p>';
+    $$('[data-say]').forEach(function (b) { b.onclick = function () { say(b.dataset.say); }; });
+  }
+
+  /* ---------- English Files: coursebook units that open when the teacher marks them Covered ---------- */
+  var EF = {};   // book id → { open: {unitId: 1}, mode, classes, at }
+  function efLoad(book) {
+    return fetch('/api/ef/' + book, { credentials: 'same-origin', headers: hdrs() }).then(function (r) { return r.ok ? r.json() : null; }).then(function (d) {
+      if (!d) throw 0; var o = {}; (d.open || []).forEach(function (id) { o[id] = 1; });
+      EF[book] = { open: o, mode: d.mode, classes: d.classes || [], className: d.className || '', at: Date.now() }; return EF[book];
+    }).catch(function () { var c = BY[book], o = {}; if (c && c.units[0]) o[c.units[0].id] = 1; EF[book] = EF[book] || { open: o, mode: 'offline', classes: [], at: 0 }; return EF[book]; });
+  }
+  function vEfCourse(c) {
+    var e = EF[c.id], here = location.hash;
+    if (!e || Date.now() - e.at > 60000) efLoad(c.id).then(function () { if (location.hash === here) vEfCourse(c); });
+    if (!e) { view().innerHTML = '<p style="text-align:center;margin-top:40px">Loading…</p>'; return; }
+    var s = courseStats(c), nx = nextLesson(c), nOpen = c.units.filter(function (u) { return e.open[u.id]; }).length;
+    var note = e.mode === 'class' ? '🏫 <span>Your class: <b>' + esc(e.className) + '</b>. ' + nOpen + ' of ' + c.units.length + ' units are open. A unit opens when your teacher marks it <b>Covered</b>.</span>'
+      : e.mode === 'staff' ? '👩‍🏫 <span>' + (e.classes.length ? 'Tick <b>Covered</b> under a unit to open it for that class. Students see the other units as locked.' : 'None of your classes is set to this coursebook, so there is nothing to release here. Set the class coursebook in My account → Classes.') + '</span>'
+      : e.mode === 'member' ? '✅ <span>You are not in an IF Academy class on this book, so every unit is open with your subscription.</span>'
+      : e.mode === 'offline' ? '⚠️ <span>Could not check your access. Unit 1 is open; reload when you are online.</span>'
+      : '🎁 <span>Unit 1 is free' + (access().signed ? ', and so is Unit 2 with your free account' : '') + '. <a href="/me/#/upgrade">Subscribe</a> to open the rest.</span>';
+    var html = '<div class="course-head"><span class="ic">' + c.icon + '</span><div class="grow"><p class="h-eyebrow">' + esc(c.level) + ' · English Files</p><h1 style="font-size:28px">' + esc(c.title) + '</h1><p style="margin:4px 0 8px;color:var(--soft)">' + esc(c.blurb) + '</p><div class="bar" style="height:12px"><i style="width:' + s.p + '%"></i></div><p style="margin:6px 0 0;font-size:13.5px;color:var(--soft)">' + s.d + ' / ' + s.n + ' lessons · ' + s.p + '%</p></div></div><div class="goalbar">' + note + '</div>';
+    c.units.forEach(function (u, ui) {
+      var open = !!e.open[u.id];
+      var cov = e.mode === 'staff' && e.classes.length ? '<div class="cover">' + e.classes.map(function (k) { var on = k.covered.indexOf(u.id) >= 0; return '<label class="chip' + (on ? ' on' : '') + '"><input type="checkbox" data-cover="' + esc(k.id) + '" data-unit="' + esc(u.id) + '"' + (on ? ' checked' : '') + '> Covered · ' + esc(k.label) + '</label>'; }).join('') + '</div>' : '';
+      html += '<section class="unit' + (open ? '' : ' unit-locked') + '"><div class="unit-h"><div style="flex:1"><small>' + esc(t('unit')) + ' ' + esc(u.id) + (u.g ? ' · ' + esc(u.g) : '') + '</small><h3>' + esc(u.title) + '</h3>' + (open ? '<ul class="objs">' + u.obj.map(function (o) { return '<li>🎯 ' + esc(o) + '</li>'; }).join('') + '</ul>' : '') + cov + '</div>' +
+        (open ? '' : e.mode === 'class' ? '<span class="btn sm gold" style="cursor:default">🔒 Not covered in class yet</span>' : '<a class="btn sm gold" href="/me/#/upgrade">🔒 ' + esc(t('locked')) + '</a>') + '</div>' +
+        (open ? '<div class="path">' + u.lessons.map(function (l) {
+          var done = isDone(c.id, u.id, l.id), isNext = nx && nx.u.id === u.id && nx.l.id === l.id;
+          return '<a class="node' + (done ? ' done' : '') + (isNext ? ' next' : '') + '" style="--c:' + COLORS[l.type] + '" href="#/lesson/' + c.id + '/' + u.id + '/' + l.id + '"><span class="b">' + ICONS[l.type] + '</span><span>' + esc(l.title) + '</span><em>' + esc(TYPE[l.type]) + (done ? ' · ' + S.done[key3(c.id, u.id, l.id)].score + '%' : '') + '</em></a>';
+        }).join('') + '</div>' : '') + '</section>';
+    });
+    view().innerHTML = html;
+    $$('[data-cover]').forEach(function (b) {
+      b.onchange = function () {
+        b.disabled = true;
+        fetch('/api/ef/' + c.id + '/cover', { method: 'POST', credentials: 'same-origin', headers: hdrs({ 'Content-Type': 'application/json' }), body: JSON.stringify({ classId: b.dataset.cover, unit: b.dataset.unit, on: b.checked }) })
+          .then(function (r) { if (!r.ok) throw 0; return r.json(); })
+          .then(function (d) { e.classes.forEach(function (k) { if (k.id === b.dataset.cover) k.covered = d.covered; }); toast(b.checked ? 'Unit ' + b.dataset.unit + ' is now open for this class' : 'Unit ' + b.dataset.unit + ' is locked again for this class'); b.disabled = false; b.parentNode.classList.toggle('on', b.checked); })
+          .catch(function () { b.checked = !b.checked; b.disabled = false; toast('Could not save. Please try again.'); });
+      };
+    });
+  }
+  // a lesson of the English Files track: ask the server for the unit (it refuses a unit that is not open), then build the lessons
+  function efOpen(c, u, ui, l, teach) {
+    view().innerHTML = '<p style="text-align:center;margin-top:40px">Loading…</p>';
+    var here = location.hash;
+    fetch('/api/ef/' + c.id + '/' + encodeURIComponent(u.id), { credentials: 'same-origin', headers: hdrs() }).then(function (r) { if (r.status === 403) throw 'locked'; if (!r.ok) throw 'net'; return r.json(); }).then(function (d) {
+      var U = d.unit, words = U.words.map(function (w) { return { w: w[0], p: '', d: w[1], e: w[4] || '', c: w[5] || '', ce: w[6] || '', ru: w[2], rd: w[3] }; });
+      u.words = words; u.talk = U.talk;
+      u.lessons.forEach(function (x) {
+        var src = U.lessons.filter(function (y) { return y.id === x.id; })[0] || {};
+        if (x.type === 'vocab') x.words = words.slice(src.from || 0, src.to || words.length);
+        else if (x.type === 'grammar' && U.g) { x.rule = U.g.rule; x.ru = U.g.ru || ''; x.ex = U.g.ex; }
+        else if (x.type === 'speaking') x.ex = [];
+        else if (x.type === 'check') x.gen = efCheck(u, U.g);
+        x.ready = true;
+      });
+      (EF[c.id] = EF[c.id] || { open: {}, classes: [], at: 0 }).open[u.id] = 1;
+      if (location.hash === here) vLesson(c.id, u.id, l.id, teach);
+    }).catch(function (err) { if (location.hash !== here) return; if (err === 'locked') { toast('This unit is not open for you yet.'); if (EF[c.id]) delete EF[c.id].open[u.id]; return go('#/course/' + c.id); } view().innerHTML = '<p style="text-align:center;margin-top:40px">This lesson could not be loaded. Check your connection and <a href="' + esc(here) + '" onclick="location.reload();return false">try again</a>.</p>'; });
+  }
+  function efCheck(u, g) {   // ten fresh questions each time: the unit's words, then its grammar
+    var pool = [], three = function (x) { return shuffle([x].concat(shuffle(u.words.filter(function (y) { return y !== x && y.d !== x.d; })).slice(0, 2))); };
+    var item = function (i) {
+      if (i === 0) pool = shuffle(u.words);
+      var x = pool[i % pool.length], o = three(x);
+      if (i < 4) return { t: 'mc', q: 'Which word or phrase means: “' + x.d + '”?', o: o.map(function (y) { return y.w; }), a: o.indexOf(x), say: x.w };
+      if (i < 7) return { t: 'mc', q: 'What does “' + x.w + '” mean?', o: o.map(function (y) { return y.d; }), a: o.indexOf(x), say: x.w };
+      if (i === 7) return { t: 'match', p: shuffle(u.words).slice(0, 4).map(function (y) { return [y.w, y.ru || y.d]; }) };
+      var gx = g && g.ex && g.ex.length ? shuffle(g.ex)[0] : null; return gx || { t: 'mc', q: 'What does “' + x.w + '” mean?', o: o.map(function (y) { return y.d; }), a: o.indexOf(x), say: x.w };
+    };
+    return [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(function (i) { return function () { return item(i); }; });
+  }
+
+  /* ---------- Russian support for A0–A2+: English first, Russian on tap ---------- */
+  var ruLevel = function () { return !!(L && L.c && /^(PA1|A0|A1|A2)/.test(L.c.level || '')); };
+  var RUQ = [[/^Complete the sentence\.$/, 'Дополните предложение.'], [/^Put the words in order\.$/, 'Расставьте слова по порядку.'], [/^Match the pairs\.$/, 'Соедините пары.'], [/^Say it aloud\.?/, 'Скажите это вслух.'], [/^Listen and choose\.$/, 'Послушайте и выберите.'], [/^What is it\?$/, 'Что это?'], [/^Find the (.+)\.$/, 'Найдите: $1.'], [/^What does “(.+)” mean\?$/, 'Что означает «$1»?'], [/^Which word or phrase means: “(.+)”\?$/, 'Какое слово или фраза подходит к этому значению?'], [/^True or false\?$/i, 'Верно или неверно?']];
+  function ruOf(s) { for (var i = 0; i < RUQ.length; i++) if (RUQ[i][0].test(s)) return String(s).replace(RUQ[i][0], RUQ[i][1]); return ''; }
+  function ruChip(text) { return text ? '<p class="ru-tap"><button class="chip" data-ru="' + esc(text) + '">🇷🇺 Show Russian</button></p>' : ''; }
+  function bindRu() { $$('[data-ru]').forEach(function (b) { b.onclick = function () { var p = b.parentNode; p.innerHTML = '<span class="ru-shown">🇷🇺 ' + esc(b.dataset.ru).replace(/\n/g, '<br>') + '</span>'; }; }); }
+  function ruHint(e) {
+    if (!ruLevel() || L.teach) return;
+    var q = $('.player .qh'); if (!q) return;
+    var txt = e.ru || ruOf(((q.childNodes[0] && q.childNodes[0].textContent) || '').trim()); if (!txt) return;
+    q.insertAdjacentHTML('afterend', ruChip(txt)); bindRu();
+  }
+
+  /* ---------- Listen → Repeat → Record: the model voice next to the student's own recording ---------- */
+  var REC = { ok: !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia && window.MediaRecorder), mr: null, url: '', to: 0 };
+  function recStop() { clearTimeout(REC.to); try { if (REC.mr && REC.mr.state !== 'inactive') REC.mr.stop(); } catch (e) {} }
+  function recStart(max, done) {
+    navigator.mediaDevices.getUserMedia({ audio: true }).then(function (st) {
+      var ch = [], mr = REC.mr = new MediaRecorder(st);
+      mr.ondataavailable = function (ev) { if (ev.data && ev.data.size) ch.push(ev.data); };
+      mr.onstop = function () { st.getTracks().forEach(function (x) { x.stop(); }); if (REC.url) { try { URL.revokeObjectURL(REC.url); } catch (e) {} } REC.url = ch.length ? URL.createObjectURL(new Blob(ch, { type: mr.mimeType || 'audio/webm' })) : ''; REC.mr = null; done(REC.url); };
+      mr.start(); REC.to = setTimeout(recStop, max * 1000);
+    }).catch(function () { done(null); });
+  }
+  function recBox(model, max) {
+    return '<div class="lrr" data-max="' + (max || 12) + '"><div class="lrr-steps">' + (model ? '<button class="lrr-b" id="rcL"><b>1</b> 🔊 Listen</button><span class="lrr-b idle"><b>2</b> 🗣 Repeat aloud</span>' : '') +
+      (REC.ok ? '<button class="lrr-b rec" id="rcR"><b>' + (model ? 3 : 1) + '</b> 🎙 Record</button>' : '') + '</div>' +
+      (REC.ok ? '<div class="lrr-play" id="rcP" hidden><button class="btn ghost sm" id="rcMine">▶ My recording</button>' + (model ? '<button class="btn ghost sm" id="rcModel">🔊 Model</button>' : '') + '<button class="btn ghost sm" id="rcAgain">↺ Record again</button></div><p class="lrr-msg" id="rcM"></p>'
+        : '<p class="lrr-msg">Recording is not available in this browser. ' + (model ? 'Listen, then repeat aloud.' : 'Speak aloud for about a minute.') + '</p>') + '</div>';
+  }
+  function bindRec(model) {
+    var box = $('.lrr'); if (!box) return; var max = +box.dataset.max, au = null, R = $('#rcR'), M = $('#rcM'), P = $('#rcP');
+    if ($('#rcL')) $('#rcL').onclick = function () { say(model); };
+    if (!R) return;
+    var start = function () {
+      if (REC.mr) return recStop();
+      try { speechSynthesis.cancel(); } catch (e) {}
+      R.classList.add('on'); R.innerHTML = '⏹ Stop'; M.textContent = 'Recording… speak now.'; P.hidden = true;
+      recStart(max, function (url) {
+        R.classList.remove('on'); R.innerHTML = '🎙 Record';
+        if (url === null) { M.textContent = 'The microphone is blocked. Allow it in your browser settings, or just repeat aloud.'; return; }
+        if (!url) { M.textContent = 'Nothing was recorded. Try again.'; return; }
+        M.textContent = model ? 'Now compare: play your recording, then the model.' : 'Listen to yourself. Record again if you want a better version.'; P.hidden = false;
+      });
+    };
+    R.onclick = start; $('#rcAgain').onclick = start;
+    $('#rcMine').onclick = function () { try { speechSynthesis.cancel(); if (au) au.pause(); au = new Audio(REC.url); au.play(); } catch (e) {} };
+    if ($('#rcModel')) $('#rcModel').onclick = function () { if (au) au.pause(); say(model); };
+  }
+  function drawLearn() {
+    var w = L.l.words[L.card], v = view(), model = w.w + (w.e ? '. ' + w.e : ''), ruTxt = w.ru ? w.ru + (w.rd ? '\n' + w.rd : '') : '';
+    recStop();
+    v.innerHTML = '<div class="player">' + pTop() + '<div class="learn-card">' + (w.pic ? '<div class="qpic">' + PIC(w.pic, 'pic big') + '</div>' : L.card === 0 ? '<div class="qpic">' + DOODLE(L.c.id, L.u.id, 'doodle lc') + '</div>' : '') +
+      '<button class="say" id="sy" aria-label="Listen to the word">🔊</button><div class="w">' + esc(w.w) + '</div>' + (w.p ? '<div class="pos">' + esc(w.p) + '</div>' : '') + '<div class="d">' + esc(w.d) + '</div>' +
+      (w.e ? '<div class="e">“' + esc(w.e) + '” <button class="say sm" id="sye" aria-label="Listen to the sentence">🔊</button></div>' : '') +
+      (w.c ? '<div class="patt"><b>' + esc(w.c) + '</b>' + (w.ce ? '<span>' + esc(w.ce) + '</span>' : '') + '</div>' : '') +
+      (ruTxt ? (ruLevel() || !w.ru ? ruChip(ruTxt) : '<span class="ru">🇷🇺 ' + esc(w.ru) + '</span>') : '') +
+      (L.teach || w.pic ? '' : recBox(model, 12)) + '</div>' +
+      '<div class="dots">' + L.l.words.map(function (_, k) { return '<i class="' + (k === L.card ? 'on' : '') + '"></i>'; }).join('') + '</div>' +
+      '<div style="display:flex;gap:10px;justify-content:center"><button class="btn ghost" id="pv"' + (L.card ? '' : ' disabled') + '>‹</button><button class="btn" id="nx">' + (L.card < L.l.words.length - 1 ? t('next') + ' ›' : 'Practise →') + '</button></div></div>';
+    bindTop(); bindRu(); bindRec(model); say(w.w);
+    $('#sy').onclick = function () { say(w.w); };
+    if ($('#sye')) $('#sye').onclick = function () { say(w.e); };
+    $('#pv').onclick = function () { recStop(); L.card--; drawStep(); };
+    $('#nx').onclick = function () { recStop(); if (L.card < L.l.words.length - 1) { L.card++; drawStep(); } else { L.i++; drawStep(); } };
+  }
+  function drawTalk() {
+    var u = L.u, qs = u.talk && u.talk.length ? u.talk : ['Talk for about a minute about this topic: “' + u.title + '”. Give your own examples.', 'Then tell a short story or give your opinion using the new words.'];
+    var ws = shuffle(u.words || []).slice(0, 8), ru = ruLevel() ? 'Говорите около минуты. Используйте не меньше пяти слов из списка. Запишите себя и послушайте.' : '';
+    view().innerHTML = '<div class="player">' + pTop() + '<h2 class="qh">Speaking task</h2><div class="rule talk"><p>Prepare for 30 seconds, then speak for about a minute. Use at least <b>five</b> of the words below.</p>' + ruChip(ru) + '<ol>' + qs.map(function (q) { return '<li>' + esc(q) + '</li>'; }).join('') + '</ol><p class="talk-w">' + ws.map(function (w) { return '<button class="chip" data-say="' + esc(w.w) + '">🔊 ' + esc(w.w) + '</button>'; }).join('') + '</p>' + (L.teach ? '' : recBox('', 90)) + '</div><p style="text-align:center;margin-top:18px"><button class="btn" id="nx">I have done it →</button></p></div>';
+    bindTop(); bindRu(); bindRec('');
+    $$('[data-say]').forEach(function (b) { b.onclick = function () { say(b.dataset.say); }; });
+    $('#nx').onclick = function () { recStop(); L.i++; drawStep(); };
+  }
+
   function frame() {
     var a = access();
     var emb = document.body.classList.contains('embed');
     document.body.innerHTML =
-      '<header class="top"><div class="top-in"><a class="brand" href="#/"><img src="/brand/if-shield-3d-180.webp" alt=""><span>IF App<small>IF ACADEMY</small></span></a>' +
+      '<header class="top"><div class="top-in"><a class="brand" href="#/"><img src="/brand/if-shield-3d-180.webp" alt=""><span>' + (APP ? esc(APPS[APP].name) : 'IF App') + '<small>IF ACADEMY</small></span></a>' +
       '<label class="srch"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="q" type="search" placeholder="' + esc(t('search')) + '" autocomplete="off" aria-label="Search"></label>' +
       '<div class="stats"><span class="stat" title="' + esc(t('streak')) + '">🔥 <b id="stS">' + S.streak + '</b></span><span class="stat xp" title="XP">⚡ <b id="stX">' + S.xp + '</b></span>' +
       (window.IFVoice ? '<button class="lang" id="vox" title="Voice: British female / male" aria-label="Voice">' + (IFVoice.get() === 'male' ? '👨' : '👩') + '</button>' : '') +
       '<button class="lang" id="lng" aria-label="Language">' + lang.toUpperCase() + '</button>' +
       (a.signed ? '<a class="acct" href="/me/" title="' + esc(a.name) + '">' + esc((a.name || '?').charAt(0).toUpperCase()) + '</a>' : '<a class="btn sm" href="/me/#/login?next=/app/">' + esc(t('signin')) + '</a>') + '</div></div></header>' +
-      '<div class="shell"><nav class="side nav" aria-label="Sections">' + NAV.map(function (n) { return '<a href="#/' + (n[0] === 'home' ? '' : n[0]) + '" data-k="' + n[0] + '"><i>' + n[1] + '</i>' + esc(t(n[0])) + '</a>'; }).join('') + '<a class="more-link" href="#/more" data-k="more"><i>➕</i>' + esc(t('more')) + '</a></nav><main class="main" id="view"></main></div><div class="toast" id="toast" role="status"></div>';
+      '<div class="shell"><nav class="side nav" aria-label="Sections">' + NAV.map(function (n) { return '<a href="#/' + (n[0] === 'home' ? '' : n[0]) + '" data-k="' + n[0] + '"><i>' + n[1] + '</i>' + esc(t(n[0])) + '</a>'; }).join('') + (APP ? '<a class="more-link" href="/app/"><i>🧩</i>All IF apps</a>' : '<a class="more-link" href="#/more" data-k="more"><i>➕</i>' + esc(t('more')) + '</a>') + '</nav><main class="main" id="view"></main></div><div class="toast" id="toast" role="status"></div>';
     if (emb) document.body.classList.add('embed');
     var q = $('#q'), qt;
     q.oninput = function () { clearTimeout(qt); qt = setTimeout(function () { var v = q.value.trim(); if (v) { if (location.hash.indexOf('#/search') !== 0) history.pushState(null, '', '#/search'); vSearch(v); } }, 180); };
@@ -264,7 +483,7 @@
     sel.push(k); S.study = sel; save(); saveStudy(sel); toast('Added: ' + SNAME[k]); route(); }; }); }
   function goalBar() { if (S.cls) return '<div class="goalbar">🏫 <span>Your class: <b>' + esc(mine().map(function (k) { return SNAME[k]; }).join(' · ')) + '</b></span>' + addOnHTML() + '</div>'; return '<div class="goalbar">🎯 <span>For your goals: <b>' + esc(mine().map(function (k) { return SNAME[k]; }).join(' · ')) + '</b></span>' + addOnHTML() + '<a href="#/onboard">Change goals</a></div>'; }
   function secCount(k) { if (k === 'ielts') return mine().indexOf('ielts') >= 0 ? 1 : 0; var n = IFX_DIR.filter(function (x) { return x.s === k && fits(x); }).length; if (k === 'grammar' || k === 'vocab') n += lessonsOf([k === 'grammar' ? 'grammar' : 'vocab']).filter(function (x) { return myCourses().indexOf(x.c) >= 0; }).length; return n; }
-  function focusNav() { var full = fullView(); $$('a[data-k]').forEach(function (a) { var k = a.dataset && a.dataset.k; if (!k || ['vocab', 'grammar', 'games', 'tests', 'ielts'].indexOf(k) < 0) return; a.style.display = full || secCount(k) ? '' : 'none'; }); }
+  function focusNav() { if (APP) return; var full = fullView(); $$('a[data-k]').forEach(function (a) { var k = a.dataset && a.dataset.k; if (!k || ['vocab', 'grammar', 'games', 'tests', 'ielts'].indexOf(k) < 0) return; a.style.display = full || secCount(k) ? '' : 'none'; }); }
   function fits(it) { var m = mine(); if (!m.length || S.teacher) return true;
     if (S.cls && it.id === 'placement') return false;   // already placed in a class
     if (S.cls && (it.s === 'tests' || it.s === 'vocab')) {   // class tests and vocabulary: exactly their book / Cambridge level
@@ -356,9 +575,9 @@
   var CTRACK = [['all', 'All'], ['general', 'General English'], ['business', 'Business English'], ['exam', 'IELTS'], ['kids', 'Young learners']];
   function vCourses(f) {
     setNav('courses'); f = f || 'all';
-    var full = fullView(), list = full ? COURSES.filter(function (c) { return !c.daily && (f === 'all' || c.track === f); }) : myCourses();
+    var full = fullView(), list = APP ? appCourses() : full ? COURSES.filter(function (c) { return !c.daily && (f === 'all' || c.track === f); }) : myCourses();
     view().innerHTML = '<div class="page-h"><div><p class="h-eyebrow">' + esc(t('courses')) + '</p><h1>Real English courses</h1><p>Each unit: new words, the grammar, a reading with photos, and a unit check. Finish a level to unlock the next one.</p></div></div>' +
-      (full ? '<div class="chips">' + CTRACK.map(function (x) { return '<button class="chip' + (x[0] === f ? ' on' : '') + '" data-f="' + x[0] + '">' + esc(x[1]) + '</button>'; }).join('') + '</div>' : goalBar()) +
+      (APP ? '' : full ? '<div class="chips">' + CTRACK.map(function (x) { return '<button class="chip' + (x[0] === f ? ' on' : '') + '" data-f="' + x[0] + '">' + esc(x[1]) + '</button>'; }).join('') + '</div>' : goalBar()) +
       '<div class="grid">' + list.map(courseCard).join('') + '</div>' ;
     $$('[data-f]').forEach(function (b) { b.onclick = function () { vCourses(b.dataset.f); }; });
   }
@@ -366,6 +585,7 @@
     setNav('courses');
     var c = BY[id]; if (!c) return go('#/courses');
     if (c.daily) return go('#/articles');
+    if (c.ef) return vEfCourse(c);
     var s = courseStats(c), nx = nextLesson(c), a = access();
     var html = '<div class="course-head"><span class="ic">' + c.icon + '</span><div class="grow"><p class="h-eyebrow">' + esc(c.level) + ' · ' + esc(c.track === 'exam' ? 'Exam' : c.track === 'business' ? 'Business English' : c.track === 'kids' ? 'Young learners' : 'General English') + '</p><h1 style="font-size:28px">' + esc(c.title) + '</h1><p style="margin:4px 0 8px;color:var(--soft)">' + esc(c.blurb) + '</p><div class="bar" style="height:12px"><i style="width:' + s.p + '%"></i></div><p style="margin:6px 0 0;font-size:13.5px;color:var(--soft)">' + s.d + ' / ' + s.n + ' lessons · ' + s.p + '%' + (c.next ? ' · then: ' + esc(c.next) : '') + '</p></div></div>';
     var sd = window.IFStd && IFStd.course(c.id);
@@ -390,6 +610,7 @@
     var c = BY[cid]; if (!c) return go('#/courses');
     var ui = c.units.findIndex(function (u) { return u.id === uid; }); var u = c.units[ui]; if (!u) return go('#/course/' + cid);
     var l = u.lessons.filter(function (x) { return x.id === lid; })[0]; if (!l) return go('#/course/' + cid);
+    if (c.ef && !l.ready) return efOpen(c, u, ui, l, teach);
     if (c.daily) { if (!artOpen(c, u)) { if (!meLoaded) { view().innerHTML = '<p style="text-align:center;margin-top:40px">Loading…</p>'; return; } return go('#/articles'); } }
     else if (!unlocked(ui, cid)) { if (!meLoaded) { view().innerHTML = '<p style="text-align:center;margin-top:40px">Loading…</p>'; return; } return go('#/course/' + cid); }
     teach = !!teach && access().teacher;
@@ -403,6 +624,7 @@
     else if (l.type === 'listen') { items.push({ k: 'listen' }); items = items.concat(l.ex.map(function (e) { return { k: 'ex', e: e }; })); }
     else if (l.type === 'reading') { items.push({ k: 'read' }); items = items.concat(l.ex.map(function (e) { return { k: 'ex', e: e }; })); }
     else items = l.ex.map(function (e) { return { k: 'ex', e: e }; });
+    if (l.type === 'speaking') items = [{ k: 'talk' }];
     L = { t0: Date.now(), c: c, u: u, ui: ui, l: l, items: items, i: 0, total: items.filter(function (x) { return x.k === 'ex'; }).length, right: 0, tried: {}, card: 0, teach: teach };
     drawStep();
   }
@@ -418,7 +640,7 @@
     if (words[0] && words[0].pic) return kidsEx(words);
     var w = shuffle(words), out = [];
     w.slice(0, 4).forEach(function (x) { var o = shuffle([x].concat(shuffle(words.filter(function (y) { return y !== x; })).slice(0, 2))); out.push({ k: 'ex', e: { t: 'mc', q: 'What does “' + x.w + '” mean?', o: o.map(function (y) { return y.d; }), a: o.indexOf(x), say: x.w } }); });
-    w.slice(4, 8).forEach(function (x) { var re = new RegExp(x.w.split(' ')[0].replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\w*', 'i'); var m = x.e.match(re); if (!m) return; var o = shuffle([x].concat(shuffle(words.filter(function (y) { return y !== x; })).slice(0, 2))); out.push({ k: 'ex', e: { t: 'mc', q: x.e.replace(x.w.split(' ').length > 1 ? new RegExp(x.w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\w*', 'i') : re, '_____'), o: o.map(function (y) { return y.w; }), a: o.indexOf(x), why: x.e } }); });
+    w.slice(4, 8).forEach(function (x) { if (!x.e) { var o2 = shuffle([x].concat(shuffle(words.filter(function (y) { return y !== x; })).slice(0, 2))); out.push({ k: 'ex', e: { t: 'mc', q: 'Which word or phrase means: “' + x.d + '”?', o: o2.map(function (y) { return y.w; }), a: o2.indexOf(x), say: x.w } }); return; } var re = new RegExp(x.w.split(' ')[0].replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\w*', 'i'); var m = x.e.match(re); if (!m) return; var o = shuffle([x].concat(shuffle(words.filter(function (y) { return y !== x; })).slice(0, 2))); out.push({ k: 'ex', e: { t: 'mc', q: x.e.replace(x.w.split(' ').length > 1 ? new RegExp(x.w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\w*', 'i') : re, '_____'), o: o.map(function (y) { return y.w; }), a: o.indexOf(x), why: x.e } }); });
     out.push({ k: 'ex', e: { t: 'match', p: shuffle(words).slice(0, 4).map(function (x) { return [x.w, x.ru || x.d]; }) } });
     return out;
   }
@@ -433,20 +655,11 @@
   function drawStep() {
     var it = L.items[L.i]; if (!it) return finish();
     var v = view();
-    if (it.k === 'learn') {
-      var w = L.l.words[L.card];
-      v.innerHTML = '<div class="player">' + pTop() + '<div class="learn-card">' + (w.pic ? '<div class="qpic">' + PIC(w.pic, 'pic big') + '</div>' : L.card === 0 ? '<div class="qpic">' + DOODLE(L.c.id, L.u.id, 'doodle lc') + '</div>' : '') + '<button class="say" id="sy" aria-label="Listen">🔊</button><div class="w">' + esc(w.w) + '</div><div class="pos">' + esc(w.p) + '</div><div class="d">' + esc(w.d) + '</div><div class="e">“' + esc(w.e) + '”</div>' + (w.ru ? '<span class="ru">🇷🇺 ' + esc(w.ru) + '</span>' : '') + '</div>' +
-        '<div class="dots">' + L.l.words.map(function (_, k) { return '<i class="' + (k === L.card ? 'on' : '') + '"></i>'; }).join('') + '</div>' +
-        '<div style="display:flex;gap:10px;justify-content:center"><button class="btn ghost" id="pv"' + (L.card ? '' : ' disabled') + '>‹</button><button class="btn" id="nx">' + (L.card < L.l.words.length - 1 ? t('next') + ' ›' : 'Practise →') + '</button></div></div>';
-      bindTop(); say(w.w);
-      $('#sy').onclick = function () { say(w.w + '. ' + w.e); };
-      $('#pv').onclick = function () { L.card--; drawStep(); };
-      $('#nx').onclick = function () { if (L.card < L.l.words.length - 1) { L.card++; drawStep(); } else { L.i++; drawStep(); } };
-      return;
-    }
+    if (it.k === 'learn') return drawLearn();
+    if (it.k === 'talk') return drawTalk();
     if (it.k === 'rule') {
-      v.innerHTML = '<div class="player">' + pTop() + '<div class="rulehead"><h2 class="qh">' + esc(L.l.title) + '</h2>' + DOODLE(L.c.id, L.u.id, 'doodle rh') + '</div><div class="rule">' + L.l.rule + '</div><p style="text-align:center;margin-top:18px"><button class="btn" id="nx">Practise →</button></p></div>';
-      bindTop(); $('#nx').onclick = function () { L.i++; drawStep(); }; return;
+      v.innerHTML = '<div class="player">' + pTop() + '<div class="rulehead"><h2 class="qh">' + esc(L.l.title) + '</h2>' + DOODLE(L.c.id, L.u.id, 'doodle rh') + '</div><div class="rule">' + L.l.rule + '</div>' + (ruLevel() && L.l.ru ? ruChip(L.l.ru) : '') + '<p style="text-align:center;margin-top:18px"><button class="btn" id="nx">Practise →</button></p></div>';
+      bindTop(); bindRu(); $('#nx').onclick = function () { L.i++; drawStep(); }; return;
     }
     if (it.k === 'listen') {
       // Listening "video": a sci-fi studio where the humanoid presenters perform the script (real voices), with
@@ -521,7 +734,7 @@
     }
     var teach = L.teach ? '<div class="teachbar"><button class="btn ghost sm" id="rv">👁 ' + esc(t('reveal')) + '</button><button class="btn sm" id="tn">' + esc(t('next')) + ' ›</button></div>' : '';
     v.innerHTML = '<div class="player">' + pTop() + peek + body + teach + '</div>' + (e.t === 'mc' || e.t === 'tf' || e.t === 'picmc' || e.t === 'match' || L.teach ? '' : '<div class="fb" id="fb"><div class="fb-in"><span class="msg"></span><button class="btn" id="ck" disabled>' + esc(t('check')) + '</button></div></div>');
-    bindTop();
+    bindTop(); ruHint(e);
     if ($('#replay')) $('#replay').onclick = function () { playScript(L.l.script); };
     if (e.say || e.listen) { $('#sq').onclick = function () { say(e.listen || e.say); }; if (e.listen || e.t === 'picmc') setTimeout(function () { say(e.listen || e.say); }, 250); }
     if (L.teach) {
@@ -670,7 +883,7 @@
   }
   function vSection(k, f) {
     setNav(k); var sc = SEC[k]; var full = fullView(); f = full ? (f || (mine().length ? 'fit' : 'all')) : 'fit';
-    var items = IFX_DIR.filter(function (x) { return x.s === k && match(x, f); });
+    var items = IFX_DIR.filter(function (x) { return x.s === k && (APP ? appItem(x) : match(x, f)); });
     var EDITION = /^(kart|bq|obby|kq)-(ket|pet|flyers)$/;   // KET / PET / Flyers editions of the young learners' games
     if (k === 'games' && (f === 'all' || f === 'young')) {
       var shown = {}, grp = function (title, list) { list = list.filter(function (x) { return x && !shown[x.id]; }); list.forEach(function (x) { shown[x.id] = 1; }); return list.length ? '<div class="sec"><h2>' + title + '</h2></div><div class="grid">' + list.map(itemCard).join('') + '</div>' : ''; };
@@ -853,7 +1066,7 @@
     try { focusNav(); } catch (e) {}
     setTimeout(function () { try { wireAddOns(); } catch (e) {} }, 0);
     switch (p[0]) {
-      case '': return vHome();
+      case '': if (APP) return vAppHome(); vHome(); if ((mine().length || S.teacher) && !$('.apps3') && view().firstElementChild) view().firstElementChild.insertAdjacentHTML('afterend', appsStrip()); return;
       case 'onboard': return vOnboard();
       case 'courses': return vCourses(p[1]);
       case 'course': return vCourse(p[1]);
@@ -866,14 +1079,14 @@
       case 'articles': return vArticles(p[1]);
       case 'more': return vMore();
       case 'search': return vSearch(($('#q') || {}).value || qs.get('q') || '');
-      default: return vHome();
+      default: return APP ? vAppHome() : vHome();
     }
   }
   /* C1–C2 courses are English only (no Russian translations), and every teen/adult unit gets an "In context"
      lesson: listen and choose, listen and write, which sentence is right, listen and order, then say it aloud. */
   function prepCourses() {
     COURSES.forEach(function (c) {
-      if (c.daily) return;
+      if (c.daily || c.ef) return;
       var adv = /^C/.test(c.level || '');
       c.units.forEach(function (u) {
         u.lessons.forEach(function (l) { if (adv) (l.words || []).forEach(function (w) { delete w.ru; }); });

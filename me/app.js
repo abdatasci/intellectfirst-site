@@ -844,8 +844,28 @@
       $('#exp').onclick = function () { exportDialog(c.id, [c]); };
       wireHw(c, act);
       var tdy = document.createElement('div'); tdy.id = 'ctoday'; var hero = view.querySelector('.hero'); if (hero) hero.after(tdy); todayBox(tdy, c.id);
+      var eb = document.createElement('div'); eb.id = 'cef'; view.appendChild(eb); efCoverBox(eb, c);
       var ab = document.createElement('div'); ab.id = 'catt'; var hw = view.querySelector('.hwset'); if (hw) hw.after(ab); else view.appendChild(ab); classAttBox(ab, c.id);
     } catch (e) { view.innerHTML = '<div class="empty" style="margin-top:30px">This class could not be loaded.</div>'; }
+  }
+  /* English Files (IF General English): the teacher ticks a unit as Covered and it opens for this class's students in the app. */
+  async function efCoverBox(el, c) {
+    try {
+      var r = await fetch('/api/ef/class/' + encodeURIComponent(c.id), { credentials: 'same-origin' }); if (!r.ok) return; var d = await r.json(); if (!d.book) return;
+      var draw = function () {
+        el.innerHTML = '<section class="panel wide" style="margin-top:18px"><h3 style="margin:0 0 4px">English Files in the app · units covered (' + d.covered.length + ' of ' + d.units.length + ')</h3><p class="small" style="margin:0 0 10px">Tick a unit when you have covered it in class. It then opens for this class in <a href="/app/general/#/course/' + esc(d.book) + '">IF General English → English Files</a>. The other units stay locked for these students.</p><div class="row" style="flex-wrap:wrap;gap:8px">' +
+          d.units.map(function (u) { var on = d.covered.indexOf(u.id) >= 0; return '<label class="chip2' + (on ? ' ok' : '') + '" style="cursor:pointer;display:inline-flex;gap:6px;align-items:center"><input type="checkbox" data-efu="' + esc(u.id) + '"' + (on ? ' checked' : '') + '> ' + esc(u.id) + ' · ' + esc(u.title) + '</label>'; }).join('') + '</div></section>';
+        Array.prototype.forEach.call(el.querySelectorAll('[data-efu]'), function (b) {
+          b.onchange = async function () {
+            b.disabled = true;
+            try { var x = await fetch('/api/ef/' + d.book + '/cover', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ classId: c.id, unit: b.dataset.efu, on: b.checked }) }); if (!x.ok) throw 0; d.covered = (await x.json()).covered; }
+            catch (e) { alert('Could not save. Please try again.'); }
+            draw();
+          };
+        });
+      };
+      draw();
+    } catch (e) {}
   }
   var TCENTRES = [['/a/ef-a1-tests/','English File Elementary (A1)'],['/a/ef-a2-tests/','English File Pre-intermediate (A2)'],['/a/ef-b1-tests/','English File Intermediate (B1)'],['/a/ef-b2-tests/','English File Upper-intermediate (B2)'],['/a/ef-c1-tests/','English File Advanced (C1)'],['/a/teens-b1-tests/','English for Teenagers B1–B2'],['/a/teens-b2-tests/','English for Teenagers B2–C1'],['/a/pet-tests/','PET (B1 Preliminary)'],['/a/yl-tests/','Young Learners (Starters–Flyers)'],['/a/ielts/','IELTS Centre'],['/a/placement-test/','IF Placement Test']];
   var OPENCK = {};
