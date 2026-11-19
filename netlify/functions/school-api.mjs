@@ -20,7 +20,7 @@ import { tellClass } from '../lib/hwsend.mjs';
 import { tier, isMember, TRACKS, paidActive, accessUntil, TRIAL_DAYS, ensureTrial } from '../lib/access.mjs';
 import seed from '../lib/school-seed.json';
 import ckey from '../lib/content-key.json';
-import { loadStudents, saveStudents, loadAttendance } from '../lib/students.mjs';
+import { loadStudents, saveStudents, loadAttendance, setAppLevel } from '../lib/students.mjs';
 import { migrate as runMigrations } from '../lib/migrate.mjs';
 import { openTasks, dismissTask } from '../lib/tasks.mjs';
 import { teaching as teachingHours, adminHours, shift as workShift, addManual as addWork, removeEntry as removeWork, teamAdmin } from '../lib/hours.mjs';
@@ -650,6 +650,7 @@ export default async (req) => {
     const b = await req.json().catch(() => ({}));
     for (const k of ['name', 'phone', 'about', 'goals', 'birth', 'parent', 'parentPhone', 'city']) if (k in b) profile[k] = str(b[k], k === 'about' || k === 'goals' ? 600 : 120);
     if (Array.isArray(b.study)) profile.study = cleanStudy(b.study);
+    if (Array.isArray(b.hide)) profile.hide = [...new Set(b.hide.map(x => String(x || '').trim()).filter(x => STUDY.test(x)))].slice(0, 12);   // materials the student switched off in IF App
     // teachers' professional profile
     if (isStaff(profile.role)) for (const k of ['education', 'experience', 'skillsHard', 'skillsSoft', 'hobbies']) if (k in b) profile[k] = String(b[k] == null ? '' : b[k]).slice(0, 3000);
     profile = await linkByPhone(uid, profile);
@@ -933,6 +934,12 @@ export default async (req) => {
     return h ? json({ item: h }) : fail(404, 'missing');
   }
   // students cancel a lesson themselves (lib/cancel.mjs): free 8+ hours before, counted later; a reason is required; 2 a month
+  // a student chooses their own level in IF App (the app then shows that level's course and coursebooks); '' = follow the class
+  if (path === 'me/level' && method === 'PUT') {
+    if (!profile?.studentId) return fail(400, 'no-student');
+    const b = await req.json().catch(() => ({}));
+    try { return json({ ok: true, appLevel: await setAppLevel(profile.studentId, b.level) }); } catch (e) { return fail(400, e.message); }
+  }
   if ((path === 'me/lessons' && method === 'GET') || (path === 'me/lessons/cancel' && method === 'POST')) {
     const { contextFor } = await import('../lib/bot-core.mjs'), C = await import('../lib/cancel.mjs');
     const ctx = await contextFor(user.id);

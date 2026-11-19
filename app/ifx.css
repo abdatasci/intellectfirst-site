@@ -353,3 +353,4 @@ a.chip{text-decoration:none}
 .ig-note .ig-k{color:#8a6a00;background:rgba(201,162,39,.2)}
 @media (prefers-color-scheme:dark){:root:not([data-theme=light]) .ig-note{background:#2a2410;color:var(--ink)}:root:not([data-theme=light]) .ig-note .ig-k{color:var(--gold2)}}
 body.teach .ig{font-size:22px}body.teach .ig-idea p{font-size:24px}body.teach .ig-b h3{font-size:21px}body.teach .ig-dia figcaption{font-size:20px}body.teach .ig-dia svg{max-width:760px}
+.lvgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-top:16px}.lvb{border:2px solid var(--line);background:var(--card);border-radius:14px;padding:12px;text-align:left;color:inherit;display:flex;flex-direction:column;gap:2px}.lvb b{font-size:18px}.lvb span{font-size:13px;color:var(--soft)}.lvb.on{border-color:var(--navy,#0b1f4b);box-shadow:0 0 0 2px var(--navy,#0b1f4b) inset}.lvb.busy{opacity:.6}

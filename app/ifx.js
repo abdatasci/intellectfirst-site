@@ -98,6 +98,7 @@
     var pf = ME && ME.profile;
     if (pf) {   // the account decides: courses chosen at registration or in My account
       if (pf.study && pf.study.length) S.study = pf.study.slice();
+      S.hide = Array.isArray(pf.hide) ? pf.hide.slice() : [];
       var ck = window.IFClass && IFClass.keys(ME);
       S.own = (window.IFClass && IFClass.own && IFClass.own(ME)) || '';
       if (ck) { S.cls = ck; S.study = ck.concat((pf.study || []).filter(function (k) { return (k === 'ielts' || /^be:/.test(k)) && ck.indexOf(k) < 0; })); } else delete S.cls;
@@ -685,7 +686,7 @@
   var SNAME = {}, SICON = {};
   STUDY.forEach(function (g) { g[2].forEach(function (x) { SNAME[x[0]] = /^ge:/.test(x[0]) ? 'General English ' + x[1] : /^be:/.test(x[0]) ? 'Business English ' + x[1] : /^yl:/.test(x[0]) ? x[1] : x[1]; SICON[x[0]] = g[1]; }); });
   SNAME.maths = 'Maths in English'; SICON.maths = '🔢';
-  var mine = function () { return (S.study || []).filter(function (k) { return SNAME[k]; }); };
+  var mine = function () { var all = (S.study || []).filter(function (k) { return SNAME[k]; }), hid = S.hide || [], m = all.filter(function (k) { return hid.indexOf(k) < 0; }); return m.length ? m : all; };   // materials the student switched off stay out
   /* what a study choice opens: its course (if written), its vocabulary, games and tests */
   function planOf(k) {
     var lv = (k.split(':')[1] || '').toUpperCase(), P = { key: k, name: SNAME[k], icon: SICON[k] };
@@ -733,7 +734,7 @@
     if (sel.indexOf(k) >= 0) return; if (courses.length >= 3) { toast('Up to 3 courses — remove one first.'); return go('#/onboard'); }
     if (/^ge:/.test(k)) sel = sel.filter(function (x) { return !/^ge:/.test(x); });
     sel.push(k); S.study = sel; save(); saveStudy(sel); toast('Added: ' + SNAME[k]); route(); }; }); }
-  function goalBar() { if (S.cls) return '<div class="goalbar">🏫 <span>Your class: <b>' + esc(mine().map(function (k) { return SNAME[k]; }).join(' · ')) + '</b></span>' + addOnHTML() + '</div>'; return '<div class="goalbar">🎯 <span>For your goals: <b>' + esc(mine().map(function (k) { return SNAME[k]; }).join(' · ')) + '</b></span>' + addOnHTML() + '<a href="#/onboard">Change goals</a></div>'; }
+  function goalBar() { if (S.cls) return '<div class="goalbar">' + (S.own ? '🎚' : '🏫') + ' <span>' + (S.own ? 'Your level' : 'Your class') + ': <b>' + esc(mine().map(function (k) { return SNAME[k]; }).join(' · ')) + '</b></span>' + addOnHTML() + (ME && ME.student ? '<a href="#/level">Change level & materials</a>' : '') + '</div>'; return '<div class="goalbar">🎯 <span>For your goals: <b>' + esc(mine().map(function (k) { return SNAME[k]; }).join(' · ')) + '</b></span>' + addOnHTML() + '<a href="#/onboard">Change goals</a></div>'; }
   function secCount(k) { if (k === 'ielts') return mine().indexOf('ielts') >= 0 ? 1 : 0; var n = IFX_DIR.filter(function (x) { return x.s === k && fits(x); }).length; if (k === 'grammar' || k === 'vocab') n += lessonsOf([k === 'grammar' ? 'grammar' : 'vocab']).filter(function (x) { return myCourses().indexOf(x.c) >= 0; }).length; return n; }
   function focusNav() { if (APP) return; var full = fullView(); $$('a[data-k]').forEach(function (a) { var k = a.dataset && a.dataset.k; if (!k || ['grammar', 'games', 'tests', 'ielts'].indexOf(k) < 0) return; a.style.display = full || secCount(k) ? '' : 'none'; }); }
   function fits(it) { var m = mine(); if (!m.length || S.teacher) return true;
@@ -771,6 +772,36 @@
       if (i < 0 && sel.filter(function (x) { return /^book:/.test(x) === book; }).length >= (book ? 2 : 3)) return toast(book ? 'Up to 2 coursebooks.' : 'Up to 3 courses — untick one first.');
       if (i >= 0) sel.splice(i, 1); else sel.push(k); b.classList.toggle('on', i < 0); }; });
     $('#ok').onclick = function () { if (!sel.length) return toast('Choose at least one.'); S.study = sel; S.active = sel[0]; save(); saveStudy(sel); go('#/'); };
+  }
+  /* ---------- My level & materials: a class student chooses their own level (or follows the class) and which of
+     that level's materials appear in the app. The level is saved on the school record (appLevel), the choice of
+     materials on the account (hide). ---------- */
+  function vLevel() {
+    setNav('home');
+    if (!ME || !ME.student || !window.IFClass) { view().innerHTML = '<div class="onb"><h1>My level</h1><p class="lead">Sign in with your IF Academy account to choose your level.</p><p><a class="btn" href="/me/">Sign in</a></p></div>'; return; }
+    var cur = S.own || '', clsLv = (function () { var me2 = Object.assign({}, ME, { student: Object.assign({}, ME.student, { appLevel: '' }) }), k = IFClass.keys(me2) || []; for (var i = 0; i < k.length; i++) { if (/^ge:/.test(k[i])) return k[i].slice(3); } return ''; })();
+    var LVS = ['A0', 'A1', 'A2', 'B1', 'B2', 'C1', 'C2'], all = (S.study || []).filter(function (k) { return SNAME[k]; }), hid = (S.hide || []).slice();
+    view().innerHTML = '<div class="onb lvpage" style="text-align:left"><p class="h-eyebrow">My level</p><h1>Level and materials</h1><p class="lead">Choose the level you want to study in the app. Your class stays the same; this only changes what the app shows you.</p>' +
+      '<div class="lvgrid"><button class="lvb' + (!cur ? ' on' : '') + '" data-lv=""><b>🏫 My class</b><span>' + (clsLv ? esc(clsLv + ' · ' + IFClass.levelName(clsLv)) : 'Follow my group') + '</span></button>' +
+      LVS.map(function (l) { return '<button class="lvb' + (cur === l ? ' on' : '') + '" data-lv="' + l + '"><b>' + l + '</b><span>' + esc(IFClass.levelName(l)) + '</span></button>'; }).join('') + '</div>' +
+      '<h3 style="margin-top:26px">Materials</h3><p class="sec-d">Switch off what you don’t want to see. At least one stays on.</p><div class="chips">' +
+      all.map(function (k) { return '<button class="chip' + (hid.indexOf(k) < 0 ? ' on' : '') + '" data-mat="' + k + '">' + (SICON[k] || '') + ' ' + esc(SNAME[k]) + '</button>'; }).join('') + '</div>' + addOnHTML() +
+      '<p style="margin-top:22px"><a class="btn" href="#/courses">Done →</a></p></div>';
+    $$('[data-lv]').forEach(function (b) { b.onclick = function () {
+      var lv = b.dataset.lv; if (lv === cur) return;
+      $$('[data-lv]').forEach(function (x) { x.disabled = true; }); b.classList.add('busy');
+      fetch('/api/school/me/level', { method: 'PUT', credentials: 'same-origin', headers: hdrs({ 'Content-Type': 'application/json' }), body: JSON.stringify({ level: lv }) })
+        .then(function (r) { if (!r.ok) throw 0; S.hide = []; return fetch('/api/school/profile', { method: 'PUT', credentials: 'same-origin', headers: hdrs({ 'Content-Type': 'application/json' }), body: JSON.stringify({ hide: [] }) }); })
+        .then(function () { return loadMe(); })
+        .then(function () { toast(lv ? 'Level: ' + lv + ' ' + IFClass.levelName(lv) : 'Following your class again'); vLevel(); })
+        .catch(function () { toast('Could not save. Check the connection and try again.'); vLevel(); });
+    }; });
+    $$('[data-mat]').forEach(function (b) { b.onclick = function () {
+      var k = b.dataset.mat, i = hid.indexOf(k);
+      if (i >= 0) hid.splice(i, 1); else { if (all.filter(function (x) { return hid.indexOf(x) < 0; }).length <= 1) return toast('Keep at least one.'); hid.push(k); }
+      S.hide = hid.slice(); save(); b.classList.toggle('on', hid.indexOf(k) < 0);
+      fetch('/api/school/profile', { method: 'PUT', credentials: 'same-origin', headers: hdrs({ 'Content-Type': 'application/json' }), body: JSON.stringify({ hide: hid }) }).catch(function () {});
+    }; });
   }
   function saveStudy(sel) {   // keep the account in step (My account shows the same choices)
     if (!ME || !ME.profile) return;
@@ -829,7 +860,7 @@
     setNav('courses'); f = f || 'all';
     var full = fullView(), list = APP ? appCourses() : full ? COURSES.filter(function (c) { return !c.daily && (f === 'all' || c.track === f); }) : myCourses();
     view().innerHTML = '<div class="page-h"><div><p class="h-eyebrow">' + esc(t('courses')) + '</p><h1>Real English courses</h1><p>Each unit: new words, the grammar, a reading with photos, and a unit check. Finish a level to unlock the next one.</p></div></div>' +
-      (APP ? '' : full ? '<div class="chips">' + CTRACK.map(function (x) { return '<button class="chip' + (x[0] === f ? ' on' : '') + '" data-f="' + x[0] + '">' + esc(x[1]) + '</button>'; }).join('') + '</div>' : goalBar()) +
+      (APP ? (ME && ME.student ? '<div class="goalbar">🎚 <span>Level: <b>' + esc(myLevel() || '—') + '</b></span><a href="#/level">Change level & materials</a></div>' : '') : full ? '<div class="chips">' + CTRACK.map(function (x) { return '<button class="chip' + (x[0] === f ? ' on' : '') + '" data-f="' + x[0] + '">' + esc(x[1]) + '</button>'; }).join('') + '</div>' : goalBar()) +
       '<div class="grid">' + list.map(courseCard).join('') + '</div>' ;
     $$('[data-f]').forEach(function (b) { b.onclick = function () { vCourses(b.dataset.f); }; });
   }
@@ -1377,6 +1408,7 @@
     switch (p[0]) {
       case '': if (APP) return vAppHome(); vHome(); if ((mine().length || S.teacher) && !$('.apps3') && view().firstElementChild) view().firstElementChild.insertAdjacentHTML('afterend', appsStrip()); return;
       case 'onboard': return vOnboard();
+      case 'level': return vLevel();
       case 'courses': return vCourses(p[1]);
       case 'course': return vCourse(p[1]);
       case 'lesson': return vLesson(p[1], p[2], p[3], qs.get('teach') === '1');

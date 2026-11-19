@@ -149,3 +149,21 @@ export async function loadAttendance() {
   for (const l of Object.values(out)) l.sort((x, y) => x.d.localeCompare(y.d));
   return out;
 }
+
+/** A student's own app level (A0–C2), or '' to follow the class. Only the overlay changes; IF Admin stays untouched. */
+export async function setAppLevel(sid, level) {
+  const lv = String(level || '').toUpperCase(), ok = ['A0', 'A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
+  if (lv && !ok.includes(lv)) throw new Error('level');
+  if (!(await ifadminActive())) {
+    const list = (await S().get('students', { type: 'json' })) || [];
+    const st = list.find(x => x.id === sid); if (!st) throw new Error('student');
+    if (lv) st.appLevel = lv; else delete st.appLevel;
+    await S().setJSON('students', list); return lv;
+  }
+  const overlay = (await S().get('studentOverlay', { type: 'json' })) || {};
+  const ov = overlay[sid] || {};
+  if (lv) ov.appLevel = lv; else delete ov.appLevel;
+  if (Object.keys(ov).length) overlay[sid] = ov; else delete overlay[sid];
+  await S().setJSON('studentOverlay', overlay);
+  return lv;
+}
