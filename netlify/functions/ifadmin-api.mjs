@@ -180,6 +180,26 @@ export default async (req) => {
       if (phone && S2[rec.id] && !S2[rec.id].ph) { S2[rec.id].ph = phone.replace(/^\+7/, '8'); await putColl('students', S2); }
       return json({ ok: true, profile: { name: p.name, role: p.role, studentId: p.studentId, phone }, record: { id: rec.id, name: `${rec.first} ${rec.last}`.trim(), ph: S2[rec.id] && S2[rec.id].ph } });
     }
+    // the director's own private student (not IF Academy's): account track "private", a private class c-pv-<uid> taught by the
+    // director, and no IF Admin record. {label, schedule, bookId, unlinkSid} — unlinkSid: an IF Admin record to detach from the account
+    const pa = path.match(/^accounts\/([A-Za-z0-9-]+)\/private$/);
+    if (pa && method === 'POST') {
+      const b = await req.json().catch(() => ({})), U = getStore({ name: 'ielts', consistency: 'strong' }), uid = pa[1];
+      const dir = (await U.get('directory', { type: 'json' })) || {}, p = await U.get(`u/${uid}/profile`, { type: 'json' });
+      if (!p) return fail(404, 'account');
+      p.track = 'private'; p.role = 'student'; delete p.studentId; delete p.request; await U.setJSON(`u/${uid}/profile`, p);
+      dir[uid] = { ...(dir[uid] || {}), track: 'private', role: 'student' }; delete dir[uid].studentId; await U.setJSON('directory', dir);
+      if (b.unlinkSid) { const list = await loadStudents(), rec = list.find(x => x.id === b.unlinkSid); if (rec && rec.uid === uid) { rec.uid = ''; await saveStudents(list); } }
+      const S3 = getStore({ name: 'school', consistency: 'strong' }), classes = await S3.get('classes', { type: 'json' });
+      if (!Array.isArray(classes) || !classes.length) return fail(409, 'no-classes');
+      const id = 'c-pv-' + uid, c = classes.find(x => x.id === id) || (classes.push({ id }), classes[classes.length - 1]);
+      Object.assign(c, { label: String(b.label || (p.name || 'Student') + ' (individual)'), uids: [uid], teacherId: 't-abdoulie', private: true, schedule: String(b.schedule || c.schedule || ''), room: c.room || '' });
+      if (b.bookId) c.bookId = String(b.bookId);
+      if (!c.meet) c.meet = 'IFAcademy-' + String(c.label).replace(/[^A-Za-z0-9]/g, '') + '-' + Math.random().toString(36).slice(2, 8);
+      delete c.left; delete c.leftOn;
+      await S3.setJSON('classes', classes);
+      return json({ ok: true, profile: { name: p.name, track: p.track, role: p.role }, class: c });
+    }
     // lesson clock-in log: read a month, or correct one lesson's clock-in time (the director's corrections)
     // resend a class's latest online test to the students who connected to the bot after it was sent: {classId, id?}
     if (path === 'homework/resend' && method === 'POST') {
