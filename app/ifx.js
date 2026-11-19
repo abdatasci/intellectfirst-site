@@ -262,6 +262,8 @@
     } else {
       var c = BY.ielts, tools = IFX_DIR.filter(function (x) { return x.s === 'ielts'; }), usedU = {};
       h = appHero('IF IELTS', 'Four skills. In each one: learn the language and the strategy first, then practise with real-format tasks.', list);
+      var books = COURSES.filter(function (k) { return k.track === 'ielts' && k.ef; });
+      if (books.length) h += '<div class="sec"><h2>📘 Coursebook vocabulary</h2><p class="sec-d">Cambridge Vocabulary for IELTS, unit by unit: words, reading, listening, speaking and a unit check.</p></div><div class="grid">' + books.map(courseCard).join('') + '</div>';
       IELTS_SKILLS.forEach(function (K) {
         var us = c ? c.units.map(function (u, ui) { return { u: u, ui: ui }; }).filter(function (x) { if (!K[2].test(x.u.title)) return false; usedU[x.u.id] = 1; return true; }) : [];
         var tl = tools.filter(function (x) { return K[3].some(function (g) { return (x.tags || []).indexOf(g) >= 0; }) || (K[0] === 'Reading' || K[0] === 'Listening' ? x.id === 'ielts-centre' : false); });
@@ -288,12 +290,14 @@
     if (!e || Date.now() - e.at > 60000) efLoad(c.id).then(function () { if (location.hash === here) vEfCourse(c); });
     if (!e) { view().innerHTML = '<p style="text-align:center;margin-top:40px">Loading…</p>'; return; }
     var s = courseStats(c), nx = nextLesson(c), nOpen = c.units.filter(function (u) { return e.open[u.id]; }).length;
-    var note = e.mode === 'class' ? '🏫 <span>Your class: <b>' + esc(e.className) + '</b>. ' + nOpen + ' of ' + c.units.length + ' units are open. A unit opens when your teacher marks it <b>Covered</b>.</span>'
+    var note = c.self && e.mode === 'staff' ? '👩‍🏫 <span>Staff see every unit. Students with a subscription (and all IF Academy students) have every unit open; others get Unit 1 free, and Unit 2 with a free account.</span>'
+      : c.self && e.mode === 'member' ? '✅ <span>Every unit is open for you. Work through them in order, or jump to the topic you need.</span>'
+      : e.mode === 'class' ? '🏫 <span>Your class: <b>' + esc(e.className) + '</b>. ' + nOpen + ' of ' + c.units.length + ' units are open. A unit opens when your teacher marks it <b>Covered</b>.</span>'
       : e.mode === 'staff' ? '👩‍🏫 <span>' + (e.classes.length ? 'Tick <b>Covered</b> under a unit to open it for that class. Students see the other units as locked.' : 'None of your classes is set to this coursebook, so there is nothing to release here. Set the class coursebook in My account → Classes.') + '</span>'
       : e.mode === 'member' ? '✅ <span>You are not in an IF Academy class on this book, so every unit is open with your subscription.</span>'
       : e.mode === 'offline' ? '⚠️ <span>Could not check your access. Unit 1 is open; reload when you are online.</span>'
       : '🎁 <span>Unit 1 is free' + (access().signed ? ', and so is Unit 2 with your free account' : '') + '. <a href="/me/#/upgrade">Subscribe</a> to open the rest.</span>';
-    var html = '<div class="course-head"><span class="ic">' + c.icon + '</span><div class="grow"><p class="h-eyebrow">' + esc(c.level) + ' · English Files</p><h1 style="font-size:28px">' + esc(c.title) + '</h1><p style="margin:4px 0 8px;color:var(--soft)">' + esc(c.blurb) + '</p><div class="bar" style="height:12px"><i style="width:' + s.p + '%"></i></div><p style="margin:6px 0 0;font-size:13.5px;color:var(--soft)">' + s.d + ' / ' + s.n + ' lessons · ' + s.p + '%</p></div></div><div class="goalbar">' + note + '</div>';
+    var html = '<div class="course-head"><span class="ic">' + c.icon + '</span><div class="grow"><p class="h-eyebrow">' + esc(c.level) + ' · ' + esc(c.series || 'English Files') + '</p><h1 style="font-size:28px">' + esc(c.title) + '</h1><p style="margin:4px 0 8px;color:var(--soft)">' + esc(c.blurb) + '</p><div class="bar" style="height:12px"><i style="width:' + s.p + '%"></i></div><p style="margin:6px 0 0;font-size:13.5px;color:var(--soft)">' + s.d + ' / ' + s.n + ' lessons · ' + s.p + '%</p></div></div><div class="goalbar">' + note + '</div>';
     c.units.forEach(function (u, ui) {
       var open = !!e.open[u.id];
       var cov = e.mode === 'staff' && e.classes.length ? '<div class="cover">' + e.classes.map(function (k) { var on = k.covered.indexOf(u.id) >= 0; return '<label class="chip' + (on ? ' on' : '') + '"><input type="checkbox" data-cover="' + esc(k.id) + '" data-unit="' + esc(u.id) + '"' + (on ? ' checked' : '') + '> Covered · ' + esc(k.label) + '</label>'; }).join('') + '</div>' : '';
