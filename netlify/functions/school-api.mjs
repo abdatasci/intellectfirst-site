@@ -1004,7 +1004,13 @@ export default async (req) => {
 
   /* ---- IF Classroom: lesson slides key + online rooms ---- */
   if (path === 'materials' && method === 'GET') {
-    if (!isStaff(profile?.role)) return fail(403, 'staff');
+    // staff, and every IF Academy student who is in a class (they open the slide lessons of their own level in IF Classroom)
+    let ok = isStaff(profile?.role);
+    if (!ok && profile?.studentId) {
+      const s = (await doc('students')).find(x => x.id === profile.studentId);
+      ok = !!s && !/withdrawn|finished/i.test(s.status || '') && (await doc('classes')).some(c => inClass(c, s));
+    }
+    if (!ok) return fail(403, 'staff');
     const k = await S().get('contentKey', { type: 'json' });
     return json({ key: k?.key || null, viewer: { name: profile.name, email: profile.email } });
   }

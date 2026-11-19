@@ -12,7 +12,7 @@ const U = () => getStore({ name: 'ielts', consistency: 'strong' });
 const coll = async c => (await A().get('c/' + c, { type: 'json' })) || {};
 const pad = n => String(n).padStart(2, '0');
 const phoneKey = p => { const d = String(p || '').replace(/\D/g, ''); return d.length >= 10 ? d.slice(-10) : d; };
-const OVERLAY_KEYS = ['uid', 'comments', 'tests', 'email', 'parentPhone'];
+const OVERLAY_KEYS = ['uid', 'comments', 'tests', 'email', 'parentPhone', 'appLevel'];   // appLevel: a personal app level set by staff
 
 function splitName(n) {
   n = String(n || '').trim();
@@ -112,6 +112,7 @@ export async function loadStudents() {
     if (ov.uid) s.uid = ov.uid;
     if (ov.comments) s.comments = ov.comments;
     if (ov.email) s.email = ov.email;
+    if (ov.appLevel) s.appLevel = ov.appLevel;
     if (ov.parentPhone && !s.parentPhone) s.parentPhone = ov.parentPhone;
     if (ov.tests?.length) s.tests = [...s.tests, ...ov.tests].sort((x, y) => String(x.date).localeCompare(String(y.date)));
   }

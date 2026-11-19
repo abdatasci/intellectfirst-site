@@ -993,6 +993,12 @@
     CKEY = await crypto.subtle.importKey('raw', raw, 'AES-GCM', false, ['decrypt']);
     return CKEY;
   }
+  /* Slide lessons a student may open: the books of their own level (the same keys IF App uses). */
+  function studentBooks() {
+    var keys = (window.IFClass && IFClass.keys(ME)) || [], out = [];
+    keys.forEach(function (k) { var b = /^book:/.test(k) ? 'b-' + k.slice(5) : /^ge:/.test(k) ? 'b-ge-' + k.slice(3).toLowerCase() : k === 'ket' ? 'b-ket' : k === 'ielts' ? 'b-ielts' : ''; if (b && out.indexOf(b) < 0) out.push(b); });
+    return out;
+  }
   async function vClassroom(tab) {
     setNav('classroom'); if (!role()) return go('#/');
     view.innerHTML = '<p style="margin-top:30px"><span class="spin"></span></p>';
@@ -1007,14 +1013,15 @@
           return '<div class="card"><span class="tag">' + esc(c.schedule || 'Online room') + '</span><h3>' + esc(c.label) + '</h3><p>Video lesson room for your class.</p><div class="row" style="margin-top:10px"><a class="btn sm" target="_blank" rel="noopener" href="' + esc(meetUrl(c)) + '">Join lesson ↗</a></div></div>';
         }).join('') + '</div>')
       : '<div class="empty">' + (staff() ? 'No classes are linked to your account yet.' : 'Your class is not linked yet. Ask the school to check your phone number.') + '</div>');
-    if (staff()) {
+    var allowed = staff() ? null : studentBooks();
+    if (staff() || allowed.length) {
       var idx = await lessonsIndex(), books = {};
-      idx.decks.forEach(function (d) { (books[d.book] = books[d.book] || []).push(d); });
+      idx.decks.forEach(function (d) { if (!allowed || allowed.indexOf(d.book) >= 0) (books[d.book] = books[d.book] || []).push(d); });
       var ids = Object.keys(books).sort(function (a, b) { return (BOOKS_ORDER.indexOf(a) + 99) % 99 - (BOOKS_ORDER.indexOf(b) + 99) % 99; });
       tab = tab && books[tab] ? tab : (lsGet('ifc:book') && books[lsGet('ifc:book')] ? lsGet('ifc:book') : ids[0]);
-      h += '<h3 style="margin:22px 0 4px">Lesson slides</h3><p class="small">' + idx.decks.length + ' lessons · updated ' + esc(idx.updated || '') + '. Slides open here for presenting and are not downloadable.</p>' +
+      if (ids.length) h += '<h3 style="margin:22px 0 4px">' + (staff() ? 'Lesson slides' : 'Your lesson slides') + '</h3><p class="small">' + (staff() ? idx.decks.length + ' lessons · updated ' + esc(idx.updated || '') + '. Slides open here for presenting and are not downloadable.' : 'The slides from your lessons, for your level. They open here and are not downloadable.') + '</p>' +
         '<div class="tabs2">' + ids.map(function (b) { var bk = bookOf(b); return '<a href="#/classroom/' + b + '" class="' + (b === tab ? 'on' : '') + '">' + esc(bk ? bk.title.replace(/\s*\(.*\)$/, '') : b) + ' <small>' + books[b].length + '</small></a>'; }).join('') + '</div>' +
-        (tab && COURSEBOOKS[tab] ? '<div class="row" style="margin:12px 0 4px;gap:8px;flex-wrap:wrap"><a class="btn sm" target="_blank" rel="noopener" href="/a/coursebook/?c=' + tab.slice(2) + '">📘 Online coursebook ↗</a><button class="btn ghost sm" id="cbpdf" data-c="' + tab.slice(2) + '">⬇ Printable PDF</button><a class="btn ghost sm" target="_blank" rel="noopener" href="/a/block-quest/?course=' + tab.slice(2) + '">⛏️ Block Quest</a><a class="btn ghost sm" target="_blank" rel="noopener" href="/live/host/?bank=v-' + tab.slice(2) + '">🎮 IF Live</a></div>' : '') +
+        (staff() && tab && COURSEBOOKS[tab] ? '<div class="row" style="margin:12px 0 4px;gap:8px;flex-wrap:wrap"><a class="btn sm" target="_blank" rel="noopener" href="/a/coursebook/?c=' + tab.slice(2) + '">📘 Online coursebook ↗</a><button class="btn ghost sm" id="cbpdf" data-c="' + tab.slice(2) + '">⬇ Printable PDF</button><a class="btn ghost sm" target="_blank" rel="noopener" href="/a/block-quest/?course=' + tab.slice(2) + '">⛏️ Block Quest</a><a class="btn ghost sm" target="_blank" rel="noopener" href="/live/host/?bank=v-' + tab.slice(2) + '">🎮 IF Live</a></div>' : '') +
         (tab ? '<div class="decks">' + books[tab].map(function (d) { return '<a class="deck" href="#/present/' + d.id + '"><b>' + esc(d.unit) + '</b><span>' + esc(d.title) + '</span><small>' + d.slides + ' slides</small></a>'; }).join('') + '</div>' : '<div class="empty">No lesson slides yet.</div>');
       if (tab) lsSet('ifc:book', tab);
     }
@@ -1027,11 +1034,13 @@
     return '<div class="panel" style="max-width:560px;margin-top:24px"><h2>Unlock lesson slides</h2><p class="sub">Slides are stored encrypted. Enter the staff or admin code once and they open for every teacher.</p><form id="uf"><label class="f" for="uc">Staff or admin code</label><input class="inp" id="uc" autocomplete="off" required><button class="btn" style="margin-top:12px">Unlock</button></form></div>';
   }
   async function vPresent(id) {
-    setNav('classroom'); if (!staff()) return go('#/');
+    setNav('classroom'); if (!role()) return go('#/');
     view.innerHTML = '<p style="margin-top:30px"><span class="spin"></span></p>';
     var idx = await lessonsIndex(), d = idx.decks.filter(function (x) { return x.id === id; })[0];
+    if (d && !staff() && studentBooks().indexOf(d.book) < 0) return go('#/classroom');   // students: their own level only
     if (!d) { view.innerHTML = '<div class="empty" style="margin-top:30px">This lesson was not found. <a href="#/classroom">Back</a></div>'; return; }
-    var key = d.plain ? null : await contentKey();   // plain: IF's own AI-written slides are not encrypted
+    var key = null; try { key = d.plain ? null : await contentKey(); } catch (e) { key = null; }   // plain: IF's own AI-written slides are not encrypted
+    if (!key && !d.plain && !staff()) { view.innerHTML = '<div class="row" style="margin-top:18px"><a class="btn ghost sm" href="#/classroom">← IF Classroom</a></div><div class="empty" style="margin-top:20px">These slides are not open yet. Please tell your teacher.</div>'; return; }
     if (!key && !d.plain) {
       view.innerHTML = '<div class="row" style="margin-top:18px"><a class="btn ghost sm" href="#/classroom">← IF Classroom</a></div>' + unlockBox();
       $('#uf').onsubmit = async function (ev) { ev.preventDefault(); try { await api('materials/unlock', { method: 'POST', body: { code: $('#uc').value } }); CKEY = null; toast('Slides unlocked'); vPresent(id); } catch (e) { err(ev.target, 'That code did not work.'); } };
@@ -1039,7 +1048,7 @@
     }
     var bk = bookOf(d.book), n = Math.min(Math.max(1, +(lsGet('ifc:pos:' + id) || 1)), d.slides), cache = {}, want = 0;
     view.innerHTML = '<div class="pres" id="pres"><div class="pvbar"><a class="btn ghost sm" href="#/classroom/' + d.book + '">← Lessons</a><div class="ptitle"><small>' + esc(bk ? bk.title : '') + ' · ' + esc(d.unit) + '</small><b>' + esc(d.title) + '</b></div>' +
-      '<span class="spacer"></span><button class="btn ghost sm" id="pg" title="All slides (G)">Slides</button><button class="btn ghost sm" id="pf" title="Full screen (F)">Present ⛶</button></div>' +
+      '<span class="spacer"></span><button class="btn ghost sm" id="pg" title="All slides (G)">Slides</button><button class="btn ghost sm" id="pf" title="Full screen (F)">' + (staff() ? 'Present' : 'Full screen') + ' ⛶</button></div>' +
       '<div class="pstage" id="pst"><canvas id="pc" width="' + d.w + '" height="' + d.h + '"></canvas><button class="pnav l" id="pp" aria-label="Previous">‹</button><button class="pnav r" id="pn" aria-label="Next">›</button><div class="pcount" id="pk"></div></div>' +
       '<div class="pgrid" id="pgd" hidden>' + Array.from({ length: d.slides }, function (_, i) { return '<button data-go="' + (i + 1) + '">' + (i + 1) + '</button>'; }).join('') + '</div></div>';
     var cv = $('#pc'), cx = cv.getContext('2d'), wm = VIEWER ? (VIEWER.name + ' · ' + VIEWER.email) : 'IF Academy';
