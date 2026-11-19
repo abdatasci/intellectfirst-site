@@ -209,6 +209,17 @@ export default async (req) => {
       const r = await loadRates(); r.director = { teacherId: 't-abdoulie', ...b };
       return json({ ok: true, director: (await saveRates(r)).director });
     }
+    // English Files units Covered for a class (opens them for its students in IF App): {classId, book, units: ['1A', …], on}
+    if (path === 'efcover' && method === 'POST') {
+      const b = await req.json().catch(() => ({}));
+      const classId = String(b.classId || ''), book = String(b.book || ''), units = Array.isArray(b.units) ? b.units.map(String) : [];
+      if (!/^c-[\w-]+$/.test(classId) || !/^ef-[a-c][0-2]p?$/.test(book) || !units.length) return fail(400, 'args');
+      const st = getStore({ name: 'ielts', consistency: 'strong' }), k = 'ef/cover/' + classId;
+      const cv = (await st.get(k, { type: 'json' }).catch(() => null)) || {}; cv[book] = cv[book] || {};
+      for (const u of units) { if (b.on === false) delete cv[book][u]; else cv[book][u] = cv[book][u] || { at: new Date().toISOString(), by: 'Abdoulie Manneh (via Claude)' }; }
+      await st.setJSON(k, cv);
+      return json({ ok: true, covered: Object.keys(cv[book]) });
+    }
     // who taught one lesson (a cover): {key: '<classId>|<date>|<HH:MM>', teacherId | null} — pay and hours follow it
     if (path === 'cover' && method === 'POST') {
       const b = await req.json().catch(() => ({}));
