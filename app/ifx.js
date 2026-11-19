@@ -99,6 +99,7 @@
     if (pf) {   // the account decides: courses chosen at registration or in My account
       if (pf.study && pf.study.length) S.study = pf.study.slice();
       var ck = window.IFClass && IFClass.keys(ME);
+      S.own = (window.IFClass && IFClass.own && IFClass.own(ME)) || '';
       if (ck) { S.cls = ck; S.study = ck.concat((pf.study || []).filter(function (k) { return (k === 'ielts' || /^be:/.test(k)) && ck.indexOf(k) < 0; })); } else delete S.cls;
       if (pf.track === 'parent') S.who = 'child'; if (pf.track === 'tutor' || ME.access === 'staff') { S.teacher = true; S.who = S.who || 'teach'; }
       try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {}
@@ -108,6 +109,7 @@
         var r2 = await fetch('/api/school/app/progress', { credentials: 'same-origin', headers: hdrs() });
         if (r2.ok) { var srv = (await r2.json()).progress; if (srv && srv.done) mergeProgress(srv); }
       } catch (e) {}
+      ownKeys();
       try { pushSoon(); await loadGate(); } catch (e) {}   // tell the class this student's Unit 1 status, and fetch the class's
     }
   }
@@ -145,7 +147,24 @@
   /** Class gate: Unit 2 opens only when the whole class has finished Unit 1 (teachers and students without a class are not held back). */
   var GATE = null, gateAt = 0;
   function loadGate() { if (!ME || !ME.profile || access().staff || S.teacher) { GATE = null; return Promise.resolve(); } gateAt = Date.now(); return fetch('/api/school/app/gate', { credentials: 'same-origin', headers: hdrs() }).then(function (r) { return r.ok ? r.json() : null; }).then(function (g) { var was = JSON.stringify(GATE); GATE = g && g.class ? g : null; if (JSON.stringify(GATE) !== was && /^#\/(course|lesson)/.test(location.hash)) route(); }).catch(function () {}); }
-  function classOpen(ui, cid) { return ui !== 1 || !GATE || (GATE.done[cid] || 0) >= GATE.total; }
+  function classOpen(ui, cid) { return ui !== 1 || !GATE || S.own || (GATE.done[cid] || 0) >= GATE.total; }   // a personal level goes at its own pace
+  /* A student with a personal level (set by staff) sees that level only. When 80% of the level's AI course or of its
+     coursebook is done, the next level opens as well. Returns the level that has just opened, or ''. */
+  var OWN_PASS = 80;
+  function ownKeys() {
+    if (!S.own || !window.IFClass || !IFClass.forLevel) return '';
+    var lv = S.own, keys = [], top = lv;
+    for (var guard = 0; lv && guard < 8; guard++) {
+      top = lv; IFClass.forLevel(lv).forEach(function (k) { if (keys.indexOf(k) < 0) keys.push(k); });
+      var ids = ['ge-' + (lv === 'A0' ? 'a1' : lv.toLowerCase())].concat(IFClass.forLevel(lv).filter(function (k) { return /^book:/.test(k); }).map(function (k) { return k.slice(5); }));
+      var passed = ids.some(function (id) { var c = BY[id]; return c && courseStats(c).n && courseStats(c).p >= OWN_PASS; });
+      if (!passed) break; lv = IFClass.nextLevel(lv);
+    }
+    var was = S.ownTop || S.own, opened = top !== was && ['A0', 'A1', 'A2', 'B1', 'B2', 'C1', 'C2'].indexOf(top) > ['A0', 'A1', 'A2', 'B1', 'B2', 'C1', 'C2'].indexOf(was) ? top : '';
+    S.ownTop = top; S.cls = keys; S.study = keys.slice();
+    try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {}
+    return opened;
+  }
 
   /* ---------- small helpers ---------- */
   function toast(m) { var el = $('#toast'); el.textContent = m; el.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(function () { el.classList.remove('on'); }, 2600); }
@@ -220,7 +239,7 @@
   var IELTS_SKILLS = [['Listening', '🎧', /listening/i, ['listen']], ['Reading', '📖', /reading/i, []], ['Writing', '✍️', /writing|essay|task 1|task 2/i, ['writing']], ['Speaking', '🗣️', /speaking/i, ['speaking']]];
   function vAppHome() {
     setNav('home');
-    var list = appCourses(), h = '';
+    var list = appCourses().filter(function (c) { return !ownLocked(c); }), h = '';
     if (APP === 'ge') {
       var ai = list.filter(function (c) { return /^ge-/.test(c.id); }), bookOfMine = mine().filter(function (k) { return /^book:/.test(k); }).map(function (k) { return k.slice(5); });
       var ef = list.filter(function (c) { return c.ef || c.book; }).sort(function (a, b) { return (bookOfMine.indexOf(b.id) >= 0) - (bookOfMine.indexOf(a.id) >= 0); });
@@ -814,10 +833,25 @@
       '<div class="grid">' + list.map(courseCard).join('') + '</div>' ;
     $$('[data-f]').forEach(function (b) { b.onclick = function () { vCourses(b.dataset.f); }; });
   }
+  /* a level course that a student with a personal level has not reached yet */
+  function ownLocked(c) {
+    if (!S.own || S.teacher || access().staff || !c) return false;
+    var keys = S.cls || [], has = function (lv) { return keys.indexOf('ge:' + lv) >= 0; };
+    var m = /^(ge|be)-(a1|a2|b1|b2|c1|c2)$/.exec(c.id);
+    if (m) return !has(m[2].toUpperCase());
+    if (/^(ef|teens)-/.test(c.id)) return keys.indexOf('book:' + c.id) < 0 && !(c.id === 'ef-a0' && has('A1'));
+    if (c.id === 'ielts') return !['B1', 'B2', 'C1', 'C2'].some(has);   // IELTS preparation starts at B1
+    return false;
+  }
+  function ownWall(c) {
+    var top = S.ownTop || S.own, nm = window.IFClass ? IFClass.levelName(top) : '';
+    view().innerHTML = '<a class="back" href="#/courses">← ' + esc(t('back')) + '</a><div class="hero" style="margin-top:14px"><h1>🔒 ' + esc(c.title) + '</h1><p>Your teacher has set your level to <b>' + esc(top) + ' ' + esc(nm) + '</b>. This course opens when you have finished ' + OWN_PASS + '% of your ' + esc(top) + ' course.</p><p><a class="btn gold" href="#/courses">Go to my courses</a></p></div>';
+  }
   function vCourse(id) {
     setNav('courses');
     var c = BY[id]; if (!c) return go('#/courses');
     if (c.daily) return go('#/articles');
+    if (ownLocked(c)) return ownWall(c);
     if (c.ef) return vEfCourse(c);
     var s = courseStats(c), nx = nextLesson(c), a = access();
     var html = '<div class="course-head"><span class="ic">' + c.icon + '</span><div class="grow"><p class="h-eyebrow">' + esc(c.level) + ' · ' + esc(c.track === 'exam' ? 'Exam' : c.track === 'business' ? 'Business English' : c.track === 'kids' ? 'Young learners' : 'General English') + '</p><h1 style="font-size:28px">' + esc(c.title) + '</h1><p style="margin:4px 0 8px;color:var(--soft)">' + esc(c.blurb) + '</p><div class="bar" style="height:12px"><i style="width:' + s.p + '%"></i></div><p style="margin:6px 0 0;font-size:13.5px;color:var(--soft)">' + s.d + ' / ' + s.n + ' lessons · ' + s.p + '%' + (c.next ? ' · then: ' + esc(c.next) : '') + '</p></div></div>';
@@ -841,6 +875,7 @@
   function vLesson(cid, uid, lid, teach) {
     setNav('courses');
     var c = BY[cid]; if (!c) return go('#/courses');
+    if (ownLocked(c)) return ownWall(c);
     var ui = c.units.findIndex(function (u) { return u.id === uid; }); var u = c.units[ui]; if (!u) return go('#/course/' + cid);
     var l = u.lessons.filter(function (x) { return x.id === lid; })[0]; if (!l) return go('#/course/' + cid);
     if (c.ef && !l.ready) return efOpen(c, u, ui, l, teach);
@@ -1088,6 +1123,7 @@
     if (L.l.words) L.l.words.forEach(function (w) { S.words[w.w] = 1; });
     actEvent(L.c.daily ? (L.l.type === 'vocab' ? 'vocab' : 'article') : (L.l.type || 'lesson'), k, L.c.title + ' · ' + L.l.title, score, L.t0 ? Math.min(7200, Math.round((Date.now() - L.t0) / 1000)) : null);
     addXP(xp);
+    var newLv = ownKeys(); if (newLv) setTimeout(function () { try { toast('🎉 Level ' + newLv + ' ' + IFClass.levelName(newLv) + ' is now open for you!'); } catch (e) {} }, 900);
     if (L.c.daily) return artDone(score, xp);
     var nx = nextLesson(L.c), st = courseStats(L.c);
     view().innerHTML = '<div class="player done-box"><div class="big">' + (score >= 80 ? '🏆' : score >= 50 ? '⭐' : '💪') + '</div><h2>' + (score >= 80 ? 'Excellent!' : score >= 50 ? 'Well done!' : 'Good effort!') + '</h2><p style="color:var(--soft)">' + esc(L.l.title) + ' · ' + esc(L.c.title) + '</p>' + (window.IFStd && IFStd.unit(L.c.id, L.u.id) ? '<p class="cando done">🎯 Unit goal · ' + esc(IFStd.unit(L.c.id, L.u.id)) + '</p>' : '') +

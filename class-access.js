@@ -1,7 +1,10 @@
 /* IF Academy — what a student registered in a class may see.
    From /api/school/me (student level, their classes and each class's coursebook) work out study keys, the same keys
    IF App uses for goals: book:ef-b1, ge:B1, ielts, be:B2, ket, pet, yl:movers …
-   Staff and students without a class get null (no restriction). */
+   Staff and students without a class get null (no restriction).
+   A student can also be given a personal level by staff (student.appLevel, set in Admin → Students). Then the app follows
+   that level and not the class's: only that level's materials, at the student's own pace. IF App opens the next level when
+   most of the current one is done (see ownKeys in app/ifx.js). */
 (function () {
   var LV = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
   function levelIn(t) {
@@ -29,9 +32,17 @@
   }
   var SAME = { A0: ['ef-a0', 'ef-a1'], A1: ['ef-a1'], A2: ['ef-a2'], B1: ['ef-b1', 'ef-b1p', 'teens-b1'], B2: ['ef-b2', 'teens-b2'], C1: ['ef-c1'], C2: ['ef-c2'] };
   var BL = { 'ef-a0': 'A0', 'ef-a1': 'A1', 'ef-a2': 'A2', 'ef-b1': 'B1', 'ef-b1p': 'B1', 'ef-b2': 'B2', 'ef-c1': 'C1', 'ef-c2': 'C2', 'teens-b1': 'B1', 'teens-b2': 'B2', giu: 'B1' };
+  var ORDER = ['A0', 'A1', 'A2', 'B1', 'B2', 'C1', 'C2'], NAMES = { A0: 'Beginner', A1: 'Elementary', A2: 'Pre-intermediate', B1: 'Intermediate', B2: 'Upper-intermediate', C1: 'Advanced', C2: 'Proficiency' };
+  /** The personal level set by staff, or ''. */
+  function own(me) { var l = String((me && me.student && me.student.appLevel) || '').toUpperCase(); return ORDER.indexOf(l) >= 0 ? l : ''; }
+  /** Study keys for one level: the AI-Generated course and every coursebook of that level. */
+  function forLevel(lv) { return ['ge:' + (lv === 'A0' ? 'A1' : lv)].concat((SAME[lv] || []).map(function (b) { return 'book:' + b; })); }
+  function nextLevel(lv) { var i = ORDER.indexOf(lv); return i >= 0 && i < ORDER.length - 1 ? ORDER[i + 1] : ''; }
   function keys(me) {
     if (!me || !me.profile || me.access === 'staff' || /teacher|admin/.test(me.profile.role || '')) return null;
-    var cls = me.classes || [], st = me.student; if (!st || !cls.length) return null;
+    var cls = me.classes || [], st = me.student; if (!st) return null;
+    if (own(me)) return forLevel(own(me));   // a personal level: that level only, whatever the class is studying
+    if (!cls.length) return null;
     // individual students (with a local or a native teacher) may use every level A1–C1
     var indiv = function (c) { return /^c-ind-/.test(c.id || '') || /individual|1[- ]?(to|on)[- ]?1/i.test(c.label || ''); };
     var books = me.books || [], out = [], add = function (k) { if (k && out.indexOf(k) < 0) out.push(k); };
@@ -63,5 +74,5 @@
     var P = { 'book:ef-a1': '/a/ef-a1-tests/', 'book:ef-a2': '/a/ef-a2-tests/', 'book:ef-b1': '/a/ef-b1-tests/', 'book:ef-b2': '/a/ef-b2-tests/', 'book:ef-c1': '/a/ef-c1-tests/', 'book:teens-b1': '/a/teens-b1-tests/', 'book:teens-b2': '/a/teens-b2-tests/', pet: '/a/pet-tests/', ielts: '/a/ielts/', 'yl:starters': '/a/starters-tests/', 'yl:movers': '/a/movers-tests/', 'yl:flyers': '/a/flyers-tests/' };
     return P[k] || '';
   }
-  window.IFClass = { keys: keys, bookKey: bookKey, testPaths: testPaths, level: levelIn };
+  window.IFClass = { keys: keys, bookKey: bookKey, testPaths: testPaths, level: levelIn, own: own, forLevel: forLevel, nextLevel: nextLevel, levelName: function (l) { return NAMES[l] || ''; } };
 })();
