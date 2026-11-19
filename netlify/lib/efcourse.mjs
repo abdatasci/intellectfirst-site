@@ -1,6 +1,6 @@
 // English Files track (IF General English): who may open which coursebook unit.
 // A unit opens for a class when a teacher marks it "Covered". Kept free of storage so the rule can be tested alone.
-export const BOOKS = ['ef-a0', 'ef-a1', 'ef-a2', 'ef-b1', 'ef-b1p', 'ef-b2', 'ef-c1', 'ef-c2'];
+export const BOOKS = ['ef-a0', 'ef-a1', 'ef-a2', 'ef-b1', 'ef-b1p', 'ef-b2', 'ef-c1', 'ef-c2', 'cvi-ielts'];
 const levelIn = t => { const m = String(t || '').toUpperCase().match(/\b(PRE[- ]?A1|A0|A1|A2|B1|B2|C1|C2)\b/); return m ? (/PRE/.test(m[1]) ? 'A0' : m[1]) : ''; };
 /** The English Files book a class studies, from its coursebook title or its own name ('' if it uses another book). Same rule as /class-access.js. */
 export function bookKey(title) {
