@@ -2,7 +2,8 @@
    Levels: Starters, Movers, Flyers, A2 Key, B1 PET. Questions come from the IF Live banks (pictures, words, definitions)
    and the IF Kids Quest lands (sentences).
    Two ways to play: "Race first" (default): pure driving with a spoken narrator, gift boxes give a turbo, and the English
-   questions come after the finish line as a pit stop. "Quiz race": a gift box stops the race for a question → turbo or spin. */
+   questions come after the finish line as a pit stop. "Quiz race": a gift box stops the race for a question → turbo or spin.
+   "Online race" (subscribers): Race first against recordings of other players' runs, saved by /api/kart. */
 (function () {
   'use strict';
   var $ = function (s) { return document.querySelector(s); };
@@ -34,7 +35,10 @@
   var LV = LEVELS.filter(function (l) { return l.id === (new URLSearchParams(location.search).get('level') || SAVE.level); })[0] || LEVELS[0];
   var ME = DRIVERS.filter(function (d) { return d.id === SAVE.driver; })[0] || DRIVERS[0];
 
-  var MODE = SAVE.mode === 'quiz' ? 'quiz' : 'free', NARR_ON = SAVE.narr !== 0;
+  var MODE = SAVE.mode === 'quiz' ? 'quiz' : SAVE.mode === 'online' ? 'online' : 'free', NARR_ON = SAVE.narr !== 0;
+  var ONLINE = null;   // { me, ghosts, board } from /api/kart/race while an online race is on
+  var nm = function (r) { return r.name || r.d.name; };
+  var tgH = function (h) { h = h || {}; try { var t = (window.Telegram || (parent !== window && parent.Telegram) || {}).WebApp; if (t && t.initData) h['X-TG-Init'] = t.initData; } catch (e) {} return h; };
   var EASY = function () { return LEVELS.indexOf(LV) < 2; };
 
   /* ---------------- questions ---------------- */
@@ -76,7 +80,7 @@
   };
   function caption(t) { var c = $('#cap'); if (!c) return; c.textContent = '🎙 ' + t; c.classList.add('on'); clearTimeout(NARR.capT); NARR.capT = setTimeout(function () { c.classList.remove('on'); }, 3200); }
   function narr(kind, pri, v) {
-    if (MODE !== 'free') return;
+    if (MODE === 'quiz') return;
     var now = Date.now(); if (pri < 2 && now - NARR.last < 3800) return;
     var set = LINES[kind][EASY() ? 0 : 1], t = set[Math.floor(Math.random() * set.length)];
     t = t.replace('{p}', (v && v.p) || '').replace('{n}', (v && v.n) || '').replace('{l}', (v && v.l) || '');
@@ -241,15 +245,16 @@
   function startRace() {
     buildTrack(LV); BALLOONS.length = BALLOONS.length;
     var QS = questionsFor(LV);
-    var racers = [], others = shuffle(DRIVERS.filter(function (d) { return d.id !== ME.id; })).slice(0, 5);
-    [ME].concat(others).forEach(function (d, i) {
-      var k = makeKart(d, d.name); WORLD.add(k);
-      var grid = i, row = Math.floor(grid / 2), col = grid % 2;
+    var racers = [], ghosts = MODE === 'online' && ONLINE ? ONLINE.ghosts.slice(0, 5) : [];
+    var bots = shuffle(DRIVERS.filter(function (d) { return d.id !== ME.id; })).slice(0, 5 - ghosts.length);
+    var field = [{ d: ME, name: MODE === 'online' && ONLINE ? ONLINE.me : ME.name }].concat(ghosts.map(function (g) { return { d: DRIVERS.filter(function (d) { return d.id === g.driver; })[0] || DRIVERS[0], name: g.name, ghost: g }; }), bots.map(function (d) { return { d: d, name: d.name }; }));
+    field.forEach(function (f, i) {
+      var d = f.d, k = makeKart(d, f.name); WORLD.add(k);
       // the player starts at the back so there is someone to overtake
-      var slot = i === 0 ? 5 : i - 1; row = Math.floor(slot / 2); col = slot % 2;
-      racers.push({ d: d, k: k, me: i === 0, dist: -(row * 7 + 4) / 1, x: col ? 3.5 : -3.5, v: 0, steer: 0, base: i === 0 ? 0 : 33 + Math.random() * 5, lap: -1, done: false, finish: 0, spin: 0, turbo: 0, aim: (Math.random() - .5) * 8 });
+      var slot = i === 0 ? 5 : i - 1, row = Math.floor(slot / 2), col = slot % 2;
+      racers.push({ d: d, name: f.name, ghost: f.ghost || null, k: k, me: i === 0, dist: -(row * 7 + 4) / 1, x: col ? 3.5 : -3.5, d0: -(row * 7 + 4), x0: col ? 3.5 : -3.5, v: 0, steer: 0, base: i === 0 ? 0 : 33 + Math.random() * 5, lap: -1, done: false, finish: 0, spin: 0, turbo: 0, aim: (Math.random() - .5) * 8 });
     });
-    R = { racers: racers, me: racers[0], QS: QS, qi: 0, laps: 3, t: 0, phase: 'count', count: 3.6, gems: 0, right: 0, asked: 0, boxes: 0, grassT: 0, grassAt: -99, lastPos: 0, hit: {}, best: SAVE['best:' + LV.id] || 0 };
+    R = { racers: racers, me: racers[0], QS: QS, qi: 0, laps: 3, t: 0, phase: 'count', count: 3.6, gems: 0, right: 0, asked: 0, boxes: 0, grassT: 0, grassAt: -99, lastPos: 0, rec: [], recT: 0, hit: {}, best: SAVE['best:' + LV.id] || 0 };
     $('#lights').style.display = ''; narr('ready', 2);
     document.body.classList.add('racing'); $('#hud').hidden = false; $('#keys').hidden = false; $('#menu').style.display = 'none'; $('#res').style.display = 'none';
     paused = false; engineOn(true); clock.getDelta();
@@ -280,6 +285,13 @@
         var drift = (keys[' '] || touch.drift) && Math.abs(steerIn) > 0 && r.v > 20;
         r.x += r.steer * dt * (drift ? 17 : 12) * Math.min(1, r.v / 18);
         if (drift) { r.driftT = (r.driftT || 0) + dt; } else if (r.driftT) { if (r.driftT > .8) { r.turbo = Math.max(r.turbo, .9); toast('🔥 Drift boost!'); narr('drift', 1); } r.driftT = 0; }
+      } else if (r.ghost) {
+        // another player's recorded run: where that kart was at this moment of its own race
+        var rc = r.ghost.rec, n = rc.length / 2, ft = R.t / .5, gi = Math.min(n - 1, Math.floor(ft)), gf = Math.min(1, ft - gi), gj = Math.min(n - 1, gi + 1);
+        var gd = rc[gi * 2] + (rc[gj * 2] - rc[gi * 2]) * gf + (ft > n - 1 ? (ft - (n - 1)) * 15 : 0), gx = (rc[gi * 2 + 1] + (rc[gj * 2 + 1] - rc[gi * 2 + 1]) * gf) / 10;
+        var ease = Math.max(0, 1 - R.t / 4);   // every recording began on the back row: spread the karts over the grid at the start
+        gd += (r.d0 - rc[0]) * ease; gx += (r.x0 - rc[1] / 10) * ease;
+        r.v = racing && !r.done ? Math.max(0, (gd - r.dist) / Math.max(dt, .001)) : r.v * .9; r.x = gx;
       } else {
         // computer drivers: steady pace with small changes, a little slower when far ahead of the player
         var gap = r.dist + r.lap * 0 - me.dist;
@@ -295,7 +307,7 @@
       // laps
       if (Math.floor(r.dist / TRACK.len) > Math.floor(prev / TRACK.len) && r.dist > 0) { r.lap++; if (r.lap >= R.laps && !r.done) { r.done = true; r.finish = R.t; if (r.me) finishRace(); } else if (r.me && r.lap > 0) { toast(r.lap === R.laps - 1 ? '🏁 Final lap!' : 'Lap ' + (r.lap + 1) + ' / ' + R.laps); sfx('box'); if (r.lap === R.laps - 1) narr('last', 2); else narr('lap', 2, { l: ['', 'one', 'two', 'three'][r.lap + 1] }); } }
       // computer drivers use the boxes too (a turbo now and then)
-      if (!r.me && racing) BOX_AT.forEach(function (u) { if (crossed(prev, r.dist, u) && Math.random() < .6) r.turbo = 1.2; });
+      if (!r.me && !r.ghost && racing) BOX_AT.forEach(function (u) { if (crossed(prev, r.dist, u) && Math.random() < .6) r.turbo = 1.2; });
       // place the kart
       var u = uOf(r.dist), i0 = Math.floor(u * SAMPLES) % SAMPLES, f = u * SAMPLES - Math.floor(u * SAMPLES), i1 = (i0 + 1) % SAMPLES;
       var p = TRACK.P[i0].clone().lerp(TRACK.P[i1], f), t = TRACK.T[i0].clone().lerp(TRACK.T[i1], f).normalize(), n = new THREE.Vector3(-t.z, 0, t.x);
@@ -309,12 +321,14 @@
     // karts bump each other
     for (var a = 0; a < R.racers.length; a++) for (var b = a + 1; b < R.racers.length; b++) {
       var A = R.racers[a], B = R.racers[b], dd = (A.dist - B.dist), dx = A.x - B.x;
+      if (A.ghost || B.ghost) continue;   // a recording cannot be pushed
       if (Math.abs(dd) < 4 && Math.abs(dx) < 3) { var push = (3 - Math.abs(dx)) * .5 * (dx >= 0 ? 1 : -1); A.x += push; B.x -= push; if (dd > 0) { B.v *= .97; } else A.v *= .97; }
     }
+    if (racing && !me.done && MODE === 'online') while (R.t >= R.recT) { R.rec.push(Math.round(me.dist), Math.round(me.x * 10)); R.recT += .5; }
     // gift boxes for the player → a question
     if (racing && !me.done) BOX_AT.forEach(function (u, i) {
       var key = me.lap + ':' + i;
-      if (!R.hit[key] && crossed(me.dist - me.v * dt, me.dist, u)) { R.hit[key] = 1; var row = BOXES[i]; if (Math.abs(me.x) < ROAD_W / 2 + 1) { row.items.forEach(function (b) { b.visible = Math.abs(b.userData.x - me.x) > 2.6; }); setTimeout(function () { row.items.forEach(function (b) { b.visible = true; }); }, 2500); sfx('box'); if (MODE === 'free') { R.boxes++; me.turbo = Math.max(me.turbo, 1.5); toast('🚀 Turbo!'); narr('box', 1); } else ask(); } }
+      if (!R.hit[key] && crossed(me.dist - me.v * dt, me.dist, u)) { R.hit[key] = 1; var row = BOXES[i]; if (Math.abs(me.x) < ROAD_W / 2 + 1) { row.items.forEach(function (b) { b.visible = Math.abs(b.userData.x - me.x) > 2.6; }); setTimeout(function () { row.items.forEach(function (b) { b.visible = true; }); }, 2500); sfx('box'); if (MODE !== 'quiz') { R.boxes++; me.turbo = Math.max(me.turbo, 1.5); toast('🚀 Turbo!'); narr('box', 1); } else ask(); } }
     });
     BOXES.forEach(function (row) { row.items.forEach(function (b) { b.rotation.x += dt * 1.2; b.position.y = 2 + Math.sin(R.t * 3 + b.userData.x) * .3; }); });
     BALLOONS.forEach(function (bl) { bl.position.y += Math.sin(R.t + bl.userData.bob) * dt * 1.2; });
@@ -336,7 +350,7 @@
   function hud() {
     var order = R.racers.slice().sort(function (a, b) { return (b.done ? 1e9 - b.finish : b.dist) - (a.done ? 1e9 - a.finish : a.dist); });
     var pos = order.indexOf(R.me) + 1; R.pos = pos;
-    if (R.phase === 'race' && !R.me.done && R.t > 4) { if (R.lastPos && pos < R.lastPos) narr('up', 1, { p: ORD[pos], n: order[pos].d.name }); else if (R.lastPos && pos > R.lastPos) narr('down', 1, { p: ORD[pos], n: order[pos - 2].d.name }); if (Date.now() - NARR.last > 0) R.lastPos = pos; } else R.lastPos = pos;
+    if (R.phase === 'race' && !R.me.done && R.t > 4) { if (R.lastPos && pos < R.lastPos) narr('up', 1, { p: ORD[pos], n: nm(order[pos]) }); else if (R.lastPos && pos > R.lastPos) narr('down', 1, { p: ORD[pos], n: nm(order[pos - 2]) }); if (Date.now() - NARR.last > 0) R.lastPos = pos; } else R.lastPos = pos;
     $('#pos').innerHTML = '<b>' + pos + '</b><small>of ' + R.racers.length + '</small>';
     $('#lapt').textContent = 'Lap ' + Math.min(R.laps, Math.max(1, R.me.lap + 1)) + '/' + R.laps;
     $('#time').textContent = fmt(R.t); $('#gems').textContent = '💎 ' + R.gems;
@@ -380,10 +394,10 @@
   /* Race first: after the finish line, a pit stop of five questions. Two are about the race the player has just driven,
      the rest come from the level's question bank. */
   function pitStop(order, pos, then) {
-    var names = shuffle(R.racers.filter(function (r) { return !r.me; }).map(function (r) { return r.d.name; }));
-    var winner = order[0].me ? 'I did!' : order[0].d.name, o1 = shuffle([winner].concat(names.filter(function (n) { return n !== winner; }).slice(0, 2)));
+    var names = shuffle(R.racers.filter(function (r) { return !r.me; }).map(nm).filter(function (n, i, a) { return a.indexOf(n) === i; }));
+    var winner = order[0].me ? 'I did!' : nm(order[0]), o1 = shuffle([winner].concat(names.filter(function (n) { return n !== winner; }).slice(0, 2)));
     var cap = function (w) { return w.charAt(0).toUpperCase() + w.slice(1); }, o2 = shuffle([pos].concat(shuffle([1, 2, 3, 4, 5, 6].filter(function (n) { return n !== pos; })).slice(0, 2))).map(function (n) { return cap(ORD[n]); });
-    var list = [{ p: '🏁 Who won the race?', o: o1, a: o1.indexOf(winner), say: 'Who won the race?', fb: order[0].me ? 'You won the race!' : order[0].d.name + ' won the race.' }, { p: '🏎️ Where did you finish?', o: o2, a: o2.indexOf(cap(ORD[pos])), say: 'Where did you finish?', fb: 'You finished ' + ORD[pos] + '.' }];
+    var list = [{ p: '🏁 Who won the race?', o: o1, a: o1.indexOf(winner), say: 'Who won the race?', fb: order[0].me ? 'You won the race!' : nm(order[0]) + ' won the race.' }, { p: '🏎️ Where did you finish?', o: o2, a: o2.indexOf(cap(ORD[pos])), say: 'Where did you finish?', fb: 'You finished ' + ORD[pos] + '.' }];
     for (var i = 0; i < 3 && R.QS.length; i++) list.push(R.QS[R.qi++ % R.QS.length]);
     var k = 0; narr('pit', 2);
     (function next() {
@@ -400,7 +414,8 @@
       var order = R.racers.slice().sort(function (a, b) { return a.finish - b.finish; }), pos = order.indexOf(R.me) + 1;
       if (R.me.done) narr(pos === 1 ? 'win' : 'end', 2, { p: ORD[pos] });
       paused = true; engineOn(false); document.body.classList.remove('racing'); sfx(pos <= 3 ? 'win' : 'no'); $('#hud').hidden = true;
-      if (MODE === 'free' && !R.pitted) { R.pitted = true; R.order = order; return setTimeout(function () { pitStop(order, pos, function () { showResults(order, pos); }); }, 2600); }
+      if (MODE === 'online' && ONLINE && R.me.lap >= R.laps) { R.rec.push(Math.round(R.me.dist), Math.round(R.me.x * 10)); R.sent = fetch('/api/kart/run', { method: 'POST', credentials: 'same-origin', headers: tgH({ 'Content-Type': 'application/json' }), body: JSON.stringify({ level: LV.id, driver: ME.id, time: Math.round(R.me.finish * 10) / 10, rec: R.rec }) }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }); }
+      if (MODE !== 'quiz' && !R.pitted) { R.pitted = true; R.order = order; return setTimeout(function () { pitStop(order, pos, function () { showResults(order, pos); }); }, 2600); }
       showResults(order, pos);
     }, 1200);
   }
@@ -409,14 +424,16 @@
       var stars = (pos <= 1 ? 1 : 0) + (pos <= 3 ? 1 : 0) + (R.asked && R.right / R.asked >= .7 ? 1 : 0);
       var key = 'best:' + LV.id; if (!SAVE[key] || stars > SAVE[key]) { SAVE[key] = stars; store.set('ifkart', SAVE); }
       $('#resc').innerHTML = '<h1 style="text-align:center">' + (pos === 1 ? '🏆 You won!' : pos <= 3 ? ['', '🥇', '🥈', '🥉'][pos] + ' ' + pos + ord(pos) + ' place!' : 'Finished ' + pos + ord(pos)) + '</h1><p class="sub" style="text-align:center;font-size:26px">' + '⭐'.repeat(stars) + '☆'.repeat(3 - stars) + ' · 💎 ' + R.gems + ' · ' + R.right + ' / ' + R.asked + ' answers right · ' + fmt(R.me.finish) + '</p>' +
-        '<table>' + order.map(function (r, i) { return '<tr class="' + (r.me ? 'me' : '') + '"><td>' + (i + 1) + '</td><td>' + esc(r.d.name) + (r.me ? ' (you)' : '') + '</td><td style="text-align:right">' + fmt(Math.max(r.finish, 0)) + '</td></tr>'; }).join('') + '</table>' +
-        '<div class="row"><button class="go" id="again">↻ Race again</button>' + (LEVELS.indexOf(LV) < LEVELS.length - 1 ? '<button class="go" id="next">Next level: ' + LEVELS[LEVELS.indexOf(LV) + 1].name + ' →</button>' : '') + '<button class="go ghost" id="tomenu">Menu</button></div>';
+        '<table>' + order.map(function (r, i) { return '<tr class="' + (r.me ? 'me' : '') + '"><td>' + (i + 1) + '</td><td>' + (r.ghost ? '🌍 ' : '') + esc(nm(r)) + (r.me ? ' (you)' : '') + '</td><td style="text-align:right">' + fmt(Math.max(r.finish, 0)) + '</td></tr>'; }).join('') + '</table>' +
+        '<div id="board"></div><div class="row"><button class="go" id="again">↻ Race again</button>' + (LEVELS.indexOf(LV) < LEVELS.length - 1 ? '<button class="go" id="next">Next level: ' + LEVELS[LEVELS.indexOf(LV) + 1].name + ' →</button>' : '') + '<button class="go ghost" id="tomenu">Menu</button></div>';
       $('#res').style.display = 'flex'; $('#hud').hidden = true;
       $('#again').onclick = function () { startRace(); };
-      if ($('#next')) $('#next').onclick = function () { LV = LEVELS[LEVELS.indexOf(LV) + 1]; SAVE.level = LV.id; store.set('ifkart', SAVE); MB = null; startRace(); };
+      if (R.sent) { $('#board').innerHTML = '<p class="sub" style="text-align:center">Saving your run…</p>'; R.sent.then(function (d) { var el = $('#board'); if (!el) return; if (!d) { el.innerHTML = '<p class="sub" style="text-align:center">Your run could not be saved this time.</p>'; return; } ONLINE.board = d.board; el.innerHTML = '<p class="sub" style="text-align:center;margin:10px 0 2px">' + (d.best ? '🌍 Saved. Other students will now race against this run.' : '🌍 Your faster run from this week stays on the board.') + '</p>' + boardHtml(d.board); }); }
+      if ($('#next')) $('#next').onclick = function () { LV = LEVELS[LEVELS.indexOf(LV) + 1]; SAVE.level = LV.id; store.set('ifkart', SAVE); MB = null; if (MODE === 'online') loadOnline().then(startRace, showMenu); else startRace(); };
       $('#tomenu').onclick = showMenu;
     }
   }
+  function boardHtml(b) { return b && b.length ? '<div class="lbl" style="text-align:center">This week\'s fastest · ' + esc(LV.name) + '</div><table>' + b.map(function (r, i) { return '<tr class="' + (r.you ? 'me' : '') + '"><td>' + (i + 1) + '</td><td>' + esc(r.name) + (r.you ? ' (you)' : '') + '</td><td style="text-align:right">' + fmt(r.time) + '</td></tr>'; }).join('') + '</table>' : ''; }
   function ord(n) { return n === 1 ? 'st' : n === 2 ? 'nd' : n === 3 ? 'rd' : 'th'; }
 
   /* ---------------- menu ---------------- */
@@ -425,14 +442,29 @@
     $('#menu').style.display = 'flex';
     $('#lvls').innerHTML = LEVELS.map(function (l) { var b = SAVE['best:' + l.id]; return '<button class="lv' + (l === LV ? ' on' : '') + '" data-l="' + l.id + '" style="background:' + l.col + '">' + l.name + '<small>' + l.sub + (b ? ' · ' + '⭐'.repeat(b) : '') + '</small></button>'; }).join('');
     $('#chars').innerHTML = DRIVERS.map(function (d) { return '<button class="ch' + (d === ME ? ' on' : '') + '" data-d="' + d.id + '">' + { cat: '🐱', bunny: '🐰', bear: '🐻', fox: '🦊', panda: '🐼', frog: '🐸' }[d.id] + ' ' + d.name + '</button>'; }).join('');
-    $('#modes').innerHTML = [['free', '🏎️ Race first', 'Just drive. English comes after the race.'], ['quiz', '🎁 Quiz race', 'Answer at the gift boxes for a turbo.']].map(function (m) { return '<button class="ch md' + (MODE === m[0] ? ' on' : '') + '" data-m="' + m[0] + '">' + m[1] + '<small>' + m[2] + '</small></button>'; }).join('') + '<button class="ch md' + (NARR_ON ? ' on' : '') + '" id="narr">' + (NARR_ON ? '🎙 Narrator on' : '🔇 Narrator off') + '<small>The voice that talks about your race.</small></button>';
-    [].forEach.call(document.querySelectorAll('[data-m]'), function (b) { b.onclick = function () { MODE = b.dataset.m; SAVE.mode = MODE; store.set('ifkart', SAVE); showMenu(); }; });
+    $('#modes').innerHTML = [['free', '🏎️ Race first', 'Just drive. English comes after the race.'], ['quiz', '🎁 Quiz race', 'Answer at the gift boxes for a turbo.'], ['online', '🌍 Online race', 'Race against other students\' runs.']].map(function (m) { return '<button class="ch md' + (MODE === m[0] ? ' on' : '') + '" data-m="' + m[0] + '">' + m[1] + '<small>' + m[2] + '</small></button>'; }).join('') + '<button class="ch md' + (NARR_ON ? ' on' : '') + '" id="narr">' + (NARR_ON ? '🎙 Narrator on' : '🔇 Narrator off') + '<small>The voice that talks about your race.</small></button>';
+    [].forEach.call(document.querySelectorAll('[data-m]'), function (b) { b.onclick = function () { MODE = b.dataset.m; SAVE.mode = MODE; store.set('ifkart', SAVE); $('#msg').textContent = ''; showMenu(); }; });
     $('#narr').onclick = function () { NARR_ON = !NARR_ON; SAVE.narr = NARR_ON ? 1 : 0; store.set('ifkart', SAVE); showMenu(); };
-    $('#how').innerHTML = 'Phone: ◀ ▶ to steer, the kart drives by itself, Brake and Drift on the right. Computer: arrow keys, Space to drift.<br>' + (MODE === 'free' ? 'Drive through the 🎁 gift boxes for a turbo. Hold Drift in a turn for a boost. After 3 laps: a pit stop with 5 questions for 💎.' : 'Right answer = turbo and a 💎. Wrong answer = your kart spins. 3 laps — try to finish first!');
+    $('#how').innerHTML = 'Phone: ◀ ▶ to steer, the kart drives by itself, Brake and Drift on the right. Computer: arrow keys, Space to drift.<br>' + (MODE === 'online' ? 'You race against real runs by other students at this level (🌍). Your own run is saved for them to race against. After 3 laps: a pit stop with 5 questions for 💎.' : MODE === 'free' ? 'Drive through the 🎁 gift boxes for a turbo. Hold Drift in a turn for a boost. After 3 laps: a pit stop with 5 questions for 💎.' : 'Right answer = turbo and a 💎. Wrong answer = your kart spins. 3 laps — try to finish first!');
     [].forEach.call(document.querySelectorAll('[data-l]'), function (b) { b.onclick = function () { LV = LEVELS.filter(function (l) { return l.id === b.dataset.l; })[0]; SAVE.level = LV.id; store.set('ifkart', SAVE); MB = null; showMenu(); }; });
     [].forEach.call(document.querySelectorAll('[data-d]'), function (b) { b.onclick = function () { ME = DRIVERS.filter(function (d) { return d.id === b.dataset.d; })[0]; SAVE.driver = ME.id; store.set('ifkart', SAVE); showMenu(); }; });
   }
-  $('#go').onclick = function () { $('#go').textContent = 'Loading…'; loadBanks().then(function () { $('#go').textContent = '▶ Race!'; MB = null; startRace(); }); };
+  function loadOnline() {
+    if (MODE !== 'online') { ONLINE = null; return Promise.resolve(true); }
+    return fetch('/api/kart/race?level=' + LV.id, { credentials: 'same-origin', headers: tgH() }).then(function (r) {
+      if (r.status === 401) throw 'Online races need an account. Sign in to the IF App first, then come back.';
+      if (r.status === 403) throw 'Online races are for IF Academy students and subscribers.';
+      if (!r.ok) throw 'The online race could not start. Check your internet and try again.';
+      return r.json();
+    }).then(function (d) { ONLINE = d; return true; });
+  }
+  $('#go').onclick = function () {
+    $('#go').textContent = 'Loading…'; $('#msg').textContent = '';
+    Promise.all([loadBanks(), loadOnline()]).then(function () {
+      $('#go').textContent = '▶ Race!'; MB = null; startRace();
+      if (MODE === 'online' && ONLINE && !ONLINE.ghosts.length) toast('You are the first online racer here!');
+    }, function (e) { $('#go').textContent = '▶ Race!'; $('#msg').textContent = typeof e === 'string' ? e : 'The race could not start. Check your internet and try again.'; });
+  };
   $('#pause').onclick = function () { showMenu(); };
 
   /* ---------------- input ---------------- */
@@ -454,5 +486,5 @@
     renderer.render(scene, camera);
   }
   loop(); showMenu();
-  window.IFKART = { start: function (lv) { if (lv) LV = LEVELS.filter(function (l) { return l.id === lv; })[0] || LV; return loadBanks().then(startRace); }, state: function () { return R; }, ask: function () { ask(); }, mode: function (m) { if (m) MODE = m; return MODE; } };
+  window.IFKART = { start: function (lv) { if (lv) LV = LEVELS.filter(function (l) { return l.id === lv; })[0] || LV; return loadBanks().then(startRace); }, state: function () { return R; }, ask: function () { ask(); }, mode: function (m) { if (m) MODE = m; return MODE; }, online: function (d) { if (d) ONLINE = d; return ONLINE; } };
 })();
