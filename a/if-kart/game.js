@@ -3,7 +3,8 @@
    and the IF Kids Quest lands (sentences).
    Two ways to play: "Race first" (default): pure driving with a spoken narrator, gift boxes give a turbo, and the English
    questions come after the finish line as a pit stop. "Quiz race": a gift box stops the race for a question → turbo or spin.
-   "Online race" (subscribers): Race first against recordings of other players' runs, saved by /api/kart. */
+   "Online race" (subscribers): Race first against recordings of other players' runs, saved by /api/kart.
+   "Live race": everybody with the PIN drives at the same moment (live.js, through the IF Live rooms). */
 (function () {
   'use strict';
   var $ = function (s) { return document.querySelector(s); };
@@ -35,7 +36,9 @@
   var LV = LEVELS.filter(function (l) { return l.id === (new URLSearchParams(location.search).get('level') || SAVE.level); })[0] || LEVELS[0];
   var ME = DRIVERS.filter(function (d) { return d.id === SAVE.driver; })[0] || DRIVERS[0];
 
-  var MODE = SAVE.mode === 'quiz' ? 'quiz' : SAVE.mode === 'online' ? 'online' : 'free', NARR_ON = SAVE.narr !== 0;
+  var PIN0 = (new URLSearchParams(location.search).get('pin') || '').replace(/\D/g, '').slice(0, 6);
+  var MODE = PIN0 ? 'live' : SAVE.mode === 'quiz' ? 'quiz' : SAVE.mode === 'online' ? 'online' : SAVE.mode === 'live' ? 'live' : 'free', NARR_ON = SAVE.narr !== 0;
+  var LIVEK = null;    // { me, slot, field: [{ pid, name, driver, slot }] } while a live race is on
   var ONLINE = null;   // { me, ghosts, board } from /api/kart/race while an online race is on
   var nm = function (r) { return r.name || r.d.name; };
   var tgH = function (h) { h = h || {}; try { var t = (window.Telegram || (parent !== window && parent.Telegram) || {}).WebApp; if (t && t.initData) h['X-TG-Init'] = t.initData; } catch (e) {} return h; };
@@ -246,13 +249,14 @@
     buildTrack(LV); BALLOONS.length = BALLOONS.length;
     var QS = questionsFor(LV);
     var racers = [], ghosts = MODE === 'online' && ONLINE ? ONLINE.ghosts.slice(0, 5) : [];
-    var bots = shuffle(DRIVERS.filter(function (d) { return d.id !== ME.id; })).slice(0, 5 - ghosts.length);
-    var field = [{ d: ME, name: MODE === 'online' && ONLINE ? ONLINE.me : ME.name }].concat(ghosts.map(function (g) { return { d: DRIVERS.filter(function (d) { return d.id === g.driver; })[0] || DRIVERS[0], name: g.name, ghost: g }; }), bots.map(function (d) { return { d: d, name: d.name }; }));
+    var net = MODE === 'live' && LIVEK ? LIVEK.field : null, drv = function (id) { return DRIVERS.filter(function (d) { return d.id === id; })[0] || DRIVERS[0]; };
+    var bots = net ? [] : shuffle(DRIVERS.filter(function (d) { return d.id !== ME.id; })).slice(0, 5 - ghosts.length);
+    var field = [{ d: ME, name: net ? LIVEK.me : MODE === 'online' && ONLINE ? ONLINE.me : ME.name, slot: net ? LIVEK.slot : 5 }].concat((net || []).map(function (p) { return { d: drv(p.driver), name: p.name, slot: p.slot, net: { pid: p.pid, d: null, x: 0, v: 0, at: 0 } }; }), ghosts.map(function (g) { return { d: DRIVERS.filter(function (d) { return d.id === g.driver; })[0] || DRIVERS[0], name: g.name, ghost: g }; }), bots.map(function (d) { return { d: d, name: d.name }; }));
     field.forEach(function (f, i) {
       var d = f.d, k = makeKart(d, f.name); WORLD.add(k);
       // the player starts at the back so there is someone to overtake
-      var slot = i === 0 ? 5 : i - 1, row = Math.floor(slot / 2), col = slot % 2;
-      racers.push({ d: d, name: f.name, ghost: f.ghost || null, k: k, me: i === 0, dist: -(row * 7 + 4) / 1, x: col ? 3.5 : -3.5, d0: -(row * 7 + 4), x0: col ? 3.5 : -3.5, v: 0, steer: 0, base: i === 0 ? 0 : 33 + Math.random() * 5, lap: -1, done: false, finish: 0, spin: 0, turbo: 0, aim: (Math.random() - .5) * 8 });
+      var slot = f.slot != null ? f.slot : i - 1, row = Math.floor(slot / 2), col = slot % 2;
+      racers.push({ d: d, name: f.name, ghost: f.ghost || null, net: f.net || null, k: k, me: i === 0, dist: -(row * 7 + 4) / 1, x: col ? 3.5 : -3.5, d0: -(row * 7 + 4), x0: col ? 3.5 : -3.5, v: 0, steer: 0, base: i === 0 ? 0 : 33 + Math.random() * 5, lap: -1, done: false, finish: 0, spin: 0, turbo: 0, aim: (Math.random() - .5) * 8 });
     });
     R = { racers: racers, me: racers[0], QS: QS, qi: 0, laps: 3, t: 0, phase: 'count', count: 3.6, gems: 0, right: 0, asked: 0, boxes: 0, grassT: 0, grassAt: -99, lastPos: 0, rec: [], recT: 0, hit: {}, best: SAVE['best:' + LV.id] || 0 };
     $('#lights').style.display = ''; narr('ready', 2);
@@ -285,6 +289,10 @@
         var drift = (keys[' '] || touch.drift) && Math.abs(steerIn) > 0 && r.v > 20;
         r.x += r.steer * dt * (drift ? 17 : 12) * Math.min(1, r.v / 18);
         if (drift) { r.driftT = (r.driftT || 0) + dt; } else if (r.driftT) { if (r.driftT > .8) { r.turbo = Math.max(r.turbo, .9); toast('🔥 Drift boost!'); narr('drift', 1); } r.driftT = 0; }
+      } else if (r.net) {
+        // a live player: head for the last place we were told, a little ahead for the time that has passed since
+        var N = r.net;
+        if (N.d != null) { var age = Math.min(.7, (performance.now() - N.at) / 1000), nd = N.d + N.v * age; r.v = racing && !r.done ? Math.max(0, Math.min(120, (nd - r.dist) * 6)) : r.v * .9; r.x += (N.x - r.x) * Math.min(1, dt * 8); } else r.v *= .9;
       } else if (r.ghost) {
         // another player's recorded run: where that kart was at this moment of its own race
         var rc = r.ghost.rec, n = rc.length / 2, ft = R.t / .5, gi = Math.min(n - 1, Math.floor(ft)), gf = Math.min(1, ft - gi), gj = Math.min(n - 1, gi + 1);
@@ -307,7 +315,7 @@
       // laps
       if (Math.floor(r.dist / TRACK.len) > Math.floor(prev / TRACK.len) && r.dist > 0) { r.lap++; if (r.lap >= R.laps && !r.done) { r.done = true; r.finish = R.t; if (r.me) finishRace(); } else if (r.me && r.lap > 0) { toast(r.lap === R.laps - 1 ? '🏁 Final lap!' : 'Lap ' + (r.lap + 1) + ' / ' + R.laps); sfx('box'); if (r.lap === R.laps - 1) narr('last', 2); else narr('lap', 2, { l: ['', 'one', 'two', 'three'][r.lap + 1] }); } }
       // computer drivers use the boxes too (a turbo now and then)
-      if (!r.me && !r.ghost && racing) BOX_AT.forEach(function (u) { if (crossed(prev, r.dist, u) && Math.random() < .6) r.turbo = 1.2; });
+      if (!r.me && !r.ghost && !r.net && racing) BOX_AT.forEach(function (u) { if (crossed(prev, r.dist, u) && Math.random() < .6) r.turbo = 1.2; });
       // place the kart
       var u = uOf(r.dist), i0 = Math.floor(u * SAMPLES) % SAMPLES, f = u * SAMPLES - Math.floor(u * SAMPLES), i1 = (i0 + 1) % SAMPLES;
       var p = TRACK.P[i0].clone().lerp(TRACK.P[i1], f), t = TRACK.T[i0].clone().lerp(TRACK.T[i1], f).normalize(), n = new THREE.Vector3(-t.z, 0, t.x);
@@ -321,10 +329,11 @@
     // karts bump each other
     for (var a = 0; a < R.racers.length; a++) for (var b = a + 1; b < R.racers.length; b++) {
       var A = R.racers[a], B = R.racers[b], dd = (A.dist - B.dist), dx = A.x - B.x;
-      if (A.ghost || B.ghost) continue;   // a recording cannot be pushed
+      if (A.ghost || B.ghost || A.net || B.net) continue;   // a recording or a player on another phone cannot be pushed
       if (Math.abs(dd) < 4 && Math.abs(dx) < 3) { var push = (3 - Math.abs(dx)) * .5 * (dx >= 0 ? 1 : -1); A.x += push; B.x -= push; if (dd > 0) { B.v *= .97; } else A.v *= .97; }
     }
     if (racing && !me.done && MODE === 'online') while (R.t >= R.recT) { R.rec.push(Math.round(me.dist), Math.round(me.x * 10)); R.recT += .5; }
+    if (MODE === 'live' && window.KLIVE) KLIVE.tick(R);
     // gift boxes for the player → a question
     if (racing && !me.done) BOX_AT.forEach(function (u, i) {
       var key = me.lap + ':' + i;
@@ -415,6 +424,7 @@
       if (R.me.done) narr(pos === 1 ? 'win' : 'end', 2, { p: ORD[pos] });
       paused = true; engineOn(false); document.body.classList.remove('racing'); sfx(pos <= 3 ? 'win' : 'no'); $('#hud').hidden = true;
       if (MODE === 'online' && ONLINE && R.me.lap >= R.laps) { R.rec.push(Math.round(R.me.dist), Math.round(R.me.x * 10)); R.sent = fetch('/api/kart/run', { method: 'POST', credentials: 'same-origin', headers: tgH({ 'Content-Type': 'application/json' }), body: JSON.stringify({ level: LV.id, driver: ME.id, time: Math.round(R.me.finish * 10) / 10, rec: R.rec }) }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }); }
+      if (MODE === 'live' && window.KLIVE) KLIVE.finished(Math.round(R.me.finish * 10) / 10);
       if (MODE !== 'quiz' && !R.pitted) { R.pitted = true; R.order = order; return setTimeout(function () { pitStop(order, pos, function () { showResults(order, pos); }); }, 2600); }
       showResults(order, pos);
     }, 1200);
@@ -428,6 +438,7 @@
         '<div id="board"></div><div class="row"><button class="go" id="again">↻ Race again</button>' + (LEVELS.indexOf(LV) < LEVELS.length - 1 ? '<button class="go" id="next">Next level: ' + LEVELS[LEVELS.indexOf(LV) + 1].name + ' →</button>' : '') + '<button class="go ghost" id="tomenu">Menu</button></div>';
       $('#res').style.display = 'flex'; $('#hud').hidden = true;
       $('#again').onclick = function () { startRace(); };
+      if (MODE === 'live' && window.KLIVE) KLIVE.onResults();
       if (R.sent) { $('#board').innerHTML = '<p class="sub" style="text-align:center">Saving your run…</p>'; R.sent.then(function (d) { var el = $('#board'); if (!el) return; if (!d) { el.innerHTML = '<p class="sub" style="text-align:center">Your run could not be saved this time.</p>'; return; } ONLINE.board = d.board; el.innerHTML = '<p class="sub" style="text-align:center;margin:10px 0 2px">' + (d.best ? '🌍 Saved. Other students will now race against this run.' : '🌍 Your faster run from this week stays on the board.') + '</p>' + boardHtml(d.board); }); }
       if ($('#next')) $('#next').onclick = function () { LV = LEVELS[LEVELS.indexOf(LV) + 1]; SAVE.level = LV.id; store.set('ifkart', SAVE); MB = null; if (MODE === 'online') loadOnline().then(startRace, showMenu); else startRace(); };
       $('#tomenu').onclick = showMenu;
@@ -442,10 +453,11 @@
     $('#menu').style.display = 'flex';
     $('#lvls').innerHTML = LEVELS.map(function (l) { var b = SAVE['best:' + l.id]; return '<button class="lv' + (l === LV ? ' on' : '') + '" data-l="' + l.id + '" style="background:' + l.col + '">' + l.name + '<small>' + l.sub + (b ? ' · ' + '⭐'.repeat(b) : '') + '</small></button>'; }).join('');
     $('#chars').innerHTML = DRIVERS.map(function (d) { return '<button class="ch' + (d === ME ? ' on' : '') + '" data-d="' + d.id + '">' + { cat: '🐱', bunny: '🐰', bear: '🐻', fox: '🦊', panda: '🐼', frog: '🐸' }[d.id] + ' ' + d.name + '</button>'; }).join('');
-    $('#modes').innerHTML = [['free', '🏎️ Race first', 'Just drive. English comes after the race.'], ['quiz', '🎁 Quiz race', 'Answer at the gift boxes for a turbo.'], ['online', '🌍 Online race', 'Race against other students\' runs.']].map(function (m) { return '<button class="ch md' + (MODE === m[0] ? ' on' : '') + '" data-m="' + m[0] + '">' + m[1] + '<small>' + m[2] + '</small></button>'; }).join('') + '<button class="ch md' + (NARR_ON ? ' on' : '') + '" id="narr">' + (NARR_ON ? '🎙 Narrator on' : '🔇 Narrator off') + '<small>The voice that talks about your race.</small></button>';
-    [].forEach.call(document.querySelectorAll('[data-m]'), function (b) { b.onclick = function () { MODE = b.dataset.m; SAVE.mode = MODE; store.set('ifkart', SAVE); $('#msg').textContent = ''; showMenu(); }; });
+    $('#modes').innerHTML = [['free', '🏎️ Race first', 'Just drive. English comes after the race.'], ['quiz', '🎁 Quiz race', 'Answer at the gift boxes for a turbo.'], ['online', '🌍 Online race', 'Race against other students\' runs.'], ['live', '👥 Live race', 'Race friends right now with a PIN.']].map(function (m) { return '<button class="ch md' + (MODE === m[0] ? ' on' : '') + '" data-m="' + m[0] + '">' + m[1] + '<small>' + m[2] + '</small></button>'; }).join('') + '<button class="ch md' + (NARR_ON ? ' on' : '') + '" id="narr">' + (NARR_ON ? '🎙 Narrator on' : '🔇 Narrator off') + '<small>The voice that talks about your race.</small></button>';
+    [].forEach.call(document.querySelectorAll('[data-m]'), function (b) { b.onclick = function () { if (MODE === 'live' && b.dataset.m !== 'live' && window.KLIVE) KLIVE.leave(); MODE = b.dataset.m; SAVE.mode = MODE; store.set('ifkart', SAVE); $('#msg').textContent = ''; showMenu(); }; });
+    $('#go').style.display = MODE === 'live' ? 'none' : ''; $('#livebox').style.display = MODE === 'live' ? '' : 'none'; if (MODE === 'live' && window.KLIVE) KLIVE.menu();
     $('#narr').onclick = function () { NARR_ON = !NARR_ON; SAVE.narr = NARR_ON ? 1 : 0; store.set('ifkart', SAVE); showMenu(); };
-    $('#how').innerHTML = 'Phone: ◀ ▶ to steer, the kart drives by itself, Brake and Drift on the right. Computer: arrow keys, Space to drift.<br>' + (MODE === 'online' ? 'You race against real runs by other students at this level (🌍). Your own run is saved for them to race against. After 3 laps: a pit stop with 5 questions for 💎.' : MODE === 'free' ? 'Drive through the 🎁 gift boxes for a turbo. Hold Drift in a turn for a boost. After 3 laps: a pit stop with 5 questions for 💎.' : 'Right answer = turbo and a 💎. Wrong answer = your kart spins. 3 laps — try to finish first!');
+    $('#how').innerHTML = 'Phone: ◀ ▶ to steer, the kart drives by itself, Brake and Drift on the right. Computer: arrow keys, Space to drift.<br>' + (MODE === 'live' ? 'One person hosts and gets a PIN. Everybody else types the PIN and you all race at the same moment, each on your own phone. After 3 laps: a pit stop with 5 questions for 💎.' : MODE === 'online' ? 'You race against real runs by other students at this level (🌍). Your own run is saved for them to race against. After 3 laps: a pit stop with 5 questions for 💎.' : MODE === 'free' ? 'Drive through the 🎁 gift boxes for a turbo. Hold Drift in a turn for a boost. After 3 laps: a pit stop with 5 questions for 💎.' : 'Right answer = turbo and a 💎. Wrong answer = your kart spins. 3 laps — try to finish first!');
     [].forEach.call(document.querySelectorAll('[data-l]'), function (b) { b.onclick = function () { LV = LEVELS.filter(function (l) { return l.id === b.dataset.l; })[0]; SAVE.level = LV.id; store.set('ifkart', SAVE); MB = null; showMenu(); }; });
     [].forEach.call(document.querySelectorAll('[data-d]'), function (b) { b.onclick = function () { ME = DRIVERS.filter(function (d) { return d.id === b.dataset.d; })[0]; SAVE.driver = ME.id; store.set('ifkart', SAVE); showMenu(); }; });
   }
@@ -465,7 +477,7 @@
       if (MODE === 'online' && ONLINE && !ONLINE.ghosts.length) toast('You are the first online racer here!');
     }, function (e) { $('#go').textContent = '▶ Race!'; $('#msg').textContent = typeof e === 'string' ? e : 'The race could not start. Check your internet and try again.'; });
   };
-  $('#pause').onclick = function () { showMenu(); };
+  $('#pause').onclick = function () { if (MODE === 'live' && window.KLIVE) KLIVE.leave(); showMenu(); };
 
   /* ---------------- input ---------------- */
   addEventListener('keydown', function (e) { keys[e.key] = true; if (e.key === ' ' || e.key.indexOf('Arrow') === 0) e.preventDefault(); });
@@ -486,5 +498,10 @@
     renderer.render(scene, camera);
   }
   loop(); showMenu();
-  window.IFKART = { start: function (lv) { if (lv) LV = LEVELS.filter(function (l) { return l.id === lv; })[0] || LV; return loadBanks().then(startRace); }, state: function () { return R; }, ask: function () { ask(); }, mode: function (m) { if (m) MODE = m; return MODE; }, online: function (d) { if (d) ONLINE = d; return ONLINE; } };
+  window.IFKART = { start: function (lv) { if (lv) LV = LEVELS.filter(function (l) { return l.id === lv; })[0] || LV; return loadBanks().then(startRace); }, state: function () { return R; }, ask: function () { ask(); }, mode: function (m) { if (m) MODE = m; return MODE; }, online: function (d) { if (d) ONLINE = d; return ONLINE; },
+    /* for live.js */
+    pin0: PIN0, levels: LEVELS, level: function () { return LV; }, driver: function () { return ME; }, menu: showMenu, fmt: fmt, esc: esc, toast: toast,
+    save: function (k, v) { if (arguments.length > 1) { SAVE[k] = v; store.set('ifkart', SAVE); } return SAVE[k]; },
+    live: function (cfg) { LV = LEVELS.filter(function (l) { return l.id === cfg.level; })[0] || LV; MODE = 'live'; LIVEK = cfg; MB = null; return loadBanks().then(startRace); },
+    net: function (pid, d, x) { if (!R) return; for (var i = 0; i < R.racers.length; i++) { var N = R.racers[i].net; if (N && N.pid === pid) { var now = performance.now(); if (N.d != null && now > N.at) N.v = Math.max(0, Math.min(70, (d - N.d) / ((now - N.at) / 1000))); N.d = d; N.x = x; N.at = now; } } } };
 })();

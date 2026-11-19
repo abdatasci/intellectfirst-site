@@ -18,7 +18,7 @@ const json = (d, s = 200) => Response.json(d, { status: s, headers: { 'Cache-Con
 const fail = (s, error) => json({ error }, s);
 const str = (v, n = 80) => (v == null ? '' : String(v)).replace(/\s+/g, ' ').trim().slice(0, n);
 const ROOM_HOURS = 4;
-const PARTY = ['mafia', 'mystery'];
+const PARTY = ['mafia', 'mystery', 'kart'];   // kart: an IF Kart live race (a/if-kart/live.js)
 
 function tokenRequest(clientId, capability) {
   const key = process.env.ABLY_API_KEY || '';

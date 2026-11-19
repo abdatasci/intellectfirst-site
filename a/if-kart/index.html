@@ -30,6 +30,10 @@
   .cap.on{opacity:1}
   @media (pointer:fine){.cap{bottom:44px}}
   .ch.md{text-align:left;line-height:1.15}.ch.md small{display:block;font-weight:600;font-size:12px;color:#6b5a99}
+  .lv-in{border:3px solid #e8e0ff;border-radius:16px;padding:10px 14px;font:800 20px "Baloo 2",sans-serif;color:#2a1660;width:100%;max-width:260px;-webkit-user-select:text;user-select:text}
+  .lv-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:10px}.lv-row .go{margin:0;width:auto;flex:1;font-size:20px;padding:12px 16px}
+  .lv-pin{font-size:54px;font-weight:800;letter-spacing:.08em;color:#6d3df2;line-height:1}
+  .lv-who{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}.lv-who span{background:#f7f4ff;border:2px solid #e8e0ff;border-radius:999px;padding:3px 12px;font-weight:800}
   .ctl{position:fixed;z-index:6;display:none}
   .ctl button{pointer-events:auto;border:0;border-radius:50%;font:800 18px "Baloo 2",sans-serif;color:#fff;background:rgba(109,61,242,.82);box-shadow:0 5px 0 #3a1d9a;width:86px;height:86px;touch-action:none}
   .ctl button:active,.ctl button.on{transform:translateY(3px);box-shadow:0 2px 0 #3a1d9a;background:rgba(255,79,163,.9)}
@@ -98,6 +102,7 @@
     <p id="msg" style="margin:8px 0 0;color:#c2187a;font-weight:700"></p>
     <div class="lbl">Choose your driver</div>
     <div class="chars" id="chars"></div>
+    <div id="livebox" style="display:none"></div>
     <button class="go" id="go">▶ Race!</button>
     <p class="how" id="how"></p>
   </div>
@@ -107,6 +112,10 @@
 
 <script src="/a/block-quest/lib/three-0.160.0.min.js"></script>
 <script src="/a/kids-quest/content.js?v=3"></script>
-<script src="game.js?v=3"></script>
+<script src="/a/ielts/identity.js"></script>
+<script src="/live/vendor/ably.min.js?v=3.1.0"></script>
+<script src="/live/live.js?v=39"></script>
+<script src="game.js?v=4"></script>
+<script src="live.js?v=1"></script>
 </body>
 </html>
