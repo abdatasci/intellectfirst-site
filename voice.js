@@ -5,6 +5,26 @@
    Like the browser voice, sentences are queued: speak() adds to the queue, cancel() empties it.
    Pages for children (Young Learners, Kids Quest, Starters/Movers/Flyers) use the children's voice. */
 (function () {
+  // Android's in-app browsers (the Telegram mini-app, Instagram, some phones' WebView) have no speech engine at all:
+  // window.speechSynthesis is missing, so every "Listen" button stayed silent. Give them a stand-in so the real voices
+  // below can play; when even those are unavailable a line just ends quietly after a moment, so nothing hangs.
+  if (!window.speechSynthesis && window.Audio) {
+    if (!window.SpeechSynthesisUtterance) {
+      var U = function (text) { this.text = text == null ? '' : String(text); this.lang = ''; this.rate = 1; this.pitch = 1; this.volume = 1; this.voice = null; this._l = {}; };
+      U.prototype.addEventListener = function (t, f) { (this._l[t] = this._l[t] || []).push(f); };
+      U.prototype.removeEventListener = function (t, f) { var a = this._l[t] || []; var i = a.indexOf(f); if (i >= 0) a.splice(i, 1); };
+      U.prototype.dispatchEvent = function (e) { var t = e && e.type, self = this; (this._l[t] || []).slice().forEach(function (f) { try { f.call(self, e); } catch (x) {} }); var h = this['on' + t]; if (typeof h === 'function') { try { h.call(this, e); } catch (x) {} } return true; };
+      window.SpeechSynthesisUtterance = U;
+    }
+    var timers = [];
+    var ev = function (u, t) { try { u.dispatchEvent(new Event(t)); } catch (e) { var h = u['on' + t]; if (typeof h === 'function') try { h.call(u, { type: t }); } catch (x) {} } };
+    window.speechSynthesis = {
+      __stub: true, speaking: false, pending: false, paused: false, onvoiceschanged: null,
+      speak: function (u) { if (!u) return; var t = String(u.text || '').trim(); if (!t) return; ev(u, 'start'); timers.push(setTimeout(function () { ev(u, 'end'); }, Math.min(6000, 300 + t.length * 45))); },
+      cancel: function () { timers.forEach(clearTimeout); timers = []; }, pause: function () {}, resume: function () {},
+      getVoices: function () { return []; }, addEventListener: function () {}, removeEventListener: function () {}
+    };
+  }
   var ss = window.speechSynthesis;
   if (!ss || ss.__ifVoice || !window.Audio) return;
   ss.__ifVoice = true;
@@ -91,6 +111,7 @@
   ss.cancel = function () { queue = []; current = null; try { player.pause(); player.removeAttribute('src'); player.load(); } catch (e) {} native.cancel(); };
   if (native.pause) ss.pause = function () { try { player.pause(); } catch (e) {} native.pause(); };
   if (native.resume) ss.resume = function () { if (current) { var p = player.play(); if (p && p.catch) p.catch(function () {}); } native.resume(); };
+  if (ss.__stub) try { Object.defineProperty(ss, 'speaking', { configurable: true, get: function () { return !!current || queue.length > 0; } }); } catch (e) {}
   try {
     var pd = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(ss), 'speaking');
     if (pd && pd.get) Object.defineProperty(ss, 'speaking', { configurable: true, get: function () { return !!current || queue.length > 0 || pd.get.call(ss); } });
