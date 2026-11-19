@@ -1,6 +1,8 @@
 /* IF Kart — a 3D kart race for English learners (Three.js). Original art, built from simple shapes.
    Levels: Starters, Movers, Flyers, A2 Key, B1 PET. Questions come from the IF Live banks (pictures, words, definitions)
-   and the IF Kids Quest lands (sentences). Drive through a row of gift boxes → a question → turbo or spin. */
+   and the IF Kids Quest lands (sentences).
+   Two ways to play: "Race first" (default): pure driving with a spoken narrator, gift boxes give a turbo, and the English
+   questions come after the finish line as a pit stop. "Quiz race": a gift box stops the race for a question → turbo or spin. */
 (function () {
   'use strict';
   var $ = function (s) { return document.querySelector(s); };
@@ -32,6 +34,9 @@
   var LV = LEVELS.filter(function (l) { return l.id === (new URLSearchParams(location.search).get('level') || SAVE.level); })[0] || LEVELS[0];
   var ME = DRIVERS.filter(function (d) { return d.id === SAVE.driver; })[0] || DRIVERS[0];
 
+  var MODE = SAVE.mode === 'quiz' ? 'quiz' : 'free', NARR_ON = SAVE.narr !== 0;
+  var EASY = function () { return LEVELS.indexOf(LV) < 2; };
+
   /* ---------------- questions ---------------- */
   var BANKS = null;
   function loadBanks() { return BANKS ? Promise.resolve(BANKS) : fetch('/live/banks.json').then(function (r) { return r.json(); }).then(function (d) { BANKS = d.banks; return BANKS; }).catch(function () { BANKS = []; return BANKS; }); }
@@ -52,6 +57,31 @@
 
   /* ---------------- voice and sounds ---------------- */
   function say(t) { if (!t || !window.speechSynthesis) return; try { speechSynthesis.cancel(); var u = new SpeechSynthesisUtterance(String(t).replace(/___/g, 'blank')); u.lang = 'en-GB'; u.rate = 0.92; speechSynthesis.speak(u); } catch (e) {} }
+  /* The narrator: short spoken English about the race, also shown as a caption. Starters and Movers get simpler lines.
+     pri 2 always speaks; pri 1 waits for a quiet moment so the lines never pile up. */
+  var ORD = ['', 'first', 'second', 'third', 'fourth', 'fifth', 'sixth'], NARR = { last: -9999, capT: null };
+  var LINES = {
+    ready: [['Get ready!', 'Are you ready?'], ['Engines on. Get ready!', 'Drivers, get ready for the start!']],
+    go: [['Go, go, go!', 'Go!'], ['And they are off!', 'Go! The race is on!']],
+    up: [['Great! You are {p}!', 'Yes! You are {p} now!'], ['Great overtake! You are up to {p} place.', 'You pass {n}! That puts you in {p} place.']],
+    down: [['Oh no! {n} is faster.', '{n} is in front of you!'], ['{n} gets past you. You are down to {p}.', 'Careful! {n} takes your place. You are {p} now.']],
+    drift: [['Good drift!', 'Nice turn!'], ['What a drift! Here comes the boost.', 'Beautiful drifting. Use that speed!']],
+    box: [['Turbo!', 'Fast, fast, fast!'], ['Turbo! Hold on tight.', 'A gift box, and away you go!']],
+    grass: [['Stay on the road!', 'Go back to the road!'], ['You are on the grass. Get back on the road!', 'The grass is slowing you down.']],
+    lap: [['Lap {l}!', 'This is lap {l}.'], ['That is one lap done. Lap {l} now.', 'Lap {l}. Keep your speed up.']],
+    last: [['Last lap! Go fast!', 'One more lap!'], ['Final lap! Give it everything.', 'This is the final lap. Do not slow down now!']],
+    win: [['You are first! You win!', 'You win the race! Well done!'], ['And that is the chequered flag. You win the race! Brilliant driving.', 'First place! What a race.']],
+    end: [['You are {p}. Well done!', 'Finish! You are {p}.'], ['The chequered flag. You finish in {p} place. Well driven.', 'You cross the line in {p} place. Good race.']],
+    pit: [['Now the pit stop. Answer the questions!', 'Pit stop! Time for English.'], ['Into the pit stop. Answer the questions to win your diamonds.', 'Pit stop time. A few questions, and the diamonds are yours.']]
+  };
+  function caption(t) { var c = $('#cap'); if (!c) return; c.textContent = '🎙 ' + t; c.classList.add('on'); clearTimeout(NARR.capT); NARR.capT = setTimeout(function () { c.classList.remove('on'); }, 3200); }
+  function narr(kind, pri, v) {
+    if (MODE !== 'free') return;
+    var now = Date.now(); if (pri < 2 && now - NARR.last < 3800) return;
+    var set = LINES[kind][EASY() ? 0 : 1], t = set[Math.floor(Math.random() * set.length)];
+    t = t.replace('{p}', (v && v.p) || '').replace('{n}', (v && v.n) || '').replace('{l}', (v && v.l) || '');
+    NARR.last = now; caption(t); if (NARR_ON) say(t);
+  }
   var AC = null, engine = null;
   function sfx(kind) {
     try {
@@ -219,7 +249,8 @@
       var slot = i === 0 ? 5 : i - 1; row = Math.floor(slot / 2); col = slot % 2;
       racers.push({ d: d, k: k, me: i === 0, dist: -(row * 7 + 4) / 1, x: col ? 3.5 : -3.5, v: 0, steer: 0, base: i === 0 ? 0 : 33 + Math.random() * 5, lap: -1, done: false, finish: 0, spin: 0, turbo: 0, aim: (Math.random() - .5) * 8 });
     });
-    R = { racers: racers, me: racers[0], QS: QS, qi: 0, laps: 3, t: 0, phase: 'count', count: 3.6, gems: 0, right: 0, asked: 0, hit: {}, best: SAVE['best:' + LV.id] || 0 };
+    R = { racers: racers, me: racers[0], QS: QS, qi: 0, laps: 3, t: 0, phase: 'count', count: 3.6, gems: 0, right: 0, asked: 0, boxes: 0, grassT: 0, grassAt: -99, lastPos: 0, hit: {}, best: SAVE['best:' + LV.id] || 0 };
+    $('#lights').style.display = ''; narr('ready', 2);
     document.body.classList.add('racing'); $('#hud').hidden = false; $('#keys').hidden = false; $('#menu').style.display = 'none'; $('#res').style.display = 'none';
     paused = false; engineOn(true); clock.getDelta();
   }
@@ -232,7 +263,7 @@
       var before = Math.ceil(R.count); R.count -= dt; var after = Math.ceil(R.count);
       var L = document.querySelectorAll('#lights i'); for (var i = 0; i < 3; i++) L[i].className = R.count > 0 ? (i < 4 - Math.max(1, after) ? 'r' : '') : 'g';
       if (after !== before && after > 0 && after <= 3) { sfx('beep'); big(after); }
-      if (R.count <= 0) { R.phase = 'race'; sfx('go'); big('GO!'); setTimeout(function () { $('#lights').style.display = 'none'; }, 900); }
+      if (R.count <= 0) { R.phase = 'race'; sfx('go'); big('GO!'); narr('go', 2); setTimeout(function () { $('#lights').style.display = 'none'; }, 900); }
     }
     var racing = R.phase === 'race';
     if (racing) R.t += dt;
@@ -242,12 +273,13 @@
         var steerIn = (keys.ArrowLeft || keys.a || touch.l ? -1 : 0) + (keys.ArrowRight || keys.d || touch.r ? 1 : 0);
         r.steer += (steerIn - r.steer) * Math.min(1, dt * 8);
         var target = racing && !r.done ? MAXV * (r.turbo > 0 ? 1.45 : 1) * (keys.ArrowDown || keys.s || touch.brake ? .35 : 1) : 0;
-        if (Math.abs(r.x) > ROAD_W / 2 + .5) target *= .55;   // off the road: grass slows you down
+        var off = Math.abs(r.x) > ROAD_W / 2 + .5; if (off) target *= .55;   // off the road: grass slows you down
+        if (off && racing && !r.done) { R.grassT += dt; if (R.grassT > 1.2 && R.t - R.grassAt > 9) { R.grassAt = R.t; narr('grass', 1); } } else R.grassT = 0;
         if (r.spin > 0) target *= .3;
         r.v += (target - r.v) * Math.min(1, dt * (target > r.v ? 1.1 : 2.5));
         var drift = (keys[' '] || touch.drift) && Math.abs(steerIn) > 0 && r.v > 20;
         r.x += r.steer * dt * (drift ? 17 : 12) * Math.min(1, r.v / 18);
-        if (drift) { r.driftT = (r.driftT || 0) + dt; } else if (r.driftT) { if (r.driftT > .8) { r.turbo = Math.max(r.turbo, .9); toast('🔥 Drift boost!'); } r.driftT = 0; }
+        if (drift) { r.driftT = (r.driftT || 0) + dt; } else if (r.driftT) { if (r.driftT > .8) { r.turbo = Math.max(r.turbo, .9); toast('🔥 Drift boost!'); narr('drift', 1); } r.driftT = 0; }
       } else {
         // computer drivers: steady pace with small changes, a little slower when far ahead of the player
         var gap = r.dist + r.lap * 0 - me.dist;
@@ -261,7 +293,7 @@
       var prev = r.dist; r.dist += r.v * dt;
       if (r.turbo > 0) r.turbo -= dt; if (r.spin > 0) r.spin -= dt;
       // laps
-      if (Math.floor(r.dist / TRACK.len) > Math.floor(prev / TRACK.len) && r.dist > 0) { r.lap++; if (r.lap >= R.laps && !r.done) { r.done = true; r.finish = R.t; if (r.me) finishRace(); } else if (r.me && r.lap > 0) { toast(r.lap === R.laps - 1 ? '🏁 Final lap!' : 'Lap ' + (r.lap + 1) + ' / ' + R.laps); sfx('box'); } }
+      if (Math.floor(r.dist / TRACK.len) > Math.floor(prev / TRACK.len) && r.dist > 0) { r.lap++; if (r.lap >= R.laps && !r.done) { r.done = true; r.finish = R.t; if (r.me) finishRace(); } else if (r.me && r.lap > 0) { toast(r.lap === R.laps - 1 ? '🏁 Final lap!' : 'Lap ' + (r.lap + 1) + ' / ' + R.laps); sfx('box'); if (r.lap === R.laps - 1) narr('last', 2); else narr('lap', 2, { l: ['', 'one', 'two', 'three'][r.lap + 1] }); } }
       // computer drivers use the boxes too (a turbo now and then)
       if (!r.me && racing) BOX_AT.forEach(function (u) { if (crossed(prev, r.dist, u) && Math.random() < .6) r.turbo = 1.2; });
       // place the kart
@@ -282,7 +314,7 @@
     // gift boxes for the player → a question
     if (racing && !me.done) BOX_AT.forEach(function (u, i) {
       var key = me.lap + ':' + i;
-      if (!R.hit[key] && crossed(me.dist - me.v * dt, me.dist, u)) { R.hit[key] = 1; var row = BOXES[i]; if (Math.abs(me.x) < ROAD_W / 2 + 1) { row.items.forEach(function (b) { b.visible = Math.abs(b.userData.x - me.x) > 2.6; }); setTimeout(function () { row.items.forEach(function (b) { b.visible = true; }); }, 2500); sfx('box'); ask(); } }
+      if (!R.hit[key] && crossed(me.dist - me.v * dt, me.dist, u)) { R.hit[key] = 1; var row = BOXES[i]; if (Math.abs(me.x) < ROAD_W / 2 + 1) { row.items.forEach(function (b) { b.visible = Math.abs(b.userData.x - me.x) > 2.6; }); setTimeout(function () { row.items.forEach(function (b) { b.visible = true; }); }, 2500); sfx('box'); if (MODE === 'free') { R.boxes++; me.turbo = Math.max(me.turbo, 1.5); toast('🚀 Turbo!'); narr('box', 1); } else ask(); } }
     });
     BOXES.forEach(function (row) { row.items.forEach(function (b) { b.rotation.x += dt * 1.2; b.position.y = 2 + Math.sin(R.t * 3 + b.userData.x) * .3; }); });
     BALLOONS.forEach(function (bl) { bl.position.y += Math.sin(R.t + bl.userData.bob) * dt * 1.2; });
@@ -304,6 +336,7 @@
   function hud() {
     var order = R.racers.slice().sort(function (a, b) { return (b.done ? 1e9 - b.finish : b.dist) - (a.done ? 1e9 - a.finish : a.dist); });
     var pos = order.indexOf(R.me) + 1; R.pos = pos;
+    if (R.phase === 'race' && !R.me.done && R.t > 4) { if (R.lastPos && pos < R.lastPos) narr('up', 1, { p: ORD[pos], n: order[pos].d.name }); else if (R.lastPos && pos > R.lastPos) narr('down', 1, { p: ORD[pos], n: order[pos - 2].d.name }); if (Date.now() - NARR.last > 0) R.lastPos = pos; } else R.lastPos = pos;
     $('#pos').innerHTML = '<b>' + pos + '</b><small>of ' + R.racers.length + '</small>';
     $('#lapt').textContent = 'Lap ' + Math.min(R.laps, Math.max(1, R.me.lap + 1)) + '/' + R.laps;
     $('#time').textContent = fmt(R.t); $('#gems').textContent = '💎 ' + R.gems;
@@ -320,23 +353,43 @@
 
   /* ---------------- questions ---------------- */
   var BTN = ['#ff4fa3', '#3d8bfd', '#22c55e', '#ff9a3c'];
-  function ask() {
-    if (!R.QS.length) return;
-    var q = R.QS[R.qi++ % R.QS.length]; paused = true; R.asked++;
+  /* One question card. head: the small line on top; done(ok) runs after the answer has been shown. */
+  function showQ(q, head, done) {
     var m = String(q.p).match(/^((?:\p{Extended_Pictographic}|\p{Emoji_Presentation}|‍|️)+)\s*(.*)$/u);
+    $('#qh').textContent = head;
     $('#qp').innerHTML = m ? '<span class="em">' + esc(m[1]) + '</span>' + esc(m[2]) : esc(q.p);
     $('#qo').innerHTML = q.o.map(function (o, i) { return '<button data-i="' + i + '" style="background:' + BTN[i % 4] + '">' + esc(o) + '</button>'; }).join('');
     $('#q').style.display = 'flex'; if (q.say) say(q.say);
     $('#qs').onclick = function () { say(q.say || q.p); };
-    var done = false;
+    var fin = false;
     [].forEach.call(document.querySelectorAll('#qo button'), function (b) {
       b.onclick = function () {
-        if (done) return; done = true;
+        if (fin) return; fin = true;
         var ok = +b.dataset.i === q.a; b.classList.add(ok ? 'ok' : 'no'); if (!ok) document.querySelector('#qo button[data-i="' + q.a + '"]').classList.add('ok');
-        sfx(ok ? 'ok' : 'no'); if (ok) { R.right++; R.gems++; } say(ok ? (q.word || q.o[q.a]) : 'The answer is ' + q.o[q.a]);
-        setTimeout(function () { $('#q').style.display = 'none'; paused = false; clock.getDelta(); if (ok) { R.me.turbo = 2.6; toast('🚀 Turbo! +1 💎'); sfx('gem'); } else { R.me.spin = 1.1; toast('🌀 Oops! ' + q.o[q.a]); } }, ok ? 650 : 1500);
+        sfx(ok ? 'ok' : 'no'); R.asked++; if (ok) { R.right++; R.gems++; } say(ok ? (q.word || q.o[q.a]) : q.fb || 'The answer is ' + q.o[q.a]);
+        setTimeout(function () { done(ok); }, ok ? 650 : 1500);
       };
     });
+  }
+  /* Quiz race: a gift box stops the race for one question. */
+  function ask() {
+    if (!R.QS.length) return;
+    var q = R.QS[R.qi++ % R.QS.length]; paused = true;
+    showQ(q, '🎁', function (ok) { $('#q').style.display = 'none'; paused = false; clock.getDelta(); if (ok) { R.me.turbo = 2.6; toast('🚀 Turbo! +1 💎'); sfx('gem'); } else { R.me.spin = 1.1; toast('🌀 Oops! ' + q.o[q.a]); } });
+  }
+  /* Race first: after the finish line, a pit stop of five questions. Two are about the race the player has just driven,
+     the rest come from the level's question bank. */
+  function pitStop(order, pos, then) {
+    var names = shuffle(R.racers.filter(function (r) { return !r.me; }).map(function (r) { return r.d.name; }));
+    var winner = order[0].me ? 'I did!' : order[0].d.name, o1 = shuffle([winner].concat(names.filter(function (n) { return n !== winner; }).slice(0, 2)));
+    var cap = function (w) { return w.charAt(0).toUpperCase() + w.slice(1); }, o2 = shuffle([pos].concat(shuffle([1, 2, 3, 4, 5, 6].filter(function (n) { return n !== pos; })).slice(0, 2))).map(function (n) { return cap(ORD[n]); });
+    var list = [{ p: '🏁 Who won the race?', o: o1, a: o1.indexOf(winner), say: 'Who won the race?', fb: order[0].me ? 'You won the race!' : order[0].d.name + ' won the race.' }, { p: '🏎️ Where did you finish?', o: o2, a: o2.indexOf(cap(ORD[pos])), say: 'Where did you finish?', fb: 'You finished ' + ORD[pos] + '.' }];
+    for (var i = 0; i < 3 && R.QS.length; i++) list.push(R.QS[R.qi++ % R.QS.length]);
+    var k = 0; narr('pit', 2);
+    (function next() {
+      if (k >= list.length) { $('#q').style.display = 'none'; return then(); }
+      var q = list[k++]; showQ(q, '🔧 Pit stop · ' + k + ' / ' + list.length, function (ok) { if (ok) sfx('gem'); next(); });
+    })();
   }
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
 
@@ -345,9 +398,16 @@
     setTimeout(function () {
       R.racers.forEach(function (r) { if (!r.done) { r.done = true; r.finish = R.t + Math.max(0, R.laps * TRACK.len - r.dist) / Math.max(15, r.v || 30); } });
       var order = R.racers.slice().sort(function (a, b) { return a.finish - b.finish; }), pos = order.indexOf(R.me) + 1;
+      if (R.me.done) narr(pos === 1 ? 'win' : 'end', 2, { p: ORD[pos] });
+      paused = true; engineOn(false); document.body.classList.remove('racing'); sfx(pos <= 3 ? 'win' : 'no'); $('#hud').hidden = true;
+      if (MODE === 'free' && !R.pitted) { R.pitted = true; R.order = order; return setTimeout(function () { pitStop(order, pos, function () { showResults(order, pos); }); }, 2600); }
+      showResults(order, pos);
+    }, 1200);
+  }
+  function showResults(order, pos) {
+    {
       var stars = (pos <= 1 ? 1 : 0) + (pos <= 3 ? 1 : 0) + (R.asked && R.right / R.asked >= .7 ? 1 : 0);
       var key = 'best:' + LV.id; if (!SAVE[key] || stars > SAVE[key]) { SAVE[key] = stars; store.set('ifkart', SAVE); }
-      paused = true; engineOn(false); document.body.classList.remove('racing'); sfx(pos <= 3 ? 'win' : 'no');
       $('#resc').innerHTML = '<h1 style="text-align:center">' + (pos === 1 ? '🏆 You won!' : pos <= 3 ? ['', '🥇', '🥈', '🥉'][pos] + ' ' + pos + ord(pos) + ' place!' : 'Finished ' + pos + ord(pos)) + '</h1><p class="sub" style="text-align:center;font-size:26px">' + '⭐'.repeat(stars) + '☆'.repeat(3 - stars) + ' · 💎 ' + R.gems + ' · ' + R.right + ' / ' + R.asked + ' answers right · ' + fmt(R.me.finish) + '</p>' +
         '<table>' + order.map(function (r, i) { return '<tr class="' + (r.me ? 'me' : '') + '"><td>' + (i + 1) + '</td><td>' + esc(r.d.name) + (r.me ? ' (you)' : '') + '</td><td style="text-align:right">' + fmt(Math.max(r.finish, 0)) + '</td></tr>'; }).join('') + '</table>' +
         '<div class="row"><button class="go" id="again">↻ Race again</button>' + (LEVELS.indexOf(LV) < LEVELS.length - 1 ? '<button class="go" id="next">Next level: ' + LEVELS[LEVELS.indexOf(LV) + 1].name + ' →</button>' : '') + '<button class="go ghost" id="tomenu">Menu</button></div>';
@@ -355,7 +415,7 @@
       $('#again').onclick = function () { startRace(); };
       if ($('#next')) $('#next').onclick = function () { LV = LEVELS[LEVELS.indexOf(LV) + 1]; SAVE.level = LV.id; store.set('ifkart', SAVE); MB = null; startRace(); };
       $('#tomenu').onclick = showMenu;
-    }, 1200);
+    }
   }
   function ord(n) { return n === 1 ? 'st' : n === 2 ? 'nd' : n === 3 ? 'rd' : 'th'; }
 
@@ -365,6 +425,10 @@
     $('#menu').style.display = 'flex';
     $('#lvls').innerHTML = LEVELS.map(function (l) { var b = SAVE['best:' + l.id]; return '<button class="lv' + (l === LV ? ' on' : '') + '" data-l="' + l.id + '" style="background:' + l.col + '">' + l.name + '<small>' + l.sub + (b ? ' · ' + '⭐'.repeat(b) : '') + '</small></button>'; }).join('');
     $('#chars').innerHTML = DRIVERS.map(function (d) { return '<button class="ch' + (d === ME ? ' on' : '') + '" data-d="' + d.id + '">' + { cat: '🐱', bunny: '🐰', bear: '🐻', fox: '🦊', panda: '🐼', frog: '🐸' }[d.id] + ' ' + d.name + '</button>'; }).join('');
+    $('#modes').innerHTML = [['free', '🏎️ Race first', 'Just drive. English comes after the race.'], ['quiz', '🎁 Quiz race', 'Answer at the gift boxes for a turbo.']].map(function (m) { return '<button class="ch md' + (MODE === m[0] ? ' on' : '') + '" data-m="' + m[0] + '">' + m[1] + '<small>' + m[2] + '</small></button>'; }).join('') + '<button class="ch md' + (NARR_ON ? ' on' : '') + '" id="narr">' + (NARR_ON ? '🎙 Narrator on' : '🔇 Narrator off') + '<small>The voice that talks about your race.</small></button>';
+    [].forEach.call(document.querySelectorAll('[data-m]'), function (b) { b.onclick = function () { MODE = b.dataset.m; SAVE.mode = MODE; store.set('ifkart', SAVE); showMenu(); }; });
+    $('#narr').onclick = function () { NARR_ON = !NARR_ON; SAVE.narr = NARR_ON ? 1 : 0; store.set('ifkart', SAVE); showMenu(); };
+    $('#how').innerHTML = 'Phone: ◀ ▶ to steer, the kart drives by itself, Brake and Drift on the right. Computer: arrow keys, Space to drift.<br>' + (MODE === 'free' ? 'Drive through the 🎁 gift boxes for a turbo. Hold Drift in a turn for a boost. After 3 laps: a pit stop with 5 questions for 💎.' : 'Right answer = turbo and a 💎. Wrong answer = your kart spins. 3 laps — try to finish first!');
     [].forEach.call(document.querySelectorAll('[data-l]'), function (b) { b.onclick = function () { LV = LEVELS.filter(function (l) { return l.id === b.dataset.l; })[0]; SAVE.level = LV.id; store.set('ifkart', SAVE); MB = null; showMenu(); }; });
     [].forEach.call(document.querySelectorAll('[data-d]'), function (b) { b.onclick = function () { ME = DRIVERS.filter(function (d) { return d.id === b.dataset.d; })[0]; SAVE.driver = ME.id; store.set('ifkart', SAVE); showMenu(); }; });
   }
@@ -390,5 +454,5 @@
     renderer.render(scene, camera);
   }
   loop(); showMenu();
-  window.IFKART = { start: function (lv) { if (lv) LV = LEVELS.filter(function (l) { return l.id === lv; })[0] || LV; return loadBanks().then(startRace); }, state: function () { return R; }, ask: function () { ask(); } };
+  window.IFKART = { start: function (lv) { if (lv) LV = LEVELS.filter(function (l) { return l.id === lv; })[0] || LV; return loadBanks().then(startRace); }, state: function () { return R; }, ask: function () { ask(); }, mode: function (m) { if (m) MODE = m; return MODE; } };
 })();

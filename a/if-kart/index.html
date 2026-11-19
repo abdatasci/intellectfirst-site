@@ -26,6 +26,10 @@
   .big.on{opacity:1}
   .toast{position:absolute;left:50%;top:22%;transform:translateX(-50%);padding:8px 18px;border-radius:999px;background:rgba(42,22,96,.85);font-weight:800;font-size:22px;opacity:0;transition:opacity .25s;white-space:nowrap}
   .toast.on{opacity:1}
+  .cap{position:absolute;left:50%;bottom:128px;transform:translateX(-50%);max-width:min(92vw,560px);padding:8px 16px;border-radius:16px;background:rgba(20,8,50,.78);font-weight:700;font-size:19px;line-height:1.2;text-align:center;opacity:0;transition:opacity .25s}
+  .cap.on{opacity:1}
+  @media (pointer:fine){.cap{bottom:44px}}
+  .ch.md{text-align:left;line-height:1.15}.ch.md small{display:block;font-weight:600;font-size:12px;color:#6b5a99}
   .ctl{position:fixed;z-index:6;display:none}
   .ctl button{pointer-events:auto;border:0;border-radius:50%;font:800 18px "Baloo 2",sans-serif;color:#fff;background:rgba(109,61,242,.82);box-shadow:0 5px 0 #3a1d9a;width:86px;height:86px;touch-action:none}
   .ctl button:active,.ctl button.on{transform:translateY(3px);box-shadow:0 2px 0 #3a1d9a;background:rgba(255,79,163,.9)}
@@ -55,7 +59,7 @@
   .how{font-size:14px;color:#6b5a99;margin-top:10px;line-height:1.35}
   .q{position:fixed;inset:0;z-index:30;display:none;align-items:center;justify-content:center;background:rgba(20,8,50,.55);padding:12px}
   .q .card{max-width:640px;text-align:center;padding:18px 18px 20px}
-  .q .gift{font-size:34px;margin:-6px 0 0}
+  .q .gift{font-size:24px;font-weight:800;color:#6d3df2;margin:-4px 0 2px}
   .q .pr{font-size:28px;font-weight:800;line-height:1.15;margin:4px 0 10px}.q .pr .em{display:block;font-size:84px;line-height:1.05}
   .q .opts{display:grid;gap:10px}
   .q .opts button{border:0;border-radius:16px;padding:12px 14px;font:800 22px "Baloo 2";color:#fff;cursor:pointer;box-shadow:0 5px 0 rgba(0,0,0,.25);line-height:1.15}
@@ -76,29 +80,32 @@
   <div class="lights" id="lights"><i></i><i></i><i></i></div>
   <div class="big" id="big"></div>
   <div class="toast" id="toast"></div>
+  <div class="cap" id="cap"></div>
 </div>
 <button id="pause" aria-label="Menu">❚❚ Menu</button>
 <div class="ctl" id="ctlL"><button id="left" aria-label="Steer left">◀</button><button id="right" aria-label="Steer right">▶</button></div>
 <div class="ctl" id="ctlR" style="flex-direction:column"><button id="drift">Drift</button><button id="brake">Brake</button></div>
-<div class="keys" id="keys" hidden>← → steer · ↓ brake · Space drift · drive through 🎁 gift boxes and answer for a turbo</div>
+<div class="keys" id="keys" hidden>← → steer · ↓ brake · Space drift · drive through the 🎁 gift boxes for a turbo</div>
 
 <div class="scr" id="menu">
   <div class="card">
     <h1>IF <span>Kart</span> 🏁</h1>
-    <p class="sub">A 3D kart race in English. Drive through the 🎁 gift boxes, answer the question and get a turbo boost!</p>
+    <p class="sub">A 3D kart race in English. Drive, drift and listen to the narrator. The English questions come after the race.</p>
     <div class="lbl">Choose your level</div>
     <div class="lvls" id="lvls"></div>
+    <div class="lbl">Choose how to play</div>
+    <div class="chars" id="modes"></div>
     <div class="lbl">Choose your driver</div>
     <div class="chars" id="chars"></div>
     <button class="go" id="go">▶ Race!</button>
-    <p class="how">Phone: ◀ ▶ to steer, the kart drives by itself, Brake on the right. Computer: arrow keys, Space to drift.<br>Right answer = turbo and a 💎. Wrong answer = your kart spins. 3 laps — try to finish first!</p>
+    <p class="how" id="how"></p>
   </div>
 </div>
-<div class="q" id="q"><div class="card"><div class="gift">🎁</div><div class="pr" id="qp"></div><div class="opts" id="qo"></div><p style="margin:10px 0 0"><button class="say" id="qs">🔊 Listen</button></p></div></div>
+<div class="q" id="q"><div class="card"><div class="gift" id="qh">🎁</div><div class="pr" id="qp"></div><div class="opts" id="qo"></div><p style="margin:10px 0 0"><button class="say" id="qs">🔊 Listen</button></p></div></div>
 <div class="scr" id="res" style="display:none"><div class="card res" id="resc"></div></div>
 
 <script src="/a/block-quest/lib/three-0.160.0.min.js"></script>
 <script src="/a/kids-quest/content.js?v=3"></script>
-<script src="game.js?v=1"></script>
+<script src="game.js?v=2"></script>
 </body>
 </html>
