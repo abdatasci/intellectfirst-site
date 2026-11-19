@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
 <title>IF Block Quest · IF Academy</title>
-<meta name="description" content="IF Block Quest: 3D English games for teens and adults — Word Mine and Grammar Obby, A1 to C2, built on the IF App courses.">
+<meta name="description" content="IF Block Quest: 3D English games for kids, teens and adults — build your avatar, then Word Mine, Grammar Obby and Tower Climb, from Starters to C2.">
 <meta name="theme-color" content="#0b1f3a">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@500;700;800&display=swap">
@@ -22,13 +22,18 @@
   .screen{position:fixed;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 30%,#1c3d6e,#0b1f3a 70%);padding:18px;overflow:auto}
   .card{background:#fff;color:var(--ink);border-radius:22px;padding:24px;max-width:760px;width:100%;box-shadow:0 30px 60px -20px rgba(0,0,0,.6)}
   .card h1{margin:0 0 4px;font-size:30px;color:var(--navy)}.card .sub{color:#5d6676;margin:0 0 16px}
-  .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
+  .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}
   .mode{border:2px solid #e4dccd;border-radius:18px;padding:16px;cursor:pointer;background:#fffdf7;text-align:left;font:inherit;color:inherit}
   .mode.on{border-color:var(--gold);box-shadow:0 0 0 4px rgba(201,162,78,.25)}
   .mode b{display:block;font-size:19px;margin:6px 0 4px;color:var(--navy)}.mode small{color:#5d6676;line-height:1.4;display:block}
   .mode .ic{font-size:34px}
   .lv{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}
   .lv button{font:inherit;font-weight:800;border:2px solid #e4dccd;background:#fff;border-radius:12px;padding:10px 16px;cursor:pointer;color:var(--navy)}
+  .lvh{flex-basis:100%;font:800 12px Inter,Arial,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#8a7a55;margin-top:4px}
+  .avd{margin:0 0 12px;border:2px solid #e4dccd;border-radius:14px;padding:8px 12px;background:#fffdf7}.avd summary{cursor:pointer;font-weight:800;color:var(--navy)}
+  .avr{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:8px 0}.avr b{width:76px;font-size:13px;color:#5d6676}
+  .avc{width:30px;height:30px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 1px #c9c2b4;cursor:pointer}.avc.on{box-shadow:0 0 0 3px var(--gold)}
+  .avt{font:700 13px Inter,Arial,sans-serif;border:2px solid #e4dccd;background:#fff;border-radius:10px;padding:5px 9px;cursor:pointer}.avt.on{border-color:var(--gold);background:#fff6df}
   .lv button.on{background:var(--navy);color:#fff;border-color:var(--navy)}
   .keys{font-size:13px;color:#5d6676;margin-top:12px;line-height:1.5}
   .q{position:fixed;inset:0;z-index:30;display:none;align-items:center;justify-content:center;background:rgba(5,12,28,.55);padding:16px}
@@ -71,12 +76,14 @@
 <div class="screen" id="start">
   <div class="card">
     <h1>IF Block Quest</h1>
-    <p class="sub">3D English games for teens and adults — questions from the IF App courses.</p>
+    <p class="sub">3D English games for kids, teens and adults — build your avatar, then mine, run and climb.</p>
     <div class="grid2">
       <button class="mode on" data-mode="mine"><span class="ic">⛏️</span><b>Word Mine</b><small>Explore a block island. Find the glowing word blocks, mine them and answer to collect gems.</small></button>
       <button class="mode" data-mode="obby"><span class="ic">🏃</span><b>Grammar Obby</b><small>A parkour course in the sky. Jump onto the platform with the right answer — wrong ones fall!</small></button>
+      <button class="mode" data-mode="tower"><span class="ic">🗼</span><b>Tower Climb</b><small>Climb the obby tower: dodge red kill bricks, bounce on green pads, grab coins and answer at every checkpoint.</small></button>
     </div>
     <div class="lv" id="levels"></div>
+    <details class="avd"><summary>🎨 My avatar</summary><div id="avatar"></div></details>
     <select id="crs" aria-label="Course and unit" style="width:100%;margin:0 0 12px;padding:10px 12px;border-radius:12px;border:1px solid rgba(0,0,0,.15);font:600 14px Inter,Arial,sans-serif;background:#fff;color:#1d2b4f"></select>
     <button class="btn" id="play" style="width:100%;font-size:18px">▶ Play</button>
     <p class="keys">Computer: <b>W A S D</b> or arrows to move, <b>Space</b> to jump, drag the mouse to turn the camera, <b>E</b> to mine.<br>Phone/tablet: joystick to move, Jump button, swipe to turn the camera.</p>
@@ -107,6 +114,7 @@
 <script src="/app/courses/ge-c2-more.js?v=1"></script>
 <script src="/app/courses/be-more.js?v=1"></script>
 <script src="/app/courses/teens-a2.js?v=1"></script>
-<script src="game.js?v=5"></script>
+<script src="/a/kids-quest/content.js?v=3"></script>
+<script src="game.js?v=6"></script>
 </body>
 </html>

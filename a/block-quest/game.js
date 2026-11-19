@@ -1,12 +1,31 @@
-/* IF Block Quest — 3D English games for teens and adults, built on Three.js (WebGL).
+/* IF Block Quest — 3D English games for kids, teens and adults, built on Three.js (WebGL).
    Word Mine: a block island with glowing word blocks — mine them and answer to collect gems.
    Grammar Obby: a sky parkour course — jump onto the platform with the right answer; wrong ones fall.
-   Questions come from the IF App courses (vocabulary definitions and grammar items), by level A1–C2.
+   Tower Climb: an obby tower — climb the spiral of colourful stages, dodge the red kill bricks, bounce on jump
+   pads, grab coins, and answer at every checkpoint floor to keep climbing.
+   Avatar: build your own blocky character (skin, shirt, trousers, hat) — used in every game.
+   Kids (Starters, Movers, Flyers): picture words and sentences from the Young Learners banks and IF Kids Quest.
+   Teens and adults (A1–C2): questions from the IF App courses (vocabulary definitions and grammar items).
    Original IF Academy game: no Minecraft or Roblox assets, names or characters. */
 (function () {
   'use strict';
   var $ = function (s) { return document.querySelector(s); };
-  var LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
+  var LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'], KIDS = ['Starters', 'Movers', 'Flyers'];
+  var isKid = function (l) { return KIDS.indexOf(l) >= 0; };
+  var KB = null;   // Young Learners banks (/live/banks.json), loaded when a kids level is played
+  function loadKids() { return KB ? Promise.resolve(KB) : fetch('/live/banks.json').then(function (r) { return r.json(); }).then(function (d) { KB = d.banks || []; return KB; }).catch(function () { KB = []; return KB; }); }
+  /** Kids questions: word → picture/meaning from the Young Learners banks, plus Kids Quest sentence gaps. */
+  function kidQuestions(level, n) {
+    var out = [], id = 'y-' + level.toLowerCase();
+    (KB || []).filter(function (b) { return b.id === id; }).forEach(function (b) { b.units.forEach(function (u) {
+      if (u.w) u.w.forEach(function (w) { var others = shuffle(u.w.filter(function (x) { return x[0] !== w[0]; })).slice(0, 2).map(function (x) { return x[0]; }); if (others.length < 2) return; var o = shuffle([w[0]].concat(others)); out.push({ kind: 'Words', q: (w[1].charAt(0).toUpperCase() + w[1].slice(1)) + ' — which word?', opts: o, a: o.indexOf(w[0]), say: w[0] }); });
+      if (u.q) u.q.forEach(function (q) { if (q[1].length < 2) return; var right = q[1][q[2]], o = shuffle(q[1]).slice(0, 3); if (o.indexOf(right) < 0) o[0] = right; o = shuffle(o); out.push({ kind: 'Sentences', q: q[0], opts: o, a: o.indexOf(right), say: q[0].replace('___', right) }); });
+    }); });
+    (window.KQ_LANDS || []).filter(function (l) { return l.level === level; }).forEach(function (l) {
+      (l.kartQ || []).forEach(function (q) { var o = shuffle(q.o); out.push({ kind: 'Sentences', q: q.t, opts: o, a: o.indexOf(q.a), say: q.t.replace('___', q.a) }); });
+    });
+    return shuffle(out.filter(function (q) { return q.opts.every(function (o) { return String(o).length <= 26; }); })).slice(0, n);
+  }
   var SAVE = (function () { try { return JSON.parse(localStorage.getItem('ifbq') || '{}'); } catch (e) { return {}; } })();
   var persist = function () { try { localStorage.setItem('ifbq', JSON.stringify(SAVE)); } catch (e) {} };
   var shuffle = function (a) { a = a.slice(); for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)), t = a[i]; a[i] = a[j]; a[j] = t; } return a; };
@@ -34,6 +53,7 @@
   }
   /** n questions: {kind, q, opts:[...], a:index, say} — vocabulary (definition → word) and grammar (gap / choice). */
   function questions(level, n, shortOpts) {
+    if (isKid(level)) return kidQuestions(level, n);
     var B = bank(level), out = [];
     if (B.vocab.length < 4) { var i = LEVELS.indexOf(level); B = bank(LEVELS[Math.max(0, i - 1)]); }
     var V = shuffle(B.vocab), G = shuffle(B.gram.filter(function (g) { return !shortOpts || g.o.every(function (o) { return o.length <= 26; }); }));
@@ -83,16 +103,29 @@
     return new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ map: tex, side: THREE.DoubleSide }));
   }
 
-  /* ---------------- the player: an original blocky explorer in IF navy and gold ---------------- */
+  /* ---------------- the player: an original blocky avatar, built by the player (Avatar menu) ---------------- */
+  var AV_OPT = {
+    skin: [0xf2c8a0, 0xe0a979, 0xb97a4e, 0x7a4b2c, 0xffd9b8],
+    shirt: [0x0b1f3a, 0xe5484d, 0x3d8bfd, 0x22a06b, 0xffb020, 0x8b5cf6, 0xff6fb5, 0xffffff],
+    pants: [0x1f3a5f, 0x2b2b2b, 0x5b4636, 0x3d8bfd, 0x8a8f98],
+    hat: ['hair', 'cap', 'crown', 'headphones', 'beanie', 'none']
+  };
+  var AV = Object.assign({ skin: 0, shirt: 0, pants: 0, hat: 0 }, SAVE.av || {});
   function makePlayer() {
     var g = new THREE.Group(), box = function (w, h, d, color, x, y, z) { var m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat(color)); m.position.set(x, y, z); m.castShadow = true; g.add(m); return m; };
-    box(0.5, 0.7, 0.3, 0x1f3a5f, -0.14, 0.35, 0); box(0.5, 0.7, 0.3, 0x1f3a5f, 0.14, 0.35, 0);      // legs (one box each side)
+    var SK = AV_OPT.skin[AV.skin] || AV_OPT.skin[0], SH = AV_OPT.shirt[AV.shirt] || AV_OPT.shirt[0], PA = AV_OPT.pants[AV.pants] || AV_OPT.pants[0], HAT = AV_OPT.hat[AV.hat] || 'hair';
+    box(0.5, 0.7, 0.3, PA, -0.14, 0.35, 0); box(0.5, 0.7, 0.3, PA, 0.14, 0.35, 0);                  // legs (one box each side)
     g.children[0].scale.x = 0.5; g.children[1].scale.x = 0.5;
-    box(0.62, 0.72, 0.36, 0x0b1f3a, 0, 1.06, 0);                                                  // jacket
+    box(0.62, 0.72, 0.36, SH, 0, 1.06, 0);                                                        // shirt
     box(0.62, 0.12, 0.37, 0xc9a24e, 0, 0.78, 0);                                                  // gold belt
-    box(0.2, 0.66, 0.24, 0x0b1f3a, -0.42, 1.06, 0); box(0.2, 0.66, 0.24, 0x0b1f3a, 0.42, 1.06, 0); // arms
-    box(0.5, 0.5, 0.5, 0xf2c8a0, 0, 1.68, 0);                                                     // head
-    box(0.54, 0.16, 0.54, 0x3b2418, 0, 1.96, 0);                                                  // hair
+    box(0.2, 0.66, 0.24, SH, -0.42, 1.06, 0); box(0.2, 0.66, 0.24, SH, 0.42, 1.06, 0);            // arms
+    box(0.5, 0.5, 0.5, SK, 0, 1.68, 0);                                                           // head
+    if (HAT === 'hair') box(0.54, 0.16, 0.54, 0x3b2418, 0, 1.96, 0);
+    else if (HAT === 'cap') { box(0.56, 0.18, 0.56, 0xe5484d, 0, 1.98, 0); box(0.5, 0.06, 0.3, 0xe5484d, 0, 1.9, -0.36); }
+    else if (HAT === 'crown') { box(0.56, 0.14, 0.56, 0xffcf3f, 0, 1.99, 0); [-0.2, 0, 0.2].forEach(function (x) { box(0.1, 0.16, 0.1, 0xffcf3f, x, 2.12, -0.23); }); }
+    else if (HAT === 'headphones') { box(0.62, 0.08, 0.14, 0x222831, 0, 1.97, 0); box(0.1, 0.24, 0.24, 0x3d8bfd, -0.3, 1.72, 0); box(0.1, 0.24, 0.24, 0x3d8bfd, 0.3, 1.72, 0); }
+    else if (HAT === 'beanie') { box(0.56, 0.24, 0.56, 0x22a06b, 0, 2.0, 0); box(0.16, 0.12, 0.16, 0xffffff, 0, 2.16, 0); }
+    else box(0.52, 0.06, 0.52, 0x3b2418, 0, 1.94, 0);                                              // 'none': short hair
     box(0.08, 0.08, 0.02, 0x1b2333, -0.11, 1.72, -0.26); box(0.08, 0.08, 0.02, 0x1b2333, 0.11, 1.72, -0.26); // eyes (front = -z)
     box(0.34, 0.24, 0.02, 0xc9a24e, 0, 1.12, -0.19);                                              // IF badge
     g.userData.legs = [g.children[0], g.children[1]]; g.userData.arms = [g.children[4], g.children[5]];
@@ -271,7 +304,9 @@
     $('#hint').textContent = 'Read the sign, then jump onto the platform with the right answer · Space to jump · drag to look around';
     updateObbyHud();
   }
-  function updateObbyHud() { var passed = G.gates.filter(function (g) { return g.passed; }).length; hud('<span>🏃 Grammar Obby · ' + G.level + '</span><span>✅ ' + G.right + ' / ' + G.gates.length + '</span><span>⏱ ' + Math.round((performance.now() - G.t0) / 1000) + 's</span><span>💥 ' + G.falls + '</span>'); }
+  function updateObbyHud() { var passed = G.gates.filter(function (g) { return g.passed; }).length;
+    if (G.mode === 'tower') return hud('<span>🗼 Tower Climb · ' + G.level + '</span><span>✅ ' + G.right + ' / ' + G.gates.length + '</span><span>🪙 ' + G.got + '</span><span>⬆ ' + Math.max(0, Math.round(G.p.y)) + ' / ' + Math.round(G.top) + ' m</span><span>💥 ' + G.falls + '</span>');
+    hud('<span>🏃 Grammar Obby · ' + G.level + '</span><span>✅ ' + G.right + ' / ' + G.gates.length + '</span><span>⏱ ' + Math.round((performance.now() - G.t0) / 1000) + 's</span><span>💥 ' + G.falls + '</span>'); }
   function stepObby(dt, t) {
     var p = G.p, sp = 6.4, mv = moveVec();
     G.plats.forEach(function (P) { if (P.kind === 'move') { var nx = P.base + Math.sin(t * 1.4 + P.phase) * 2.2; if (p.on === P) p.x += nx - P.x; P.x = nx; P.m.position.x = nx; }
@@ -285,14 +320,17 @@
       if (Math.abs(p.x - P.x) <= P.w / 2 + 0.2 && Math.abs(p.z - P.z) <= P.d / 2 + 0.2 && oldY >= P.y - 0.05 && p.y <= P.y + 0.01) { landed = P; }
     });
     if (landed) { p.y = landed.y; p.vy = 0; p.ground = true; if (p.on !== landed) onLand(landed); p.on = landed; } else p.on = null;
-    if (p.y < -25) { G.falls++; beep('fall'); p.x = p.cp.x; p.y = p.cp.y + 0.5; p.z = p.cp.z; p.vy = 0; toast('Back to the last checkpoint!'); updateObbyHud(); }
+    if (p.y < (G.mode === 'tower' ? p.cp.y - 18 : -25)) { G.falls++; beep('fall'); p.x = p.cp.x; p.y = p.cp.y + 0.5; p.z = p.cp.z; p.vy = 0; toast('Back to the last checkpoint!'); updateObbyHud(); }
     G.trophy.rotation.y += dt;
+    if (G.coins) for (var ci = G.coins.length - 1; ci >= 0; ci--) { var co = G.coins[ci]; co.rotation.z += dt * 3; if (Math.abs(co.position.x - p.x) < 0.9 && Math.abs(co.position.z - p.z) < 0.9 && Math.abs(co.position.y - (p.y + 1)) < 1.2) { scene.remove(co); G.coins.splice(ci, 1); G.got++; beep('gem'); updateObbyHud(); } }
     qPanel(G.gates.filter(function (g) { return !g.passed; })[0] || null);
     if (Math.random() < 0.05) updateObbyHud();
     wantJump = false; wantMine = false;
   }
   function onLand(P) {
     var p = G.p;
+    if (P.kind === 'kill') { G.falls++; beep('fall'); burst(new THREE.Vector3(p.x, p.y + 0.5, p.z), 0xff3b3b); toast('Ouch! Red bricks send you back to the checkpoint.'); p.x = p.cp.x; p.y = p.cp.y + 0.5; p.z = p.cp.z; p.vy = 0; p.on = null; updateObbyHud(); return; }
+    if (P.kind === 'pad') { p.vy = 15; p.ground = false; beep('jump'); return; }
     if (P.kind === 'check') { p.cp = { x: P.x, y: P.y, z: P.z }; var g = G.gates[P.gate]; if (g && !g.announced) { g.announced = true; toast('Checkpoint ✓ Read the question on the sign!'); say(g.q.q.replace(/___/g, 'blank')); } }
     if (P.kind === 'answer') {
       var gate = G.gates[P.gate];
@@ -300,6 +338,60 @@
       else { gate.missed = true; P.m.material = mat(0xd64545); beep('bad'); toast('✗ Wrong — it falls!'); setTimeout(function () { P.dropping = true; P.gone = true; }, 350); }
     }
     if (P.kind === 'finish' && !G.over) finish();
+  }
+
+  /* ================= TOWER CLIMB (an obby tower) =================
+     A spiral of stages around a central tower: jump up the colourful blocks, avoid the red kill bricks (they send
+     you back to the last checkpoint), bounce on the green jump pads, collect coins, and at each checkpoint floor
+     jump onto the right answer to unlock the next part of the climb. */
+  function startTower(level) {
+    var kid = isKid(level);
+    baseScene(0x9fd4ff, 160); cloudLayer();
+    var plats = [], coins = [], Q = questions(level, kid ? 6 : 8, true), ang = 0, y = 0, R = 9, gates = [];
+    var add = function (px, py, pz, w, d, color, kind) { var m = new THREE.Mesh(new THREE.BoxGeometry(w, 0.8, d), mat(color, kind === 'kill' ? { emissive: 0x7a0f0f } : kind === 'pad' ? { emissive: 0x0d4d22 } : undefined)); m.position.set(px, py - 0.4, pz); m.castShadow = m.receiveShadow = true; scene.add(m); var P = { m: m, x: px, y: py, z: pz, w: w, d: d, kind: kind || 'plain', base: px, phase: Math.random() * 6 }; plats.push(P); return P; };
+    // the tower core and a base island
+    var core = new THREE.Mesh(new THREE.BoxGeometry(5, 1, 5), mat(0x0b1f3a)); core.scale.y = (Q.length * 7 + 14); core.position.set(0, core.scale.y / 2 - 6, 0); scene.add(core);
+    for (var s = 0; s < Q.length * 7 + 10; s += 3) { var st = new THREE.Mesh(new THREE.BoxGeometry(5.1, 0.3, 5.1), mat(PALETTE[(s / 3) % PALETTE.length])); st.position.set(0, s - 4, 0); scene.add(st); }
+    add(0, 0, R, 8, 6, 0xeef2f8, 'start');
+    var sign0 = textPlane('IF Tower Climb · ' + level + ' — climb to the top!', 7, 1.4, { size: 40 }); sign0.position.set(0, 3.2, R - 2.6); scene.add(sign0);
+    var at = function (a, r) { return { x: Math.sin(a) * r, z: Math.cos(a) * r }; };
+    Q.forEach(function (q, qi) {
+      var hops = kid ? 4 : 5 + (qi % 2);
+      for (var h = 0; h < hops; h++) {
+        ang += 0.42; y += kid ? 0.7 : 0.9; var P = at(ang, R + (h % 2 ? 1.2 : -0.6));
+        var roll = Math.random(), kind = 'plain';
+        if (!kid && qi > 0 && h === 2 && roll < 0.35) kind = 'move';
+        if (h === hops - 2 && roll > 0.7) kind = 'pad';
+        var B = add(P.x, y, P.z, kind === 'pad' ? 2.4 : 2.8, kind === 'pad' ? 2.4 : 2.8, kind === 'pad' ? 0x22c55e : PALETTE[(qi * 3 + h) % PALETTE.length], kind);
+        if (kind === 'pad') y += 2.2;                                                      // the pad throws you up to the next stage
+        // a kill brick next to (not on) the path
+        if ((!kid || qi > 1) && h === 1) { var K = at(ang + 0.2, R + 3.2); add(K.x, y + 0.2, K.z, 2, 2, 0xff3b3b, 'kill'); }
+        if (h % 2 === 0) { var c = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.4, 0.12, 16), mat(0xffcf3f, { emissive: 0x6b4a00 })); c.rotation.x = Math.PI / 2; c.position.set(P.x, y + 1.3, P.z); scene.add(c); coins.push(c); }
+      }
+      // checkpoint floor with the question and three answer pads
+      ang += 0.55; y += 0.9; var C = at(ang, R + 0.4);
+      var cp = add(C.x, y, C.z, 5, 5, 0x2f9e57, 'check'); cp.gate = qi;
+      var flag = new THREE.Mesh(new THREE.BoxGeometry(0.15, 2.4, 0.15), mat(0xffffff)); flag.position.set(C.x + 2, y + 1.2, C.z); scene.add(flag);
+      var cloth = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.55, 0.05), mat(0xc9a24e)); cloth.position.set(C.x + 2.5, y + 2.1, C.z); scene.add(cloth);
+      var S0 = at(ang + 0.25, R - 3.6), sign = textPlane((qi + 1) + '. ' + q.q, 7, 1.8, { size: 44 }); sign.position.set(S0.x, y + 4.2, S0.z); sign.lookAt(S0.x * 3, y + 4.2, S0.z * 3); scene.add(sign);
+      // answer pads side by side across the path (inner, middle, outer), all one jump from the checkpoint; behind them a
+      // walkway one step up, reachable from whichever pad is right, leads on to the next part of the climb
+      ang += 0.5; y += 0.4; var n3 = q.opts.length, RAD = [R - 2.4, R + 0.4, R + 3.2];
+      var answers = q.opts.map(function (o, k) { var A0 = at(ang, RAD[k] != null ? RAD[k] : R), A = add(A0.x, y, A0.z, 2.4, 2.4, ANS_COL[k % 3], 'answer'); A.correct = k === q.a; A.gate = qi;
+        var lab = textPlane(ANS_L[k] + '  ' + o, 2.6, 1.0, { size: 50 }); lab.position.set(A.x, y + 1.8, A.z); lab.lookAt(A.x * 2, y + 1.8, A.z * 2); scene.add(lab); A.label = lab; return A; });
+      gates.push({ q: q, cp: cp, answers: answers, missed: false, passed: false });
+      ang += 0.36; var wy = y + 1.0;
+      [R - 2.4, R - 0.4, R + 1.6, R + 3.4].forEach(function (r) { var W0 = at(ang, r); add(W0.x, wy, W0.z, 2.4, 2.4, 0xdfe7f3, 'walk'); });
+      y = wy;
+    });
+    ang += 0.5; y += 1; var F = at(ang, R), fin = add(F.x, y, F.z, 6, 6, 0xffcf3f, 'finish');
+    var trophy = new THREE.Group(), cup = new THREE.Mesh(new THREE.CylinderGeometry(0.8, 0.4, 1.2, 8), mat(0xffcf3f, { emissive: 0x6b4a00 })); cup.position.y = 1.6; trophy.add(cup);
+    var stand = new THREE.Mesh(new THREE.BoxGeometry(1, 0.6, 1), mat(0x0b1f3a)); stand.position.y = 0.6; trophy.add(stand); trophy.position.set(F.x, y, F.z); scene.add(trophy);
+    var player = makePlayer(); scene.add(player);
+    var p = { x: 0, y: 0.01, z: R + 1, vy: 0, ground: true, on: null, cp: { x: 0, y: 0.5, z: R + 1 } };
+    G = { mode: 'tower', level: level, player: player, p: p, plats: plats, gates: gates, falls: 0, right: 0, coins: coins, got: 0, t0: performance.now(), trophy: trophy, fin: fin, top: y };
+    $('#hint').textContent = 'Climb the tower · red bricks send you back · green pads bounce you up · answer at every checkpoint';
+    updateObbyHud();
   }
 
   /* ---------------- shared: movement, particles, camera, finish ---------------- */
@@ -316,8 +408,8 @@
     var secs = Math.round((performance.now() - G.t0) / 1000), key = G.mode + ':' + G.level, score = G.mode === 'mine' ? G.gems : G.right, total = G.mode === 'mine' ? G.total : G.gates.length;
     var best = SAVE[key] || 0, isBest = score > best; if (isBest) { SAVE[key] = score; persist(); }
     var stars = score >= total * 0.9 ? 3 : score >= total * 0.6 ? 2 : score >= total * 0.3 ? 1 : 0;
-    var box = $('#q'); $('#qk').textContent = G.mode === 'mine' ? 'Word Mine complete' : 'Course complete';
-    $('#qt').innerHTML = '⭐'.repeat(stars) + '☆'.repeat(3 - stars) + '<br>' + (G.mode === 'mine' ? '💎 ' + score + ' gems out of ' + total : '✅ ' + score + ' / ' + total + ' first try · 💥 ' + G.falls + ' falls') + ' · ⏱ ' + secs + 's' + (isBest ? '<br><small style="color:#1f9d55">New best for ' + G.level + '!</small>' : '');
+    var box = $('#q'); $('#qk').textContent = G.mode === 'mine' ? 'Word Mine complete' : G.mode === 'tower' ? 'You reached the top!' : 'Course complete';
+    $('#qt').innerHTML = '⭐'.repeat(stars) + '☆'.repeat(3 - stars) + '<br>' + (G.mode === 'mine' ? '💎 ' + score + ' gems out of ' + total : '✅ ' + score + ' / ' + total + ' first try' + (G.mode === 'tower' ? ' · 🪙 ' + G.got + ' coins' : '') + ' · 💥 ' + G.falls + ' falls') + ' · ⏱ ' + secs + 's' + (isBest ? '<br><small style="color:#1f9d55">New best for ' + G.level + '!</small>' : '');
     $('#qo').innerHTML = '<button id="again">↻ Play again</button><button id="tomenu">☰ Choose another game or level</button>';
     $('#again').onclick = function () { box.style.display = 'none'; begin(G.mode, G.level); };
     $('#tomenu').onclick = function () { box.style.display = 'none'; showMenu(); };
@@ -328,7 +420,7 @@
     requestAnimationFrame(loop);
     if (!G || !scene) return;
     var dt = Math.min(0.05, (now - (lastT || now)) / 1000); lastT = now;
-    if (!paused) (G.mode === 'mine' ? stepMine : stepObby)(dt, now / 1000);
+    if (!paused) (G.mode === 'mine' ? stepMine : stepObby)(dt, now / 1000);   // the tower uses the obby physics
     var p = G.p, pl = G.player, mv = moveVec();
     pl.position.set(p.x, p.y, p.z);
     if (mv.len > 0.1 && !paused) { var target = Math.atan2(-mv.x, -mv.z); var d = target - pl.rotation.y; while (d > Math.PI) d -= 2 * Math.PI; while (d < -Math.PI) d += 2 * Math.PI; pl.rotation.y += d * Math.min(1, dt * 12); walkT += dt * 10; }
@@ -342,13 +434,14 @@
   requestAnimationFrame(loop);
 
   /* ---------------- menu ---------------- */
-  var MODE = SAVE.mode || 'mine', LEVEL = SAVE.level || 'B1';
-  (function () { var q = new URLSearchParams(location.search); if (LEVELS.indexOf(q.get('level')) >= 0) LEVEL = q.get('level'); if (q.get('mode') === 'obby' || q.get('mode') === 'mine') MODE = q.get('mode');
+  var MODE = SAVE.mode || 'mine', LEVEL = SAVE.level || 'B1';  // LEVEL: A1–C2, or Starters / Movers / Flyers
+  (function () { var q = new URLSearchParams(location.search); var ql = q.get('level') || ''; ql = KIDS.filter(function (k) { return k.toLowerCase() === ql.toLowerCase(); })[0] || ql; if (LEVELS.indexOf(ql) >= 0 || isKid(ql)) LEVEL = ql; if (['obby', 'mine', 'tower'].indexOf(q.get('mode')) >= 0) MODE = q.get('mode');
     var c = IFX_BANK.courses.filter(function (x) { return x.id === q.get('course'); })[0];
     if (c) { PICK.c = c.id; LEVEL = c.level; if (c.units.some(function (u) { return u.id === q.get('unit'); })) PICK.u = q.get('unit'); }
   })();
   function courseMenu() {
     var el = $('#crs'); if (!el) return;
+    el.style.display = isKid(LEVEL) ? 'none' : '';
     var list = IFX_BANK.courses.filter(function (c) { return c.level === LEVEL; });
     if (PICK.c && !list.some(function (c) { return c.id === PICK.c; })) { PICK.c = ''; PICK.u = ''; }
     var esc = function (t) { return String(t).replace(/[&<>"]/g, function (m) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[m]; }); };
@@ -360,15 +453,25 @@
   }
   function showMenu() {
     paused = true; $('#start').style.display = 'flex';
-    $('#levels').innerHTML = LEVELS.map(function (l) { var b1 = SAVE['mine:' + l], b2 = SAVE['obby:' + l]; return '<button data-lv="' + l + '" class="' + (l === LEVEL ? 'on' : '') + '">' + l + (b1 || b2 ? ' <small>★</small>' : '') + '</button>'; }).join('');
+    var lvb = function (l) { var b = SAVE['mine:' + l] || SAVE['obby:' + l] || SAVE['tower:' + l]; return '<button data-lv="' + l + '" class="' + (l === LEVEL ? 'on' : '') + '">' + l + (b ? ' <small>★</small>' : '') + '</button>'; };
+    $('#levels').innerHTML = '<span class="lvh">🧒 Kids</span>' + KIDS.map(lvb).join('') + '<span class="lvh">🎧 Teens &amp; adults</span>' + LEVELS.map(lvb).join('');
+    avatarPanel();
     [].forEach.call(document.querySelectorAll('[data-lv]'), function (b) { b.onclick = function () { LEVEL = b.dataset.lv; showMenu(); }; });
     courseMenu();
     [].forEach.call(document.querySelectorAll('.mode'), function (b) { b.classList.toggle('on', b.dataset.mode === MODE); b.onclick = function () { MODE = b.dataset.mode; showMenu(); }; });
   }
+  function avatarPanel() {
+    var el = $('#avatar'); if (!el) return;
+    var hex = function (n) { return '#' + ('00000' + n.toString(16)).slice(-6); }, HATS = { hair: '💇 Hair', cap: '🧢 Cap', crown: '👑 Crown', headphones: '🎧 Headphones', beanie: '🧶 Beanie', none: '🙂 Short hair' };
+    var row = function (k, label) { return '<div class="avr"><b>' + label + '</b>' + AV_OPT[k].map(function (v, i) { return k === 'hat' ? '<button data-av="' + k + ':' + i + '" class="avt' + (AV[k] === i ? ' on' : '') + '">' + HATS[v] + '</button>' : '<button data-av="' + k + ':' + i + '" class="avc' + (AV[k] === i ? ' on' : '') + '" style="background:' + hex(v) + '" aria-label="' + label + ' ' + (i + 1) + '"></button>'; }).join('') + '</div>'; };
+    el.innerHTML = row('skin', 'Skin') + row('shirt', 'Shirt') + row('pants', 'Trousers') + row('hat', 'Head');
+    [].forEach.call(el.querySelectorAll('[data-av]'), function (b) { b.onclick = function () { var v = b.dataset.av.split(':'); AV[v[0]] = +v[1]; SAVE.av = AV; persist(); avatarPanel(); }; });
+  }
   function begin(mode, level) {
+    if (isKid(level) && !KB) { loadKids().then(function () { begin(mode, level); }); return; }
     MODE = mode; LEVEL = level; SAVE.mode = mode; SAVE.level = level; persist();
     $('#start').style.display = 'none'; paused = false; yaw = 0; pitch = 0.32;
-    parts = []; var qp = $('#qpanel'); if (qp) { qp.style.display = 'none'; qp.dataset.g = ''; } (mode === 'mine' ? startMine : startObby)(level);
+    parts = []; var qp = $('#qpanel'); if (qp) { qp.style.display = 'none'; qp.dataset.g = ''; } (mode === 'mine' ? startMine : mode === 'tower' ? startTower : startObby)(level);
     camera.position.set(G.p.x, G.p.y + 6, G.p.z + 9);
   }
   $('#play').onclick = function () { begin(MODE, LEVEL); };
