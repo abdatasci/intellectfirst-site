@@ -1,0 +1,34 @@
+/* AI-Generated General English A1, A2 and B1: a short Russian note for every grammar lesson (original IF Academy material).
+   Shown under the rule behind the "Show Russian" button. Written in English-teaching Russian; \n starts a new line. */
+(function () {
+  IFX.ruNotes('ge-a1', {
+    u1: "Глагол be (быть) в настоящем времени: I am, he / she / it is, you / we / they are.\nВ русском мы его пропускаем («Я учитель»), а в английском он обязателен: I am a teacher.\nОтрицание: + not (isn't, aren't). Вопрос: be ставится в начало: Are you…?",
+    u2: "have got = «у меня есть». С he / she / it: has got.\nВопрос: Have you got…? Краткий ответ: Yes, I have. / No, I haven't.\nmy, your, his, her, our, their стоят перед существительным и не меняются по родам и числам: my brother, my sisters.",
+    u3: "В Present Simple после he, she, it к глаголу добавляется -s: she works.\nПосле -o, -ch, -sh, -s, -x: -es (goes, watches). have → has.\nОтрицание и вопрос образуются с does, и тогда -s у глагола уже нет: He doesn't work. Does she work?",
+    u4: "some: в утверждениях («немного, несколько»). any: в отрицаниях и вопросах.\nHow many…? с исчисляемыми во множественном числе (apples). How much…? с неисчисляемыми (rice, milk) и о цене.\nВ русском это одно слово «сколько», в английском нужно выбирать.",
+    u5: "There is / There are = «есть, находится» (где-то что-то есть).\nThere is + единственное число, There are + множественное.\nПо-русски мы начинаем с места («На улице есть банк»), по-английски с There: There's a bank in the street.",
+    u6: "can = «уметь, мочь». Форма одна для всех лиц: he can (без -s). После can глагол без to: can swim.\nОтрицание: can't. Вопрос: Can you…?\nПосле like, love, hate глагол с -ing: I love dancing = «Я люблю танцевать».",
+    u7: "Present Continuous = действие происходит прямо сейчас: am / is / are + глагол с -ing.\nВ русском одна форма («я работаю»), в английском две: I work (обычно) и I'm working (сейчас).\nПравописание: sit → sitting, make → making.",
+    u8: "was / were = прошедшее время глагола be: I / he / she / it was, you / we / they were.\nПравильные глаголы: + -ed (visited). Неправильные нужно запомнить: go → went, see → saw.\nОтрицание и вопрос с did, глагол в начальной форме: I didn't go. Did you see?"
+  });
+  IFX.ruNotes('ge-a2', {
+    u1: "Present Simple: привычки и то, что происходит регулярно.\nНаречия частоты (always, usually, often, sometimes, never) стоят перед основным глаголом, но после be: She always gets up early. He is never late.\nС never глагол без отрицания: He never comes late (не doesn't never).",
+    u2: "Исчисляемые существительные можно посчитать (an apple, two apples), неисчисляемые нельзя (water, money, bread).\nsome: в утверждениях, any: в вопросах и отрицаниях.\nmany + исчисляемые, much + неисчисляемые, a lot of подходит к обоим.",
+    u3: "Past Simple: законченное действие в прошлом (yesterday, last week, two days ago).\nПравильные глаголы: + -ed. Неправильные: вторая форма (went, saw, bought).\nПосле didn't и Did…? глагол в начальной форме: didn't go, Did you go? (не didn't went).",
+    u4: "Past Continuous (was / were + -ing) = фон, длительное действие в прошлом: «я шёл».\nPast Simple = короткое действие, которое его прервало: «начался дождь».\nwhile + Past Continuous, when + Past Simple: While I was walking, it started to rain.",
+    u5: "be going to: планы, которые уже решены: I'm going to visit my aunt.\nwill: прогноз (I think it will rain), обещание, предложение помощи и решение в момент речи (I'll help you).\nВ русском обе формы часто переводятся будущим временем, разница в том, решено ли это заранее.",
+    u6: "Короткие прилагательные: + -er, the + -est (colder, the coldest). На -y: busier, the busiest.\nДлинные: more modern, the most modern.\nИсключения: good → better → the best, bad → worse → the worst. «Чем» = than: bigger than.",
+    u7: "Present Perfect (have / has + третья форма глагола) = опыт в жизни, когда не важно, когда именно это было.\never = «когда-нибудь» в вопросе, never = «никогда» (глагол без not): I've never flown.\nЕсли называем время (yesterday, in 2020), нужен Past Simple: I went there in 2020.",
+    u8: "should = совет («следует, стоит»). must = «должен, обязан» (сильное правило). have to = «приходится, нужно» (внешняя необходимость).\nВнимание: mustn't = «нельзя», а don't have to = «не обязательно». Это разные значения.\nПосле should и must глагол без to."
+  });
+  IFX.ruNotes('ge-b1', {
+    u1: "Present Perfect связывает прошлое с настоящим: опыт (I've worked in a hotel), новость или результат (She's found a job), период до сих пор (for / since).\nВ русском это обычно просто прошедшее время, поэтому смотрите на слова времени.\nЕсть законченное время (yesterday, in 2020, last year): только Past Simple.",
+    u2: "Три способа сказать о будущем.\ngoing to: намерение, план. Present Continuous: твёрдая договорённость с временем или местом (I'm meeting Aru at six). will: решение в момент речи, прогноз, обещание.\nЕсли видим признаки сейчас, говорим going to: It's going to rain.",
+    u3: "Ситуация началась в прошлом и продолжается сейчас: Present Perfect, а не настоящее время, как в русском.\n«Я знаю её десять лет» = I've known her for ten years (не I know her).\nfor + период (for ten years), since + момент начала (since 2019). Вопрос: How long have you…?",
+    u4: "First Conditional: реальное условие в будущем. If + Present Simple, will + глагол.\nВ русском после «если» стоит будущее время («если пойдёт дождь»), в английском после if будущего нет: If it rains (не if it will rain).\nunless = «если не»: I won't buy it unless it's cheaper.",
+    u5: "must / have to = необходимо. don't have to = не обязательно (можно, но не нужно). mustn't / can't / aren't allowed to = запрещено.\nНе путайте: You don't have to come («можете не приходить») и You mustn't come («вам нельзя приходить»).\nВ прошедшем времени у must нет формы: используем had to.",
+    u6: "После одних глаголов идёт -ing (enjoy, avoid, finish, mind, give up, suggest), после других to + глагол (want, decide, hope, plan, need, learn).\nПосле предлога всегда -ing: good at cooking. Как подлежащее тоже -ing: Swimming is good for you.\nЦель («чтобы») выражается через to: I run to keep fit.",
+    u7: "Past Perfect (had + третья форма) = действие, которое произошло раньше другого действия в прошлом. «Предпрошедшее» время.\nWhen I arrived, the train had left = поезд ушёл до моего прихода.\nВ русском порядок понятен из слов «уже», «до этого», в английском его показывает сама форма глагола.",
+    u8: "Пассивный залог: важно действие, а не тот, кто его совершил. be + третья форма глагола.\nНастоящее: is / are + V3 (Plastic is recycled). Прошедшее: was / were + V3 (The park was cleaned).\nКто сделал, добавляем через by: by volunteers = «волонтёрами»."
+  });
+})();

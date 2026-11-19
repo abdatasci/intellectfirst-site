@@ -10,6 +10,7 @@
   var COURSES = [], BY = {};
   var IFX = window.IFX = { course: function (c) { COURSES.push(c); BY[c.id] = c; }, get: function (id) { return BY[id]; }, all: function () { return COURSES; },
     /** Add more units to a course (full courses are written in parts). */
+    ruNotes: function (cid, map) { var c = BY[cid]; if (c) c.units.forEach(function (u) { if (map[u.id]) u.lessons.forEach(function (l) { if (l.type === 'grammar') l.ru = map[u.id]; }); }); },
     units: function (cid, list) { var c = BY[cid]; if (c) list.forEach(function (u) { if (!c.units.some(function (x) { return x.id === u.id; })) c.units.push(u); }); },
     /** Add a listening lesson to a unit (before the unit check). */
     listening: function (cid, uid, l) { var c = BY[cid], u = c && c.units.filter(function (x) { return x.id === uid; })[0]; if (!u) return; l.type = 'listen'; l.id = l.id || 'li'; var i = u.lessons.map(function (x) { return x.type; }).indexOf('check'); u.lessons.splice(i < 0 ? u.lessons.length : i, 0, l); } };
@@ -890,7 +891,7 @@
     if (it.k === 'learn') return drawLearn();
     if (it.k === 'talk') return drawTalk();
     if (it.k === 'rule') {
-      v.innerHTML = '<div class="player">' + pTop() + '<div class="rulehead"><h2 class="qh">' + esc(L.l.title) + '</h2>' + DOODLE(L.c.id, L.u.id, 'doodle rh') + '</div><div class="rule">' + L.l.rule + '</div>' + (ruLevel() && L.l.ru ? ruChip(L.l.ru) : '') + '<p style="text-align:center;margin-top:18px"><button class="btn" id="nx">Practise →</button></p></div>';
+      v.innerHTML = '<div class="player">' + pTop() + '<div class="rulehead"><h2 class="qh">' + esc(L.l.title) + '</h2>' + DOODLE(L.c.id, L.u.id, 'doodle rh') + '</div><div class="rule">' + L.l.rule + '</div>' + (L.l.ru && (ruLevel() || /^B1/.test(L.c.level || '')) ? ruChip(L.l.ru) : '') + '<p style="text-align:center;margin-top:18px"><button class="btn" id="nx">Practise →</button></p></div>';
       bindTop(); bindRu(); $('#nx').onclick = function () { L.i++; drawStep(); }; return;
     }
     if (it.k === 'listen') {
