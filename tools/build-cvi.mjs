@@ -7,6 +7,7 @@
 import fs from 'node:fs';
 import A from './cvi/units-1.mjs';
 import B from './cvi/units-2.mjs';
+import TESTS from './cvi/tests.mjs';
 const X = { ...A, ...B }, CHUNK = 14, ID = 'cvi-ielts';
 const page = fs.readFileSync('a/ielts-studio/index.html', 'utf8');
 const VOCAB = JSON.parse(page.match(/const VOCAB=(\[.*?\]);\n/s)[1]);
@@ -23,8 +24,15 @@ for (const t of VOCAB.filter(t => t.unit && (t.unit <= 20 || TITLES[t.unit])).so
   lessons.push({ id: 'c', type: 'check', title: 'Unit check' });
   units[uid] = { title, words, talk: x.talk || null, ...(x.r ? { r: { text: x.r.text, ex: x.r.ex } } : {}), ...(x.l ? { l: { intro: x.l.intro, script: x.l.script, ex: x.l.ex } } : {}), lessons };
   out.push({ id: uid, topic: uid, title, n: words.length, g: '', obj: [`Use ${words.length} words and phrases on the topic “${title}”`, ...(x.r ? [/^Model answer/.test(x.r.title) ? 'Study a model answer and the language it uses' : 'Practise an IELTS-style reading task'] : []), ...(x.l ? ['Practise an IELTS-style listening task'] : []), ...(x.talk ? ['Answer IELTS Speaking questions on the topic'] : [])], lessons: lessons.map(l => ({ id: l.id, type: l.type, title: l.title })) });
+  for (const [tid, T] of Object.entries(TESTS).filter(([, T]) => T.after === uid)) {   // a mock test after every five units, options in a fixed shuffled order
+    let seed = [...tid].reduce((a, ch) => a * 31 + ch.charCodeAt(0), 7); const rnd = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
+    const ex = T.ex.map(e => { const o = e.o.map((x, k) => [x, k]); for (let k = o.length - 1; k > 0; k--) { const r = Math.floor(rnd() * (k + 1)); [o[k], o[r]] = [o[r], o[k]]; } return { ...e, o: o.map(x => x[0]), a: o.findIndex(x => x[1] === e.a) }; });
+    const lessons = [{ id: 't', type: 'test', title: T.title }];
+    units[tid] = { title: T.title, words: [], t: { ex, mins: 30 }, lessons };
+    out.push({ id: tid, topic: tid, title: T.title, n: 0, g: '', test: true, obj: [`A mock test like the book's: ${ex.length} questions, choose A, B, C or D, 30 minutes`, 'Your score, the correct answers and why come at the end'], lessons });
+  }
 }
 fs.writeFileSync(`netlify/lib/ef/${ID}.json`, JSON.stringify({ id: ID, level: 'B2–C1', units }));
-const course = { id: ID, track: 'ielts', ef: true, self: true, series: 'Cambridge Vocabulary for IELTS', level: 'B2–C1', icon: '📘', title: 'Cambridge Vocabulary for IELTS', sub: `${out.length} units · Bands 5–7.5+`, blurb: 'Follows Cambridge Vocabulary for IELTS unit by unit: the unit words with meanings, Russian, examples and collocations, then an IELTS-style reading or model answer, a listening, speaking questions and a unit check. The readings and recordings are written by IF Academy.', units: out };
+const course = { id: ID, track: 'ielts', ef: true, self: true, series: 'Cambridge Vocabulary for IELTS', level: 'B2–C1', icon: '📘', title: 'Cambridge Vocabulary for IELTS', sub: `${out.filter(u => !u.test).length} units · ${out.filter(u => u.test).length} mock tests`, blurb: 'Follows Cambridge Vocabulary for IELTS unit by unit: the unit words with meanings, Russian, examples and collocations, then an IELTS-style reading or model answer, a listening, speaking questions and a unit check. After every five units there is a 30-question mock test like the book’s. The readings and recordings are written by IF Academy.', units: out };
 fs.writeFileSync('app/courses/cvi.js', '/* Cambridge Vocabulary for IELTS: public outline only. Built by tools/build-cvi.mjs — do not edit by hand. */\nIFX.course(' + JSON.stringify(course) + ');\n');
 console.log(ID, out.length, 'units', out.reduce((a, u) => a + u.n, 0), 'words', out.reduce((a, u) => a + u.lessons.length, 0), 'lessons');

@@ -188,10 +188,10 @@
     var local = id.charAt(0) === '/', src = local ? id : 'https://unsplash.com/photos/' + id + '/download?w=1200';
     return '<figure><img src="' + esc(src) + '" alt="' + esc(alt || '') + '" loading="lazy" referrerpolicy="no-referrer" onerror="this.parentNode.remove()">' + (local ? '' : '<figcaption>Photo: Unsplash</figcaption>') + '</figure>';
   }
-  var COLORS = { context: '#7c3aed', listen: '#0891b2', vocab: 'var(--c-vocab)', grammar: 'var(--c-grammar)', skill: 'var(--c-skill)', reading: 'var(--c-reading)', check: 'var(--c-check)', look: '#0ea5e9', maths: '#f59e0b' };
-  var ICONS = { context: '🎯', listen: '🎧', vocab: '🔤', grammar: '🧠', skill: '🛠️', reading: '📖', check: '🏁', look: '👀', maths: '🔢' };
+  var COLORS = { test: '#b91c1c', context: '#7c3aed', listen: '#0891b2', vocab: 'var(--c-vocab)', grammar: 'var(--c-grammar)', skill: 'var(--c-skill)', reading: 'var(--c-reading)', check: 'var(--c-check)', look: '#0ea5e9', maths: '#f59e0b' };
+  var ICONS = { test: '📝', context: '🎯', listen: '🎧', vocab: '🔤', grammar: '🧠', skill: '🛠️', reading: '📖', check: '🏁', look: '👀', maths: '🔢' };
   COLORS.speaking = '#db2777'; ICONS.speaking = '🗣️';
-  var TYPE = { context: 'In context', listen: 'Listening', vocab: 'Vocabulary', grammar: 'Grammar', skill: 'Skills', reading: 'Reading', check: 'Unit check', look: 'Look and choose', maths: 'Maths' };
+  var TYPE = { test: 'Mock test', context: 'In context', listen: 'Listening', vocab: 'Vocabulary', grammar: 'Grammar', skill: 'Skills', reading: 'Reading', check: 'Unit check', look: 'Look and choose', maths: 'Maths' };
   TYPE.speaking = 'Speaking';
   var UNIT_DOODLE = { 'ge-a2/u1': 'clock', 'ge-a2/u2': 'coffee', 'ge-a2/u3': 'suitcase', 'ge-b1/u1': 'laptop', 'ge-b1/u2': 'phone', 'be-b1/u1': 'talk', 'be-b1/u2': 'envelope', 'ielts/u1': 'chart', 'ielts/u2': 'pen', 'ielts/u3': 'book', 'ge-a1/u1': 'talk', 'ge-a1/u2': 'clock', 'ge-b2/u1': 'bulb', 'ge-b2/u2': 'phone', 'ge-c1/u1': 'talk', 'ge-c1/u2': 'laptop', 'ge-c2/u1': 'book', 'ge-c2/u2': 'globe', 'be-a2/u1': 'coffee', 'be-a2/u2': 'envelope', 'be-b2/u1': 'talk', 'be-b2/u2': 'chart', 'be-c1/u1': 'bulb', 'be-c1/u2': 'globe', 'ef-c2/u1': 'bulb', 'ef-c2/u2': 'suitcase', 'ef-c2/u3': 'book', 'ef-c2/u4': 'laptop', 'ef-c2/u5': 'globe', 'ef-c2/u6': 'chart', 'ef-c2/u7': 'pen', 'ef-c2/u8': 'coffee' };
   var DOODLE = function (c, u, cls) { var n = UNIT_DOODLE[c + '/' + u]; return n && window.IFX_DOODLE ? IFX_DOODLE(n, cls || 'doodle') : ''; };
@@ -301,7 +301,7 @@
     c.units.forEach(function (u, ui) {
       var open = !!e.open[u.id];
       var cov = e.mode === 'staff' && e.classes.length ? '<div class="cover">' + e.classes.map(function (k) { var on = k.covered.indexOf(u.id) >= 0; return '<label class="chip' + (on ? ' on' : '') + '"><input type="checkbox" data-cover="' + esc(k.id) + '" data-unit="' + esc(u.id) + '"' + (on ? ' checked' : '') + '> Covered · ' + esc(k.label) + '</label>'; }).join('') + '</div>' : '';
-      html += '<section class="unit' + (open ? '' : ' unit-locked') + '"><div class="unit-h"><div style="flex:1"><small>' + esc(t('unit')) + ' ' + esc(u.id) + (u.g ? ' · ' + esc(u.g) : '') + '</small><h3>' + esc(u.title) + '</h3>' + (open ? '<ul class="objs">' + u.obj.map(function (o) { return '<li>🎯 ' + esc(o) + '</li>'; }).join('') + '</ul>' : '') + cov + '</div>' +
+      html += '<section class="unit' + (open ? '' : ' unit-locked') + '"><div class="unit-h"><div style="flex:1"><small>' + (u.test ? '📝 Mock test' : esc(t('unit')) + ' ' + esc(u.id)) + (u.g ? ' · ' + esc(u.g) : '') + '</small><h3>' + esc(u.title) + '</h3>' + (open ? '<ul class="objs">' + u.obj.map(function (o) { return '<li>🎯 ' + esc(o) + '</li>'; }).join('') + '</ul>' : '') + cov + '</div>' +
         (open ? '' : e.mode === 'class' ? '<span class="btn sm gold" style="cursor:default">🔒 Not covered in class yet</span>' : '<a class="btn sm gold" href="/me/#/upgrade">🔒 ' + esc(t('locked')) + '</a>') + '</div>' +
         (open ? '<div class="path">' + u.lessons.map(function (l) {
           var done = isDone(c.id, u.id, l.id), isNext = nx && nx.u.id === u.id && nx.l.id === l.id;
@@ -329,6 +329,7 @@
       else if (x.type === 'reading' && U.r) { x.text = U.r.text; x.ex = U.r.ex; }
       else if (x.type === 'listen' && U.l) { x.intro = U.l.intro; x.script = U.l.script; x.ex = U.l.ex; }
       else if (x.type === 'speaking') x.ex = [];
+      else if (x.type === 'test' && U.t) { x.ex = U.t.ex; x.mins = U.t.mins || 30; }
       else if (x.type === 'check') x.gen = efCheck(u, U.g);
       x.ready = true;
     });
@@ -928,8 +929,43 @@
     else if (l.type === 'reading') { items.push({ k: 'read' }); items = items.concat(l.ex.map(function (e) { return { k: 'ex', e: e }; })); }
     else items = l.ex.map(function (e) { return { k: 'ex', e: e }; });
     if (l.type === 'speaking') items = [{ k: 'talk' }];
+    if (l.type === 'test') { L = { t0: Date.now(), c: c, u: u, ui: ui, l: l, items: [], i: 0, total: l.ex.length, right: 0, tried: {}, card: 0, teach: false }; return drawMock(); }
     L = { t0: Date.now(), c: c, u: u, ui: ui, l: l, items: items, i: 0, total: items.filter(function (x) { return x.k === 'ex'; }).length, right: 0, tried: {}, card: 0, teach: teach };
     drawStep();
+  }
+  /* A mock test as in the book: every question on one page, choose A–D, a countdown, then the score with the answers and why. */
+  function drawMock() {
+    var l = L.l, ex = l.ex, end = Date.now() + (l.mins || 30) * 60000, pick = {}, tick, done = false, LET = 'ABCD';
+    var v = view();
+    v.innerHTML = '<div class="player mock"><div class="p-top"><button class="x pback" id="px" aria-label="Back">← Back</button><div class="bar"><i id="mbar" style="width:0%"></i></div><b class="mclock" id="mclock"></b></div>' +
+      '<h2 style="margin:6px 0 2px">' + esc(l.title) + '</h2><p style="color:var(--soft);margin:0 0 14px">Choose the correct letter <b>A, B, C or D</b>. ' + ex.length + ' questions · ' + (l.mins || 30) + ' minutes. You see your score and the answers when you finish.</p>' +
+      ex.map(function (e, i) { return '<div class="mq" id="mq' + i + '"><p><b>' + (i + 1) + '</b>  ' + esc(e.q) + '</p><div class="mo">' + e.o.map(function (o, k) { return '<button class="mopt" data-q="' + i + '" data-k="' + k + '"><b>' + LET[k] + '</b> ' + esc(o) + '</button>'; }).join('') + '</div><p class="mwhy" hidden></p></div>'; }).join('') +
+      '<p style="text-align:center;margin:20px 0"><button class="btn gold" id="msub">Finish and check →</button></p></div>';
+    $('#px').onclick = function () { clearInterval(tick); document.body.classList.remove('in-lesson'); go('#/course/' + L.c.id); };
+    var css = document.getElementById('mockcss'); if (!css) { css = document.createElement('style'); css.id = 'mockcss'; css.textContent = '.mock .mq{border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin:0 0 10px;background:var(--card,#fff)}.mock .mq p{margin:0 0 8px;line-height:1.5}.mock .mo{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:6px}.mock .mopt{text-align:left;border:1px solid var(--line);background:transparent;border-radius:10px;padding:8px 10px;font:inherit;cursor:pointer;color:inherit}.mock .mopt b{margin-right:6px}.mock .mopt.on{border-color:var(--navy,#0B2545);background:rgba(11,37,69,.08);font-weight:600}.mock .mopt.ok{border-color:#16a34a;background:#dcfce7;color:#14532d}.mock .mopt.bad{border-color:#dc2626;background:#fee2e2;color:#7f1d1d}.mock .mq.miss{border-color:#f59e0b}.mock .mwhy{font-size:14px;color:var(--soft);margin:8px 0 0}.mock .mclock{font-variant-numeric:tabular-nums;min-width:56px;text-align:right}'; document.head.appendChild(css); }
+    function clock() { var s = Math.max(0, Math.round((end - Date.now()) / 1000)), el = $('#mclock'); if (!el) return clearInterval(tick); el.textContent = '⏱ ' + Math.floor(s / 60) + ':' + ('0' + s % 60).slice(-2); if (!s) submit(true); }
+    tick = setInterval(clock, 1000); clock();
+    $$('.mopt').forEach(function (b) { b.onclick = function () { if (done) return; var i = +b.dataset.q; pick[i] = +b.dataset.k; $$('#mq' + i + ' .mopt').forEach(function (x) { x.classList.toggle('on', x === b); }); $('#mq' + i).classList.remove('miss'); $('#mbar').style.width = Math.round(Object.keys(pick).length / ex.length * 100) + '%'; }; });
+    function submit(timeUp) {
+      if (done) return;
+      var left = ex.length - Object.keys(pick).length;
+      if (!timeUp && left && !confirm2()) return;
+      done = true; clearInterval(tick);
+      var right = 0, review = ex.map(function (e, i) { var ok = pick[i] === e.a; if (ok) right++; return '<div class="mq"><p><b>' + (i + 1) + '</b>  ' + esc(e.q) + '</p><p>' + (ok ? '✅ ' : '❌ ') + (pick[i] == null ? '<i>No answer</i> · ' : (ok ? '' : 'You chose <b>' + LET[pick[i]] + ' ' + esc(e.o[pick[i]]) + '</b> · ')) + 'Answer: <b>' + LET[e.a] + ' ' + esc(e.o[e.a]) + '</b></p>' + (e.why ? '<p class="mwhy">' + esc(e.why) + '</p>' : '') + '</div>'; });
+      L.right = right; L.total = ex.length;
+      finish();
+      var box = view().querySelector('.done-box');
+      if (box) box.insertAdjacentHTML('beforeend', '<div class="player mock" style="text-align:left;margin-top:18px"><h3>' + right + ' / ' + ex.length + ' correct' + (timeUp ? ' · time was up' : '') + '</h3><p style="color:var(--soft)">' + (right >= 27 ? 'Excellent control of this vocabulary.' : right >= 21 ? 'Good. Revise the words you missed, then try again.' : 'Go back to the units, study the words you missed with Flashcards, then take the test again.') + '</p>' + review.join('') + '<p style="text-align:center"><a class="btn ghost" href="#/lesson/' + L.c.id + '/' + L.u.id + '/' + L.l.id + '">↻ Take the test again</a></p></div>');
+    }
+    function confirm2() {
+      var first = ex.findIndex(function (e, i) { return pick[i] == null; });
+      var b = $('#msub'); if (b.dataset.sure) return true;
+      ex.forEach(function (e, i) { if (pick[i] == null) $('#mq' + i).classList.add('miss'); });
+      b.dataset.sure = 1; b.textContent = 'Finish anyway (' + (ex.length - Object.keys(pick).length) + ' unanswered) →';
+      var m = $('#mq' + first); if (m) m.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return false;
+    }
+    $('#msub').onclick = function () { submit(false); };
   }
   function kidsEx(words) {   // picture words: find it, name it, listen and choose
     var w = shuffle(words), out = [], three = function (x) { return shuffle([x].concat(shuffle(words.filter(function (y) { return y !== x; })).slice(0, 2))); };
