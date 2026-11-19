@@ -320,3 +320,36 @@ a.chip{text-decoration:none}
 /* say the word: green when it sounds right */
 .learn-card .w{transition:color .25s,transform .25s}.learn-card .w.listening{animation:lrrp 1.2s infinite}.learn-card .w.good{color:var(--ok);transform:scale(1.06)}.learn-card .w.good::after{content:' ✓';font-size:.6em}.learn-card .w.try{color:#d97706}
 .say-ok{display:block;color:var(--ok);font-family:Fraunces,Georgia,serif;font-size:24px;font-weight:700}
+
+/* ---------- grammar infographics (grammar-info.js) ---------- */
+.ig{display:grid;gap:14px;font-size:16.5px}
+.ig-k{display:inline-block;font:700 11px/1 Inter,system-ui,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--c-grammar);background:color-mix(in srgb,var(--c-grammar) 12%,transparent);padding:6px 10px;border-radius:999px;margin-bottom:8px}
+.ig-idea{background:var(--card);border:2px solid var(--line);border-left:6px solid var(--c-grammar);border-radius:20px;padding:16px 18px}
+.ig-idea p{margin:0;font-size:18px;line-height:1.45}.ig-idea p+p{margin-top:8px}
+.ig-dia{margin:0;background:linear-gradient(160deg,var(--navy),var(--navy2));color:#fff;border-radius:20px;padding:14px 14px 12px;box-shadow:var(--sh)}
+.ig-dia svg{display:block;width:100%;max-width:520px;margin:0 auto;height:auto}
+.ig-dia figcaption{margin-top:8px;font-size:15px;line-height:1.4;text-align:center;color:#e9eef8}
+.ig-dia text{font-family:Inter,system-ui,sans-serif;fill:#fff}
+.ig-t,.ig-tb{font-size:11.5px;font-weight:700}.ig-dia text.ig-ts{font-size:9.5px;fill:#cfd9ea}.ig-dia text.ig-tm{font-size:10px;font-weight:600;fill:#E3C15A}
+.ig-dia text.ig-tl{font-size:9px;font-weight:700;letter-spacing:.12em;fill:#9fb1cc}.ig-dia text.ig-tn{font-size:10px;font-weight:800;letter-spacing:.12em;fill:#E3C15A}.ig-te{font-size:20px}.ig-dia text.ig-tp{font-size:20px;font-weight:800;fill:#E3C15A}
+.ig-ax{stroke:#7f93b3;stroke-width:2.5;stroke-linecap:round}.ig-axf{fill:#7f93b3}.ig-now{stroke:#E3C15A;stroke-width:2.5;stroke-dasharray:4 4}
+.ig-dot{fill:#E3C15A;stroke:#fff;stroke-width:2}.ig-ring{fill:#0B2545;stroke:#fff;stroke-width:3}.ig-bar{fill:#E3C15A;opacity:.95}
+.ig-arc{fill:none;stroke:#E3C15A;stroke-width:2.5;stroke-dasharray:5 4}.ig-arcf{fill:#E3C15A}.ig-x{stroke:#ff8a8a;stroke-width:3.5;stroke-linecap:round}.ig-dash{stroke:#E3C15A;stroke-width:2.5;stroke-dasharray:5 5}
+.ig-box{fill:rgba(255,255,255,.1);stroke:rgba(255,255,255,.55);stroke-width:1.5}.ig-box2{fill:rgba(227,193,90,.2);stroke:#E3C15A;stroke-width:1.5}
+.ig-arr{fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.ig-hide{display:none}
+.ig-g0{stop-color:#5b8def}.ig-g1{stop-color:#E3C15A}
+.ig-cards{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+@media (min-width:760px){.ig-cards{grid-template-columns:1fr 1fr}}
+.ig-card{--c:var(--c-grammar);display:flex;gap:12px;background:var(--card);border:2px solid var(--line);border-top:5px solid var(--c);border-radius:18px;padding:14px}
+.ig-card.c1{--c:var(--c-grammar)}.ig-card.c2{--c:var(--c-reading)}.ig-card.c3{--c:var(--c-vocab)}.ig-card.c0{--c:var(--c-check)}
+.ig-n{flex:none;width:30px;height:30px;border-radius:50%;background:var(--c);color:#fff;font:800 15px/30px Inter,system-ui,sans-serif;text-align:center}
+.ig-b{min-width:0;flex:1}.ig-b h3{margin:2px 0 8px;font:700 16px/1.3 Inter,system-ui,sans-serif;color:var(--ink)}
+.ig-ex p{margin:0;padding:7px 10px;border-radius:10px;background:var(--sand);line-height:1.4}.ig-ex p+p{margin-top:6px}
+.ig-ex b,.ig-b h3 b{color:var(--c)}.ig-ex s{color:var(--bad)}
+.ig-fx{display:inline-flex;flex-wrap:wrap;align-items:center;gap:6px}.ig-fx i{font-style:normal;font-weight:800;color:var(--soft)}
+.ig-f{background:color-mix(in srgb,var(--c) 12%,transparent);border:1.5px solid var(--c);border-radius:999px;padding:3px 10px}
+.ig-head{display:flex;gap:10px;font:700 12px/1 Inter,system-ui,sans-serif;letter-spacing:.1em;text-transform:uppercase;color:var(--soft);padding:4px 6px;grid-column:1/-1}
+.ig-note{background:#fff7da;border:2px solid var(--gold2);border-radius:18px;padding:14px 16px;color:#3b2f00}.ig-note p{margin:0;line-height:1.45}.ig-note p+p{margin-top:6px}
+.ig-note .ig-k{color:#8a6a00;background:rgba(201,162,39,.2)}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]) .ig-note{background:#2a2410;color:var(--ink)}:root:not([data-theme=light]) .ig-note .ig-k{color:var(--gold2)}}
+body.teach .ig{font-size:22px}body.teach .ig-idea p{font-size:24px}body.teach .ig-b h3{font-size:21px}body.teach .ig-dia figcaption{font-size:20px}body.teach .ig-dia svg{max-width:760px}

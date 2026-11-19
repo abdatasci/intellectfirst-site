@@ -42,6 +42,7 @@
     { id: 'signal', t: 'SIGNAL LOCK', sk: 'focus', c1: '#22d3ee', c2: '#6366f1', p: 'Words stream down three lanes. Lock on to the ones that fit the rule — ignore the rest. Speed rises as you go.', run: signal },
     { id: 'hyper', t: 'HYPERREAD', sk: 'speed', c1: '#a78bfa', c2: '#22d3ee', p: 'Short texts flash a few words at a time, faster each round. Catch the meaning, then answer.', run: hyper },
     { id: 'echo', t: 'ECHO', sk: 'listen', c1: '#38bdf8', c2: '#f472b6', p: 'Nova and Atlas say a sentence once. Rebuild it from the word tiles — two of them are traps.', run: echo },
+    { id: 'rapid', t: 'RAPID EAR', sk: 'listen', c1: '#38bdf8', c2: '#a78bfa', p: 'Fast speech. Nova and Atlas talk quickly, with no text on the screen. Catch the meaning, then answer. Every right answer makes them faster.', run: rapid },
     { id: 'glyph', t: 'GLYPH FORGE', sk: 'write', c1: '#f472b6', c2: '#a78bfa', p: 'Hear a word, read its meaning, forge the spelling. Long and tricky words score more.', run: glyph },
     { id: 'precise', t: 'PRECISION', sk: 'vocab', c1: '#fbbf24', c2: '#f472b6', p: 'Replace the vague words with the sharpest choice. Fast, precise answers build a combo.', run: precise },
     { id: 'fault', t: 'FAULT LINE', sk: 'grammar', c1: '#fb7185', c2: '#fbbf24', p: 'One word breaks the sentence — or none does. Find the fault before the clock runs out.', run: fault },
@@ -62,6 +63,7 @@
       glyph: '<path d="M12 50L32 10l20 40" ' + s + '/><path d="M20 36h24" ' + s + '/><path d="M8 56h48" ' + s + ' opacity=".6"/>',
       precise: '<path d="M32 6l6 20 20 6-20 6-6 20-6-20-20-6 20-6z" ' + s + '/><circle cx="32" cy="32" r="4" fill="' + c1 + '"/>',
       fault: '<path d="M6 32h14l6-14 8 28 6-18 4 8h14" ' + s + '/><path d="M10 52h44" ' + s + ' opacity=".5"/>',
+      rapid: '<path d="M6 32h6M16 22v20M24 14v36M32 24v16" ' + s + '/><path d="M40 18l10 14-10 14" ' + s + '/><path d="M50 18l10 14-10 14" ' + s + ' opacity=".5"/>',
       voice: '<rect x="24" y="8" width="16" height="30" rx="8" ' + s + '/><path d="M14 30a18 18 0 0036 0M32 48v8M22 56h20" ' + s + '/>'
     }[id] || ((byId(id) && byId(id).art) ? byId(id).art(s, c1) : '');
     return '<svg class="em" viewBox="0 0 64 64" aria-hidden="true">' + g + '<g style="filter:drop-shadow(0 0 6px ' + c1 + ')">' + art + '</g></svg>';
@@ -80,6 +82,16 @@
       if (onEnd) u.onend = onEnd;
       speechSynthesis.speak(u);
     } catch (e) { if (onEnd) onEnd(); }
+  }
+  /* the same voices at an exact speed (1 = normal). onEnd always runs once, even if the voice fails. */
+  function speakAt(text, g, rate, onEnd, A) {
+    var done = false, fin = function () { if (done) return; done = true; if (onEnd) onEnd(); };
+    try {
+      speechSynthesis.cancel();
+      var u = new SpeechSynthesisUtterance(text); u.lang = 'en-GB'; u.rate = rate; u.ifRate = rate; u.ifVoice = g === 'm' ? 'male' : 'female';
+      u.onend = fin; u.onerror = fin; speechSynthesis.speak(u);
+      (A ? A.later : setTimeout)(fin, text.split(/\s+/).length * 650 / rate + 5000);
+    } catch (e) { fin(); }
   }
   function hush() { try { speechSynthesis.cancel(); } catch (e) {} }
 
@@ -186,7 +198,7 @@
     ['speed', 'Speed', ['hyper', 'speed', 'gravity']],
     ['vocab', 'Vocabulary', ['precise', 'learn', 'blast', 'treasure', 'fishing']],
     ['write', 'Writing & spelling', ['glyph', 'write', 'spell', 'scramble']],
-    ['listen', 'Listening', ['echo']],
+    ['listen', 'Listening', ['echo', 'rapid']],
     ['grammar', 'Grammar', ['fault']],
     ['speak', 'Speaking', ['voice']],
     ['neon', 'Neon arcade', ['serpent', 'skyline', 'fusion', 'cipher']],
@@ -207,7 +219,7 @@
     var first = td.filter(function (x) { return !done[x.id]; })[0];
     view.innerHTML =
       '<section class="hero"><div class="glass intro"><p class="eyebrow">IF Academy · ' + (S.tr === 'general' ? 'General English' : S.tr === 'business' ? 'Business English' : 'IELTS') + '</p><h1>Train your English brain.</h1>' +
-        '<p class="lead">Twenty-four games for focus, speed, vocabulary, writing, listening, grammar and speaking. Every game finds your level by itself: answer well and it gets harder; slip, and it steps back.</p>' +
+        '<p class="lead">Twenty-five games for focus, speed, vocabulary, writing, listening, grammar and speaking. Every game finds your level by itself: answer well and it gets harder; slip, and it steps back.</p>' +
         '<div class="chiprow">' + (first ? '<a class="btn" href="' + hrefOf(first) + '">▶ ' + (Object.keys(done).length ? 'Continue today\'s workout' : 'Start today\'s workout') + '</a>' : '<span class="btn gold" style="cursor:default">✓ Today\'s workout done</span>') +
         '<span class="stat">🔥 <b>' + st + '</b> day' + (st === 1 ? '' : 's') + '</span><span class="stat">⚡ Mind score <b>' + Math.round(total) + '</b></span></div></div>' +
       '<div class="glass host">' + (window.IFBots ? IFBots.html('f', 'Nova', true) : '') + '<p class="bubble" id="bub">Tap to hear Nova.</p><button class="btn ghost" id="hi">🔊 Brief me</button></div></section>' +
@@ -365,6 +377,38 @@
         var bt = $('#bt'); bt.insertAdjacentHTML('afterend', '<p class="fix">' + (exact ? '<b>Perfect echo.</b>' : 'It was: <b>' + esc(it.s) + '</b>') + '</p>');
         i++; A.later(next, exact ? 1200 : 2600);
       };
+    }
+    next();
+  }
+
+  /* ===== RAPID EAR — fast speech =====
+     A short text is spoken quickly, with nothing to read. Then one question. Right: the next clip is faster. Wrong: a little slower.
+     Uses the level's short texts, so it works at every level, for young learners and in the Business and IELTS tracks. */
+  function rapid(ar, A) {
+    var N = 4, i = 0, base = KIDS ? ({ PA1: .95, A1: 1.05, A2: 1.15 }[A.lv] || 1) : ({ A1: 1.05, A2: 1.15 }[A.lv] || 1.25) + SPD(A.lv) * .08, top = KIDS ? 1.5 : 2, rate = base;
+    var X = function (r) { return '×' + r.toFixed(2).replace(/0$/, ''); };
+    function next() {
+      if (i >= N) return A.end();
+      A.steps(i, N);
+      var tx = A.next('read'), g = i % 2 ? 'm' : 'f', cost = 0;
+      ar.innerHTML = '<p class="wpm">CLIP ' + (i + 1) + ' / ' + N + ' · ' + LVN(A.lv) + ' · SPEED ' + X(rate) + '</p><div class="echohost">' + (window.IFBots ? IFBots.html(g, g === 'm' ? 'Atlas' : 'Nova', true) : '') + '</div><p class="sub" id="rs">Listen carefully. There is no text.</p>';
+      A.later(function () { speakAt(tx.t, g, rate, ask, A); }, 700);
+      function ask() {
+        if (!$('#rs', ar)) return;
+        var o = tx.o.map(function (x, k) { return { x: x, k: k }; }), sh = shuffle(o), t1 = Date.now();
+        ar.innerHTML = '<p class="wpm">SPEED ' + X(rate) + '</p><p class="prompt">' + esc(tx.q) + '</p><div class="opts">' + sh.map(function (x) { return '<button class="opt" data-k="' + x.k + '">' + esc(x.x) + '</button>'; }).join('') + '</div>' +
+          '<p style="margin-top:14px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap"><button class="btn ghost" id="ra" style="padding:6px 12px;font-size:13px">🔊 Again (−20)</button><button class="btn ghost" id="rw" style="padding:6px 12px;font-size:13px">🐢 Slowly (−40)</button></p>';
+        $('#ra').onclick = function () { cost += 20; speakAt(tx.t, g, rate, null, A); };
+        $('#rw').onclick = function () { cost += 40; speakAt(tx.t, g, KIDS ? .85 : .95, null, A); };
+        $$('.opt', ar).forEach(function (b) { b.onclick = function () {
+          var ok = +b.dataset.k === tx.a; hush(); $$('.opt', ar).forEach(function (x) { x.disabled = true; if (+x.dataset.k === tx.a) x.classList.add('ok'); }); if (!ok) b.classList.add('bad');
+          $('#ra').disabled = true; $('#rw').disabled = true;
+          if (ok) { A.add(Math.max(40, 90 + Math.round(rate * 40) + Math.max(0, 30 - Math.round((Date.now() - t1) / 300)) - cost), ar); if (!cost) rate = Math.min(top, rate + .15); }
+          else { A.miss(0); rate = Math.max(base - .1, rate - .1); A.log(false, '<b>' + esc(tx.q) + '</b> → ' + esc(tx.o[tx.a])); }
+          ar.insertAdjacentHTML('beforeend', '<p class="fix" style="text-align:left"><b>They said:</b> ' + esc(tx.t) + '</p>');
+          flash(ar, ok); i++; A.later(next, ok ? 2600 : 4200);
+        }; });
+      }
     }
     next();
   }

@@ -54,7 +54,7 @@
     var r = +u.rate || 1;
     load(srcOf(u.text, gOf(u))).then(function (url) {
       if (current !== u) return;
-      player.src = url; player.playbackRate = r < 0.8 ? 0.85 : r > 1.3 ? 1.2 : 1;
+      player.src = url; player.playbackRate = u.ifRate ? Math.max(.6, Math.min(2.2, +u.ifRate)) : r < 0.8 ? 0.85 : r > 1.3 ? 1.2 : 1;   // ifRate: an exact speed (the fast-speech game)
       try { player.preservesPitch = true; } catch (e) {}
       var p = player.play(); if (p && p.catch) p.catch(function (e) { if (current === u && e && e.name !== 'AbortError') fail(u, {}); });
       var n = queue[0]; if (n && real(n)) load(srcOf(n.text, gOf(n))).catch(function () {});   // the next line, ready before it is needed

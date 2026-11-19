@@ -891,7 +891,7 @@
     if (it.k === 'learn') return drawLearn();
     if (it.k === 'talk') return drawTalk();
     if (it.k === 'rule') {
-      v.innerHTML = '<div class="player">' + pTop() + '<div class="rulehead"><h2 class="qh">' + esc(L.l.title) + '</h2>' + DOODLE(L.c.id, L.u.id, 'doodle rh') + '</div><div class="rule">' + L.l.rule + '</div>' + (L.l.ru && (ruLevel() || /^B1/.test(L.c.level || '')) ? ruChip(L.l.ru) : '') + '<p style="text-align:center;margin-top:18px"><button class="btn" id="nx">Practise →</button></p></div>';
+      v.innerHTML = '<div class="player">' + pTop() + '<div class="rulehead"><h2 class="qh">' + esc(L.l.title) + '</h2>' + DOODLE(L.c.id, L.u.id, 'doodle rh') + '</div>' + (window.IFXInfo ? IFXInfo.render(L.l.rule, L.l.title) : '<div class="rule">' + L.l.rule + '</div>') + (L.l.ru && (ruLevel() || /^B1/.test(L.c.level || '')) ? ruChip(L.l.ru) : '') + '<p style="text-align:center;margin-top:18px"><button class="btn" id="nx">Practise →</button></p></div>';
       bindTop(); bindRu(); $('#nx').onclick = function () { L.i++; drawStep(); }; return;
     }
     if (it.k === 'listen') {
