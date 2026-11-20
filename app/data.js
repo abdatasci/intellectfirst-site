@@ -67,7 +67,7 @@ window.IFX_DIR = [
 
   /* ---------- IELTS practice tools (the lessons are an IF App course) ---------- */
   { id: 'ielts-video', s: 'ielts', t: 'IELTS Video Course', d: 'Eight units on video with presentations, homework marked by a teacher, projects and quizzes. Unit 1 free', lv: ['B1', 'B2', 'C1'], tr: 'exam', tags: ['ielts', 'video', 'course'], href: '/courses/ielts/', icon: '🎬' },
-  { id: 'ielts-studio', s: 'ielts', t: 'IF IELTS Studio', d: 'Writing practice, Task 1 charts, the Language and Vocabulary banks (PDF)', lv: ['B1', 'B2', 'C1'], tr: 'exam', tags: ['ielts', 'writing'], href: '/a/ielts-studio/index.html', icon: '✍️' },
+  { id: 'ielts-studio', s: 'ielts', t: 'IF IELTS Studio', d: 'Practise the four skills: Listening, Reading, Writing and Speaking', lv: ['B1', 'B2', 'C1'], tr: 'exam', tags: ['ielts', 'writing'], href: '/a/ielts-studio/index.html', icon: '✍️' },
   { id: 'ielts-speaking', s: 'ielts', t: 'IELTS Speaking Lab', d: 'Parts 1, 2 and 3 with model answers and timing', lv: ['B1', 'B2', 'C1'], tr: 'exam', tags: ['ielts', 'speaking'], href: '/a/ielts-speaking/index.html', icon: '🎤' },
   { id: 'ielts-centre', s: 'ielts', t: 'IELTS Centre', d: 'Full practice tests and your band scores', lv: ['B2', 'C1'], tr: 'exam', tags: ['ielts', 'tests'], href: '/a/ielts/index.html', icon: '🏛️' },
 
