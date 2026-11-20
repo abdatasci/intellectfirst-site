@@ -1292,11 +1292,10 @@
       var gl = function (ids) { return ids.map(byId).filter(function (x) { return x && (kidsOK || !/^(mind-lab-kids|if-kart|kids-quest)$/.test(x.id)); }); };
       var grp = function (title, d, list, more) { return list.length ? '<div class="sec"><h2>' + title + '</h2><p class="sec-d">' + d + '</p></div><div class="grid">' + list.map(itemCard).join('') + '</div>' + (more || '') : ''; };
       var adv = gl(['if-kart', 'block-quest', 'kids-quest']);
-      var staffG = !!(S.teacher || access().staff || access().teacher);   // the Game Room is a teacher's classroom tool: students see only Chess (director, 21 Nov 2026)
       view().innerHTML = '<div class="page-h"><div><p class="h-eyebrow">' + esc(t(k)) + '</p><h1>' + esc(sc.h) + '</h1><p>' + esc(sc.p) + '</p></div></div>' + (full ? '' : goalBar()) + gamesChip(k) +
         grp('🧠 Mind Lab', 'Daily mind training that uses every skill: words, grammar, memory and logic.', gl(['mind-lab', 'mind-lab-kids'])) +
         grp('👥 Play together', 'For the class or a group of friends: one screen or everyone on their phones.', gl(['live', 'mafia-live', 'mystery-live'])) +
-        grp('♟️ Board games', staffG ? 'Chess against the computer or a friend. The Game Room (class games on one screen) is shown to teachers only.' : 'Chess against the computer or a friend. Say every move in English.', gl(staffG ? ['chess', 'gameroom'] : ['chess'])) +
+        grp('♟️ Board games', 'Chess against the computer or a friend. Say every move in English.', gl(['chess'])) +
         grp('🏁 Adventure and racing', 'Play alone at your own level.', adv, adv.map(function (x) { return levelRow(x.id, x.id, true, kidsOK); }).join(''));
       return;
     }
