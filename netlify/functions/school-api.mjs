@@ -111,7 +111,8 @@ function publicStudent(s) { return s && { id: s.id, first: s.first, last: s.last
 /** Link an account to its school record by phone (students) or name/phone (teachers). */
 async function linkByPhone(uid, profile) {
   const key = phoneKey(profile.phone), hasPhone = key && key.length >= 10;
-  if ((profile.role === 'student' || (profile.role === 'guest' && profile.track && profile.track !== 'outside')) && !profile.studentId && hasPhone) {
+  // any account whose phone is in the school records (even one that signed up as "learning on my own") is that student
+  if ((profile.role === 'student' || profile.role === 'guest') && !profile.studentId && hasPhone) {
     const list = await doc('students');
     const hit = list.find(s => phoneKey(s.phone) === key || phoneKey(s.parentPhone) === key);
     if (hit && (!hit.uid || hit.uid === uid)) {
@@ -488,6 +489,11 @@ export default async (req) => {
       }
       if (ch) await putProfile(uid, profile);
     }
+    // a free account whose phone is in the school records becomes that student's account (full access, no trial countdown)
+    if (profile && profile.role === 'guest' && !profile.studentId && profile.phone) {
+      const np = await linkByPhone(uid, { ...profile });
+      if (np.studentId) { profile = np; await putProfile(uid, profile); }
+    }
     const out = { user: { id: uid, email: user.email, name: profile?.name || user.name || '' }, profile, access: tier(profile), membership: await membership() };
     if (profile?.studentId) {
       const s = (await doc('students')).find(x => x.id === profile.studentId);
@@ -729,7 +735,7 @@ export default async (req) => {
     const extraC = await coverClasses(profile.teacherId, CH), own = plusCover(own0, extraC), ownIds = new Set(own0.map(c => c.id));
     const L = await loadLog(date.slice(0, 7)), now = new Date(), cutoff = await checkSince();
     const lessons = withEntry(lessonsOn(own, date, CH), L, now, cutoff).filter(l => ownIds.has(l.classId) || l.teacherId === profile.teacherId).map(l => ({ ...l, coverForName: l.coverFor ? (teachers.find(t => t.id === l.coverFor) || {}).name || '' : '' })).map(l => ({ ...l, teacher: (teachers.find(t => t.id === l.teacherId) || {}).name || '',
-      students: students.filter(s => inClass(own.find(c => c.id === l.classId), s) && !/withdrawn|finished/i.test(s.status || '')).map(s => ({ sid: s.id, name: `${s.first} ${s.last}`.trim(), frozen: s.status === 'frozen' })).sort((a, b) => a.name.localeCompare(b.name)) }));
+      students: students.filter(s => inClass(own.find(c => c.id === l.classId), s) && !/withdrawn|finished|frozen/i.test(s.status || '')).map(s => ({ sid: s.id, name: `${s.first} ${s.last}`.trim(), frozen: s.status === 'frozen' })).sort((a, b) => a.name.localeCompare(b.name)) }));
     const month = await monthLessons(profile.role === 'admin' ? mine.filter(c => c.teacherId === profile.teacherId) : mine, date.slice(0, 7), now);
     return json({ date, now: now.toISOString(), grace: GRACE_MIN, early: EARLY_MIN, lessons, me: punctuality(month, teachers)[0] || null });
   }
@@ -768,7 +774,7 @@ export default async (req) => {
       const date = new Date(d0.getTime() + i * 864e5).toISOString().slice(0, 10);
       out.push(...withEntry(lessonsOn(list, date, CH), await loadLog(date.slice(0, 7)), now, cutoff).filter(l => !viewT || listIds.has(l.classId) || l.teacherId === viewT));
     }
-    const roster = l => students.filter(s => inClass(list.find(c => c.id === l.classId), s) && !/withdrawn|finished/i.test(s.status || '')).map(s => ({ sid: s.id, name: `${s.first} ${s.last}`.trim(), frozen: s.status === 'frozen' })).sort((a, b) => a.name.localeCompare(b.name));
+    const roster = l => students.filter(s => inClass(list.find(c => c.id === l.classId), s) && !/withdrawn|finished|frozen/i.test(s.status || '')).map(s => ({ sid: s.id, name: `${s.first} ${s.last}`.trim(), frozen: s.status === 'frozen' })).sort((a, b) => a.name.localeCompare(b.name));
     return json({ from, days, early: EARLY_MIN, grace: GRACE_MIN, now: now.toISOString(), me: profile.teacherId || '', lessons: out.map(l => ({ ...l, teacher: (teachers.find(t => t.id === l.teacherId) || {}).name || '', coverForName: l.coverFor ? (teachers.find(t => t.id === l.coverFor) || {}).name || '' : '', students: roster(l) })), classes: list.map(c => ({ id: c.id, label: c.label, schedule: c.schedule || '', room: c.room || '' })),
       teachers: profile.role === 'admin' ? teachers.filter(t => mine.some(c => c.teacherId === t.id)).map(t => ({ id: t.id, name: t.name })) : [] });
   }
@@ -895,7 +901,7 @@ export default async (req) => {
     const classes = hidePrivate(classes0, profile);
     const now = new Date(), L = await loadLog(date.slice(0, 7)), cutoff = await checkSince(), CH = await loadChanges();
     const count = cid => students.filter(s => inClass(classes.find(c => c.id === cid), s) && s.status === 'active').length;
-    const roster = cid => students.filter(s => inClass(classes.find(c => c.id === cid), s) && !/withdrawn|finished/i.test(s.status || '')).map(s => ({ sid: s.id, name: `${s.first} ${s.last}`.trim(), frozen: s.status === 'frozen' })).sort((a, b) => a.name.localeCompare(b.name));
+    const roster = cid => students.filter(s => inClass(classes.find(c => c.id === cid), s) && !/withdrawn|finished|frozen/i.test(s.status || '')).map(s => ({ sid: s.id, name: `${s.first} ${s.last}`.trim(), frozen: s.status === 'frozen' })).sort((a, b) => a.name.localeCompare(b.name));
     const lessons = withEntry(lessonsOn(classes, date, CH), L, now, cutoff).map(l => ({ ...l, teacher: (teachers.find(t => t.id === l.teacherId) || {}).name || '', coverForName: l.coverFor ? (teachers.find(t => t.id === l.coverFor) || {}).name || '' : '', size: count(l.classId), students: roster(l.classId) }));
     const month = await monthLessons(classes, date.slice(0, 7), now);
     return json({ date, now: now.toISOString(), grace: GRACE_MIN, since: cutoff, lessons, teachers: punctuality(month, teachers), missedList: month.filter(l => l.state === 'missed').map(l => ({ key: l.key, date: l.date, start: l.start, label: l.label, teacher: (teachers.find(t => t.id === l.teacherId) || {}).name || '' })).slice(-40).reverse() });

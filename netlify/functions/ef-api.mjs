@@ -73,7 +73,7 @@ export default async (req) => {
 
   if (!unit) {
     const out = { book, level, mode: staff ? 'staff' : covers.length ? 'class' : level === 'member' ? 'member' : 'free', open: ids.filter(open) };
-    if (covers.length) out.className = myClasses.map(c => c.label).join(', ');
+    if (covers.length) { out.className = myClasses.map(c => c.label).join(', '); out.covered = ids.filter(id => covers.some(m => !!(m && m[id]))); }   // shown as a mark; it locks nothing
     if (staff) {
       const mine = onBook.filter(c => profile.role === 'admin' || c.teacherId === profile.teacherId);
       out.classes = await Promise.all(mine.map(async c => ({ id: c.id, label: c.label, covered: Object.keys((await coverOf(c.id))[book] || {}) })));

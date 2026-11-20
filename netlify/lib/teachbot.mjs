@@ -54,7 +54,7 @@ async function findLesson(key) {
   return l ? { lesson: l, cls: classes.find(c => c.id === cid), start } : null;
 }
 async function roster(cls) {
-  return (await doc('students')).filter(s => inClass(cls, s) && !/withdrawn|finished/i.test(s.status || ''))
+  return (await doc('students')).filter(s => inClass(cls, s) && !/withdrawn|finished|frozen/i.test(s.status || ''))
     .map(s => ({ sid: s.id, name: `${s.first} ${s.last}`.trim() })).sort((a, b) => a.name.localeCompare(b.name));
 }
 const mine = (p, l) => canAll(p) || (p.teacherId && p.teacherId === l.teacherId);
