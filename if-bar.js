@@ -1,5 +1,6 @@
 /* Small "back to IF Academy" button shown on every app page, plus offline support. */
 (function () {
+  try { var cs = document.createElement('style'); cs.textContent = 'input,textarea,[contenteditable]{caret-color:currentColor}'; document.head.appendChild(cs); } catch (e) {}
   var me = document.currentScript;
   var root = (me && me.getAttribute('data-root')) || '/';
   function add() {

@@ -302,3 +302,5 @@ tr.regrow-admin td{background:#fbf8f1}
 
 /* buttons inside tables keep their own text colour (table links are navy) */
 table.t a.btn:not(.ghost):not(.gold){color:#fff}
+/* iPhone in dark mode drew a white caret on light fields: the caret now follows the text colour */
+input,textarea,[contenteditable]{caret-color:currentColor}
