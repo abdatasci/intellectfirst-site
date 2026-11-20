@@ -1,4 +1,4 @@
-// Every 15 minutes: lesson reminders (evening before, 2 hours before), homework (evening before it is due), tests
+// Every 15 minutes: lesson reminders (evening before, 2 hours before), homework (evening before it is due and 5 hours before the lesson), tests
 // (evening before and that morning) and tuition reminders (3 days before, due day, 3 days overdue; paused while a
 // receipt waits for confirmation). Saved as website notifications for students with an account, sent on Telegram to students who
 // connected the bot, and on WhatsApp to the student's (and parent's) phone number from IF Admin.
