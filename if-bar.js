@@ -4,6 +4,7 @@
   var me = document.currentScript;
   var root = (me && me.getAttribute('data-root')) || '/';
   function add() {
+    try { if (window.top !== window.self) return; } catch (e) { return; }   // inside another IF page: that page already has the button
     if (document.getElementById('if-home-pill') || (me && me.getAttribute('data-slug') === 'home')) return;
     var a = document.createElement('a');
     a.id = 'if-home-pill';

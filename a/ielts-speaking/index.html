@@ -758,6 +758,16 @@ function finishMock(){
 }
 $("mAgain").onclick=()=>{$("mockDone").hidden=true;$("mockIntro").hidden=false;};
 
+/* Progress is kept on this device, so ticks and scores are still there next time (added 20 Nov 2026). */
+const LSK="if-speaking-lab";
+function saveLab(){try{localStorage.setItem(LSK,JSON.stringify({done:[...state.done],answered:[...state.answered],vocab:state.vocab.map(v=>[...v]),spoken:state.spoken,scores:state.scores}));}catch(e){}}
+(function(){try{const d=JSON.parse(localStorage.getItem(LSK)||"null");if(!d)return;
+  if(Array.isArray(d.done))state.done=new Set(d.done);if(Array.isArray(d.answered))state.answered=new Set(d.answered);
+  if(Array.isArray(d.vocab)&&d.vocab.length===TOPICS.length)state.vocab=d.vocab.map(v=>new Set(v));
+  if(typeof d.spoken==="number")state.spoken=d.spoken;
+  if(Array.isArray(d.scores)&&d.scores.length===TOPICS.length&&d.scores.every(r=>Array.isArray(r)&&r.length===4))state.scores=d.scores;}catch(e){}})();
+setInterval(saveLab,4000);addEventListener("pagehide",saveLab);document.addEventListener("visibilitychange",saveLab);
+if(/[?&]embed=1/.test(location.search))document.documentElement.classList.add("embed");
 renderTopics();renderDrill();renderScores();renderStats();
 </script>
 
