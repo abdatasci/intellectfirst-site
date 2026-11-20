@@ -272,7 +272,7 @@
       });
       var lang = c ? c.units.map(function (u, ui) { return { u: u, ui: ui }; }).filter(function (x) { return !usedU[x.u.id]; }) : [];
       h += (lang.length ? '<div class="sec"><h2>🧩 Language for IELTS</h2></div><div class="grid">' + lang.map(function (x) { return unitCard(c, x.u, x.ui); }).join('') + '</div>' : '') +
-        '<div class="sec"><h2>Full tests, video course and vocabulary</h2></div><div class="grid">' + tools.filter(function (x) { return x.id === 'ielts-centre' || x.id === 'ielts-video'; }).concat(IFX_DIR.filter(function (x) { return x.s === 'vocab' && (x.tags || []).indexOf('ielts') >= 0; })).map(itemCard).join('') + '</div>';
+        '<div class="sec"><h2>Full tests, video course and vocabulary</h2></div><div class="grid">' + tools.filter(function (x) { return x.id === 'ielts-centre' || x.id === 'ielts-video'; }).concat(IFX_DIR.filter(function (x) { return x.s === 'vocab' && (x.tags || []).indexOf('ielts') >= 0; })).map(itemCard).join('') + '<span id="ielts-mods" style="display:contents"></span></div>';
     }
     view().innerHTML = h + '<p style="text-align:center;margin:26px 0 8px"><a class="btn ghost sm" href="/app/">🧩 All IF Academy apps</a></p>';
     $$('[data-say]').forEach(function (b) { b.onclick = function () { say(b.dataset.say); }; });
@@ -284,13 +284,16 @@
   var SLIDES = null;
   function slidesOK(key) { return !!(access().staff || S.teacher || (ME && ME.student && (S.cls || []).indexOf(key) >= 0)); }
   function ieltsSlides() {
-    var box = $('#ielts-slides'); if (!box) return;
+    if (!$('#ielts-slides')) return;
     (SLIDES ? Promise.resolve(SLIDES) : fetch('/lessons/index.json').then(function (r) { return r.json(); }).then(function (d) { SLIDES = d; return d; })).then(function (d) {
-      var box2 = $('#ielts-slides'); if (!box2) return;
-      var list = (d.decks || []).filter(function (x) { return x.book === 'b-ielts' && /^V\d+$/.test(x.unit); });
-      if (!list.length) return;
-      box2.innerHTML = '<div class="sec"><h2>🖥️ Vocabulary presentations</h2><p class="sec-d">Cambridge Vocabulary for IELTS: the ' + list.length + ' slide lessons from class, one per unit. They open in IF Classroom and cannot be downloaded.</p></div><div class="grid">' +
-        list.map(function (x) { return '<a class="card" href="/me/#/present/' + esc(x.id) + '"><span class="ic">🖥️</span><h3>' + esc(x.unit.replace('V', 'Unit ')) + ' · ' + esc(x.title) + '</h3><p>' + x.slides + ' slides</p><div class="meta"><span class="tag ex">IELTS</span><span class="tag">Slides</span></div></a>'; }).join('') + '</div>';
+      var all = (d.decks || []).filter(function (x) { return x.book === 'b-ielts'; });
+      var card = function (x, name) { return '<a class="card" href="/me/#/present/' + esc(x.id) + '"><span class="ic">🖥️</span><h3>' + esc(name) + '</h3><p>' + x.slides + ' slides</p><div class="meta"><span class="tag ex">IELTS</span><span class="tag">Slides</span></div></a>'; };
+      var box = $('#ielts-slides'), list = all.filter(function (x) { return /^V\d+$/.test(x.unit); });
+      if (box && list.length) box.innerHTML = '<div class="sec"><h2>🖥️ Vocabulary presentations</h2><p class="sec-d">Cambridge Vocabulary for IELTS: the ' + list.length + ' slide lessons from class, one per unit. They open in IF Classroom and cannot be downloaded.</p></div><div class="grid">' +
+        list.map(function (x) { return card(x, x.unit.replace('V', 'Unit ') + ' · ' + x.title); }).join('') + '</div>';
+      /* the four skills presentations (M1 to M4) sit with the video course */
+      var mods = $('#ielts-mods'), ml = all.filter(function (x) { return /^M\d+$/.test(x.unit); });
+      if (mods && ml.length) mods.innerHTML = ml.map(function (x) { return card(x, 'Video course · ' + x.title.replace(/ module$/i, '') + ' presentation'); }).join('');
     }).catch(function () {});
   }
 
