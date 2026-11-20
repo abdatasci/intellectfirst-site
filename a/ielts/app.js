@@ -225,7 +225,7 @@
     var best = bestByTask(), list = BANK[tab];
     view.innerHTML = '<section class="hero"><div class="eyebrow">Writing · AI marked</div><h1>Writing practice</h1>' +
       '<p class="lead">Choose a task. While you write, a live band estimate updates each time you pause; submit for a full report with corrections and a model answer.</p>' +
-      '<div class="row" style="margin-top:16px"><a class="btn gold" href="#/mock">Take a full mock test (60 min)</a></div></section>' +
+      '<div class="row" style="margin-top:16px"><a class="btn gold" href="#/mock">Take a full mock test (60 min)</a><a class="btn ghost" href="#/app/ielts-studio">Model answers, language bank and more charts: IELTS Studio</a></div></section>' +
       '<div class="filters" role="group"><button data-t="task1" aria-pressed="' + (tab === 'task1') + '">Task 1 · Charts (' + BANK.task1.length + ')</button><button data-t="task2" aria-pressed="' + (tab === 'task2') + '">Task 2 · Essays (' + BANK.task2.length + ')</button></div>' +
       '<div class="task-list">' + list.map(function (t) {
         return '<a class="task" href="#/write/' + t.id + '"><div><span class="id">' + t.id + ' · ' + esc(KIND[t.kind] || t.kind) + '</span><b>' + esc(t.title) + '</b><span class="k">' + (tab === 'task1' ? '20 min · 150+ words' : '40 min · 250+ words') + '</span></div>' +

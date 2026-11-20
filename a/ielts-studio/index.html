@@ -611,13 +611,19 @@ const CRIT_NAMES=t=>[t===1?"Task Achievement":"Task Response","Coherence & Cohes
 const LINKERS=["however","moreover","furthermore","in addition","additionally","therefore","consequently","as a result","thus","nevertheless","nonetheless","on the other hand","in contrast","whereas","while","although","even though","despite","in spite of","for example","for instance","such as","in particular","firstly","secondly","finally","in conclusion","to conclude","overall","in summary","similarly","likewise","by contrast","meanwhile","subsequently","afterwards","this means","as a consequence","due to","owing to","because of","not only","to sum up","in my view","in my opinion"];
 const STOP=new Set("the a an and or but of to in on at for with by from as is are was were be been being this that these those it its their there they them which who whom what when where while than then also very more most much many such into over under between about after before during can could would should will may might must have has had do does did not no nor so if each other some any all both only own same few further just because through".split(" "));
 function wList(){if(WR.task===0)return [];return (WR.task===1?W1:W2).concat(((P.custom&&P.custom.writing)||[]).filter(x=>x.task===WR.task));}
+/* The IELTS Centre marks writing with the AI examiner and keeps the band in My progress. Tasks that exist in both places
+   get a button here that hands the draft over, so a student writes once (20 Nov 2026). */
+let CENTRE=null;
+const cKey=x=>String(x||"").replace(/\s+/g," ").trim().slice(0,70).toLowerCase();
+fetch("/a/ielts/data/writing.json").then(r=>r.json()).then(d=>{CENTRE={};(d.task1||[]).concat(d.task2||[]).forEach(t=>{CENTRE[cKey(t.prompt)]=t.id;});if(cur==="writing"&&WR.item===null)writingList();}).catch(()=>{CENTRE={};});
+const centreId=w=>(CENTRE&&w&&w.type!=="book"&&CENTRE[cKey(w.prompt)])||"";
 function renderWriting(){if(WR.item===null)return writingList();writingDesk();}
 function writingList(){
   const L=wList();
   $("#v-writing").innerHTML=`
-  <div class="view-head"><div><div class="label">Writing</div><h1>Writing tasks</h1><p>Write under exam timing with a live word count. ${AI?"Submit to the AI examiner for band scores on all four criteria, with corrections.":"Check your writing instantly against the official criteria, score yourself, then compare it with a Band 8+ model."}</p></div></div>
+  <div class="view-head"><div><div class="label">Writing</div><h1>Writing tasks</h1><p>Write under exam timing with a live word count. ${AI?"Submit to the AI examiner for band scores on all four criteria, with corrections.":"Check your writing instantly against the official criteria, score yourself, then compare it with a Band 8+ model."} Tasks marked 🎓 can also be marked by the AI examiner in the IELTS Centre.</p></div></div>
   <div class="tabs" role="tablist"><button role="tab" data-k="1" aria-selected="${WR.task===1}">Task 1 · Charts & processes (${W1.length})</button><button role="tab" data-k="2" aria-selected="${WR.task===2}">Task 2 · Essays (${W2.length})</button><button role="tab" data-k="0" aria-selected="${WR.task===0}">Language bank</button></div><div id="wBody">
-  <div class="cards">${L.map((w,i)=>{const d=P.writing.done[w.id];const draft=P.writing.drafts[w.id];return `<button class="card" data-i="${i}"><div class="row" style="justify-content:space-between"><span class="chip gold">${esc(WR.task===1?w.type:w.type.replace("_"," "))}</span>${d?`<span class="chip ok">${d.band?"Band "+bandFmt(d.band):"Done"}</span>`:draft?`<span class="chip">Draft · ${wordsOf(draft).length} words</span>`:""}</div><h3>${esc(WR.task===1?w.title:w.topic)}</h3><p>${esc(String(w.prompt).split("\n")[0].slice(0,150))}${String(w.prompt).split("\n")[0].length>150?"…":""}</p></button>`;}).join("")}</div>${bookWriteSection()}</div>`;
+  <div class="cards">${L.map((w,i)=>{const d=P.writing.done[w.id];const draft=P.writing.drafts[w.id];return `<button class="card" data-i="${i}"><div class="row" style="justify-content:space-between"><span class="chip gold">${esc(WR.task===1?w.type:w.type.replace("_"," "))}</span>${d?`<span class="chip ok">${d.band?"Band "+bandFmt(d.band):"Done"}</span>`:draft?`<span class="chip">Draft · ${wordsOf(draft).length} words</span>`:""}</div><h3>${centreId(w)?"🎓 ":""}${esc(WR.task===1?w.title:w.topic)}</h3><p>${esc(String(w.prompt).split("\n")[0].slice(0,150))}${String(w.prompt).split("\n")[0].length>150?"…":""}</p></button>`;}).join("")}</div>${bookWriteSection()}</div>`;
   $$("#v-writing .tabs button").forEach(b=>b.onclick=()=>{WR.task=+b.dataset.k;writingList();});
   if(WR.task===0){languageBank();return;}
   bindBookWrite();
@@ -677,7 +683,7 @@ function writingDesk(){
   const L=wList(),w=L[WR.item],min=WR.task===1?150:250,draft=P.writing.drafts[w.id]||"";
   $("#v-writing").innerHTML=`
   <div class="rd-bar"><div class="row"><button class="btn sm" id="wBack">← All Task ${WR.task} prompts</button><span class="chip gold">${esc(WR.task===1?w.type:w.type.replace("_"," "))}</span></div>
-    <div class="row"><span class="timer${WR.left<300?" low":""}" id="wTimer">${fmt(WR.left)}</span><button class="btn sm" id="wTime">${WR.tid?"Pause":"Start timer"}</button></div></div>
+    <div class="row"><span class="timer${WR.left<300?" low":""}" id="wTimer">${fmt(WR.left)}</span><button class="btn sm" id="wTime">${WR.tid?"Pause":"Start timer"}</button>${centreId(w)?`<button class="btn sm gold" id="wCentre">🎓 AI examiner</button>`:""}</div></div>
   <div class="wr-grid">
     <div class="rd-col">
       <div class="label">Writing Task ${WR.task} · ${WR.task===1?"20":"40"} minutes</div>
@@ -704,6 +710,9 @@ function writingDesk(){
   const upd=()=>{const t=ta.value,n=wordsOf(t).length,pc=t.split(/\n\s*\n/).filter(x=>x.trim()).length;$("#wStats").innerHTML=`<span><b class="num">${n}</b> / ${min} words</span><span><b class="num">${pc}</b> paragraph${pc===1?"":"s"}</span>${n&&n<min?`<span style="color:var(--bad)">${min-n} words short</span>`:n>=min?`<span style="color:var(--ok)">Length met</span>`:""}`;};
   ta.oninput=()=>{P.writing.drafts[w.id]=ta.value;save();upd();};upd();
   $("#wBack").onclick=()=>{clearInterval(WR.tid);WR.tid=null;if(WR.ctl)WR.ctl.abort();WR.item=null;writingList();};
+  if($("#wCentre"))$("#wCentre").onclick=()=>{const id=centreId(w),txt=ta.value||"";
+    try{if(txt.trim())localStorage.setItem("ielts.draft."+id,JSON.stringify({text:txt,secs:0}));}catch(e){}
+    (window.top||window).location.href="/a/ielts/index.html#/write/"+id;};
   $("#wTime").onclick=()=>{if(WR.tid){clearInterval(WR.tid);WR.tid=null;$("#wTime").textContent="Resume";}else{WR.tid=setInterval(()=>{WR.left--;const el=$("#wTimer");if(el){el.textContent=fmt(WR.left);el.classList.toggle("low",WR.left<300);}if(WR.left<=0){clearInterval(WR.tid);WR.tid=null;if(el)el.textContent="Time";}},1000);$("#wTime").textContent="Pause";}};
   $("#wClear").onclick=()=>{if($("#wClear").dataset.sure){ta.value="";P.writing.drafts[w.id]="";save();upd();$("#wClear").textContent="Clear";delete $("#wClear").dataset.sure;}else{$("#wClear").dataset.sure=1;$("#wClear").textContent="Tap again to clear";setTimeout(()=>{const b=$("#wClear");if(b){b.textContent="Clear";delete b.dataset.sure;}},2500);}};
   $("#wCheck").onclick=()=>{WR.fb=analyse(ta.value,WR.task);WR.ai=null;renderFb(w);};
@@ -938,6 +947,7 @@ function languageBank(){
   const which=WR.lang||"t1";
   $("#wBody").innerHTML=`<div class="row" style="margin-bottom:14px"><div class="ptabs">${[["t1","Task 1 language"],["t2","Task 2 language"]].map(([k,l])=>`<button aria-selected="${which===k}" data-lk="${k}">${l}</button>`).join("")}</div>
   <a class="btn sm" id="lVocab" target="_top">Practise these words in the course</a><button class="btn sm gold" data-pdf="ielts-writing-language-bank">⬇ Download PDF</button></div><p class="hint" id="pdfMsg" style="margin:-6px 0 12px"></p>
+  <p class="note" style="margin:0 0 12px">🧩 <b>Grammar for IELTS</b>: 12 topics (tenses for data, passives for processes, linking, hedging and more) with rule sheets, quizzes and team games are in the <a href="/a/if-english/courses/IELTS/index.html" target="_top"><b>IELTS Grammar &amp; Games</b></a> page.</p>
   <nav class="langnav">${LANG[which].map(s=>`<a href="#L-${s.id}" data-jump-l="${s.id}">${esc(({intro:"Introduction",overview:"Overview",up:"Going up",down:"Going down",stable:"No change",degree:"How much",structures:"Sentence patterns",prep:"Prepositions",compare:"Comparing",approx:"Proportions",process:"Process",map:"Maps",t1errors:"Mistakes",t2intro:"Introduction",t2body:"Body paragraphs",t2concede:"Balancing",t2concl:"Conclusion",t2formal:"Formal words",t2errors:"Mistakes"})[s.id]||s.title)}</a>`).join("")}</nav>
   <div class="langgrid">${LANG[which].map(langSection).join("")}</div>`;
   $$("#wBody [data-lk]").forEach(b=>b.onclick=()=>{WR.lang=b.dataset.lk;languageBank();});
