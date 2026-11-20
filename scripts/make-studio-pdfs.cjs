@@ -79,7 +79,8 @@ function langHtml(L, logo) {
   const port = srv.address().port, b = await chromium.launch(), p = await b.newPage();
   await p.route(/fonts\.g/, r => r.abort());
   await p.goto(`http://localhost:${port}/a/ielts-studio/index.html`); await p.waitForTimeout(800);
-  const { VOCAB, LANG, LOGO } = await p.evaluate(() => ({ VOCAB, LANG, LOGO }));
+  const { LANG, LOGO } = await p.evaluate(() => ({ LANG, LOGO }));
+  const VOCAB = JSON.parse(require('fs').readFileSync(require('path').join(__dirname, '..', 'tools', 'cvi', 'vocab.json'), 'utf8'));   // the word bank left the Studio page on 20 Nov 2026
   fs.mkdirSync(OUT, { recursive: true });
   for (const [file, body, title] of [['ielts-vocabulary-bank.pdf', vocabHtml(VOCAB, LOGO), 'IELTS Vocabulary Bank'], ['ielts-writing-language-bank.pdf', langHtml(LANG, LOGO), 'IELTS Writing Language Bank']]) {
     const q = await b.newPage();

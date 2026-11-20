@@ -366,6 +366,8 @@ export const langOf = code => /^ru/i.test(code || '') ? 'ru' : /^kk/i.test(code 
 
 /* ---------- which reminders are due now ----------
    Run every 15 minutes. Lessons: 2 hours before (sent 60–125 min ahead) and the evening before (19:00–21:00 local).
+   Homework: the evening before it is due (19:00–21:00) and 5 hours before that day's lesson of the class (never before
+   07:00 local, so an early lesson is reminded at 07:00). Neither is sent once the student has marked the homework as done.
    Payments (10:00–13:00 local): 3 days before, on the due day, 3 days after if still unpaid. Each reminder is sent once. */
 export function dueReminders({ students, classes, homework = [], receipts = {}, changes = NO_CHANGES, now = new Date(), skip = null }) {
   const out = [], l = local(now), hour = l.getUTCHours();
@@ -373,7 +375,8 @@ export function dueReminders({ students, classes, homework = [], receipts = {}, 
     if (/withdrawn|finished|frozen/i.test(s.status || '')) continue;
     if (!s.uid && !s.phone && !s.parentPhone) continue;   // no account and no phone: nobody to tell
     const mine = classes.filter(c => inClass(c, s));
-    for (const x of upcomingLessons(mine, now, 2, changes)) {
+    const ups = upcomingLessons(mine, now, 2, changes);
+    for (const x of ups) {
       if (skip && skip.has(x.key + '|' + s.id)) continue;   // the student cancelled this lesson
       const mins = (x.at - now) / 60000;
       if (mins > 60 && mins <= 125) out.push({ uid: s.uid || null, studentId: s.id, phones: [s.phone, s.parentPhone].filter(Boolean), kind: 'lesson2h', key: `l2:${x.classId}:${x.date}:${x.start}`, lesson: x });
@@ -384,7 +387,13 @@ export function dueReminders({ students, classes, homework = [], receipts = {}, 
     const tomorrow = ymd(new Date(now.getTime() + 86400000)), todayD = ymd(now), ids = mine.map(c => c.id);
     for (const h of homework.filter(h => ids.includes(h.classId))) {
       const base = { uid: s.uid || null, studentId: s.id, phones: [s.phone, s.parentPhone].filter(Boolean), hw: h };
-      if (hour >= 19 && hour < 21 && h.due === tomorrow) out.push({ ...base, kind: h.kind === 'test' ? 'testEve' : 'hwEve', key: `h:e:${h.id}` });
+      const mineDone = h.kind !== 'test' && !!(h.checks && h.checks[s.id]);   // the student ticked "done" (or the teacher marked it): no more nudges
+      if (hour >= 19 && hour < 21 && h.due === tomorrow && !mineDone) out.push({ ...base, kind: h.kind === 'test' ? 'testEve' : 'hwEve', key: `h:e:${h.id}` });
+      if (h.kind !== 'test' && !mineDone && h.due === todayD && hour >= 7) {
+        const x = ups.find(u => u.classId === h.classId && u.date === h.due && !(skip && skip.has(u.key + '|' + s.id)));
+        const mins = x ? (x.at - now) / 60000 : 0;
+        if (x && mins > 60 && mins <= 300) out.push({ ...base, hw: { ...h, at: x.start }, kind: 'hw5h', key: `h:5:${h.id}:${x.start}` });
+      }
       if (h.kind === 'test' && hour >= 8 && hour < 10 && h.due === todayD) out.push({ ...base, kind: 'testDay', key: `h:d:${h.id}` });
     }
     const p = payStatus(s, now);

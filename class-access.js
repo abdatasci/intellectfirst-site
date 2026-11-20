@@ -36,7 +36,8 @@
   /** The personal level set by staff, or ''. */
   function own(me) { var l = String((me && me.student && me.student.appLevel) || '').toUpperCase(); return ORDER.indexOf(l) >= 0 ? l : ''; }
   /** Study keys for one level: the AI-Generated course and every coursebook of that level. */
-  function forLevel(lv) { return ['ge:' + (lv === 'A0' ? 'A1' : lv)].concat((SAME[lv] || []).map(function (b) { return 'book:' + b; })); }
+  var PRIMARY = { A0: 'ef-a0', A1: 'ef-a1', A2: 'ef-a2', B1: 'ef-b1', B2: 'ef-b2', C1: 'ef-c1', C2: 'ef-c2' };   // the English Files book of each level
+  function forLevel(lv) { return ['ge:' + (lv === 'A0' ? 'A1' : lv), 'book:' + PRIMARY[lv]].concat(/^(B2|C1|C2)$/.test(lv) ? ['ielts'] : []); }
   function nextLevel(lv) { var i = ORDER.indexOf(lv); return i >= 0 && i < ORDER.length - 1 ? ORDER[i + 1] : ''; }
   function keys(me) {
     if (!me || !me.profile || me.access === 'staff' || /teacher|admin/.test(me.profile.role || '')) return null;
@@ -58,15 +59,23 @@
       if (!lv) lv = levelIn(text);
     });
     if (!lv) lv = levelIn(st.level);
-    if (cls.some(indiv)) {
-      add('book:ef-a0'); ['A1', 'A2', 'B1', 'B2', 'C1'].forEach(function (l) { add('ge:' + l); (SAME[l] || []).forEach(function (bk) { add('book:' + bk); }); });
-      if (lv === 'C2') { add('ge:C2'); add('book:ef-c2'); }
+    /* Director's rule, 20 Nov 2026, to avoid confusion: a student sees their own level only.
+         A0 to B1   the class coursebook (or the English Files book of the level) + General English of the level
+         B2         the same for B2, plus IELTS
+         C1 and C2  both levels, plus IELTS
+         IELTS      IELTS, plus the B2, C1 and C2 materials
+       An individual student whose level is not known keeps every level, as before. */
+    var isI = out.indexOf('ielts') >= 0 && (!lv || /^(B2|C1|C2)$/.test(lv)), ge = function (l) { add('ge:' + (l === 'A0' ? 'A1' : l)); };
+    if (cls.some(indiv) && !lv && !isI) {
+      add('book:ef-a0'); ['A1', 'A2', 'B1', 'B2', 'C1'].forEach(function (l) { add('ge:' + l); add('book:' + PRIMARY[l]); });
     }
     if (lv && !kids) {
-      add(biz ? 'be:' + (lv === 'A1' || lv === 'A0' ? 'A2' : lv === 'C2' ? 'C1' : lv) : 'ge:' + (lv === 'A0' ? 'A1' : lv));
-      // every coursebook of the same level is open too (English File B1 <-> English for Teenagers B1, and so on)
-      (SAME[lv] || []).forEach(function (bk) { add('book:' + bk); });
+      if (biz) add('be:' + (lv === 'A1' || lv === 'A0' ? 'A2' : lv === 'C2' ? 'C1' : lv)); else ge(lv);
+      if (!out.some(function (k) { return /^book:/.test(k); })) add('book:' + PRIMARY[lv]);   // no coursebook set for the class: the English Files book of its level
+      if (lv === 'B2') add('ielts');
+      if (lv === 'C1' || lv === 'C2') { ge('C1'); ge('C2'); add('book:ef-c1'); add('book:ef-c2'); add('ielts'); }
     }
+    if (isI) ['B2', 'C1', 'C2'].forEach(function (l) { ge(l); add('book:' + PRIMARY[l]); });
     return out.length ? out : null;
   }
   /* Test centres a student may see, by study key */

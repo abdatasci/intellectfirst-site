@@ -301,3 +301,5 @@ figure.ch svg{width:100%;height:auto;display:block}
 }
 .rl-testh{font-size:19px;margin:18px 0 10px}
 .badge.lis{background:#dfeaf6;color:var(--navy)}.badge.rea{background:#e8f0e2;color:#2e5a2e}
+/* iPhone in dark mode drew a white caret on light fields: the caret now follows the text colour */
+input,textarea,[contenteditable]{caret-color:currentColor}

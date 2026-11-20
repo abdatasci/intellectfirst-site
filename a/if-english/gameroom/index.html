@@ -617,6 +617,8 @@ const TAB_OF={alias:'words',taboo:'words',hotseat:'words'};
 const VIEWS={mafia:()=>mafiaSetup(),cases:()=>casesHome(),puzzles:()=>puzzles(),riddles:()=>riddles(),alibi:()=>alibi(),words:()=>wgSetup(),snowman:()=>snowSetup(),race:()=>raceSetup(),xo:()=>xoSetup(),chess:()=>chessSetup(),ships:()=>shipSetup(),quiz:()=>quizSetup(),bingo:()=>bingoSetup(),memory:()=>memSetup(),snap:()=>snapSetup(),spy:()=>spySetup(),agents:()=>agentsSetup(),clues:()=>cluesGame(),bank:()=>bank()};
 let curCat=null;
 function stopAll(){stopTimer();wgStop();if(typeof memStop==='function')memStop()}
+/* Opened as ?only=chess (the students' Chess card): the menu of the other class games is hidden. */
+if(/[?&]only=/.test(location.search)){const st=document.createElement('style');st.textContent='#nav{display:none!important}';document.head.appendChild(st)}
 function route(){
   stopAll();
   let h=(location.hash||'#home').slice(1);

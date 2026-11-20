@@ -266,6 +266,8 @@
       var other = units.filter(function (x) { return !used[x.c.id + x.u.id]; });
       if (other.length) h += '<div class="sec"><h2>🧰 More workplace skills</h2></div><div class="grid">' + other.map(function (x) { return unitCard(x.c, x.u, x.ui); }).join('') + '</div>';
       h += '<div class="sec"><h2>By level</h2></div><div class="grid">' + list.map(courseCard).join('') + '</div>';
+    } else if (ownLocked(BY.ielts)) {
+      h = '<div class="hero"><h1>🔒 IF IELTS</h1><p>IELTS materials open from Upper-intermediate (B2). Your account shows the courses and books of your class level, so you always know what to study.</p><p><a class="btn gold" href="/app/general/">Go to my courses</a></p></div>';
     } else {
       var c = BY.ielts, tools = IFX_DIR.filter(function (x) { return x.s === 'ielts'; }), usedU = {};
       h = appHero('IF IELTS', 'Four skills. In each one: learn the language and the strategy first, then practise with real-format tasks.', list);
@@ -328,7 +330,7 @@
     c.units.forEach(function (u, ui) {
       var open = !!e.open[u.id];
       var cov = e.mode === 'staff' && e.classes.length ? '<div class="cover">' + e.classes.map(function (k) { var on = k.covered.indexOf(u.id) >= 0; return '<label class="chip' + (on ? ' on' : '') + '"><input type="checkbox" data-cover="' + esc(k.id) + '" data-unit="' + esc(u.id) + '"' + (on ? ' checked' : '') + '> Covered · ' + esc(k.label) + '</label>'; }).join('') + '</div>' : '';
-      html += '<section class="unit' + (open ? '' : ' unit-locked') + '"><div class="unit-h"><div style="flex:1"><small>' + (u.test ? '📝 Mock test' : esc(t('unit')) + ' ' + esc(u.id)) + (u.g ? ' · ' + esc(u.g) : '') + (e.mode === 'class' && (e.covered || []).indexOf(u.id) >= 0 ? ' · ✅ covered in class' : '') + '</small><h3>' + esc(u.title) + '</h3>' + (open ? '<ul class="objs">' + u.obj.map(function (o) { return '<li>🎯 ' + esc(o) + '</li>'; }).join('') + '</ul>' : '') + cov + '</div>' +
+      html += '<section class="unit' + (open ? '' : ' unit-locked') + '"><div class="unit-h"><div style="flex:1"><small>' + (u.test ? '📝 Mock test' : u.extra ? '🗣️ Speaking words' : u.label ? esc(u.label) : esc(t('unit')) + ' ' + esc(u.id)) + (u.g ? ' · ' + esc(u.g) : '') + (e.mode === 'class' && (e.covered || []).indexOf(u.id) >= 0 ? ' · ✅ covered in class' : '') + '</small><h3>' + esc(u.title) + '</h3>' + (open ? '<ul class="objs">' + u.obj.map(function (o) { return '<li>🎯 ' + esc(o) + '</li>'; }).join('') + '</ul>' : '') + cov + '</div>' +
         (open ? '' : e.mode === 'class' ? '<span class="btn sm gold" style="cursor:default">🔒 Not covered in class yet</span>' : '<a class="btn sm gold" href="/me/#/upgrade">🔒 ' + esc(t('locked')) + '</a>') + '</div>' +
         (open ? '<div class="path">' + u.lessons.map(function (l) {
           var done = isDone(c.id, u.id, l.id), isNext = nx && nx.u.id === u.id && nx.l.id === l.id;
@@ -896,19 +898,23 @@
       '<div class="grid">' + list.map(courseCard).join('') + '</div>' ;
     $$('[data-f]').forEach(function (b) { b.onclick = function () { vCourses(b.dataset.f); }; });
   }
-  /* a level course that a student with a personal level has not reached yet */
+  /* A level course outside this student's level. Class students see their own level only (class-access.js gives the keys);
+     a student with a personal level sees it until the next level opens. Staff and people without a class see everything. */
   function ownLocked(c) {
-    if (!S.own || S.teacher || access().staff || !c) return false;
-    var keys = S.cls || [], has = function (lv) { return keys.indexOf('ge:' + lv) >= 0; };
+    var keys = S.cls || [];
+    if (!c || !keys.length || S.teacher || access().staff || access().teacher) return false;
+    var has = function (lv) { return keys.indexOf('ge:' + lv) >= 0 || keys.indexOf('be:' + lv) >= 0; };
     var m = /^(ge|be)-(a1|a2|b1|b2|c1|c2)$/.exec(c.id);
     if (m) return !has(m[2].toUpperCase());
-    if (/^(ef|teens)-/.test(c.id)) return keys.indexOf('book:' + c.id) < 0 && !(c.id === 'ef-a0' && has('A1'));
-    if (c.id === 'ielts') return !['B1', 'B2', 'C1', 'C2'].some(has);   // IELTS preparation starts at B1
+    if (c.id === 'ielts' || c.id === 'cvi-ielts' || (c.track === 'ielts' && !/^(ket|pet)/.test(c.id))) return keys.indexOf('ielts') < 0;
+    if (/^(ef|teens)-/.test(c.id)) return keys.indexOf('book:' + c.id) < 0 && !(c.id === 'ef-a0' && has('A1') && !keys.some(function (k) { return /^book:ef-/.test(k); }));
+    if (c.track === 'general' && /^(A1|A2|B1|B2|C1|C2)$/.test(c.level || '')) return !has(c.level);
     return false;
   }
   function ownWall(c) {
     var top = S.ownTop || S.own, nm = window.IFClass ? IFClass.levelName(top) : '';
-    view().innerHTML = '<a class="back" href="#/courses">← ' + esc(t('back')) + '</a><div class="hero" style="margin-top:14px"><h1>🔒 ' + esc(c.title) + '</h1><p>Your teacher has set your level to <b>' + esc(top) + ' ' + esc(nm) + '</b>. This course opens when you have finished ' + OWN_PASS + '% of your ' + esc(top) + ' course.</p><p><a class="btn gold" href="#/courses">Go to my courses</a></p></div>';
+    var why = S.own ? 'Your teacher has set your level to <b>' + esc(top) + ' ' + esc(nm) + '</b>. This course opens when you have finished ' + OWN_PASS + '% of your ' + esc(top) + ' course.' : 'This course is for another level. Your account shows the courses and books of your class level, so you always know what to study.';
+    view().innerHTML = '<a class="back" href="#/courses">← ' + esc(t('back')) + '</a><div class="hero" style="margin-top:14px"><h1>🔒 ' + esc(c.title) + '</h1><p>' + why + '</p><p><a class="btn gold" href="#/courses">Go to my courses</a></p></div>';
   }
   function vCourse(id) {
     setNav('courses');
@@ -1288,7 +1294,8 @@
       var adv = gl(['if-kart', 'block-quest', 'kids-quest']);
       view().innerHTML = '<div class="page-h"><div><p class="h-eyebrow">' + esc(t(k)) + '</p><h1>' + esc(sc.h) + '</h1><p>' + esc(sc.p) + '</p></div></div>' + (full ? '' : goalBar()) + gamesChip(k) +
         grp('🧠 Mind Lab', 'Daily mind training that uses every skill: words, grammar, memory and logic.', gl(['mind-lab', 'mind-lab-kids'])) +
-        grp('👥 Play together', 'For the class or a group of friends: one screen or everyone on their phones.', gl(['live', 'mafia-live', 'mystery-live'])) +
+        grp('👥 Play together', 'For the class or a group of friends: one screen or everyone on their phones.', gl(['live', 'mafia-live', 'mystery-live', 'spyfall', 'alibi'])) +
+        grp('♟️ Board games', 'Chess against the computer or a friend. Say every move in English.', gl(['chess'])) +
         grp('🏁 Adventure and racing', 'Play alone at your own level.', adv, adv.map(function (x) { return levelRow(x.id, x.id, true, kidsOK); }).join(''));
       return;
     }

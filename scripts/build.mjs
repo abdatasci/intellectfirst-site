@@ -2,7 +2,7 @@
 // (node_modules, serverless function sources, package files) so they are never published.
 import { cpSync, rmSync, readdirSync, readFileSync, writeFileSync, statSync } from 'node:fs';
 const SKIP = new Set(['node_modules', 'netlify', 'dist', 'scripts', '.git', '.gitignore', '.netlify',
-  'package.json', 'package-lock.json', 'netlify.toml', 'README.md']);
+  'package.json', 'package-lock.json', 'netlify.toml', 'README.md', 'tools', 'CLAUDE.md']);   // tools = lesson sources: served only through the API
 rmSync('dist', { recursive: true, force: true });
 for (const name of readdirSync('.')) {
   if (SKIP.has(name)) continue;

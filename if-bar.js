@@ -1,8 +1,10 @@
 /* Small "back to IF Academy" button shown on every app page, plus offline support. */
 (function () {
+  try { var cs = document.createElement('style'); cs.textContent = 'input,textarea,[contenteditable]{caret-color:currentColor}'; document.head.appendChild(cs); } catch (e) {}
   var me = document.currentScript;
   var root = (me && me.getAttribute('data-root')) || '/';
   function add() {
+    try { if (window.top !== window.self) return; } catch (e) { return; }   // inside another IF page: that page already has the button
     if (document.getElementById('if-home-pill') || (me && me.getAttribute('data-slug') === 'home')) return;
     var a = document.createElement('a');
     a.id = 'if-home-pill';

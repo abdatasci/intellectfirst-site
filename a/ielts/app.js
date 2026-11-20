@@ -69,10 +69,11 @@
 
   /* ---------------- apps (existing IELTS tools) ---------------- */
   var APPS = [
-    { slug: 'ielts-studio', path: '/a/ielts-studio/index.html', name: 'IF IELTS Studio', tag: 'Reading · Writing · Vocabulary', desc: 'IELTS-format reading passages, writing models and vocabulary practice.' },
-    { slug: 'ielts-speaking', path: '/a/ielts-speaking/index.html', name: 'IELTS Speaking Lab', tag: 'Speaking practice', desc: '12 topics, cue cards and a full mock speaking test.' },
-    { slug: 'band9-lexis', path: '/a/band9-lexis/index.html', name: 'Band 9 Lexis', tag: 'Vocabulary', desc: 'Daily IELTS vocabulary for Band 7+ writing and speaking.' },
-    { slug: 'if-english-ielts', path: '/a/if-english/courses/IELTS/index.html', name: 'IF App · IELTS course', tag: 'Vocabulary & grammar', desc: 'The IELTS course from IF App: flashcards, audio and games.' }
+    { slug: 'ielts-studio', path: '/a/ielts-studio/index.html', name: 'IF IELTS Studio', tag: 'Practise · four skills', desc: 'Practise the four skills: listenings by topic, full reading tests, writing tasks with models, and speaking questions.' },
+    { slug: 'ielts-vocabulary', path: '/app/?embed=1#/course/cvi-ielts', name: 'Cambridge Vocabulary for IELTS', tag: 'Study · vocabulary course', desc: 'The coursebook unit by unit: words, a reading, a listening, speaking and a unit check, plus 5 mock tests.' },
+    { slug: 'if-english-ielts', path: '/a/if-english/courses/IELTS/index.html', name: 'IELTS Grammar & Games', tag: 'Grammar · games', desc: '12 grammar topics with rule sheets and quizzes, and team word games: Alias, Charades and Taboo.' },
+    { slug: 'band9-lexis', path: '/a/band9-lexis/index.html', name: 'Band 9 Lexis', tag: 'Daily words · Band 7+', desc: 'Ten minutes a day of higher-level vocabulary for writing and speaking.' },
+    { slug: 'ielts-speaking', path: '/a/ielts-speaking/index.html', name: 'IELTS Speaking Lab', tag: 'Speaking practice', desc: '12 topics, cue cards and a full mock speaking test.', hidden: true }   // now the Speaking tab of the Studio; kept so old links still open
   ];
   function openApp(slug) {
     var a = APPS.filter(function (x) { return x.slug === slug; })[0];
@@ -104,8 +105,8 @@
       '<section class="hero"><div class="eyebrow">IF Academy · Academic IELTS</div><h1>IELTS Centre</h1>' +
       '<p class="lead">Everything for IELTS in one place: Listening, Reading, Writing and Speaking, each with practice and a full mock test, plus vocabulary apps and your progress over time.</p></section>' + snap +
       (window.IFRL ? IFRL.skillsHTML() : '') +
-      '<section class="section"><div class="sec-head"><div><h2>Practice apps</h2><p>Your existing IF IELTS tools, now in one place.</p></div></div><div class="grid">' +
-      APPS.map(function (a) { return '<a class="card" href="#/app/' + a.slug + '"><span class="tag">' + esc(a.tag) + '</span><h3>' + esc(a.name) + '</h3><p>' + esc(a.desc) + '</p><span class="go">Open →</span></a>'; }).join('') +
+      '<section class="section"><div class="sec-head"><div><h2>Study and practise</h2><p>Each place has one job: practise the four skills, study the vocabulary book, or play and revise grammar. Marked tests are above.</p></div></div><div class="grid">' +
+      APPS.filter(function (a) { return !a.hidden; }).map(function (a) { return '<a class="card" href="#/app/' + a.slug + '"><span class="tag">' + esc(a.tag) + '</span><h3>' + esc(a.name) + '</h3><p>' + esc(a.desc) + '</p><span class="go">Open →</span></a>'; }).join('') +
       '</div></section>' +
       '<section class="section"><div class="sec-head"><div><h2>Official free samples</h2><p>Real IELTS papers are copyrighted, so our tasks are original, written in the exact IELTS format on topics that recur in the exam. For official sample questions, use the free materials from the test owners.</p></div></div>' +
       '<div class="row"><a class="btn ghost sm" href="https://ielts.org/take-a-test/preparation-resources/sample-test-questions/academic-test" target="_blank" rel="noopener">IELTS.org samples ↗</a><a class="btn ghost sm" href="https://takeielts.britishcouncil.org/take-ielts/prepare/free-ielts-practice-tests/writing" target="_blank" rel="noopener">British Council practice ↗</a></div></section>';
@@ -225,7 +226,7 @@
     var best = bestByTask(), list = BANK[tab];
     view.innerHTML = '<section class="hero"><div class="eyebrow">Writing · AI marked</div><h1>Writing practice</h1>' +
       '<p class="lead">Choose a task. While you write, a live band estimate updates each time you pause; submit for a full report with corrections and a model answer.</p>' +
-      '<div class="row" style="margin-top:16px"><a class="btn gold" href="#/mock">Take a full mock test (60 min)</a></div></section>' +
+      '<div class="row" style="margin-top:16px"><a class="btn gold" href="#/mock">Take a full mock test (60 min)</a><a class="btn ghost" href="#/app/ielts-studio">Model answers, language bank and more charts: IELTS Studio</a></div></section>' +
       '<div class="filters" role="group"><button data-t="task1" aria-pressed="' + (tab === 'task1') + '">Task 1 · Charts (' + BANK.task1.length + ')</button><button data-t="task2" aria-pressed="' + (tab === 'task2') + '">Task 2 · Essays (' + BANK.task2.length + ')</button></div>' +
       '<div class="task-list">' + list.map(function (t) {
         return '<a class="task" href="#/write/' + t.id + '"><div><span class="id">' + t.id + ' · ' + esc(KIND[t.kind] || t.kind) + '</span><b>' + esc(t.title) + '</b><span class="k">' + (tab === 'task1' ? '20 min · 150+ words' : '40 min · 250+ words') + '</span></div>' +
