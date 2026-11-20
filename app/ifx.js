@@ -264,6 +264,7 @@
       h = appHero('IF IELTS', 'Four skills. In each one: learn the language and the strategy first, then practise with real-format tasks.', list);
       var books = COURSES.filter(function (k) { return k.track === 'ielts' && k.ef; });
       if (books.length) h += '<div class="sec"><h2>📘 Coursebook vocabulary</h2><p class="sec-d">Cambridge Vocabulary for IELTS, unit by unit: words, reading, listening, speaking and a unit check.</p></div><div class="grid">' + books.map(courseCard).join('') + '</div>';
+      if (slidesOK('ielts')) { h += '<div id="ielts-slides"></div>'; setTimeout(ieltsSlides, 0); }
       IELTS_SKILLS.forEach(function (K) {
         var us = c ? c.units.map(function (u, ui) { return { u: u, ui: ui }; }).filter(function (x) { if (!K[2].test(x.u.title)) return false; usedU[x.u.id] = 1; return true; }) : [];
         var tl = tools.filter(function (x) { return K[3].some(function (g) { return (x.tags || []).indexOf(g) >= 0; }) || (K[0] === 'Reading' || K[0] === 'Listening' ? x.id === 'ielts-centre' : false); });
@@ -275,6 +276,22 @@
     }
     view().innerHTML = h + '<p style="text-align:center;margin:26px 0 8px"><a class="btn ghost sm" href="/app/">🧩 All IF Academy apps</a></p>';
     $$('[data-say]').forEach(function (b) { b.onclick = function () { say(b.dataset.say); }; });
+  }
+
+  /* ---------- IELTS app: the vocabulary slide lessons from IF Classroom ----------
+     The same encrypted presentations teachers show in class (lessons/index.json, book b-ielts, units V1 to V25). They open
+     in the My account viewer, which checks the level again and gives the key only to staff and to students in a class. */
+  var SLIDES = null;
+  function slidesOK(key) { return !!(access().staff || S.teacher || (ME && ME.student && (S.cls || []).indexOf(key) >= 0)); }
+  function ieltsSlides() {
+    var box = $('#ielts-slides'); if (!box) return;
+    (SLIDES ? Promise.resolve(SLIDES) : fetch('/lessons/index.json').then(function (r) { return r.json(); }).then(function (d) { SLIDES = d; return d; })).then(function (d) {
+      var box2 = $('#ielts-slides'); if (!box2) return;
+      var list = (d.decks || []).filter(function (x) { return x.book === 'b-ielts' && /^V\d+$/.test(x.unit); });
+      if (!list.length) return;
+      box2.innerHTML = '<div class="sec"><h2>🖥️ Vocabulary presentations</h2><p class="sec-d">Cambridge Vocabulary for IELTS: the ' + list.length + ' slide lessons from class, one per unit. They open in IF Classroom and cannot be downloaded.</p></div><div class="grid">' +
+        list.map(function (x) { return '<a class="card" href="/me/#/present/' + esc(x.id) + '"><span class="ic">🖥️</span><h3>' + esc(x.unit.replace('V', 'Unit ')) + ' · ' + esc(x.title) + '</h3><p>' + x.slides + ' slides</p><div class="meta"><span class="tag ex">IELTS</span><span class="tag">Slides</span></div></a>'; }).join('') + '</div>';
+    }).catch(function () {});
   }
 
   /* ---------- English Files: coursebook units that open when the teacher marks them Covered ---------- */
