@@ -68,7 +68,11 @@
   function tasterHTML() { return meLoaded && !access().signed ? '<div class="taster"><div><b>You are trying IF App free — no account needed.</b><span>Open the first unit of every course, the placement test and a selection of games. Create a free account for the first two units of every course, a 7-day trial of everything, and your progress on every device.</span></div><a class="btn gold" href="' + JOIN + '">Create a free account</a></div>' : ''; }
   /* Full-access trial countdown (guests in their 7-day trial, not paid). */
   function trialHTML() {
-    var p = ME && ME.profile; if (!p || p.role !== 'guest' || !p.trialUntil) return '';
+    var p = ME && ME.profile;
+    // IF Academy students and the director's individual students: everything free for three months (decided 20.11.2026; may be extended)
+    if (p && (p.role === 'student' || (p.role === 'guest' && (p.track === 'if' || p.track === 'private') && !p.declined)) && Date.now() < Date.parse('2027-02-21'))
+      return '<div class="taster trial"><div><b>🎓 Everything is free for you until 20 February 2027</b><span>As an IF Academy student you have full access to every course, game and test in IF App.</span></div></div>';
+    if (!p || p.role !== 'guest' || !p.trialUntil) return '';
     if (p.paidUntil && Date.parse(p.paidUntil) > Date.now()) return '';
     var left = Math.ceil((Date.parse(p.trialUntil) - Date.now()) / 864e5);
     if (left <= 0 && (access().member || Date.parse(p.trialUntil) < 1e12)) return '';   // a student, or a phone that already had a trial

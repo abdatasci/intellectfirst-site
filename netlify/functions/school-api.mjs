@@ -111,7 +111,8 @@ function publicStudent(s) { return s && { id: s.id, first: s.first, last: s.last
 /** Link an account to its school record by phone (students) or name/phone (teachers). */
 async function linkByPhone(uid, profile) {
   const key = phoneKey(profile.phone), hasPhone = key && key.length >= 10;
-  if ((profile.role === 'student' || (profile.role === 'guest' && profile.track && profile.track !== 'outside')) && !profile.studentId && hasPhone) {
+  // any account whose phone is in the school records (even one that signed up as "learning on my own") is that student
+  if ((profile.role === 'student' || profile.role === 'guest') && !profile.studentId && hasPhone) {
     const list = await doc('students');
     const hit = list.find(s => phoneKey(s.phone) === key || phoneKey(s.parentPhone) === key);
     if (hit && (!hit.uid || hit.uid === uid)) {
@@ -487,6 +488,11 @@ export default async (req) => {
         else if (st && st.status !== 'withdrawn' && profile.leftUntil) { delete profile.leftUntil; ch = true; }
       }
       if (ch) await putProfile(uid, profile);
+    }
+    // a free account whose phone is in the school records becomes that student's account (full access, no trial countdown)
+    if (profile && profile.role === 'guest' && !profile.studentId && profile.phone) {
+      const np = await linkByPhone(uid, { ...profile });
+      if (np.studentId) { profile = np; await putProfile(uid, profile); }
     }
     const out = { user: { id: uid, email: user.email, name: profile?.name || user.name || '' }, profile, access: tier(profile), membership: await membership() };
     if (profile?.studentId) {
