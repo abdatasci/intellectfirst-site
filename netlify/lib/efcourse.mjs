@@ -1,5 +1,6 @@
 // English Files track (IF General English): who may open which coursebook unit.
-// A unit opens for a class when a teacher marks it "Covered". Kept free of storage so the rule can be tested alone.
+// Director's rule from 20 Nov 2026: an IF Academy student opens every unit of the books of their level. "Covered" is now
+// only a mark that shows where the class is; it no longer locks anything. Kept free of storage so the rule can be tested alone.
 export const BOOKS = ['ef-a0', 'ef-a1', 'ef-a2', 'ef-b1', 'ef-b1p', 'ef-b2', 'ef-c1', 'ef-c2', 'cvi-ielts'];
 const levelIn = t => { const m = String(t || '').toUpperCase().match(/\b(PRE[- ]?A1|A0|A1|A2|B1|B2|C1|C2)\b/); return m ? (/PRE/.test(m[1]) ? 'A0' : m[1]) : ''; };
 /** The English Files book a class studies, from its coursebook title or its own name ('' if it uses another book). Same rule as /class-access.js. */
@@ -22,11 +23,11 @@ export const classBook = (c, books) => bookKey((books || []).find(b => b.id === 
  *   level     'staff' | 'member' | 'free' | 'none' (netlify/lib/access.mjs)
  *   index     the unit's position in the book (0 = first)
  *   covers    one {unitId: {...}} map per class of this student that studies this book; [] if they have no such class
- * Staff: everything. A subscriber in a class that studies the book: only the units their teacher has marked Covered.
- * Other subscribers (individual students, online learners): the whole book. No subscription: unit 1 (2 with a free account).
+ * Staff and every subscriber (class students, individual students, online learners): the whole book.
+ * No subscription: unit 1 (2 with a free account). `covers` is no longer used to lock units.
  */
 export function canOpen({ level, index, unitId, covers }) {
   if (level === 'staff') return true;
-  if (level === 'member') return covers && covers.length ? covers.some(m => !!(m && m[unitId])) : true;
+  if (level === 'member') return true;
   return index < (level === 'free' ? 2 : 1);
 }

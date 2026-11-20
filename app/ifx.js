@@ -58,7 +58,7 @@
   var FREE_UNITS = 1;   // the first unit of every course is free without an account (2 with a free account)
   // without an account: unit 1 of every course; with a free account: units 1 and 2; members: everything
   var unlocked = function (ui, cid) { return (ui < (access().signed ? 2 : FREE_UNITS) || access().member) && classOpen(ui, cid); };
-  var _unlocked = unlocked; unlocked = function (ui, cid) { var c = BY[cid]; if (c && c.ef) { var u = c.units[ui]; return !!(u && EF[cid] && EF[cid].open[u.id]); } return _unlocked(ui, cid); };
+  var _unlocked = unlocked; unlocked = function (ui, cid) { var c = BY[cid]; if (c && c.ef) { var u = c.units[ui]; if (!u) return false; if (EF[cid] && EF[cid].at) return !!EF[cid].open[u.id]; return ui < (access().signed ? 2 : FREE_UNITS) || !!access().member; } return _unlocked(ui, cid); };   // before the server's list has loaded (Grammar, Vocabulary and search pages): the same rule the server applies
   /* Free taster without an account: the first unit of every course (above), the placement test and these.
      Everything else asks visitors to create a free account (which also starts the full-access trial). */
   var FREE_IDS = { 'voc-a1': 1, 'voc-b1': 1, 'voc-ket': 1, 'skill-games': 1, 'live': 1, 'if-kart': 1, 'kids-quest': 1, 'bq-kids': 1, 'g-skill': 1, 'placement': 1, 'ielts-centre': 1, 'timetable': 1 };
@@ -152,7 +152,10 @@
   /** Class gate: Unit 2 opens only when the whole class has finished Unit 1 (teachers and students without a class are not held back). */
   var GATE = null, gateAt = 0;
   function loadGate() { if (!ME || !ME.profile || access().staff || S.teacher) { GATE = null; return Promise.resolve(); } gateAt = Date.now(); return fetch('/api/school/app/gate', { credentials: 'same-origin', headers: hdrs() }).then(function (r) { return r.ok ? r.json() : null; }).then(function (g) { var was = JSON.stringify(GATE); GATE = g && g.class ? g : null; if (JSON.stringify(GATE) !== was && /^#\/(course|lesson)/.test(location.hash)) route(); }).catch(function () {}); }
-  function classOpen(ui, cid) { return ui !== 1 || !GATE || S.own || (GATE.done[cid] || 0) >= GATE.total; }   // a personal level goes at its own pace
+  /* Director's rule from 20 Nov 2026: IF Academy students open every unit of their level. The older class rule
+     (Unit 2 waits until every classmate has finished Unit 1) is switched off here; set CLASS_GATE to true to bring it back. */
+  var CLASS_GATE = false;
+  function classOpen(ui, cid) { return !CLASS_GATE || ui !== 1 || !GATE || S.own || (GATE.done[cid] || 0) >= GATE.total; }
   /* A student with a personal level (set by staff) sees that level only. When 80% of the level's AI course or of its
      coursebook is done, the next level opens as well. Returns the level that has just opened, or ''. */
   var OWN_PASS = 80;
@@ -251,7 +254,7 @@
       var rest = list.filter(function (c) { return ai.indexOf(c) < 0 && ef.indexOf(c) < 0; });
       h = appHero('IF General English', 'Choose a track. You can follow both: your progress is kept for each.', list) +
         '<div class="sec"><h2>🤖 AI-Generated General English</h2><p class="sec-d">Original IF Academy units for every level, built around everyday communication: vocabulary, grammar, reading, listening and speaking in a clear order.</p></div><div class="grid">' + ai.map(courseCard).join('') + '</div>' +
-        '<div class="sec"><h2>📚 English Files</h2><p class="sec-d">The units of your coursebook, in the order you study them at IF Academy. A unit opens when your teacher has covered it in class.</p></div><div class="grid">' + ef.map(function (c) { return courseCard(c).replace('<h3>', bookOfMine.indexOf(c.id) >= 0 ? '<span class="tag" style="float:right">Your class book</span><h3>' : '<h3>'); }).join('') + '</div>' +
+        '<div class="sec"><h2>📚 English Files</h2><p class="sec-d">The units of your coursebook, in the order you study them at IF Academy. Every unit of your level is open.</p></div><div class="grid">' + ef.map(function (c) { return courseCard(c).replace('<h3>', bookOfMine.indexOf(c.id) >= 0 ? '<span class="tag" style="float:right">Your class book</span><h3>' : '<h3>'); }).join('') + '</div>' +
         (rest.length ? '<div class="sec"><h2>More General English</h2></div><div class="grid">' + rest.map(courseCard).join('') + '</div>' : '');
     } else if (APP === 'be') {
       var used = {}, units = []; list.forEach(function (c) { c.units.forEach(function (u, ui) { units.push({ c: c, u: u, ui: ui }); }); });
@@ -301,12 +304,12 @@
     }).catch(function () {});
   }
 
-  /* ---------- English Files: coursebook units that open when the teacher marks them Covered ---------- */
+  /* ---------- English Files: coursebook units. Every unit is open to a subscriber; "Covered" only marks where the class is ---------- */
   var EF = {};   // book id → { open: {unitId: 1}, mode, classes, at }
   function efLoad(book) {
     return fetch('/api/ef/' + book, { credentials: 'same-origin', headers: hdrs() }).then(function (r) { return r.ok ? r.json() : null; }).then(function (d) {
       if (!d) throw 0; var o = {}; (d.open || []).forEach(function (id) { o[id] = 1; });
-      EF[book] = { open: o, mode: d.mode, classes: d.classes || [], className: d.className || '', at: Date.now() }; return EF[book];
+      EF[book] = { open: o, mode: d.mode, classes: d.classes || [], className: d.className || '', covered: d.covered || [], at: Date.now() }; return EF[book];
     }).catch(function () { var c = BY[book], o = {}; if (c && c.units[0]) o[c.units[0].id] = 1; EF[book] = EF[book] || { open: o, mode: 'offline', classes: [], at: 0 }; return EF[book]; });
   }
   function vEfCourse(c) {
@@ -316,8 +319,8 @@
     var s = courseStats(c), nx = nextLesson(c), nOpen = c.units.filter(function (u) { return e.open[u.id]; }).length;
     var note = c.self && e.mode === 'staff' ? '👩‍🏫 <span>Staff see every unit. Students with a subscription (and all IF Academy students) have every unit open; others get Unit 1 free, and Unit 2 with a free account.</span>'
       : c.self && e.mode === 'member' ? '✅ <span>Every unit is open for you. Work through them in order, or jump to the topic you need.</span>'
-      : e.mode === 'class' ? '🏫 <span>Your class: <b>' + esc(e.className) + '</b>. ' + nOpen + ' of ' + c.units.length + ' units are open. A unit opens when your teacher marks it <b>Covered</b>.</span>'
-      : e.mode === 'staff' ? '👩‍🏫 <span>' + (e.classes.length ? 'Tick <b>Covered</b> under a unit to open it for that class. Students see the other units as locked.' : 'None of your classes is set to this coursebook, so there is nothing to release here. Set the class coursebook in My account → Classes.') + '</span>'
+      : e.mode === 'class' ? '🏫 <span>Your class: <b>' + esc(e.className) + '</b>. All ' + c.units.length + ' units are open. ✅ marks the units your teacher has covered in class.</span>'
+      : e.mode === 'staff' ? '👩‍🏫 <span>' + (e.classes.length ? 'Tick <b>Covered</b> under a unit to show the class where you are. Every unit stays open to students.' : 'None of your classes is set to this coursebook, so there is nothing to release here. Set the class coursebook in My account → Classes.') + '</span>'
       : e.mode === 'member' ? '✅ <span>You are not in an IF Academy class on this book, so every unit is open with your subscription.</span>'
       : e.mode === 'offline' ? '⚠️ <span>Could not check your access. Unit 1 is open; reload when you are online.</span>'
       : '🎁 <span>Unit 1 is free' + (access().signed ? ', and so is Unit 2 with your free account' : '') + '. <a href="/me/#/upgrade">Subscribe</a> to open the rest.</span>';
@@ -325,7 +328,7 @@
     c.units.forEach(function (u, ui) {
       var open = !!e.open[u.id];
       var cov = e.mode === 'staff' && e.classes.length ? '<div class="cover">' + e.classes.map(function (k) { var on = k.covered.indexOf(u.id) >= 0; return '<label class="chip' + (on ? ' on' : '') + '"><input type="checkbox" data-cover="' + esc(k.id) + '" data-unit="' + esc(u.id) + '"' + (on ? ' checked' : '') + '> Covered · ' + esc(k.label) + '</label>'; }).join('') + '</div>' : '';
-      html += '<section class="unit' + (open ? '' : ' unit-locked') + '"><div class="unit-h"><div style="flex:1"><small>' + (u.test ? '📝 Mock test' : esc(t('unit')) + ' ' + esc(u.id)) + (u.g ? ' · ' + esc(u.g) : '') + '</small><h3>' + esc(u.title) + '</h3>' + (open ? '<ul class="objs">' + u.obj.map(function (o) { return '<li>🎯 ' + esc(o) + '</li>'; }).join('') + '</ul>' : '') + cov + '</div>' +
+      html += '<section class="unit' + (open ? '' : ' unit-locked') + '"><div class="unit-h"><div style="flex:1"><small>' + (u.test ? '📝 Mock test' : esc(t('unit')) + ' ' + esc(u.id)) + (u.g ? ' · ' + esc(u.g) : '') + (e.mode === 'class' && (e.covered || []).indexOf(u.id) >= 0 ? ' · ✅ covered in class' : '') + '</small><h3>' + esc(u.title) + '</h3>' + (open ? '<ul class="objs">' + u.obj.map(function (o) { return '<li>🎯 ' + esc(o) + '</li>'; }).join('') + '</ul>' : '') + cov + '</div>' +
         (open ? '' : e.mode === 'class' ? '<span class="btn sm gold" style="cursor:default">🔒 Not covered in class yet</span>' : '<a class="btn sm gold" href="/me/#/upgrade">🔒 ' + esc(t('locked')) + '</a>') + '</div>' +
         (open ? '<div class="path">' + u.lessons.map(function (l) {
           var done = isDone(c.id, u.id, l.id), isNext = nx && nx.u.id === u.id && nx.l.id === l.id;
@@ -338,7 +341,7 @@
         b.disabled = true;
         fetch('/api/ef/' + c.id + '/cover', { method: 'POST', credentials: 'same-origin', headers: hdrs({ 'Content-Type': 'application/json' }), body: JSON.stringify({ classId: b.dataset.cover, unit: b.dataset.unit, on: b.checked }) })
           .then(function (r) { if (!r.ok) throw 0; return r.json(); })
-          .then(function (d) { e.classes.forEach(function (k) { if (k.id === b.dataset.cover) k.covered = d.covered; }); toast(b.checked ? 'Unit ' + b.dataset.unit + ' is now open for this class' : 'Unit ' + b.dataset.unit + ' is locked again for this class'); b.disabled = false; b.parentNode.classList.toggle('on', b.checked); })
+          .then(function (d) { e.classes.forEach(function (k) { if (k.id === b.dataset.cover) k.covered = d.covered; }); toast(b.checked ? 'Unit ' + b.dataset.unit + ' is marked as covered' : 'Unit ' + b.dataset.unit + ' is no longer marked as covered'); b.disabled = false; b.parentNode.classList.toggle('on', b.checked); })
           .catch(function () { b.checked = !b.checked; b.disabled = false; toast('Could not save. Please try again.'); });
       };
     });

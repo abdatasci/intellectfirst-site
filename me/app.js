@@ -848,12 +848,12 @@
       var ab = document.createElement('div'); ab.id = 'catt'; var hw = view.querySelector('.hwset'); if (hw) hw.after(ab); else view.appendChild(ab); classAttBox(ab, c.id);
     } catch (e) { view.innerHTML = '<div class="empty" style="margin-top:30px">This class could not be loaded.</div>'; }
   }
-  /* English Files (IF General English): the teacher ticks a unit as Covered and it opens for this class's students in the app. */
+  /* English Files (IF General English): the teacher ticks a unit as Covered to show the class where they are. Since 20 Nov 2026 every unit is open to students anyway. */
   async function efCoverBox(el, c) {
     try {
       var r = await fetch('/api/ef/class/' + encodeURIComponent(c.id), { credentials: 'same-origin' }); if (!r.ok) return; var d = await r.json(); if (!d.book) return;
       var draw = function () {
-        el.innerHTML = '<section class="panel wide" style="margin-top:18px"><h3 style="margin:0 0 4px">English Files in the app · units covered (' + d.covered.length + ' of ' + d.units.length + ')</h3><p class="small" style="margin:0 0 10px">Tick a unit when you have covered it in class. It then opens for this class in <a href="/app/general/#/course/' + esc(d.book) + '">IF General English → English Files</a>. The other units stay locked for these students.</p><div class="row" style="flex-wrap:wrap;gap:8px">' +
+        el.innerHTML = '<section class="panel wide" style="margin-top:18px"><h3 style="margin:0 0 4px">English Files in the app · units covered (' + d.covered.length + ' of ' + d.units.length + ')</h3><p class="small" style="margin:0 0 10px">Tick a unit when you have covered it in class. Students see the mark in <a href="/app/general/#/course/' + esc(d.book) + '">IF General English → English Files</a>. Every unit is open to them either way.</p><div class="row" style="flex-wrap:wrap;gap:8px">' +
           d.units.map(function (u) { var on = d.covered.indexOf(u.id) >= 0; return '<label class="chip2' + (on ? ' ok' : '') + '" style="cursor:pointer;display:inline-flex;gap:6px;align-items:center"><input type="checkbox" data-efu="' + esc(u.id) + '"' + (on ? ' checked' : '') + '> ' + esc(u.id) + ' · ' + esc(u.title) + '</label>'; }).join('') + '</div></section>';
         Array.prototype.forEach.call(el.querySelectorAll('[data-efu]'), function (b) {
           b.onchange = async function () {
