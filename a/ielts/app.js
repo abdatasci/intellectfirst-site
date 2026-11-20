@@ -69,10 +69,11 @@
 
   /* ---------------- apps (existing IELTS tools) ---------------- */
   var APPS = [
-    { slug: 'ielts-studio', path: '/a/ielts-studio/index.html', name: 'IF IELTS Studio', tag: 'Listening · Reading · Writing · Speaking', desc: 'Practise the four skills: listenings by topic, full reading tests, writing tasks with models, and speaking questions.' },
-    { slug: 'ielts-speaking', path: '/a/ielts-speaking/index.html', name: 'IELTS Speaking Lab', tag: 'Speaking practice', desc: '12 topics, cue cards and a full mock speaking test.' },
-    { slug: 'band9-lexis', path: '/a/band9-lexis/index.html', name: 'Band 9 Lexis', tag: 'Vocabulary', desc: 'Daily IELTS vocabulary for Band 7+ writing and speaking.' },
-    { slug: 'if-english-ielts', path: '/a/if-english/courses/IELTS/index.html', name: 'IF App · IELTS course', tag: 'Vocabulary & grammar', desc: 'The IELTS course from IF App: flashcards, audio and games.' }
+    { slug: 'ielts-studio', path: '/a/ielts-studio/index.html', name: 'IF IELTS Studio', tag: 'Practise · four skills', desc: 'Practise the four skills: listenings by topic, full reading tests, writing tasks with models, and speaking questions.' },
+    { slug: 'ielts-vocabulary', path: '/app/?embed=1#/course/cvi-ielts', name: 'Cambridge Vocabulary for IELTS', tag: 'Study · vocabulary course', desc: 'The coursebook unit by unit: words, a reading, a listening, speaking and a unit check, plus 5 mock tests.' },
+    { slug: 'if-english-ielts', path: '/a/if-english/courses/IELTS/index.html', name: 'IELTS Grammar & Games', tag: 'Grammar · games', desc: '12 grammar topics with rule sheets and quizzes, and team word games: Alias, Charades and Taboo.' },
+    { slug: 'band9-lexis', path: '/a/band9-lexis/index.html', name: 'Band 9 Lexis', tag: 'Daily words · Band 7+', desc: 'Ten minutes a day of higher-level vocabulary for writing and speaking.' },
+    { slug: 'ielts-speaking', path: '/a/ielts-speaking/index.html', name: 'IELTS Speaking Lab', tag: 'Speaking practice', desc: '12 topics, cue cards and a full mock speaking test.', hidden: true }   // now the Speaking tab of the Studio; kept so old links still open
   ];
   function openApp(slug) {
     var a = APPS.filter(function (x) { return x.slug === slug; })[0];
@@ -104,8 +105,8 @@
       '<section class="hero"><div class="eyebrow">IF Academy · Academic IELTS</div><h1>IELTS Centre</h1>' +
       '<p class="lead">Everything for IELTS in one place: Listening, Reading, Writing and Speaking, each with practice and a full mock test, plus vocabulary apps and your progress over time.</p></section>' + snap +
       (window.IFRL ? IFRL.skillsHTML() : '') +
-      '<section class="section"><div class="sec-head"><div><h2>Practice apps</h2><p>Your existing IF IELTS tools, now in one place.</p></div></div><div class="grid">' +
-      APPS.map(function (a) { return '<a class="card" href="#/app/' + a.slug + '"><span class="tag">' + esc(a.tag) + '</span><h3>' + esc(a.name) + '</h3><p>' + esc(a.desc) + '</p><span class="go">Open →</span></a>'; }).join('') +
+      '<section class="section"><div class="sec-head"><div><h2>Study and practise</h2><p>Each place has one job: practise the four skills, study the vocabulary book, or play and revise grammar. Marked tests are above.</p></div></div><div class="grid">' +
+      APPS.filter(function (a) { return !a.hidden; }).map(function (a) { return '<a class="card" href="#/app/' + a.slug + '"><span class="tag">' + esc(a.tag) + '</span><h3>' + esc(a.name) + '</h3><p>' + esc(a.desc) + '</p><span class="go">Open →</span></a>'; }).join('') +
       '</div></section>' +
       '<section class="section"><div class="sec-head"><div><h2>Official free samples</h2><p>Real IELTS papers are copyrighted, so our tasks are original, written in the exact IELTS format on topics that recur in the exam. For official sample questions, use the free materials from the test owners.</p></div></div>' +
       '<div class="row"><a class="btn ghost sm" href="https://ielts.org/take-a-test/preparation-resources/sample-test-questions/academic-test" target="_blank" rel="noopener">IELTS.org samples ↗</a><a class="btn ghost sm" href="https://takeielts.britishcouncil.org/take-ielts/prepare/free-ielts-practice-tests/writing" target="_blank" rel="noopener">British Council practice ↗</a></div></section>';
