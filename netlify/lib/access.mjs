@@ -6,6 +6,9 @@
 // ('tutor' = a teacher from outside IF Academy on the Teacher plan: a guest account that pays, with Teach mode in IF English);
 // profile.paidUntil: ISO date for paid outside learners. profile.alumniUntil: end of an IF Alumni year.
 // profile.leftUntil: a student who left IF Academy keeps full access until this date (a month after leaving).
+// Free period for students, counted from 20.11.2026 (director, 21.11.2026): IF Academy (class) students six months,
+// individual students three. Shown as a notice in IF App (app/ifx.js trialHTML). Nothing here ends access on these dates yet.
+export const STUDENT_FREE_UNTIL = { if: '2027-05-20', private: '2027-02-20' };
 export const TRACKS = ['if', 'private', 'alumni', 'outside', 'tutor', 'parent', 'staff'];
 export const TRACK_LABEL = { if: 'IF Academy student', private: 'Individual student', alumni: 'IF Alumni', outside: 'Outside learner', tutor: 'Teacher (Teacher plan)', staff: 'IF Academy staff', parent: 'Parent (Young Learners)' };
 export function paidActive(p) { return !!(p?.paidUntil && Date.parse(p.paidUntil) > Date.now()); }

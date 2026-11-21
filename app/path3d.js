@@ -54,5 +54,19 @@
     });
   }
   var tm; window.addEventListener('resize', function () { clearTimeout(tm); tm = setTimeout(function () { draw(document); }, 120); });
-  window.IFXPath = { html: html, draw: draw, icon: icon };
+  /* Line icons for the app's menu, drawn in the text colour so the active tab turns navy. */
+  var NAVI = {
+    home: '<path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',
+    courses: '<path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5z"/><path d="M4 20.5A2.5 2.5 0 0 0 6.5 23H20v-5"/>',
+    vocab: '<rect x="3" y="5" width="18" height="14" rx="3"/><path d="M7.5 15l2.5-6 2.5 6M8.4 13h3.200M15 11.500a2 2 0 1 1 0 3.500v-3.500zM17 11v4"/>',
+    grammar: '<path d="M5 4h14v6H5zM5 14h6v6H5zM15 14h4v6h-4z"/>',
+    games: '<path d="M7 8h10a5 5 0 0 1 5 5v1a3 3 0 0 1-5.4 1.800L15.5 14h-7l-1.1 1.800A3 3 0 0 1 2 14v-1a5 5 0 0 1 5-5z"/><path d="M7 11v3M5.5 12.500h3"/>',
+    tests: '<path d="M6 3h9l4 4v14H6z"/><path d="M9 12l2 2 4-4"/>',
+    ielts: '<path d="M2 9l10-5 10 5-10 5z"/><path d="M6 11.500V16c2 2 10 2 12 0v-4.5"/>',
+    apps: '<rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/>'
+  };
+  function nav(k) { return NAVI[k] ? '<svg aria-hidden="true" viewBox="0 0 24 24">' + NAVI[k] + '</svg>' : ''; }
+  /* The small progress ring in a unit's header. */
+  function ring(done, total) { var p = total ? Math.round(done / total * 100) : 0; return '<span class="uring" role="img" aria-label="' + done + ' of ' + total + ' lessons done" style="--p:' + p + '%"><b>' + p + '%</b></span>'; }
+  window.IFXPath = { html: html, draw: draw, icon: icon, nav: nav, ring: ring };
 })();

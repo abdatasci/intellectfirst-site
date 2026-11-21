@@ -11,6 +11,10 @@
   var IFX = window.IFX = { course: function (c) { COURSES.push(c); BY[c.id] = c; }, get: function (id) { return BY[id]; }, all: function () { return COURSES; },
     /** Add more units to a course (full courses are written in parts). */
     ruNotes: function (cid, map) { var c = BY[cid]; if (c) c.units.forEach(function (u) { if (map[u.id]) u.lessons.forEach(function (l) { if (l.type === 'grammar') l.ru = map[u.id]; }); }); },
+    /* The word bank: more words for a unit's Vocabulary set (not for its lesson). "word | part of speech | meaning | example | Russian" */
+    moreWords: function (cid, map) { var c = BY[cid]; if (c) c.units.forEach(function (u) { if (map[u.id]) u.xw = (u.xw || []).concat(String(map[u.id]).trim().split('\n').map(function (l) { var p = l.split('|').map(function (x) { return x.trim(); }); return { w: p[0], p: p[1], d: p[2], e: p[3], ru: p[4] || '' }; }).filter(function (w) { return w.w && w.d; })); }); },
+    /* Put a course's units in a set order (ids not listed stay at the end, in their old order). Progress is kept: it is stored by unit id. */
+    order: function (cid, ids) { var c = BY[cid]; if (c) c.units.sort(function (a, b) { var i = ids.indexOf(a.id), j = ids.indexOf(b.id); return (i < 0 ? 999 : i) - (j < 0 ? 999 : j); }); },
     units: function (cid, list) { var c = BY[cid]; if (c) list.forEach(function (u) { if (!c.units.some(function (x) { return x.id === u.id; })) c.units.push(u); }); },
     /** Add a listening lesson to a unit (before the unit check). */
     listening: function (cid, uid, l) { var c = BY[cid], u = c && c.units.filter(function (x) { return x.id === uid; })[0]; if (!u) return; l.type = 'listen'; l.id = l.id || 'li'; var i = u.lessons.map(function (x) { return x.type; }).indexOf('check'); u.lessons.splice(i < 0 ? u.lessons.length : i, 0, l); } };
@@ -69,9 +73,15 @@
   /* Full-access trial countdown (guests in their 7-day trial, not paid). */
   function trialHTML() {
     var p = ME && ME.profile;
-    // IF Academy students and the director's individual students: everything free for three months (decided 20.11.2026; may be extended)
-    if (p && (p.role === 'student' || (p.role === 'guest' && (p.track === 'if' || p.track === 'private') && !p.declined)) && Date.now() < Date.parse('2027-02-21'))
-      return '<div class="taster trial"><div><b>🎓 Everything is free for you until 20 February 2027</b><span>As an IF Academy student you have full access to every course, game and test in IF App.</span></div></div>';
+    // Free full access, counted from 20.11.2026 (director, 21.11.2026): IF Academy (class) students six months, to 20 May 2027;
+    // the director's individual students three months, to 20 February 2027. A student with both kinds of lesson gets the longer one.
+    // This is the notice only: nothing ends access on those dates yet (see claude/access-rules.md).
+    if (p && (p.role === 'student' || (p.role === 'guest' && (p.track === 'if' || p.track === 'private') && !p.declined))) {
+      var cl = (ME && ME.classes) || [], ind = function (c) { return /^c-ind-/.test(c.id || '') || /individual|1[- ]?(to|on)[- ]?1/i.test(c.label || ''); };
+      var solo = cl.length ? cl.every(ind) : p.track === 'private';
+      var F = solo ? ['2027-02-21', '20 February 2027', 'As an individual student'] : ['2027-05-21', '20 May 2027', 'As an IF Academy student'];
+      if (Date.now() < Date.parse(F[0])) return '<div class="taster trial"><div><b>🎓 Everything is free for you until ' + F[1] + '</b><span>' + F[2] + ' you have full access to every course, game and test in IF App.</span></div></div>';
+    }
     if (!p || p.role !== 'guest' || !p.trialUntil) return '';
     if (p.paidUntil && Date.parse(p.paidUntil) > Date.now()) return '';
     var left = Math.ceil((Date.parse(p.trialUntil) - Date.now()) / 864e5);
@@ -331,7 +341,7 @@
       var open = !!e.open[u.id];
       var cov = e.mode === 'staff' && e.classes.length ? '<div class="cover">' + e.classes.map(function (k) { var on = k.covered.indexOf(u.id) >= 0; return '<label class="chip' + (on ? ' on' : '') + '"><input type="checkbox" data-cover="' + esc(k.id) + '" data-unit="' + esc(u.id) + '"' + (on ? ' checked' : '') + '> Covered · ' + esc(k.label) + '</label>'; }).join('') + '</div>' : '';
       html += '<section class="unit' + (open ? '' : ' unit-locked') + '"><div class="unit-h"><div style="flex:1"><small>' + (u.test ? '📝 Mock test' : u.extra ? '🗣️ Speaking words' : u.label ? esc(u.label) : esc(t('unit')) + ' ' + esc(u.id)) + (u.g ? ' · ' + esc(u.g) : '') + (e.mode === 'class' && (e.covered || []).indexOf(u.id) >= 0 ? ' · ✅ covered in class' : '') + '</small><h3>' + esc(u.title) + '</h3>' + (open ? '<ul class="objs">' + u.obj.map(function (o) { return '<li>🎯 ' + esc(o) + '</li>'; }).join('') + '</ul>' : '') + cov + '</div>' +
-        (open ? '' : e.mode === 'class' ? '<span class="btn sm gold" style="cursor:default">🔒 Not covered in class yet</span>' : '<a class="btn sm gold" href="/me/#/upgrade">🔒 ' + esc(t('locked')) + '</a>') + '</div>' +
+        (open ? IFXPath.ring(u.lessons.filter(function (l) { return isDone(c.id, u.id, l.id); }).length, u.lessons.length) : e.mode === 'class' ? '<span class="btn sm gold" style="cursor:default">🔒 Not covered in class yet</span>' : '<a class="btn sm gold" href="/me/#/upgrade">🔒 ' + esc(t('locked')) + '</a>') + '</div>' +
         (open ? IFXPath.html(u.lessons.map(function (l) {
           var done = isDone(c.id, u.id, l.id), isNext = nx && nx.u.id === u.id && nx.l.id === l.id;
           return { href: '#/lesson/' + c.id + '/' + u.id + '/' + l.id, title: l.title, type: l.type, state: done ? 'done' : isNext ? 'next' : 'todo', sub: TYPE[l.type] + (done ? ' · ' + S.done[key3(c.id, u.id, l.id)].score + '%' : '') };
@@ -381,10 +391,24 @@
   var VREPL = { 'voc-a1': 'ef-a1', 'voc-a2': 'ef-a2', 'voc-b1': 'ef-b1', 'voc-b2': 'ef-b2', 'voc-c1': 'ef-c1', 'voc-ielts': 'ielts' };
   var VMODES = [['cards', '🃏', 'Flashcards', 'Flip, listen and sort the words you know'], ['learn', '🧠', 'Learn', 'Each word comes back until you get it right twice'], ['write', '✍️', 'Write', 'Read the meaning and type the word'], ['match', '🧩', 'Match', 'Pair words and meanings against the clock'], ['test', '📝', 'Test', 'Ten mixed questions with a score']];
   if (!S.vk) S.vk = {}; if (!S.vs) S.vs = {};
-  function wordsOf(u) { if (u.words) return u.words; var a = [], seen = {}; u.lessons.forEach(function (l) { if (l.type === 'vocab') (l.words || []).forEach(function (w) { if (w.w && w.d && !seen[w.w]) { seen[w.w] = 1; a.push(w); } }); }); return a; }
+  function wordsOf(u) { if (u.words) return u.words; var a = [], seen = {}; u.lessons.forEach(function (l) { if (l.type === 'vocab') (l.words || []).forEach(function (w) { if (w.w && w.d && !seen[w.w]) { seen[w.w] = 1; a.push(w); } }); }); (u.xw || []).forEach(function (w) { if (!seen[w.w]) { seen[w.w] = 1; a.push(w); } }); return a; }
   var wordCount = function (c, u) { return c.ef && !u.words ? (u.n || 0) : wordsOf(u).length; };
   var ruC = function (c) { return /^(PA1|A0|A1|A2)/.test(c.level || ''); };
   function vocCourses() { var list = APP ? appCourses() : fullView() ? COURSES.filter(function (c) { return !c.daily; }) : myCourses(); return list.filter(function (c) { return c.units.some(function (u) { return wordCount(c, u) > 0; }); }); }
+  /* Vocabulary sets. A unit with a word bank (u.xw) is shown as several sets of about 22 words, so no set is too long to study
+     in one sitting: "My day 1" holds the 8 lesson words and the first of the bank, "My day 2…4" the rest. Each part carries
+     its own words, its own id (u1, u1.2, u1.3…) for progress, and the index of its unit (_ui) for the lock. */
+  var VSET = 22;
+  function vsets(c) {
+    if (c._vs) return c._vs;
+    var out = [];
+    c.units.forEach(function (u, i) {
+      if (!u.xw || !u.xw.length) { out.push(u); return; }
+      var all = wordsOf(u), n = Math.max(1, Math.round(all.length / VSET)), size = Math.ceil(all.length / n);
+      for (var k = 0; k < n; k++) out.push({ id: k ? u.id + '.' + (k + 1) : u.id, title: u.title + ' ' + (k + 1), words: all.slice(k * size, (k + 1) * size), lessons: [], _ui: i });
+    });
+    return (c._vs = out);
+  }
   function knownIn(c, u) { return wordsOf(u).filter(function (w) { return S.vk[w.w]; }).length; }
   function vTop(back, pct, label) { return '<div class="p-top"><a class="x" href="' + back + '" aria-label="Close">✕</a><div class="bar"><i style="width:' + Math.round(pct) + '%"></i></div></div><p class="p-title">' + esc(label) + '</p>'; }
   function vWords(cid, uid, mode) {
@@ -396,16 +420,16 @@
       view().innerHTML = '<div class="page-h"><div><p class="h-eyebrow">' + esc(t('vocab')) + '</p><h1>Vocabulary</h1><p>The words of your courses, unit by unit. Study each set five ways: flashcards, learn, write, match and test.</p></div></div>' +
         '<div class="grid">' + list.map(function (k) {
           var n = 0; k.units.forEach(function (u) { n += wordCount(k, u); });
-          return '<a class="card" href="#/words/' + k.id + '"><span class="ic">' + k.icon + '</span><h3>' + esc(k.title) + '</h3><p>' + k.units.length + ' sets · ' + n + ' words</p><div class="meta"><span class="tag ' + tagFor(k.track) + '">' + esc(k.level) + '</span>' + (k.ef || k.book ? '<span class="tag">English Files</span>' : '') + '</div></a>';
+          return '<a class="card" href="#/words/' + k.id + '"><span class="ic">' + k.icon + '</span><h3>' + esc(k.title) + '</h3><p>' + vsets(k).length + ' sets · ' + n + ' words</p><div class="meta"><span class="tag ' + tagFor(k.track) + '">' + esc(k.level) + '</span>' + (k.ef || k.book ? '<span class="tag">English Files</span>' : '') + '</div></a>';
         }).join('') + '</div>' + (list.length ? '' : '<p class="sec-d">Choose your courses first: <a href="#/onboard">My courses and levels</a>.</p>') +
         (other.length ? '<div class="sec"><h2>Word lists for young learners and Cambridge exams</h2></div><div class="grid">' + other.map(itemCard).join('') + '</div>' : '');
       return;
     }
     if (c.ef && (!EF[c.id] || Date.now() - EF[c.id].at > 60000)) { var here = location.hash, had = !!(EF[c.id] && EF[c.id].at); efLoad(c.id).then(function () { if (location.hash === here && !had) vWords(cid, uid, mode); }); if (!had) { view().innerHTML = '<p style="text-align:center;margin-top:40px">Loading…</p>'; return; } }
-    var ui = uid ? c.units.findIndex(function (x) { return x.id === uid; }) : -1, u = c.units[ui];
+    var VS = vsets(c), vi = uid ? VS.findIndex(function (x) { return x.id === uid; }) : -1, u = VS[vi], ui = u ? (u._ui != null ? u._ui : c.units.indexOf(u)) : -1;
     if (!u) {
-      view().innerHTML = '<div class="page-h"><div><p class="h-eyebrow"><a href="#/vocab">← Vocabulary</a></p><h1>' + esc(c.title) + '</h1><p>Choose a unit. Locked sets open with the unit itself.</p></div></div><div class="vsets">' + c.units.map(function (x, i) {
-        var n = wordCount(c, x); if (!n) return '';
+      view().innerHTML = '<div class="page-h"><div><p class="h-eyebrow"><a href="#/vocab">← Vocabulary</a></p><h1>' + esc(c.title) + '</h1><p>Choose a set. Locked sets open with the unit itself.</p></div></div><div class="vsets">' + VS.map(function (x) {
+        var i = x._ui != null ? x._ui : c.units.indexOf(x), n = wordCount(c, x); if (!n) return '';
         var open = unlocked(i, c.id), k = x.words || !c.ef ? knownIn(c, x) : 0, sc = S.vs[c.id + '/' + x.id] || {};
         return '<a class="vset' + (open ? '' : ' locked') + '" href="' + (open ? '#/words/' + c.id + '/' + encodeURIComponent(x.id) : c.ef && EF[c.id] && EF[c.id].mode === 'class' ? '#/course/' + c.id : '/me/#/upgrade') + '"><b>' + (open ? '' : '🔒 ') + esc(c.ef ? x.id + ' · ' + x.title : x.title) + '</b><span>' + n + ' words' + (k ? ' · ' + k + ' known' : '') + (sc.test != null ? ' · test ' + sc.test + '%' : '') + '</span><i style="width:' + Math.round(k / n * 100) + '%"></i></a>';
       }).join('') + '</div>';
@@ -699,7 +723,7 @@
       (window.IFVoice ? '<button class="lang" id="vox" title="Voice: British female / male" aria-label="Voice">' + (IFVoice.get() === 'male' ? '👨' : '👩') + '</button>' : '') +
       '<button class="lang" id="lng" aria-label="Language">' + lang.toUpperCase() + '</button>' +
       (a.signed ? '<a class="acct" href="/me/" title="' + esc(a.name) + '">' + esc((a.name || '?').charAt(0).toUpperCase()) + '</a>' : '<a class="btn sm" href="/me/#/login?next=/app/">' + esc(t('signin')) + '</a>') + '</div></div></header>' +
-      '<div class="shell"><nav class="side nav" aria-label="Sections">' + NAV.map(function (n) { return '<a href="#/' + (n[0] === 'home' ? '' : n[0]) + '" data-k="' + n[0] + '"><i>' + n[1] + '</i>' + esc(t(n[0])) + '</a>'; }).join('') + (APP ? '<a class="more-link" href="/app/"><i>🧩</i>All IF apps</a>' : '<a class="more-link" href="#/more" data-k="more"><i>➕</i>' + esc(t('more')) + '</a>') + '</nav><main class="main" id="view"></main></div><div class="toast" id="toast" role="status"></div>';
+      '<div class="shell"><nav class="side nav" aria-label="Sections">' + NAV.map(function (n) { return '<a href="#/' + (n[0] === 'home' ? '' : n[0]) + '" data-k="' + n[0] + '"><i>' + (IFXPath.nav(n[0]) || n[1]) + '</i>' + esc(t(n[0])) + '</a>'; }).join('') + (APP ? '<a class="more-link" href="/app/"><i>' + IFXPath.nav('apps') + '</i>All IF apps</a>' : '<a class="more-link" href="#/more" data-k="more"><i>' + IFXPath.nav('apps') + '</i>' + esc(t('more')) + '</a>') + '</nav><main class="main" id="view"></main></div><div class="toast" id="toast" role="status"></div>';
     if (emb) document.body.classList.add('embed');
     var q = $('#q'), qt;
     q.oninput = function () { clearTimeout(qt); qt = setTimeout(function () { var v = q.value.trim(); if (v) { if (location.hash.indexOf('#/search') !== 0) history.pushState(null, '', '#/search'); vSearch(v); } }, 180); };
@@ -930,7 +954,7 @@
     if (sd) html += '<div class="std"><div class="std-l"><b>' + esc(sd.level) + '</b><span>Standard</span></div><div class="grow"><p class="std-ref">📐 Referenced to the ' + esc(sd.ref) + '</p><p>' + esc(sd.desc) + '</p><div class="std-m">' + sd.modes.map(function (m) { return '<span>' + esc(m) + '</span>'; }).join('') + '</div></div></div>';
     c.units.forEach(function (u, ui) {
       var open = unlocked(ui, c.id), waitC = !open && ui === 1 && GATE && (GATE.done[c.id] || 0) < GATE.total;
-      html += '<section class="unit"><div class="unit-h">' + DOODLE(c.id, u.id, 'doodle uh') + '<div style="flex:1"><small>' + esc(t('unit')) + ' ' + (ui + 1) + ' · ' + esc(u.topic) + '</small><h3>' + esc(u.title) + '</h3>' + (window.IFStd && IFStd.unit(c.id, u.id) ? '<p class="cando">🎯 ' + esc(IFStd.unit(c.id, u.id)) + '</p>' : '') + '</div>' + (open ? '' : waitC ? '<span class="btn sm gold" style="cursor:default">🔒 Opens when your class finishes Unit 1 (' + (GATE.done[c.id] || 0) + ' of ' + GATE.total + ')</span>' : '<a class="btn sm gold" href="/me/#/upgrade">🔒 ' + esc(t('locked')) + '</a>') + '</div>' +
+      html += '<section class="unit"><div class="unit-h">' + DOODLE(c.id, u.id, 'doodle uh') + '<div style="flex:1"><small>' + esc(t('unit')) + ' ' + (ui + 1) + ' · ' + esc(u.topic) + '</small><h3>' + esc(u.title) + '</h3>' + (window.IFStd && IFStd.unit(c.id, u.id) ? '<p class="cando">🎯 ' + esc(IFStd.unit(c.id, u.id)) + '</p>' : '') + '</div>' + (open ? IFXPath.ring(u.lessons.filter(function (l) { return isDone(c.id, u.id, l.id); }).length, u.lessons.length) : waitC ? '<span class="btn sm gold" style="cursor:default">🔒 Opens when your class finishes Unit 1 (' + (GATE.done[c.id] || 0) + ' of ' + GATE.total + ')</span>' : '<a class="btn sm gold" href="/me/#/upgrade">🔒 ' + esc(t('locked')) + '</a>') + '</div>' +
         IFXPath.html(u.lessons.map(function (l) {
           var done = isDone(c.id, u.id, l.id), isNext = nx && nx.u.id === u.id && nx.l.id === l.id;
           return { href: open ? '#/lesson/' + c.id + '/' + u.id + '/' + l.id : waitC ? '#/course/' + c.id : '/me/#/upgrade', title: l.title, type: l.type, state: !open ? 'locked' : done ? 'done' : isNext ? 'next' : 'todo', sub: TYPE[l.type] + (done ? ' · ' + S.done[key3(c.id, u.id, l.id)].score + '%' : '') };
@@ -1106,7 +1130,7 @@
       $('#nx').onclick = function () { V.on = false; try { speechSynthesis.cancel(); } catch (e) {} L.i++; drawStep(); }; ui(); return;
     }
     if (it.k === 'read') {
-      v.innerHTML = '<div class="player">' + pTop() + '<article class="reading">' + (L.l.chart ? '<div class="chart">' + chartSVG() + '</div>' : photo(L.l.photo, L.l.alt)) + '<h3>' + esc(L.l.title) + '</h3><div class="txt" id="rtxt">' + parasS(L.l.text) + '</div></article>' +
+      v.innerHTML = '<div class="player">' + pTop() + '<article class="reading">' + (L.l.chart ? '<div class="chart">' + (typeof L.l.chart === 'object' && window.IFXChart ? IFXChart(L.l.chart) : chartSVG()) + '</div>' : photo(L.l.photo, L.l.alt)) + '<h3>' + esc(L.l.title) + '</h3><div class="txt" id="rtxt">' + parasS(L.l.text) + '</div></article>' +
         '<p style="text-align:center;margin-top:18px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap"><button class="btn ghost" id="sy">🔊 Listen</button><button class="btn" id="nx">Questions →</button></p></div>';
       bindTop(); readAloud($('#rtxt'), $('#sy')); $('#nx').onclick = function () { try { speechSynthesis.cancel(); } catch (e) {} L.i++; drawStep(); }; return;
     }

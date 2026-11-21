@@ -733,7 +733,8 @@ const fmtT = s => Math.floor(s / 60) + ':' + String(Math.max(0, Math.floor(s % 6
 const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
 function wpick(list){ const tot = list.reduce((s, x) => s + x.w, 0); let r = Math.random() * tot; for (const x of list){ if ((r -= x.w) < 0) return x; } return list[list.length - 1]; }
 const BOTS = () => [{n:'Berkut', e:'🦅'}, {n:'Barys', e:'🐆'}, {n:'Tulki', e:'🦊'}];
-function nextWord(S){ if (!S.bag || !S.bag.length) S.bag = shuf(C.words); return S.bag.pop(); }
+function nextWord(S){ if (!S.bag || !S.bag.length){ S.bag = shuf(C.words); if (S.lastW && S.bag.length > 1 && S.bag[S.bag.length - 1] === S.lastW) S.bag.unshift(S.bag.pop()); }   // a new pass never starts with the word just asked
+  return (S.lastW = S.bag.pop()); }
 /* Multiple-choice question into a host element. cb(ok, word) after feedback. */
 function askMC(host, S, cb, dirFixed){
   const x = nextWord(S), dir = dirFixed || (Math.random() < 0.25 ? 'w2d' : 'd2w'), f = dir === 'd2w' ? 'w' : 'd', ops = mcqOpts(x, f);
