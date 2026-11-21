@@ -356,3 +356,34 @@ body.teach .ig{font-size:22px}body.teach .ig-idea p{font-size:24px}body.teach .i
 .lvgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-top:16px}.lvb{border:2px solid var(--line);background:var(--card);border-radius:14px;padding:12px;text-align:left;color:inherit;display:flex;flex-direction:column;gap:2px}.lvb b{font-size:18px}.lvb span{font-size:13px;color:var(--soft)}.lvb.on{border-color:var(--navy,#0b1f4b);box-shadow:0 0 0 2px var(--navy,#0b1f4b) inset}.lvb.busy{opacity:.6}
 /* iPhone in dark mode drew a white caret on light fields: the caret now follows the text colour */
 input,textarea,[contenteditable]{caret-color:currentColor}
+/* ---------- lesson map (21 Nov 2026): milky white, navy for completed, gold only for the next lesson; icons in app/path3d.js ---------- */
+.path.map{position:relative;display:block;max-width:460px;margin:0 auto;padding:16px 0 6px}
+.path.map svg.p3line{position:absolute;left:0;top:0;pointer-events:none;z-index:0;overflow:visible}
+.path.map svg.p3line path{fill:none;stroke-linecap:round}
+.path.map svg.p3line .bed{stroke:var(--card);stroke-width:16}
+.path.map svg.p3line .dn{stroke:var(--navy);stroke-width:6}
+.path.map svg.p3line .td{stroke:#D6CDB8;stroke-width:6;stroke-dasharray:2 13}
+.path.map .node{position:relative;z-index:1;display:flex;flex-direction:row;align-items:center;gap:14px;width:auto;min-height:104px;padding:0 14px 16px calc(var(--x) - 42px);transform:none;text-decoration:none;box-sizing:border-box}
+.path.map .node.rt{flex-direction:row-reverse;padding:0 calc(100% - var(--x) - 42px) 16px 14px;text-align:right}
+.path.map .node .b{flex:none;width:84px;height:84px;border-radius:50%;display:grid;place-items:center;position:relative;font-size:0;color:inherit;transition:transform .1s;animation:none;
+  background:radial-gradient(circle at 34% 26%,#fff 0%,#F4EFE3 55%,#D9D0BC 100%);box-shadow:0 7px 0 #C6BDA8,0 12px 18px rgba(11,37,69,.12)}
+.path.map .node .b>svg{width:54px;height:54px;display:block;filter:drop-shadow(0 3px 3px rgba(6,22,48,.28))}
+.path.map .node:active .b{transform:translateY(5px)}
+.path.map .node.done .b{box-shadow:inset 0 0 0 9px var(--navy),inset 0 0 0 10.5px #3E639F,0 7px 0 #061630,0 12px 18px rgba(11,37,69,.28)}
+.path.map .node.done .b>svg{width:46px;height:46px}
+.path.map .node.done .b::after{content:none}
+.path.map .node.next .b{background:radial-gradient(circle at 34% 26%,#fff 0%,#FBF6E6 60%,#EADFC0 100%);box-shadow:inset 0 0 0 4px var(--gold),0 7px 0 #8C6A10,0 0 0 6px rgba(201,162,39,.16),0 12px 22px rgba(11,37,69,.2);animation:p3glow 2.2s ease-in-out infinite}
+@keyframes p3glow{0%,100%{box-shadow:inset 0 0 0 4px var(--gold),0 7px 0 #8C6A10,0 0 0 6px rgba(201,162,39,.16),0 12px 22px rgba(11,37,69,.2)}50%{box-shadow:inset 0 0 0 4px var(--gold),0 7px 0 #8C6A10,0 0 0 11px rgba(201,162,39,.22),0 12px 22px rgba(11,37,69,.2)}}
+@media (prefers-reduced-motion:reduce){.path.map .node.next .b{animation:none}}
+.path.map .node.locked{opacity:.8}.path.map .node.locked .b{background:radial-gradient(circle at 34% 26%,#fff 0%,#E9ECF1 55%,#C3C9D3 100%);box-shadow:0 7px 0 #A7AFBB}
+.path.map .node .tk{position:absolute;right:-4px;top:-4px;width:28px;height:28px;border-radius:50%;background:linear-gradient(#2C5290,#0B2545);box-shadow:0 2px 0 #061630,0 0 0 3px var(--sand);display:grid;place-items:center}
+.path.map .node .tk svg{width:15px;height:15px;fill:none;stroke:#fff;stroke-width:3.2;stroke-linecap:round;stroke-linejoin:round}
+.path.map .node .t{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1;font-weight:400;text-align:inherit}
+.path.map .node .t b{font-size:15.5px;font-weight:700;line-height:1.25;color:var(--ink)}
+.path.map .node .t em{font-style:normal;font-size:12.5px;font-weight:500;color:var(--soft)}
+.path.map .node.done .t em{font-weight:700;color:var(--navy2)}
+.path.map .node.next .t em{color:#7A5A0C;font-weight:600}
+.path.map .node .go{align-self:flex-start;margin-top:6px;display:inline-flex;align-items:center;gap:6px;height:44px;padding:0 18px;border-radius:22px;background:linear-gradient(#1B3A6B,#0B2545);box-shadow:0 4px 0 #061630,0 8px 16px rgba(11,37,69,.3);color:#fff;font-style:normal;font-size:14.5px;font-weight:700}
+.path.map .node.rt .go{align-self:flex-end}
+.path.map .node .go svg{width:13px;height:13px;fill:#F3D98B}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]) .path.map .node.done .t em{color:#9DB7E6}:root:not([data-theme=light]) .path.map .node.next .t em{color:#E3C15A}:root:not([data-theme=light]) .path.map svg.p3line .dn{stroke:#5E86C8}:root:not([data-theme=light]) .path.map svg.p3line .td{stroke:#3A4A66}}

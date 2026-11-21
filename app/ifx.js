@@ -332,12 +332,13 @@
       var cov = e.mode === 'staff' && e.classes.length ? '<div class="cover">' + e.classes.map(function (k) { var on = k.covered.indexOf(u.id) >= 0; return '<label class="chip' + (on ? ' on' : '') + '"><input type="checkbox" data-cover="' + esc(k.id) + '" data-unit="' + esc(u.id) + '"' + (on ? ' checked' : '') + '> Covered · ' + esc(k.label) + '</label>'; }).join('') + '</div>' : '';
       html += '<section class="unit' + (open ? '' : ' unit-locked') + '"><div class="unit-h"><div style="flex:1"><small>' + (u.test ? '📝 Mock test' : u.extra ? '🗣️ Speaking words' : u.label ? esc(u.label) : esc(t('unit')) + ' ' + esc(u.id)) + (u.g ? ' · ' + esc(u.g) : '') + (e.mode === 'class' && (e.covered || []).indexOf(u.id) >= 0 ? ' · ✅ covered in class' : '') + '</small><h3>' + esc(u.title) + '</h3>' + (open ? '<ul class="objs">' + u.obj.map(function (o) { return '<li>🎯 ' + esc(o) + '</li>'; }).join('') + '</ul>' : '') + cov + '</div>' +
         (open ? '' : e.mode === 'class' ? '<span class="btn sm gold" style="cursor:default">🔒 Not covered in class yet</span>' : '<a class="btn sm gold" href="/me/#/upgrade">🔒 ' + esc(t('locked')) + '</a>') + '</div>' +
-        (open ? '<div class="path">' + u.lessons.map(function (l) {
+        (open ? IFXPath.html(u.lessons.map(function (l) {
           var done = isDone(c.id, u.id, l.id), isNext = nx && nx.u.id === u.id && nx.l.id === l.id;
-          return '<a class="node' + (done ? ' done' : '') + (isNext ? ' next' : '') + '" style="--c:' + COLORS[l.type] + '" href="#/lesson/' + c.id + '/' + u.id + '/' + l.id + '"><span class="b">' + ICONS[l.type] + '</span><span>' + esc(l.title) + '</span><em>' + esc(TYPE[l.type]) + (done ? ' · ' + S.done[key3(c.id, u.id, l.id)].score + '%' : '') + '</em></a>';
-        }).join('') + '</div>' : '') + '</section>';
+          return { href: '#/lesson/' + c.id + '/' + u.id + '/' + l.id, title: l.title, type: l.type, state: done ? 'done' : isNext ? 'next' : 'todo', sub: TYPE[l.type] + (done ? ' · ' + S.done[key3(c.id, u.id, l.id)].score + '%' : '') };
+        }), t('cont')) : '') + '</section>';
     });
     view().innerHTML = html;
+    IFXPath.draw(view());
     $$('[data-cover]').forEach(function (b) {
       b.onchange = function () {
         b.disabled = true;
@@ -929,14 +930,15 @@
     if (sd) html += '<div class="std"><div class="std-l"><b>' + esc(sd.level) + '</b><span>Standard</span></div><div class="grow"><p class="std-ref">📐 Referenced to the ' + esc(sd.ref) + '</p><p>' + esc(sd.desc) + '</p><div class="std-m">' + sd.modes.map(function (m) { return '<span>' + esc(m) + '</span>'; }).join('') + '</div></div></div>';
     c.units.forEach(function (u, ui) {
       var open = unlocked(ui, c.id), waitC = !open && ui === 1 && GATE && (GATE.done[c.id] || 0) < GATE.total;
-      html += '<section class="unit"><div class="unit-h">' + DOODLE(c.id, u.id, 'doodle uh') + '<div style="flex:1"><small>' + esc(t('unit')) + ' ' + (ui + 1) + ' · ' + esc(u.topic) + '</small><h3>' + esc(u.title) + '</h3>' + (window.IFStd && IFStd.unit(c.id, u.id) ? '<p class="cando">🎯 ' + esc(IFStd.unit(c.id, u.id)) + '</p>' : '') + '</div>' + (open ? '' : waitC ? '<span class="btn sm gold" style="cursor:default">🔒 Opens when your class finishes Unit 1 (' + (GATE.done[c.id] || 0) + ' of ' + GATE.total + ')</span>' : '<a class="btn sm gold" href="/me/#/upgrade">🔒 ' + esc(t('locked')) + '</a>') + '</div><div class="path">' +
-        u.lessons.map(function (l) {
+      html += '<section class="unit"><div class="unit-h">' + DOODLE(c.id, u.id, 'doodle uh') + '<div style="flex:1"><small>' + esc(t('unit')) + ' ' + (ui + 1) + ' · ' + esc(u.topic) + '</small><h3>' + esc(u.title) + '</h3>' + (window.IFStd && IFStd.unit(c.id, u.id) ? '<p class="cando">🎯 ' + esc(IFStd.unit(c.id, u.id)) + '</p>' : '') + '</div>' + (open ? '' : waitC ? '<span class="btn sm gold" style="cursor:default">🔒 Opens when your class finishes Unit 1 (' + (GATE.done[c.id] || 0) + ' of ' + GATE.total + ')</span>' : '<a class="btn sm gold" href="/me/#/upgrade">🔒 ' + esc(t('locked')) + '</a>') + '</div>' +
+        IFXPath.html(u.lessons.map(function (l) {
           var done = isDone(c.id, u.id, l.id), isNext = nx && nx.u.id === u.id && nx.l.id === l.id;
-          return '<a class="node' + (done ? ' done' : '') + (isNext ? ' next' : '') + (open ? '' : ' locked') + '" style="--c:' + COLORS[l.type] + '" href="' + (open ? '#/lesson/' + c.id + '/' + u.id + '/' + l.id : waitC ? '#/course/' + c.id : '/me/#/upgrade') + '"><span class="b">' + (open ? ICONS[l.type] : '🔒') + '</span><span>' + esc(l.title) + '</span><em>' + esc(TYPE[l.type]) + (done ? ' · ' + S.done[key3(c.id, u.id, l.id)].score + '%' : '') + '</em></a>';
-        }).join('') + '</div></section>';
+          return { href: open ? '#/lesson/' + c.id + '/' + u.id + '/' + l.id : waitC ? '#/course/' + c.id : '/me/#/upgrade', title: l.title, type: l.type, state: !open ? 'locked' : done ? 'done' : isNext ? 'next' : 'todo', sub: TYPE[l.type] + (done ? ' · ' + S.done[key3(c.id, u.id, l.id)].score + '%' : '') };
+        }), t('cont')) + '</section>';
     });
     if (a.teacher) html += '<p style="text-align:center;color:var(--soft)">👩‍🏫 Teacher: open a lesson and press <b>Teach mode</b> to show it on the projector.</p>';
     view().innerHTML = html;
+    IFXPath.draw(view());
   }
 
   /* ---------- lesson player ---------- */
