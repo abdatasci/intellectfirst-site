@@ -69,9 +69,15 @@
   /* Full-access trial countdown (guests in their 7-day trial, not paid). */
   function trialHTML() {
     var p = ME && ME.profile;
-    // IF Academy students and the director's individual students: everything free for three months (decided 20.11.2026; may be extended)
-    if (p && (p.role === 'student' || (p.role === 'guest' && (p.track === 'if' || p.track === 'private') && !p.declined)) && Date.now() < Date.parse('2027-02-21'))
-      return '<div class="taster trial"><div><b>🎓 Everything is free for you until 20 February 2027</b><span>As an IF Academy student you have full access to every course, game and test in IF App.</span></div></div>';
+    // Free full access, counted from 20.11.2026 (director, 21.11.2026): IF Academy (class) students six months, to 20 May 2027;
+    // the director's individual students three months, to 20 February 2027. A student with both kinds of lesson gets the longer one.
+    // This is the notice only: nothing ends access on those dates yet (see claude/access-rules.md).
+    if (p && (p.role === 'student' || (p.role === 'guest' && (p.track === 'if' || p.track === 'private') && !p.declined))) {
+      var cl = (ME && ME.classes) || [], ind = function (c) { return /^c-ind-/.test(c.id || '') || /individual|1[- ]?(to|on)[- ]?1/i.test(c.label || ''); };
+      var solo = cl.length ? cl.every(ind) : p.track === 'private';
+      var F = solo ? ['2027-02-21', '20 February 2027', 'As an individual student'] : ['2027-05-21', '20 May 2027', 'As an IF Academy student'];
+      if (Date.now() < Date.parse(F[0])) return '<div class="taster trial"><div><b>🎓 Everything is free for you until ' + F[1] + '</b><span>' + F[2] + ' you have full access to every course, game and test in IF App.</span></div></div>';
+    }
     if (!p || p.role !== 'guest' || !p.trialUntil) return '';
     if (p.paidUntil && Date.parse(p.paidUntil) > Date.now()) return '';
     var left = Math.ceil((Date.parse(p.trialUntil) - Date.now()) / 864e5);
