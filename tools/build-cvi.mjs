@@ -11,12 +11,15 @@ import TESTS from './cvi/tests.mjs';
 const X = { ...A, ...B }, CHUNK = 14, ID = 'cvi-ielts';
 const VOCAB = JSON.parse(fs.readFileSync('tools/cvi/vocab.json', 'utf8'));   // the vocabulary bank; it lived inside the IELTS Studio page until 20 Nov 2026
 const TITLES = { 23: 'Academic Writing Task 1: data and processes', 24: 'Academic Writing Task 2: argument and cohesion' };
+const EXTRA = JSON.parse(fs.readFileSync('tools/cvi/extra-words.json', 'utf8')), EXTRA_EX = (await import('./cvi/extra-ex.mjs')).default;
 const units = {}, out = [];
 for (const t of VOCAB.filter(t => t.unit && (t.unit <= 20 || TITLES[t.unit])).sort((a, b) => a.unit - b.unit)) {
   const uid = String(t.unit), x = X['U' + uid] || {}, title = TITLES[t.unit] || t.topic.replace(/^Unit \d+ · /, '');
   const words = t.words.map(w => [w.w, w.def, w.ru || '', '', w.ex || '', w.col || '', w.up ? 'Band 7+: ' + w.up : '']);
   const n = Math.ceil(words.length / CHUNK), size = Math.ceil(words.length / n), lessons = [];
   for (let i = 0; i < n; i++) lessons.push({ id: 'v' + (i + 1), type: 'vocab', title: 'Vocabulary in context' + (n > 1 ? ' ' + (i + 1) : ''), from: i * size, to: Math.min(words.length, (i + 1) * size) });
+  const more = (EXTRA.find(e => e.unit === t.unit) || { words: [] }).words;   // the words that used to be only in the games page
+  if (more.length) { const from = words.length; more.forEach(w => words.push([w.w, w.def.charAt(0).toLowerCase() + w.def.slice(1), w.ru || '', '', EXTRA_EX[w.w] || '', '', ''])); lessons.push({ id: 'vx', type: 'vocab', title: 'More words (also in the games)', from, to: words.length }); }
   if (x.r) lessons.push({ id: 'r', type: 'reading', title: (/^Model answer/.test(x.r.title) ? '' : 'Reading: ') + x.r.title });
   if (x.l) lessons.push({ id: 'l', type: 'listen', title: 'Listening: ' + x.l.title });
   if (x.talk) lessons.push({ id: 's', type: 'speaking', title: 'Speaking: ' + title });
