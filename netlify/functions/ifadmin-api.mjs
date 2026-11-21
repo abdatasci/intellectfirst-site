@@ -10,7 +10,7 @@
 //   GET all · GET/PUT/DELETE doc/<c>/<id> · POST backup
 // Data lives in the private Blobs store "ifadmin", one document per collection (key c/<name>) holding {id: doc}.
 import { getStore } from '@netlify/blobs';
-import { tgAccount } from '../lib/tgauth.mjs';
+import { tgAccount, makeQr } from '../lib/tgauth.mjs';
 import { getUser, refreshSession } from '@netlify/identity';
 import enc from '../lib/ifadmin-app.json';
 import { chat, run } from '../lib/ifadmin-ai.mjs';
@@ -179,6 +179,18 @@ export default async (req) => {
       const S2 = (await A().get('c/students', { type: 'json' })) || {};
       if (phone && S2[rec.id] && !S2[rec.id].ph) { S2[rec.id].ph = phone.replace(/^\+7/, '8'); await putColl('students', S2); }
       return json({ ok: true, profile: { name: p.name, role: p.role, studentId: p.studentId, phone }, record: { id: rec.id, name: `${rec.first} ${rec.last}`.trim(), ph: S2[rec.id] && S2[rec.id].ph } });
+    }
+    // personal QR sign-in codes for students' accounts: {sids} → [{sid, name, link}] (a new code switches the old one off)
+    if (path === 'qr' && method === 'POST') {
+      const b = await req.json().catch(() => ({})), U2 = getStore({ name: 'ielts', consistency: 'strong' });
+      const dir = (await U2.get('directory', { type: 'json' })) || {}, out = [];
+      for (const sid of (Array.isArray(b.sids) ? b.sids : []).slice(0, 40)) {
+        const e = Object.entries(dir).find(([, d]) => d.studentId === sid);
+        if (!e) { out.push({ sid, error: 'no account' }); continue; }
+        const code = await makeQr(e[0], sid, e[1].name || '');
+        out.push({ sid, name: e[1].name || '', link: 'https://intellectfirst.com/api/school/qr/' + code });
+      }
+      return json({ ok: true, out });
     }
     // the director's own private student (not IF Academy's): account track "private", a private class c-pv-<uid> taught by the
     // director, and no IF Admin record. {label, schedule, bookId, unlinkSid} — unlinkSid: an IF Admin record to detach from the account
