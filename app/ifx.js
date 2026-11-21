@@ -1203,26 +1203,69 @@
   }
   var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   var words = function (s) { return norm(s).replace(/[^a-z0-9' ]/g, ' ').split(/\s+/).filter(Boolean); };
+  /* "Say it aloud" exercise. Chrome and Android hear the sentence live. iPhone, iPad and the Telegram mini-app cannot
+     (their built-in recognition hangs, which left this step stuck on "Listening…" with Check greyed out), so there the
+     sentence is recorded and the server (/api/stt) writes down what it heard. Whatever goes wrong, the step can never
+     trap the student: it stops by itself, and after a failed attempt Check opens so they can read aloud and carry on. */
   function bindSpeak(e) {
-    var ck = $('#ck'), hd = $('#hd'), mic = $('#mic'), score = 0;
+    var ck = $('#ck'), hd = $('#hd'), mic = $('#mic'), score = 0, fails = 0, cur = null;
+    // "five" and "5", "per cent" and "%" count as the same word, and one wrong letter in a long word is forgiven
+    var NUM = { zero: '0', one: '1', two: '2', three: '3', four: '4', five: '5', six: '6', seven: '7', eight: '8', nine: '9', ten: '10', eleven: '11', twelve: '12', fifteen: '15', twenty: '20', thirty: '30', forty: '40', fifty: '50', sixty: '60', seventy: '70', eighty: '80', ninety: '90', hundred: '100', percent: '%' };
+    var nums = function (a) { return a.join(' ').replace(/per cent/g, 'percent').split(' ').map(function (w) { return NUM[w] || w; }).filter(function (w) { return w !== 'dollars' && w !== 'dollar' && w !== '%'; }); };
+    var want = nums(words(String(e.a).replace(/%/g, ' percent '))), maxMs = Math.min(15000, 4000 + want.length * 700);
     $('#sq2').onclick = function () { say(e.a); };
-    if (!SR) { ck.disabled = false; ck.onclick = function () { result(true, e); }; return; }
+    function grade(alts) {
+      var best = '', bs = -1;
+      alts.forEach(function (tr) { var said = nums(words(tr)), hit = want.filter(function (w) { return said.some(function (y) { return y === w || (w.length >= 5 && lev(w, y) <= 1); }); }).length / want.length; if (hit > bs) { bs = hit; best = tr; } });
+      score = Math.round(Math.max(0, bs) * 100);
+      hd.innerHTML = 'I heard: <b>“' + esc(best) + '”</b> · ' + score + '% of the words';
+      ck.disabled = false;
+    }
+    function idle(label) { mic.disabled = false; mic.classList.remove('on'); mic.textContent = label || '🎙 Try again'; }
+    function selfCheck(msg) { fails++; hd.textContent = msg; score = 100; ck.disabled = false; idle(); }   // could not listen: the student reads aloud and presses Check
+    function unheard() { fails++; idle(); if (fails >= 2) return selfCheck('I still could not hear you. Read the sentence aloud, then press Check.'); hd.textContent = 'I could not hear you. Press Try again and speak a little louder.'; }
+    if (!(SAY_SR || (navigator.mediaDevices && navigator.mediaDevices.getUserMedia && window.MediaRecorder))) { ck.disabled = false; ck.onclick = function () { result(true, e); }; return; }
     mic.onclick = function () {
-      var r = new SR(); r.lang = 'en-GB'; r.interimResults = false; r.maxAlternatives = 3;
-      mic.disabled = true; mic.textContent = '🎙 Listening…'; hd.textContent = '';
-      r.onresult = function (ev) {
-        var best = '', bs = -1;
-        for (var k = 0; k < ev.results[0].length; k++) { var said = words(ev.results[0][k].transcript), want = words(e.a), hit = want.filter(function (w) { return said.indexOf(w) >= 0; }).length / want.length; if (hit > bs) { bs = hit; best = ev.results[0][k].transcript; } }
-        score = Math.round(bs * 100);
-        hd.innerHTML = 'I heard: <b>“' + esc(best) + '”</b> · ' + score + '% of the words';
-        ck.disabled = false;
-      };
-      r.onerror = function (ev) { hd.textContent = ev && /not-allowed|service/.test(ev.error) ? 'The microphone is off for this page. Read the sentence aloud, then press Check.' : 'I could not hear you. Check the microphone and try again.'; if (ev && /not-allowed|service/.test(ev.error)) { score = 100; ck.disabled = false; } };
-      r.onend = function () { mic.disabled = false; mic.textContent = '🎙 Try again'; };
-      try { r.start(); } catch (x) { mic.disabled = false; }
+      if (cur) { cur.stop(); return; }   // second press = stop now
+      try { speechSynthesis.cancel(); } catch (x) {}
+      hd.textContent = ''; ck.disabled = true; score = 0; mic.classList.add('on');
+      var me = cur = { done: false, stop: function () {} };
+      var end = function (fn) { if (me.done) return; me.done = true; clearTimeout(me.to); if (cur === me) cur = null; fn(); };
+      if (SAY_SR) {
+        var r = new SAY_SR(); r.lang = 'en-GB'; r.interimResults = false; r.maxAlternatives = 3;
+        mic.textContent = '🎙 Listening…';
+        me.stop = function () { try { r.abort(); } catch (x) {} end(unheard); };
+        r.onresult = function (ev) { var a = []; for (var k = 0; k < ev.results[0].length; k++) a.push(ev.results[0][k].transcript); end(function () { idle(); grade(a); }); };
+        r.onerror = function (ev) { var off = ev && /not-allowed|service/.test(ev.error); end(function () { off ? selfCheck('The microphone is off for this page. Read the sentence aloud, then press Check.') : unheard(); }); };
+        r.onend = function () { end(unheard); };
+        try { r.start(); } catch (x) { return end(unheard); }
+        me.to = setTimeout(me.stop, maxMs + 3000);
+        return;
+      }
+      mic.textContent = '⏹ Stop';
+      navigator.mediaDevices.getUserMedia({ audio: true }).then(function (st) {
+        if (me.done) { st.getTracks().forEach(function (x) { x.stop(); }); return; }
+        var ch = [], mr;
+        try { mr = new MediaRecorder(st); } catch (x) { st.getTracks().forEach(function (y) { y.stop(); }); return end(function () { selfCheck('Recording is not available here. Read the sentence aloud, then press Check.'); }); }
+        mr.ondataavailable = function (ev) { if (ev.data && ev.data.size) ch.push(ev.data); };
+        mr.onstop = function () {
+          st.getTracks().forEach(function (x) { x.stop(); });
+          var blob = ch.length ? new Blob(ch, { type: mr.mimeType || 'audio/mp4' }) : null;
+          if (!blob || blob.size < 800) return end(unheard);
+          mic.disabled = true; mic.classList.remove('on'); mic.textContent = '… Checking';
+          var gone = setTimeout(function () { end(function () { selfCheck('I couldn’t check the recording just now. Read the sentence aloud, then press Check.'); }); }, 12000);
+          fetch('/api/stt', { method: 'POST', headers: { 'Content-Type': blob.type || 'audio/mp4' }, body: blob })
+            .then(function (res) { return res.ok ? res.json() : Promise.reject(res.status); })
+            .then(function (d) { clearTimeout(gone); var txt = String(d.text || '').trim(); end(function () { if (!txt) return unheard(); idle(); grade([txt]); }); })
+            .catch(function () { clearTimeout(gone); end(function () { selfCheck('I couldn’t check the recording just now. Read the sentence aloud, then press Check.'); }); });
+        };
+        me.stop = function () { clearTimeout(me.to); if (mr.state !== 'inactive') { try { mr.stop(); } catch (x) {} } };
+        hd.textContent = 'Recording… say the sentence, then press Stop.';
+        mr.start(); me.to = setTimeout(me.stop, maxMs);
+      }).catch(function () { end(function () { selfCheck(SAY_IOS && SAY_TG ? 'Telegram cannot use the microphone. Read the sentence aloud, then press Check.' : 'The microphone is off for this page. Read the sentence aloud, then press Check.'); }); });
     };
-    $('#skp').onclick = function () { mic.disabled = true; this.remove(); result(true, e, '', true); };
-    ck.onclick = function () { mic.disabled = true; result(score >= 70, e, score >= 70 ? '' : 'Try to say every word: ' + e.a); };
+    $('#skp').onclick = function () { if (cur) cur.stop(); mic.disabled = true; this.remove(); result(true, e, '', true); };
+    ck.onclick = function () { if (cur) cur.stop(); mic.disabled = true; result(score >= 70, e, score >= 70 ? '' : 'Try to say every word: ' + e.a); };
   }
   var norm = function (s) { return String(s).toLowerCase().replace(/[’‘`]/g, "'").replace(/\s+/g, ' ').replace(/[.?!]$/, '').trim(); };
   function reveal(e) {
