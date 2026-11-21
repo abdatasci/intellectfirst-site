@@ -353,3 +353,9 @@ body.cyber .btn.ghost{border-color:rgba(0,255,156,.6);color:var(--neon);font-fam
 @keyframes lkspark{to{background-position:0 -70px,0 -90px}}
 @media (prefers-reduced-motion:reduce){.lake *{animation:none!important}}
 @media (max-width:700px){.lake{height:58vh}.lk-who{font-size:20px;top:-22px}}
+
+/* Race mode: the 3D race on the big screen (live/race3d.js) */
+.board.r3{max-width:1500px}
+.board.r3 h2{font-size:32px;margin-bottom:0}
+.r3slot{position:relative;width:100%;height:min(66vh,760px);border-radius:22px;overflow:hidden;border:1px solid rgba(232,195,106,.45);box-shadow:0 18px 50px rgba(0,0,0,.45)}
+.r3slot canvas{display:block;width:100%;height:100%}
