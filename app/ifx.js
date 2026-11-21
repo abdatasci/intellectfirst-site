@@ -11,6 +11,8 @@
   var IFX = window.IFX = { course: function (c) { COURSES.push(c); BY[c.id] = c; }, get: function (id) { return BY[id]; }, all: function () { return COURSES; },
     /** Add more units to a course (full courses are written in parts). */
     ruNotes: function (cid, map) { var c = BY[cid]; if (c) c.units.forEach(function (u) { if (map[u.id]) u.lessons.forEach(function (l) { if (l.type === 'grammar') l.ru = map[u.id]; }); }); },
+    /* The word bank: more words for a unit's Vocabulary set (not for its lesson). "word | part of speech | meaning | example | Russian" */
+    moreWords: function (cid, map) { var c = BY[cid]; if (c) c.units.forEach(function (u) { if (map[u.id]) u.xw = String(map[u.id]).trim().split('\n').map(function (l) { var p = l.split('|').map(function (x) { return x.trim(); }); return { w: p[0], p: p[1], d: p[2], e: p[3], ru: p[4] || '' }; }).filter(function (w) { return w.w && w.d; }); }); },
     units: function (cid, list) { var c = BY[cid]; if (c) list.forEach(function (u) { if (!c.units.some(function (x) { return x.id === u.id; })) c.units.push(u); }); },
     /** Add a listening lesson to a unit (before the unit check). */
     listening: function (cid, uid, l) { var c = BY[cid], u = c && c.units.filter(function (x) { return x.id === uid; })[0]; if (!u) return; l.type = 'listen'; l.id = l.id || 'li'; var i = u.lessons.map(function (x) { return x.type; }).indexOf('check'); u.lessons.splice(i < 0 ? u.lessons.length : i, 0, l); } };
@@ -387,7 +389,7 @@
   var VREPL = { 'voc-a1': 'ef-a1', 'voc-a2': 'ef-a2', 'voc-b1': 'ef-b1', 'voc-b2': 'ef-b2', 'voc-c1': 'ef-c1', 'voc-ielts': 'ielts' };
   var VMODES = [['cards', '🃏', 'Flashcards', 'Flip, listen and sort the words you know'], ['learn', '🧠', 'Learn', 'Each word comes back until you get it right twice'], ['write', '✍️', 'Write', 'Read the meaning and type the word'], ['match', '🧩', 'Match', 'Pair words and meanings against the clock'], ['test', '📝', 'Test', 'Ten mixed questions with a score']];
   if (!S.vk) S.vk = {}; if (!S.vs) S.vs = {};
-  function wordsOf(u) { if (u.words) return u.words; var a = [], seen = {}; u.lessons.forEach(function (l) { if (l.type === 'vocab') (l.words || []).forEach(function (w) { if (w.w && w.d && !seen[w.w]) { seen[w.w] = 1; a.push(w); } }); }); return a; }
+  function wordsOf(u) { if (u.words) return u.words; var a = [], seen = {}; u.lessons.forEach(function (l) { if (l.type === 'vocab') (l.words || []).forEach(function (w) { if (w.w && w.d && !seen[w.w]) { seen[w.w] = 1; a.push(w); } }); }); (u.xw || []).forEach(function (w) { if (!seen[w.w]) { seen[w.w] = 1; a.push(w); } }); return a; }
   var wordCount = function (c, u) { return c.ef && !u.words ? (u.n || 0) : wordsOf(u).length; };
   var ruC = function (c) { return /^(PA1|A0|A1|A2)/.test(c.level || ''); };
   function vocCourses() { var list = APP ? appCourses() : fullView() ? COURSES.filter(function (c) { return !c.daily; }) : myCourses(); return list.filter(function (c) { return c.units.some(function (u) { return wordCount(c, u) > 0; }); }); }
