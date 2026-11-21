@@ -430,7 +430,7 @@
     }
     var V = { t0: Date.now(), n: 0, ok: 0 }, v = view(), mName = (VMODES.filter(function (m) { return m[0] === mode; })[0] || VMODES[0])[2], label = mName + ' · ' + u.title;
     var three = function (x) { return shuffle([x].concat(shuffle(ws.filter(function (y) { return y !== x && y.d !== x.d; })).slice(0, 3))); };
-    var blank = function (w) { if (!w.e) return ''; var re = new RegExp(w.w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\w*', 'i'); return re.test(w.e) ? w.e.replace(re, '_____') : ''; };
+    var blank = function (w) { return gapOf(w.w, w.e); };
     var ruLine = function (w) { return w.ru ? (ruC(c) ? ruChip(w.ru + (w.rd ? '\n' + w.rd : '')) : '<p class="ve" style="text-align:center">🇷🇺 ' + esc(w.ru) + '</p>') : ''; };
     var end = function (title, line, score) {
       var secs = Math.round((Date.now() - V.t0) / 1000); addXP(5 + Math.round((score == null ? 100 : score) / 25)); save(); actEvent('vocab', key + '/' + mode, mName + ': ' + u.title, score == null ? null : score, secs);
@@ -1008,11 +1008,34 @@
     out.push({ k: 'ex', e: { t: 'match', p: shuffle(words).slice(0, 4).map(function (x) { return [x.w, x.ru || x.d]; }) } });
     return out;
   }
+  /* Gap for a word in its example sentence. Handles phrases whose words change form ("remain stable" in "remained stable")
+     and never cuts inside another word. Returns '' when no clean gap can be made (irregular forms), so the caller asks about
+     the meaning instead of showing the sentence with the answer still in it. */
+  function gapOf(w, e) {
+    if (!w || !e) return '';
+    var rx = function (t) { return t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); };
+    var stem = function (t) { t = rx(t); return t.length > 3 ? t.replace(/(e|y)$/i, '') : t; };
+    var parts = String(w).replace(/\(.*?\)/g, '').replace(/\b(sb|sth|someone|something|somebody|one's|your)\b/gi, ' ').trim().split(/\s+/).filter(Boolean);
+    while (parts.length > 1 && /^(to|a|an|the|be)$/i.test(parts[0])) parts.shift();
+    parts = parts.filter(function (x, i) { return i === 0 || !/^(a|an|the)$/i.test(x); });
+    if (!parts.length) return '';
+    var re;
+    try { re = new RegExp('(^|[^A-Za-z])(' + parts.map(function (x) { return stem(x) + "[A-Za-z']*"; }).join("(?:[\\s-]+(?:[A-Za-z']+[\\s-]+){0,2}?)") + ')', 'i'); } catch (err) { return ''; }
+    if (!re.test(e)) return '';
+    var out = e.replace(re, function (a, b) { return b + '_____'; });
+    var head = parts.reduce(function (a, b) { return b.length > a.length ? b : a; }, '');
+    if (head.length > 3 && new RegExp('(^|[^A-Za-z])' + stem(head), 'i').test(out)) return '';
+    return out;
+  }
   function vocabEx(words) {
     if (words[0] && words[0].pic) return kidsEx(words);
     var w = shuffle(words), out = [];
     w.slice(0, 4).forEach(function (x) { var o = shuffle([x].concat(shuffle(words.filter(function (y) { return y !== x; })).slice(0, 2))); out.push({ k: 'ex', e: { t: 'mc', q: 'What does “' + x.w + '” mean?', o: o.map(function (y) { return y.d; }), a: o.indexOf(x), say: x.w } }); });
-    w.slice(4, 8).forEach(function (x) { if (!x.e) { var o2 = shuffle([x].concat(shuffle(words.filter(function (y) { return y !== x; })).slice(0, 2))); out.push({ k: 'ex', e: { t: 'mc', q: 'Which word or phrase means: “' + x.d + '”?', o: o2.map(function (y) { return y.w; }), a: o2.indexOf(x), say: x.w } }); return; } var re = new RegExp(x.w.split(' ')[0].replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\w*', 'i'); var m = x.e.match(re); if (!m) return; var o = shuffle([x].concat(shuffle(words.filter(function (y) { return y !== x; })).slice(0, 2))); out.push({ k: 'ex', e: { t: 'mc', q: x.e.replace(x.w.split(' ').length > 1 ? new RegExp(x.w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\w*', 'i') : re, '_____'), o: o.map(function (y) { return y.w; }), a: o.indexOf(x), why: x.e } }); });
+    w.slice(4, 8).forEach(function (x) {
+      var o = shuffle([x].concat(shuffle(words.filter(function (y) { return y !== x; })).slice(0, 2))), g = gapOf(x.w, x.e);
+      if (g) out.push({ k: 'ex', e: { t: 'mc', q: g, o: o.map(function (y) { return y.w; }), a: o.indexOf(x), why: x.e } });
+      else out.push({ k: 'ex', e: { t: 'mc', q: 'Which word or phrase means: “' + x.d + '”?', o: o.map(function (y) { return y.w; }), a: o.indexOf(x), say: x.w, why: x.e || '' } });
+    });
     out.push({ k: 'ex', e: { t: 'match', p: shuffle(words).slice(0, 4).map(function (x) { return [x.w, x.ru || x.d]; }) } });
     return out;
   }
