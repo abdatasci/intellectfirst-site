@@ -4,7 +4,7 @@
 // People connected to the bot only by phone number get an account from their school record the first time:
 //   'sid:<studentId>' → a student account linked to that IF Admin record · 'tid:<teacherId>' → a teacher account.
 import { getStore } from '@netlify/blobs';
-import { createHmac, timingSafeEqual } from 'node:crypto';
+import { createHmac, createHash, randomBytes, timingSafeEqual } from 'node:crypto';
 import { doc } from './bot-core.mjs';
 
 const S = () => getStore({ name: 'school', consistency: 'strong' });
@@ -57,7 +57,7 @@ async function realAccount(link) {
 /** The account behind the X-TG-Init header ({ id, email, telegram }), or null (then the usual website sign-in applies).
     Why it failed is left on req.tgWhy so the page can say so. */
 export async function tgAccount(req) {
-  const init = req.headers.get('x-tg-init'); if (!init) return null;
+  const init = req.headers.get('x-tg-init'); if (!init) return devAccount(req);
   const why = r => { try { req.tgWhy = r; } catch {} return null; };
   if (!process.env.TELEGRAM_BOT_TOKEN) return why('no-token');
   if (!/(^|&)user=/.test(init)) return why('no-user');
@@ -67,4 +67,30 @@ export async function tgAccount(req) {
   const prof = /^(sid|tid):/.test(link) ? await ensureLite(link) : await U().get(`u/${link}/profile`, { type: 'json' });
   if (!prof && /^(sid|tid):/.test(link)) return why('no-record');
   return { id: link, email: (prof && prof.email) || '', name: (prof && prof.name) || '', user_metadata: { full_name: [tu.first_name, tu.last_name].filter(Boolean).join(' ') }, app_metadata: {}, telegram: true };
+}
+
+// ---- Personal QR sign-in (children): the teacher prints a QR per child; scanning it once on a phone or tablet keeps
+// that device signed in to the child's own account (a year-long cookie "if_dev"). The code is stored only as a hash,
+// so the store cannot be read back into working links; making a new code for a child switches the old one off.
+export const DEV_COOKIE = 'if_dev';
+const qhash = c => createHash('sha256').update(String(c)).digest('hex');
+export async function makeQr(uid, sid, name) {
+  const code = randomBytes(18).toString('base64url');
+  const idx = (await S().get('qr/index', { type: 'json' })) || {};
+  if (idx[uid]) await S().delete('qr/' + idx[uid]).catch(() => {});
+  const h = qhash(code); idx[uid] = h;
+  await S().setJSON('qr/' + h, { uid, sid: sid || '', name: name || '', at: new Date().toISOString() });
+  await S().setJSON('qr/index', idx);
+  return code;
+}
+export async function qrLookup(code) {
+  if (!/^[\w-]{16,64}$/.test(String(code || ''))) return null;
+  return (await S().get('qr/' + qhash(code), { type: 'json' }).catch(() => null)) || null;
+}
+/** The account behind the device cookie, or null. */
+export async function devAccount(req) {
+  const ck = req.headers.get('cookie') || '', m = ck.match(/(?:^|;\s*)if_dev=([\w-]{16,64})/); if (!m) return null;
+  const q = await qrLookup(m[1]); if (!q || !q.uid) return null;
+  const prof = await U().get(`u/${q.uid}/profile`, { type: 'json' }); if (!prof) return null;
+  return { id: q.uid, email: prof.email || '', name: prof.name || '', user_metadata: { full_name: prof.name || '' }, app_metadata: {}, device: true };
 }

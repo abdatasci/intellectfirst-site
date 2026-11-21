@@ -4,7 +4,7 @@
 //   store "school" – students, classes, teachers, books (one JSON document each)
 //   store "photos" – profile photos by account id
 import { getStore } from '@netlify/blobs';
-import { tgAccount } from '../lib/tgauth.mjs';
+import { DEV_COOKIE, qrLookup, tgAccount } from '../lib/tgauth.mjs';
 import { readFile } from 'node:fs/promises';
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import { join } from 'node:path';
@@ -411,6 +411,15 @@ export default async (req) => {
   const method = req.method;
 
   if (path === 'books' && method === 'GET') return json({ books: await doc('books') });
+
+  // personal QR sign-in: /api/school/qr/<code> keeps this device signed in to the child's account; qr/out signs it out
+  if (path.startsWith('qr/') && method === 'GET') {
+    const code = path.slice(3), secure = '; Path=/; HttpOnly; Secure; SameSite=Lax';
+    if (code === 'out') return new Response(null, { status: 302, headers: { Location: '/app/', 'Set-Cookie': `${DEV_COOKIE}=; Max-Age=0` + secure } });
+    const q = await qrLookup(code);
+    if (!q) return new Response('<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width"><body style="font:18px system-ui;padding:32px;text-align:center"><h2>This QR code no longer works</h2><p>Please ask your teacher at IF Academy for a new one.</p><p>Этот QR-код больше не действует. Попросите у учителя новый.</p>', { status: 404, headers: { 'Content-Type': 'text/html; charset=utf-8' } });
+    return new Response(null, { status: 302, headers: { Location: '/app/', 'Set-Cookie': `${DEV_COOKIE}=${code}; Max-Age=31536000` + secure, 'Cache-Control': 'no-store' } });
+  }
 
   // a student's study report for the parents: a private signed link made by the school (no account needed)
   if (path === 'report' && method === 'GET') {

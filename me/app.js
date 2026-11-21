@@ -141,7 +141,7 @@
     var who = $('#who');
     if (USER) {
       who.innerHTML = '<button class="btn ghost sm" id="out">Sign out</button>';
-      $('#out').onclick = async function () { try { await ID.logout(); } catch (e) {} USER = null; ME = null; header(); go('#/login'); toast('Signed out'); };
+      $('#out').onclick = async function () { try { await ID.logout(); } catch (e) {} try { await fetch('/api/school/qr/out', { credentials: 'same-origin', redirect: 'manual' }); } catch (e) {} USER = null; ME = null; header(); go('#/login'); toast('Signed out'); };
     } else who.innerHTML = '';
     $('[data-nav=classes]').hidden = !staff();
     var cn = $('[data-nav=calendar]'); if (cn) cn.hidden = !staff();
