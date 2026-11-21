@@ -48,6 +48,22 @@
     if (c.bump > 0) { var fr = r * .45 * c.bump; var fg = cx.createRadialGradient(bk[0], bk[1] - fr * .3, 0, bk[0], bk[1] - fr * .3, fr); fg.addColorStop(0, 'rgba(255,230,140,.95)'); fg.addColorStop(1, 'rgba(255,120,40,0)'); cx.fillStyle = fg; cx.beginPath(); cx.arc(bk[0], bk[1] - fr * .3, fr, 0, 7); cx.fill(); }
     tag(c, rank, P(x, y + 4.3, z));
   }
+  /* Block Mine: a blocky miner with a pickaxe; the gem block behind them grows with their gems */
+  function miner(c, rank) {
+    var x = c.x, z = c.z + 1.2, t = performance.now() / 1000, sw = Math.sin(t * 6 + x) * .28, hop = Math.abs(Math.sin(c.bump * Math.PI)) * .7, col = c.color;
+    if (!P(x, 0, z)) return;
+    quad(P(x - .9, .01, z - .5), P(x + .9, .01, z - .5), P(x + .9, .01, z + .9), P(x - .9, .01, z + .9), 'rgba(0,0,0,.32)');
+    box(x - .5, hop, z - .05 + sw, x - .05, hop + .95, z + .4 + sw, '#2d4fb0'); box(x + .05, hop, z - .05 - sw, x + .5, hop + .95, z + .4 - sw, '#2d4fb0');
+    box(x - .55, hop + .95, z - .1, x + .55, hop + 2.0, z + .45, col);
+    box(x - .88, hop + 1.05, z - .05 - sw, x - .57, hop + 1.95, z + .35 - sw, '#e7b48c'); box(x + .57, hop + 1.05, z - .05 + sw, x + .88, hop + 1.95, z + .35 + sw, '#e7b48c');
+    box(x - .45, hop + 2.0, z - .2, x + .45, hop + 2.85, z + .6, '#e7b48c'); box(x - .47, hop + 2.6, z - .22, x + .47, hop + 2.9, z + .62, '#5a3a1c');
+    // pickaxe over the shoulder; it swings when the miner has just scored
+    var a0 = P(x + .75, hop + 1.6, z + .1), a1 = P(x + 1.25 + c.bump * .5, hop + 3.0 - c.bump * 1.2, z + .1);
+    if (a0 && a1) { cx.strokeStyle = '#9a6a3c'; cx.lineWidth = Math.max(2, .13 * F / a0[2]); cx.lineCap = 'round'; cx.beginPath(); cx.moveTo(a0[0], a0[1]); cx.lineTo(a1[0], a1[1]); cx.stroke(); var r = .5 * F / a1[2]; cx.strokeStyle = '#cfd6e4'; cx.lineWidth = Math.max(2, .16 * F / a1[2]); cx.beginPath(); cx.arc(a1[0], a1[1] + r * .5, r, Math.PI * 1.15, Math.PI * 1.85); cx.stroke(); }
+    // the gems they carry: a small diamond block that pops when they score
+    var g = .45 + Math.min(.5, c.score / 400) + c.bump * .2; box(x - g / 2, 0, z - 1.5 - g, x + g / 2, g, z - 1.5, '#39c6e8');
+    tag(c, rank, P(x, hop + 3.9, z + .2));
+  }
   function tag(c, rank, tp) {
     if (!tp) return; var col = c.color;
     var k = Math.max(.85, Math.min(2.4, 9 / tp[2] * (H / 420))), fs = Math.round(15 * k), txt = (rank + 1) + '  ' + c.name, pts = c.score + (OPT.unit ? ' ' + OPT.unit : '');
@@ -59,6 +75,7 @@
   }
   function car(c, rank) {
     if (OPT.kind === 'balloon') return balloon(c, rank);
+    if (OPT.kind === 'mine') return miner(c, rank);
     var x = c.x, z = c.z, y = .28 + Math.abs(Math.sin(c.bump * Math.PI)) * .5, col = c.color;
     var s = P(x, 0, z + 1.2); if (!s) return;
     // shadow
@@ -99,7 +116,7 @@
     var mx = -1e9, mn = 1e9; ids.forEach(function (id) { mx = Math.max(mx, cars[id].score); mn = Math.min(mn, cars[id].score); });
     var span = Math.max(1, mx - mn), k = Math.min(OPT.per, 64 / span);
     ids.forEach(function (id) { var c = cars[id], tz = (c.score - mn) * k; c.z += (tz - c.z) * Math.min(1, dt * 2.2); c.bump = Math.max(0, c.bump - dt * 1.4); });
-    road += dt * 26;
+    road += dt * (OPT.kind === 'mine' ? 5 : 26);
     var zs = ids.map(function (id) { return cars[id].z; }), zmax = Math.max.apply(null, zs), zmin = Math.min.apply(null, zs), sp = zmax - zmin;
     var ld = ids.slice().sort(function (a, b) { return cars[b].score - cars[a].score; })[0];
     if (leader && ld !== leader && cars[ld].score > cars[leader].score) { shot.kind = 'lead'; shot.id = ld; shot.until = now + 5500; cap = '🚀 ' + cars[ld].name + ' takes the lead!'; }
@@ -107,6 +124,7 @@
     if (now > shot.until || (shot.id && !cars[shot.id])) pickShot(now);
     var T = { x: 0, y: 8 + sp * .34, z: zmin - 15 - sp * .32, lx: 0, lz: zmin + sp * .45 + 3, f: 1 };
     if (shot.id && cars[shot.id]) { var c = cars[shot.id], side = (Math.floor(now / 11000) % 2 ? 1 : -1); T = { x: c.x * .5 + side * 2.6, y: 3.1, z: c.z - 7.5, lx: c.x, lz: c.z + (shot.kind === 'duel' ? 7 : 4), f: 1.12 }; }
+    if (OPT.kind === 'mine' && shot.id && cars[shot.id]) { T.y = 4.2; T.z -= 2; }
     if (OPT.kind === 'balloon') { if (shot.id && cars[shot.id]) { var bc = cars[shot.id]; T = { x: bc.x * .6, y: 6.5, z: bc.z - 15, lx: bc.x, lz: bc.z + 32, f: 1.05 }; } else { T.y += 4; T.z -= 6; T.lz += 10; } }
     var e = Math.min(1, dt * 1.5); ['x', 'y', 'z', 'lx', 'lz', 'f'].forEach(function (q) { cam[q] += (T[q] - cam[q]) * e; });
     aim();
@@ -120,14 +138,17 @@
     // road
     var n = ids.length, half = Math.max(6, n * 1.5 + 1.5), z0 = cam.z + 1, z1 = cam.z + 260;
     var air = OPT.kind === 'balloon'; if (air) quad(P(-70, 0, z0), P(70, 0, z0), P(70, 0, z1), P(-70, 0, z1), '#12351f');
-    quad(P(-half, 0, z0), P(half, 0, z0), P(half, 0, z1), P(-half, 0, z1), air ? '#184a2a' : '#232a3a');
+    var mine = OPT.kind === 'mine'; if (mine) quad(P(-70, 0, z0), P(70, 0, z0), P(70, 0, z1), P(-70, 0, z1), '#3a2a1c');
+    quad(P(-half, 0, z0), P(half, 0, z0), P(half, 0, z1), P(-half, 0, z1), air ? '#184a2a' : mine ? '#3f9a4b' : '#232a3a');
     quad(P(-half - .5, 0, z0), P(-half, 0, z0), P(-half, 0, z1), P(-half - .5, 0, z1), '#e8c36a'); quad(P(half, 0, z0), P(half + .5, 0, z0), P(half + .5, 0, z1), P(half, 0, z1), '#e8c36a');
     var off = road % 8, zb = Math.floor((cam.z) / 8) * 8 - off;
     for (var z = zb + 248; z > zb; z -= 8) {
       if (z < cam.z + 1.5) continue;
-      for (var li = 1; li < n && !air; li++) { var lx = -n * 1.5 + li * 3; quad(P(lx - .07, .01, z), P(lx + .07, .01, z), P(lx + .07, .01, z + 3.4), P(lx - .07, .01, z + 3.4), 'rgba(255,255,255,.55)'); }
+      if (mine) { var odd = Math.round((z + off) / 8) % 2; for (var gx = -half; gx < half; gx += 3) { if ((Math.round((gx + half) / 3) + odd) % 2) quad(P(gx, .005, z), P(Math.min(half, gx + 3), .005, z), P(Math.min(half, gx + 3), .005, z + 4), P(gx, .005, z + 4), '#4fb35c'); } }
+      for (var li = 1; li < n && !air && !mine; li++) { var lx = -n * 1.5 + li * 3; quad(P(lx - .07, .01, z), P(lx + .07, .01, z), P(lx + .07, .01, z + 3.4), P(lx - .07, .01, z + 3.4), 'rgba(255,255,255,.55)'); }
       // road-side lights
-      [-1, 1].forEach(function (sd) { var px = sd * (half + 1.6), a = P(px, 0, z), b = P(px, 3.2, z); if (a && b) { cx.strokeStyle = 'rgba(160,180,220,.5)'; cx.lineWidth = Math.max(1, 60 / a[2]); cx.beginPath(); cx.moveTo(a[0], a[1]); cx.lineTo(b[0], b[1]); cx.stroke(); var r = Math.max(1.5, 150 / a[2]); var gl = cx.createRadialGradient(b[0], b[1], 0, b[0], b[1], r * 3); gl.addColorStop(0, 'rgba(255,225,150,.95)'); gl.addColorStop(1, 'rgba(255,225,150,0)'); cx.fillStyle = gl; cx.beginPath(); cx.arc(b[0], b[1], r * 3, 0, 7); cx.fill(); } });
+      if (mine) { var oi = Math.round((z + off) / 8); [-1, 1].forEach(function (sd) { var bx = sd * (half + 2.2), oc = ['#8b8f98', '#3b3f48', '#d8a25a', '#e8c36a', '#39c6e8'][Math.abs(oi * 7 + sd * 3) % 5], hh = 1.6 + (Math.abs(oi * 5 + sd) % 3) * 1.1; box(bx - 1.3, 0, z, bx + 1.3, hh, z + 2.6, oc); }); }
+      else [-1, 1].forEach(function (sd) { var px = sd * (half + 1.6), a = P(px, 0, z), b = P(px, 3.2, z); if (a && b) { cx.strokeStyle = 'rgba(160,180,220,.5)'; cx.lineWidth = Math.max(1, 60 / a[2]); cx.beginPath(); cx.moveTo(a[0], a[1]); cx.lineTo(b[0], b[1]); cx.stroke(); var r = Math.max(1.5, 150 / a[2]); var gl = cx.createRadialGradient(b[0], b[1], 0, b[0], b[1], r * 3); gl.addColorStop(0, 'rgba(255,225,150,.95)'); gl.addColorStop(1, 'rgba(255,225,150,0)'); cx.fillStyle = gl; cx.beginPath(); cx.arc(b[0], b[1], r * 3, 0, 7); cx.fill(); } });
     }
     // cars, far ones first
     var rankOf = {}; ids.slice().sort(function (a, b) { return cars[b].score - cars[a].score; }).forEach(function (id, i) { rankOf[id] = i; });
