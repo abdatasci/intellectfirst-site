@@ -30,7 +30,7 @@
     IFX.units(cid, list.map(function (u) {
       var W = words(u.v[1]), L = [{ id: 'v', type: 'vocab', title: u.v[0], words: W }];
       if (u.g) L.push({ id: 'g', type: u.skill ? 'skill' : 'grammar', title: u.g[0], rule: u.g[1], ex: u.g[2] });
-      if (u.r) L.push({ id: 'r', type: 'reading', title: u.r[0], text: u.r[1], ex: u.r[2], photo: u.photo || undefined, alt: u.alt || undefined });
+      if (u.r) L.push({ id: 'r', type: 'reading', title: u.r[0], text: u.r[1], ex: u.r[2], photo: u.photo || undefined, alt: u.alt || undefined, chart: u.chart || undefined });
       L.push({ id: 'c', type: 'check', title: 'Unit check', ex: check(W, u.g && u.g[2]) });
       return { id: u.id, title: u.t, topic: u.topic, lessons: L, wu: u.wu, sp: u.sp, task: u.task };
     }));

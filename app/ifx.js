@@ -13,6 +13,8 @@
     ruNotes: function (cid, map) { var c = BY[cid]; if (c) c.units.forEach(function (u) { if (map[u.id]) u.lessons.forEach(function (l) { if (l.type === 'grammar') l.ru = map[u.id]; }); }); },
     /* The word bank: more words for a unit's Vocabulary set (not for its lesson). "word | part of speech | meaning | example | Russian" */
     moreWords: function (cid, map) { var c = BY[cid]; if (c) c.units.forEach(function (u) { if (map[u.id]) u.xw = (u.xw || []).concat(String(map[u.id]).trim().split('\n').map(function (l) { var p = l.split('|').map(function (x) { return x.trim(); }); return { w: p[0], p: p[1], d: p[2], e: p[3], ru: p[4] || '' }; }).filter(function (w) { return w.w && w.d; })); }); },
+    /* Put a course's units in a set order (ids not listed stay at the end, in their old order). Progress is kept: it is stored by unit id. */
+    order: function (cid, ids) { var c = BY[cid]; if (c) c.units.sort(function (a, b) { var i = ids.indexOf(a.id), j = ids.indexOf(b.id); return (i < 0 ? 999 : i) - (j < 0 ? 999 : j); }); },
     units: function (cid, list) { var c = BY[cid]; if (c) list.forEach(function (u) { if (!c.units.some(function (x) { return x.id === u.id; })) c.units.push(u); }); },
     /** Add a listening lesson to a unit (before the unit check). */
     listening: function (cid, uid, l) { var c = BY[cid], u = c && c.units.filter(function (x) { return x.id === uid; })[0]; if (!u) return; l.type = 'listen'; l.id = l.id || 'li'; var i = u.lessons.map(function (x) { return x.type; }).indexOf('check'); u.lessons.splice(i < 0 ? u.lessons.length : i, 0, l); } };
@@ -1128,7 +1130,7 @@
       $('#nx').onclick = function () { V.on = false; try { speechSynthesis.cancel(); } catch (e) {} L.i++; drawStep(); }; ui(); return;
     }
     if (it.k === 'read') {
-      v.innerHTML = '<div class="player">' + pTop() + '<article class="reading">' + (L.l.chart ? '<div class="chart">' + chartSVG() + '</div>' : photo(L.l.photo, L.l.alt)) + '<h3>' + esc(L.l.title) + '</h3><div class="txt" id="rtxt">' + parasS(L.l.text) + '</div></article>' +
+      v.innerHTML = '<div class="player">' + pTop() + '<article class="reading">' + (L.l.chart ? '<div class="chart">' + (typeof L.l.chart === 'object' && window.IFXChart ? IFXChart(L.l.chart) : chartSVG()) + '</div>' : photo(L.l.photo, L.l.alt)) + '<h3>' + esc(L.l.title) + '</h3><div class="txt" id="rtxt">' + parasS(L.l.text) + '</div></article>' +
         '<p style="text-align:center;margin-top:18px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap"><button class="btn ghost" id="sy">🔊 Listen</button><button class="btn" id="nx">Questions →</button></p></div>';
       bindTop(); readAloud($('#rtxt'), $('#sy')); $('#nx').onclick = function () { try { speechSynthesis.cancel(); } catch (e) {} L.i++; drawStep(); }; return;
     }

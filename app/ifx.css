@@ -392,3 +392,8 @@ input,textarea,[contenteditable]{caret-color:currentColor}
 .nav a.on i svg{stroke-width:2.1}
 .uring{flex:none;width:54px;height:54px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(#fff var(--p),rgba(255,255,255,.2) 0)}
 .uring b{width:42px;height:42px;border-radius:50%;background:var(--navy);display:grid;place-items:center;font:700 12.5px Inter,sans-serif;color:#fff}
+/* charts in Writing Task 1 lessons (app/charts.js) */
+.chart .cnote{margin:2px 0 0;font-size:11.5px;color:var(--soft);text-align:right}
+.ctable{padding:4px 0 6px;overflow-x:auto}.ctable>b{display:block;text-align:center;font-size:14px;margin-bottom:8px}
+.ctable table{width:100%;border-collapse:collapse;font-size:14px}.ctable th,.ctable td{border:1px solid var(--line);padding:8px 10px;text-align:right}
+.ctable thead th{background:var(--navy);color:#fff;font-weight:700}.ctable th[scope=row]{text-align:left;font-weight:600;background:var(--card)}.ctable thead th:first-child{text-align:left}
