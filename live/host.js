@@ -4,7 +4,7 @@
   var L = window.LIVE, $ = L.$, esc = L.esc, view = $('#view');
   var qsp = new URLSearchParams(location.search);
   var BANKS = null, ROOMS = null, H = null, BUS = null, ST = null, WATCH = null, timers = {};
-  var CFG = Object.assign({ source: 'gen', level: 'B1', focus: 'mix', topic: '', ai: true, bank: 'v-A2', units: [], qtype: 'def', count: '15', mode: 'classic', time: 20, race: 5, teams: 0, custom: '', title: '' }, L.ls.get('live.cfg') || {});
+  var CFG = Object.assign({ source: 'gen', level: 'B1', focus: 'mix', topic: '', ai: true, bank: 'v-A2', units: [], qtype: 'def', count: '15', mode: 'classic', time: 20, race: 5, teams: 0, custom: '', title: '', drive: true }, L.ls.get('live.cfg') || {});
 
   if (qsp.get('bank')) { var pb = qsp.get('bank'); CFG.bank = pb; CFG.source = /^y-/.test(pb) ? 'y' : /^g-/.test(pb) ? 'g' : 'v'; CFG.units = qsp.get('units') ? qsp.get('units').split(',') : []; if (CFG.source === 'y' && ['classic', 'race', 'tug', 'boss', 'balloon', 'kart'].indexOf(CFG.mode) < 0) CFG.mode = 'tug'; }
   function stage(on) { document.body.classList.toggle('light', !on); $('#fs').hidden = !on; $('#back').hidden = !!on; }
@@ -95,6 +95,10 @@
     $('#modehelp').textContent = M.blurb + (M.team ? ' Teams are made automatically if you choose "Everyone for themselves".' : '');
     $('#timebox').innerHTML = race ? '<label class="f">' + (M.team ? 'Time limit' : 'Game length') + '</label><div class="seg" id="tm">' + [3, 5, 8, 10, 15, 20, 30, 45].map(function (m) { return '<button data-v="' + m + '" class="' + (+CFG.race === m ? 'on' : '') + '">' + m + ' min</button>'; }).join('') + '<label class="seg-own" style="display:inline-flex;align-items:center;gap:6px;margin-left:6px">Other <input id="tmown" type="number" min="1" max="120" inputmode="numeric" style="width:70px;padding:8px;border-radius:10px;border:1px solid var(--line,#ccd)" value="' + ([3, 5, 8, 10, 15, 20, 30, 45].indexOf(+CFG.race) < 0 && CFG.race ? CFG.race : '') + '"> min</label></div><p class="small" style="margin:6px 0 0;opacity:.75">You can add time during the game too (+1 / +5 min).</p>'
       : '<label class="f">Time per question</label><div class="seg" id="tm">' + [10, 20, 30, 45, 60, 90, 120].map(function (s) { return '<button data-v="' + s + '" class="' + (+CFG.time === s ? 'on' : '') + '">' + (s >= 90 ? (s / 60) + ' min' : s + ' s') + '</button>'; }).join('') + '</div>';
+    if (CFG.mode === 'race') {   // Race: students can drive their own car between questions
+      $('#timebox').insertAdjacentHTML('beforeend', '<label class="f" style="margin-top:12px">Driving between questions</label><div class="seg" id="drv"><button data-v="1" class="' + (CFG.drive !== false ? 'on' : '') + '">🏎️ On</button><button data-v="0" class="' + (CFG.drive === false ? 'on' : '') + '">Off (questions only)</button></div><p class="small" style="margin:6px 0 0;opacity:.75">On: after each answer the student steers a car on the phone for a few seconds. Right answer = turbo, wrong answer = slow car.</p>');
+      $('#drv').querySelectorAll('button').forEach(function (b) { b.onclick = function () { CFG.drive = b.dataset.v === '1'; $('#drv').querySelectorAll('button').forEach(function (x) { x.classList.toggle('on', x === b); }); }; });
+    }
     $('#tm').querySelectorAll('button').forEach(function (b) { b.onclick = function () { $('#tm').querySelectorAll('button').forEach(function (x) { x.classList.toggle('on', x === b); }); CFG[race ? 'race' : 'time'] = +b.dataset.v; }; });
     var own = $('#tmown'); if (own) own.oninput = function () { var v = Math.round(+own.value); if (v >= 1 && v <= 120) { CFG.race = v; $('#tm').querySelectorAll('button').forEach(function (x) { x.classList.remove('on'); }); } };
   }
@@ -163,7 +167,7 @@
     if (!qs.length) { $('#go').disabled = false; err.textContent = CFG.source === 'custom' ? 'Write at least one question: question | right answer | wrong answer.' : 'No questions found for this choice.'; return; }
     try {
       var r = L.local ? { room: { pin: String(100000 + Math.floor(Math.random() * 899999)), created: Date.now() }, token: null } : await L.api('host', { title: title, mode: CFG.mode });
-      H = { pin: r.room.pin, created: r.room.created, title: title, mode: CFG.mode, time: +CFG.time, race: +CFG.race, teamsN: +CFG.teams, source: CFG.source === 'custom' ? 'My questions' : defaultTitle(),
+      H = { pin: r.room.pin, created: r.room.created, title: title, mode: CFG.mode, drive: CFG.mode === 'race' && CFG.drive !== false, time: +CFG.time, race: +CFG.race, teamsN: +CFG.teams, source: CFG.source === 'custom' ? 'My questions' : defaultTitle(),
         qs: qs, i: -1, phase: 'lobby', players: {}, order: [], ans: {}, qStart: 0, raceEnd: 0, raceId: 0, salt: Math.floor(Math.random() * 1000), feed: [], evn: 0, fzAt: 0, fzEnd: 0 };
       await connect(r.token);
       save(); lobby();
@@ -382,6 +386,7 @@
       s.q = { p: q.p, o: q.o }; s.reveal = { a: q.a, counts: counts, x: q.x || '' }; s.answered = Object.keys(H.ans).length;
     }
     if (H.phase === 'race' || H.phase === 'match') { s.left = Math.max(0, H.raceEnd - Date.now()); s.dur = H.race * 60000; }
+    if (H.drive) s.drive = 1;
     if (L.mode(H.mode).power) {
       s.all = rk.map(function (p) { return [p.pid, p.name, p.score, p.team, H.mode === 'hack' ? (p.pwo || pwOptions(L.PASSWORDS[p.name.length % L.PASSWORDS.length])) : 0]; });
       s.feed = H.feed.slice(-6); if (H.mode === 'hack') s.haspw = rk.filter(function (p) { return p.pw; }).map(function (p) { return p.pid; });
@@ -563,12 +568,9 @@
         var pc = Math.round(s.boss.hp / s.boss.max * 100);
         h += '<div class="bosswrap"><div class="monster' + (pc < 35 ? ' weak' : '') + '">👾</div><div class="bossname">Mumbleclaw the Word Monster</div><div class="hpbar"><i style="width:' + pc + '%"></i><span>' + s.boss.hp + ' / ' + s.boss.max + ' HP</span></div></div>';
         h += '<div class="hitters">' + s.board.slice(0, 8).map(function (p, i) { return '<span>' + (i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '⚔️') + ' ' + esc(p[0]) + ' <b>' + p[1] + '</b></span>'; }).join('') + '</div>';
-      } else if (s.mode === 'kart') {
-        var goal = s.kartGoal || 30, kk = s.board.slice(0, 10);
-        h += '<div class="kart2"><div class="kflag">🏁</div>' + kk.map(function (p, i) { return '<div class="klane"><span class="kn">' + esc(p[0]) + '</span><span class="kcar" style="left:calc(' + Math.min(100, p[1] / goal * 100) + '% * .86);--h:' + (i * 41) + 'deg">🏎️</span><span class="kl">' + p[1] + ' / ' + goal + '</span></div>'; }).join('') + '</div>';
-      } else {
-        var top2 = s.board.slice(0, 10), mx = Math.max(10, top2.length ? top2[0][1] : 10);
-        h += '<div class="sky2">' + top2.map(function (p, i) { return '<div class="bl" style="left:' + (4 + i * 9.5) + '%;bottom:' + (4 + p[1] / mx * 72) + '%;--h:' + (i * 37) + 'deg"><span class="bb">🎈</span><b>' + esc(p[0]) + '</b><small>' + p[1] + ' m</small></div>'; }).join('') + '<div class="clouds">☁️ ☁️ ☁️</div></div>';
+      } else {   // Kart Quest and Balloon Race: the 3D race (live/race3d.js)
+        if (s.mode === 'kart') h += '<p class="mini" style="text-align:center;color:rgba(255,255,255,.75);margin:-4px 0 6px">🏁 First to ' + (s.kartGoal || 30) + ' laps wins</p>';
+        h += '<div class="r3slot" id="r3slot"></div>';
       }
       if (s.feed && s.feed.length) h += '<div class="kidfeed">' + s.feed.slice(-3).reverse().map(function (e) { return '<span>' + esc(e.t) + '</span>'; }).join('') + '</div>';
       h += '</div>';
@@ -605,7 +607,7 @@
     }
     h += '</div>';
     view.innerHTML = h;
-    if (L.Race3D) { var r3 = $('#r3slot'); if (r3) L.Race3D.show(r3, s.board.slice(0, 12).map(function (p, i) { return { id: p[6] || p[0] + '#' + i, name: p[0], score: p[1], color: ROWC[H && H.order && p[6] ? Math.max(0, H.order.indexOf(p[6])) % ROWC.length : i % ROWC.length] }; })); else L.Race3D.stop(); }
+    if (L.Race3D) { var r3 = $('#r3slot'); if (r3) L.Race3D.show(r3, s.board.slice(0, 12).map(function (p, i) { return { id: p[6] || p[0] + '#' + i, name: p[0], score: p[1], color: ROWC[H && H.order && p[6] ? Math.max(0, H.order.indexOf(p[6])) % ROWC.length : i % ROWC.length] }; }), s.mode === 'balloon' ? { kind: 'balloon', per: 2.6, unit: 'm' } : s.mode === 'kart' ? { per: 2.6, unit: 'laps' } : null); else L.Race3D.stop(); }
     if (!host) return;
     var on = function (id, fn) { var el = $('#' + id); if (el) el.onclick = fn; };
     on('begin', begin); on('cancel', function () { if (!L.local) L.api('state', { pin: H.pin, status: 'ended' }).catch(function () {}); H.phase = 'end'; push(true); closeGame(); });

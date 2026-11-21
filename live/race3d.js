@@ -7,7 +7,7 @@
   var cv = null, cx = null, raf = 0, W = 0, H = 0, DPR = 1;
   var cars = {}, order = [];              // id → {name, score, z, x, color, bump}
   var cam = { x: 0, y: 12, z: -14, lx: 0, lz: 20, f: 1 }, shot = { kind: 'wide', id: null, until: 0, i: 0 }, leader = null, cap = '';
-  var t0 = performance.now(), last = t0, road = 0;
+  var t0 = performance.now(), last = t0, road = 0, OPT = { kind: 'car', per: .11, unit: '' };
   var SEQ = [['wide', 7000], ['lead', 5500], ['wide', 5000], ['duel', 5500]];
   var STARS = []; for (var i = 0; i < 70; i++) STARS.push([Math.random(), Math.random() * .42, Math.random() * 1.6 + .4]);
 
@@ -35,7 +35,30 @@
     quad(d, c, f, e, shade(col, 1.18));
     quad(a, b, c, d, shade(col, .86));
   }
+  function balloon(c, rank) {
+    var x = c.x, z = c.z + 1.4, y = 3.2 + Math.sin(performance.now() / 700 + x) * .25 + Math.abs(Math.sin(c.bump * Math.PI)) * .9, col = c.color;
+    var g0 = P(x, .01, z), top = P(x, y + 2.2, z), bk = P(x, y - .9, z); if (!g0 || !top || !bk) return;
+    var r = 1.55 * F / top[2];
+    cx.fillStyle = 'rgba(0,0,0,.3)'; cx.beginPath(); cx.ellipse(g0[0], g0[1], r * .8, r * .22, 0, 0, 7); cx.fill();
+    cx.strokeStyle = 'rgba(255,255,255,.55)'; cx.lineWidth = Math.max(1, r * .03); cx.beginPath(); cx.moveTo(top[0] - r * .55, top[1] + r * .75); cx.lineTo(bk[0] - r * .22, bk[1]); cx.moveTo(top[0] + r * .55, top[1] + r * .75); cx.lineTo(bk[0] + r * .22, bk[1]); cx.stroke();
+    var gr = cx.createRadialGradient(top[0] - r * .35, top[1] - r * .4, r * .1, top[0], top[1], r * 1.1); gr.addColorStop(0, shade(col, 1.6)); gr.addColorStop(.55, col); gr.addColorStop(1, shade(col, .5));
+    cx.fillStyle = gr; cx.beginPath(); cx.moveTo(top[0], top[1] + r * 1.25); cx.bezierCurveTo(top[0] - r * 1.5, top[1] + r * .3, top[0] - r * 1.1, top[1] - r * 1.1, top[0], top[1] - r * 1.1); cx.bezierCurveTo(top[0] + r * 1.1, top[1] - r * 1.1, top[0] + r * 1.5, top[1] + r * .3, top[0], top[1] + r * 1.25); cx.fill();
+    cx.fillStyle = 'rgba(255,255,255,.22)'; cx.beginPath(); cx.ellipse(top[0], top[1], r * .32, r * 1.05, 0, 0, 7); cx.fill();
+    cx.fillStyle = '#8a5a2b'; rr(bk[0] - r * .26, bk[1], r * .52, r * .36, r * .06); cx.fill();
+    if (c.bump > 0) { var fr = r * .45 * c.bump; var fg = cx.createRadialGradient(bk[0], bk[1] - fr * .3, 0, bk[0], bk[1] - fr * .3, fr); fg.addColorStop(0, 'rgba(255,230,140,.95)'); fg.addColorStop(1, 'rgba(255,120,40,0)'); cx.fillStyle = fg; cx.beginPath(); cx.arc(bk[0], bk[1] - fr * .3, fr, 0, 7); cx.fill(); }
+    tag(c, rank, P(x, y + 4.3, z));
+  }
+  function tag(c, rank, tp) {
+    if (!tp) return; var col = c.color;
+    var k = Math.max(.85, Math.min(2.4, 9 / tp[2] * (H / 420))), fs = Math.round(15 * k), txt = (rank + 1) + '  ' + c.name, pts = c.score + (OPT.unit ? ' ' + OPT.unit : '');
+    cx.font = '700 ' + fs + 'px Lato, system-ui, sans-serif'; var tw = cx.measureText(txt).width; cx.font = '800 ' + fs + 'px Lato, system-ui, sans-serif'; var pw = cx.measureText(pts).width;
+    var bw = tw + pw + fs * 2.1, bh = fs * 1.7, bx = tp[0] - bw / 2, by = tp[1] - bh;
+    cx.fillStyle = 'rgba(8,16,40,.86)'; rr(bx, by, bw, bh, bh / 2); cx.fill(); cx.lineWidth = Math.max(1.5, k * 1.6); cx.strokeStyle = rank === 0 ? '#e8c36a' : col; cx.stroke();
+    cx.fillStyle = '#fff'; cx.textBaseline = 'middle'; cx.textAlign = 'left'; cx.font = '700 ' + fs + 'px Lato, system-ui, sans-serif'; cx.fillText(txt, bx + fs * .7, by + bh / 2 + 1);
+    cx.fillStyle = rank === 0 ? '#e8c36a' : '#cfe0ff'; cx.font = '800 ' + fs + 'px Lato, system-ui, sans-serif'; cx.textAlign = 'right'; cx.fillText(pts, bx + bw - fs * .7, by + bh / 2 + 1);
+  }
   function car(c, rank) {
+    if (OPT.kind === 'balloon') return balloon(c, rank);
     var x = c.x, z = c.z, y = .28 + Math.abs(Math.sin(c.bump * Math.PI)) * .5, col = c.color;
     var s = P(x, 0, z + 1.2); if (!s) return;
     // shadow
@@ -51,14 +74,7 @@
     l0 = P(x + .42, y + .3, z - .01); l1 = P(x + .82, y + .3, z - .01); l2 = P(x + .82, y + .44, z - .01); l3 = P(x + .42, y + .44, z - .01); quad(l0, l1, l2, l3, '#ff5a4a');
     // exhaust glow when the car has just scored
     if (c.bump > 0) { var fl = P(x, y + .2, z - .5); if (fl) { var r = Math.max(4, 1.1 * F / fl[2] * c.bump); var gr = cx.createRadialGradient(fl[0], fl[1], 0, fl[0], fl[1], r); gr.addColorStop(0, 'rgba(255,220,120,.95)'); gr.addColorStop(1, 'rgba(255,120,40,0)'); cx.fillStyle = gr; cx.beginPath(); cx.arc(fl[0], fl[1], r, 0, 7); cx.fill(); } }
-    // name tag (always facing the camera)
-    var tp = P(x, y + 1.9, z + 1.4); if (!tp) return;
-    var k = Math.max(.85, Math.min(2.4, 9 / tp[2] * (H / 420))), fs = Math.round(15 * k), txt = (rank + 1) + '  ' + c.name, pts = String(c.score);
-    cx.font = '700 ' + fs + 'px Lato, system-ui, sans-serif'; var tw = cx.measureText(txt).width; cx.font = '800 ' + fs + 'px Lato, system-ui, sans-serif'; var pw = cx.measureText(pts).width;
-    var bw = tw + pw + fs * 2.1, bh = fs * 1.7, bx = tp[0] - bw / 2, by = tp[1] - bh;
-    cx.fillStyle = 'rgba(8,16,40,.86)'; rr(bx, by, bw, bh, bh / 2); cx.fill(); cx.lineWidth = Math.max(1.5, k * 1.6); cx.strokeStyle = rank === 0 ? '#e8c36a' : col; cx.stroke();
-    cx.fillStyle = '#fff'; cx.textBaseline = 'middle'; cx.textAlign = 'left'; cx.font = '700 ' + fs + 'px Lato, system-ui, sans-serif'; cx.fillText(txt, bx + fs * .7, by + bh / 2 + 1);
-    cx.fillStyle = rank === 0 ? '#e8c36a' : '#cfe0ff'; cx.font = '800 ' + fs + 'px Lato, system-ui, sans-serif'; cx.textAlign = 'right'; cx.fillText(pts, bx + bw - fs * .7, by + bh / 2 + 1);
+    tag(c, rank, P(x, y + 1.9, z + 1.4));
   }
   function rr(x, y, w, h, r) { cx.beginPath(); cx.moveTo(x + r, y); cx.arcTo(x + w, y, x + w, y + h, r); cx.arcTo(x + w, y + h, x, y + h, r); cx.arcTo(x, y + h, x, y, r); cx.arcTo(x, y, x + w, y, r); cx.closePath(); }
 
@@ -69,7 +85,7 @@
     if (k === 'lead') { shot.id = ids[0]; cap = '🥇 ' + cars[ids[0]].name + ' is in the lead'; }
     else if (k === 'duel') {
       var best = 1e9, bi = 1; for (var i = 1; i < ids.length; i++) { var g = cars[ids[i - 1]].score - cars[ids[i]].score; if (g < best) { best = g; bi = i; } }
-      shot.id = ids[bi]; cap = best === 0 ? '⚔️ ' + cars[ids[bi - 1]].name + ' and ' + cars[ids[bi]].name + ' are level' : '⚔️ ' + cars[ids[bi]].name + ' is ' + best + ' behind ' + cars[ids[bi - 1]].name;
+      shot.id = ids[bi]; cap = best === 0 ? '⚔️ ' + cars[ids[bi - 1]].name + ' and ' + cars[ids[bi]].name + ' are level' : '⚔️ ' + cars[ids[bi]].name + ' is ' + best + (OPT.unit ? ' ' + OPT.unit : '') + ' behind ' + cars[ids[bi - 1]].name;
     } else cap = '';
     shot.kind = k;
   }
@@ -81,7 +97,7 @@
     var ids = order.filter(function (id) { return cars[id]; }); if (!ids.length) { cx.setTransform(DPR, 0, 0, DPR, 0, 0); cx.clearRect(0, 0, W, H); return; }
     // where every car should be: the leader is 0 behind, others by their gap in points (squeezed when the race is very spread out)
     var mx = -1e9, mn = 1e9; ids.forEach(function (id) { mx = Math.max(mx, cars[id].score); mn = Math.min(mn, cars[id].score); });
-    var span = Math.max(1, mx - mn), k = Math.min(.11, 64 / span);
+    var span = Math.max(1, mx - mn), k = Math.min(OPT.per, 64 / span);
     ids.forEach(function (id) { var c = cars[id], tz = (c.score - mn) * k; c.z += (tz - c.z) * Math.min(1, dt * 2.2); c.bump = Math.max(0, c.bump - dt * 1.4); });
     road += dt * 26;
     var zs = ids.map(function (id) { return cars[id].z; }), zmax = Math.max.apply(null, zs), zmin = Math.min.apply(null, zs), sp = zmax - zmin;
@@ -91,6 +107,7 @@
     if (now > shot.until || (shot.id && !cars[shot.id])) pickShot(now);
     var T = { x: 0, y: 8 + sp * .34, z: zmin - 15 - sp * .32, lx: 0, lz: zmin + sp * .45 + 3, f: 1 };
     if (shot.id && cars[shot.id]) { var c = cars[shot.id], side = (Math.floor(now / 11000) % 2 ? 1 : -1); T = { x: c.x * .5 + side * 2.6, y: 3.1, z: c.z - 7.5, lx: c.x, lz: c.z + (shot.kind === 'duel' ? 7 : 4), f: 1.12 }; }
+    if (OPT.kind === 'balloon') { if (shot.id && cars[shot.id]) { var bc = cars[shot.id]; T = { x: bc.x * .6, y: 6.5, z: bc.z - 15, lx: bc.x, lz: bc.z + 32, f: 1.05 }; } else { T.y += 4; T.z -= 6; T.lz += 10; } }
     var e = Math.min(1, dt * 1.5); ['x', 'y', 'z', 'lx', 'lz', 'f'].forEach(function (q) { cam[q] += (T[q] - cam[q]) * e; });
     aim();
     cx.setTransform(DPR, 0, 0, DPR, 0, 0);
@@ -102,12 +119,13 @@
     var glow = cx.createRadialGradient(W / 2, hy, 0, W / 2, hy, W * .5); glow.addColorStop(0, 'rgba(232,195,106,.30)'); glow.addColorStop(1, 'rgba(232,195,106,0)'); cx.fillStyle = glow; cx.fillRect(0, Math.max(0, hy - H * .3), W, H * .32);
     // road
     var n = ids.length, half = Math.max(6, n * 1.5 + 1.5), z0 = cam.z + 1, z1 = cam.z + 260;
-    quad(P(-half, 0, z0), P(half, 0, z0), P(half, 0, z1), P(-half, 0, z1), '#232a3a');
+    var air = OPT.kind === 'balloon'; if (air) quad(P(-70, 0, z0), P(70, 0, z0), P(70, 0, z1), P(-70, 0, z1), '#12351f');
+    quad(P(-half, 0, z0), P(half, 0, z0), P(half, 0, z1), P(-half, 0, z1), air ? '#184a2a' : '#232a3a');
     quad(P(-half - .5, 0, z0), P(-half, 0, z0), P(-half, 0, z1), P(-half - .5, 0, z1), '#e8c36a'); quad(P(half, 0, z0), P(half + .5, 0, z0), P(half + .5, 0, z1), P(half, 0, z1), '#e8c36a');
     var off = road % 8, zb = Math.floor((cam.z) / 8) * 8 - off;
     for (var z = zb + 248; z > zb; z -= 8) {
       if (z < cam.z + 1.5) continue;
-      for (var li = 1; li < n; li++) { var lx = -n * 1.5 + li * 3; quad(P(lx - .07, .01, z), P(lx + .07, .01, z), P(lx + .07, .01, z + 3.4), P(lx - .07, .01, z + 3.4), 'rgba(255,255,255,.55)'); }
+      for (var li = 1; li < n && !air; li++) { var lx = -n * 1.5 + li * 3; quad(P(lx - .07, .01, z), P(lx + .07, .01, z), P(lx + .07, .01, z + 3.4), P(lx - .07, .01, z + 3.4), 'rgba(255,255,255,.55)'); }
       // road-side lights
       [-1, 1].forEach(function (sd) { var px = sd * (half + 1.6), a = P(px, 0, z), b = P(px, 3.2, z); if (a && b) { cx.strokeStyle = 'rgba(160,180,220,.5)'; cx.lineWidth = Math.max(1, 60 / a[2]); cx.beginPath(); cx.moveTo(a[0], a[1]); cx.lineTo(b[0], b[1]); cx.stroke(); var r = Math.max(1.5, 150 / a[2]); var gl = cx.createRadialGradient(b[0], b[1], 0, b[0], b[1], r * 3); gl.addColorStop(0, 'rgba(255,225,150,.95)'); gl.addColorStop(1, 'rgba(255,225,150,0)'); cx.fillStyle = gl; cx.beginPath(); cx.arc(b[0], b[1], r * 3, 0, 7); cx.fill(); } });
     }
@@ -120,7 +138,8 @@
 
   window.LIVE = window.LIVE || {};
   LIVE.Race3D = {
-    show: function (slot, list) {
+    show: function (slot, list, opt) {
+      OPT = { kind: (opt && opt.kind) || 'car', per: (opt && opt.per) || .11, unit: (opt && opt.unit) || '' };
       if (!cv) { cv = document.createElement('canvas'); cv.className = 'race3d'; cx = cv.getContext('2d'); addEventListener('resize', size); }
       if (cv.parentNode !== slot) { slot.appendChild(cv); size(); }
       var seen = {}, n = list.length;
