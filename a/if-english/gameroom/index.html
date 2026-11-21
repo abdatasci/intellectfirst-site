@@ -1188,6 +1188,8 @@ function chessSetup(){
   <section class="panel"><div class="lab">Players</div><div class="teamin">${CHC.names.map((t,i)=>`<label class="tin"><span class="xo-m ${i?'o':'x'}">${i?'♚':'♔'}</span><input id="cn${i}" value="${esc(t)}" maxlength="24"></label>`).join('')}</div>
   <div class="row"><span class="sublab w">Opponent</span>${[['human','Another player'],['cpu','Computer']].map(([k,l])=>`<button class="btn ${CHC.opp===k?'on':''}" data-copp="${k}">${l}</button>`).join('')}</div>
   ${CHC.opp==='cpu'?`<div class="row"><span class="sublab w">Level</span>${[['easy','Easy'],['medium','Medium'],['hard','Hard']].map(([k,l])=>`<button class="btn ${CHC.level===k?'on':''}" data-clv="${k}">${l}</button>`).join('')}</div><div class="row"><span class="sublab w">You play</span>${[['w','White'],['b','Black']].map(([k,l])=>`<button class="btn ${CHC.side===k?'on':''}" data-cside="${k}">${l}</button>`).join('')}</div>`:''}
+  <div class="row"><span class="sublab w">How to move</span>${[[false,'Move the pieces yourself'],[true,'Answer English questions']].map(([v,l])=>`<button class="btn ${!!CHC.quiz===v?'on':''}" data-cquiz="${v}">${l}</button>`).join('')}</div>
+  ${CHC.quiz?`<p class="lead" style="margin:0 0 8px;font-size:14px">You do not touch the pieces. Answer a question on your turn: a <b>correct</b> answer plays a strong move for you, a <b>wrong</b> answer plays a weak move. / Правильный ответ — сильный ход, неправильный — слабый.</p>`:''}
   <div class="row"><span class="sublab w">Say it in English</span>${[[true,'On'],[false,'Off']].map(([v,l])=>`<button class="btn ${CHC.say===v?'on':''}" data-csay="${v}">${l}</button>`).join('')}</div>
   <div class="row"><span class="sublab w">English level</span>${CHLV.map(([k,l])=>`<button class="btn ${(CHC.lang||'A')===k?'on':''}" data-clang="${k}">${l}</button>`).join('')}</div>
   <p class="lead" style="margin:8px 0 0;font-size:14px">At this level you say, for example: <b>“${CHLV.find(x=>x[0]===(CHC.lang||'A'))[2]}”</b></p></section>
@@ -1195,7 +1197,7 @@ function chessSetup(){
   <div class="row end"><button class="btn gold big" id="cgo">Start</button></div>`;
   app.onclick=e=>{const b=e.target.closest('button');if(!b)return;
     CHC.names=[0,1].map(i=>($('#cn'+i)||{value:CHC.names[i]}).value.trim()||['White','Black'][i]);
-    if(b.dataset.csay!=null)CHC.say=b.dataset.csay==='true';if(b.dataset.copp)CHC.opp=b.dataset.copp;if(b.dataset.clv)CHC.level=b.dataset.clv;if(b.dataset.cside)CHC.side=b.dataset.cside;if(b.dataset.clang)CHC.lang=b.dataset.clang;gs.set('chc',CHC);
+    if(b.dataset.csay!=null)CHC.say=b.dataset.csay==='true';if(b.dataset.copp)CHC.opp=b.dataset.copp;if(b.dataset.clv)CHC.level=b.dataset.clv;if(b.dataset.cside)CHC.side=b.dataset.cside;if(b.dataset.clang)CHC.lang=b.dataset.clang;if(b.dataset.cquiz!=null)CHC.quiz=b.dataset.cquiz==='true';gs.set('chc',CHC);
     if(b.id==='cgo'){b.disabled=true;return chessLoad().then(()=>{chessNew(false)}).catch(()=>{b.disabled=false;alert('Chess could not load. Check the connection and try again.')})}
     rerender(chessSetup)};
 }
@@ -1206,10 +1208,34 @@ function chessNew(flip){
   if(cpu)CH.names[CHC.side==='w'?1:0]='Computer · '+lv;
   chessDraw();chessCpu();
 }
+/* "Answer English questions" (21 Nov 2026): on a person's turn a vocabulary question appears instead of a free move.
+   Correct → the engine plays a strong move for them; wrong → one of the weakest moves. Questions come from the word
+   decks of the chosen English level (A, B or C): four clue words, choose the word they describe. */
+function chessQ(){
+  const L=CHC.lang||'A',all=[];Object.keys(DECKS).forEach(t=>DECKS[t].forEach(x=>{if(x.lv===L)all.push({w:x.w,t:x.t,topic:t})}));
+  const it=all[Math.floor(Math.random()*all.length)],same=shuffle(all.filter(x=>x.topic===it.topic&&x.w!==it.w)).slice(0,3);
+  while(same.length<3){const x=all[Math.floor(Math.random()*all.length)];if(x.w!==it.w&&!same.some(y=>y.w===x.w))same.push(x)}
+  const opts=shuffle([it.w].concat(same.map(x=>x.w)));
+  return {clues:it.t,opts,a:opts.indexOf(it.w)};
+}
+function chessQuizTurn(){
+  if(!CHC.quiz||!CH||CH.g.game_over()||CH.think||(CH.cpu&&CH.g.turn()===CH.cpu))return false;
+  if(!CH.q)CH.q=chessQ();return true;
+}
+function chessAnswer(i){
+  const q=CH.q;if(!q||CH.think)return;const ok=i===q.a,me=CH,who=CH.names[CH.g.turn()==='w'?0:1];
+  CH.q=null;CH.think=true;CH.qres=null;chessDraw();
+  try{CH.ai=CH.ai||new Worker('chess-ai.js?v=2')}catch(e){CH.think=false;return chessDraw()}
+  const t0=Date.now();
+  CH.ai.onmessage=ev=>{const m=ev.data;setTimeout(()=>{if(CH!==me||!m)return;const r=me.g.move({from:m.from,to:m.to,promotion:m.promotion});me.think=false;
+    me.qres=r?{ok,who,word:q.opts[q.a],say:chessSay(r)}:null;me.said=null;chessDraw();chessCpu()},Math.max(0,600-(Date.now()-t0)))};
+  CH.ai.onerror=()=>{me.think=false;chessDraw()};
+  CH.ai.postMessage({fen:CH.g.fen(),level:ok?'hard':'bad'});
+}
 function chessCpu(){
   if(!CH.cpu||CH.g.game_over()||CH.g.turn()!==CH.cpu||CH.think)return;
   CH.think=true;chessDraw();
-  try{CH.ai=CH.ai||new Worker('chess-ai.js')}catch(e){CH.think=false;return chessDraw()}
+  try{CH.ai=CH.ai||new Worker('chess-ai.js?v=2')}catch(e){CH.think=false;return chessDraw()}
   const me=CH,t0=Date.now();
   CH.ai.onmessage=ev=>{const m=ev.data;const wait=Math.max(0,500-(Date.now()-t0));setTimeout(()=>{if(CH!==me||!m)return;const r=me.g.move({from:m.from,to:m.to,promotion:m.promotion});me.think=false;me.said=r?chessSay(r):null;chessDraw()},wait)};
   CH.ai.onerror=()=>{me.think=false;chessDraw()};
@@ -1261,24 +1287,28 @@ function chessDraw(){
   else if(CH.think)status=`<div class="chmv">${esc(name(cur))} is thinking… <span class="spin"></span></div>`;
   else status=`<div class="chmv">${esc(name(cur))} to move${inChk?' · <span style="color:var(--red)">check!</span>':''}</div>`;
   let bar='';if(CH.said&&!CH.think)bar=`<div class="panel"><div class="lab">The computer played</div><div class="row"><div class="chmv" style="font-size:1.8rem">${esc(CH.said)}</div><button class="btn" id="chear">🔊 Hear it</button></div></div>`;
+  const quiz=!over&&chessQuizTurn();
+  if(CH.qres&&!CH.think)bar=`<div class="panel" style="border-left:5px solid ${CH.qres.ok?'var(--green,#4FB386)':'var(--red,#D2654F)'}"><div class="lab">${CH.qres.ok?'✓ Correct':'✗ Wrong'} · ${esc(CH.qres.who)}</div><div class="chmv" style="font-size:1.25rem">${CH.qres.ok?'A strong move for you: ':'The word was <b>'+esc(CH.qres.word)+'</b>. A weak move was played: '}${esc(CH.qres.say)}</div></div>`+bar;
+  if(quiz)bar+=`<div class="panel"><div class="lab">${esc(name(cur))} · answer to move</div><div class="chmv" style="font-size:1.15rem;margin-bottom:8px">Which word is it? <b>${CH.q.clues.map(esc).join(' · ')}</b></div><div class="row" style="flex-wrap:wrap;gap:8px">${CH.q.opts.map((o,i)=>`<button class="btn big" data-qa="${i}">${esc(o)}</button>`).join('')}</div><p class="lead" style="margin:8px 0 0;font-size:13px">Correct = a strong move. Wrong = a weak move.</p></div>`;
   if(CH.promo)bar+=`<div class="panel"><div class="lab">Promote the pawn to…</div><div class="row">${['q','r','b','n'].map(t=>`<button class="btn big" data-promo="${t}">${CHG[t]} ${CHW[t]}</button>`).join('')}</div></div>`;
   else if(CH.pend)bar+=`<div class="panel"><div class="lab">Say it in English</div><div class="chmv" style="font-size:${(CHC.lang||'A')==='A'?'2rem':'1.5rem'}">${esc(chessSay(CH.pend))}</div><div class="acts"><button class="act no" id="cno">✕ Not correct · choose again</button><button class="act ok" id="cok">✓ Said it · play the move</button></div></div>`;
   const log=[];for(let i=0;i<hist.length;i+=2)log.push(`<span>${i/2+1}.</span><span>${esc(hist[i].san)}</span><span>${hist[i+1]?esc(hist[i+1].san):''}</span>`);
   app.innerHTML=`<div class="scores">${[0,1].map(i=>`<div class="sc ${i===cur&&!over?'cur':''}"><span><span class="xo-m ${i?'o':'x'}">${i?'♚':'♔'}</span> ${esc(name(i))}</span><span class="chcap">${cap(i?'w':'b')}</span></div>`).join('')}</div>
   <div class="chg"><div><div class="chb">${cells}</div></div><div style="display:flex;flex-direction:column;gap:12px;min-width:0">${status}${bar}
    ${hist.length?`<section class="panel"><div class="lab">Moves${last?' · last: '+esc(chessSay(last)):''}</div><div class="chlog">${log.join('')}</div></section>`:''}
-   <div class="row" style="flex-wrap:wrap"><button class="btn" id="cflip">⇅ Flip board</button><button class="btn" id="cundo" ${hist.length?'':'disabled'}>↶ Undo</button><button class="btn" id="cnew">New game</button><button class="btn" id="cend">Back to setup</button></div>
+   <div class="row" style="flex-wrap:wrap"><button class="btn" id="cflip">⇅ Flip board</button><button class="btn" id="cundo" ${hist.length&&!CHC.quiz?'':'disabled'}>↶ Undo</button><button class="btn" id="cnew">New game</button><button class="btn" id="cend">Back to setup</button></div>
    <section class="panel"><div class="lab">Chess words · шахматные слова</div><div class="row" style="flex-wrap:wrap;gap:6px">${((CHC.lang||'A')==='A'?CHV.slice(0,12):CHC.lang==='B'?CHV_B:CHV_C).map(([e,r])=>`<span class="btn" style="cursor:default;padding:5px 10px;font-size:.85rem"><b>${e}</b> · ${r}</span>`).join('')}</div></section></div></div>`;
   app.onclick=e=>{const b=e.target.closest('button');if(!b)return;
+    if(b.dataset.qa!=null)return chessAnswer(+b.dataset.qa);
     if(b.id==='cok'){return chessDo(CH.pend)}
     if(b.id==='cno'){CH.pend=null;CH.sel=null;return chessDraw()}
     if(b.dataset.promo){const m=CH.promo.find(x=>x.promotion===b.dataset.promo);return CHC.say?(CH.promo=null,CH.pend=m,chessDraw()):chessDo(m)}
     if(b.id==='cflip'){CH.flip=!CH.flip;return chessDraw()}
     if(b.id==='chear')return chessSpeak(CH.said);
-    if(b.id==='cundo'){if(CH.think)return;g.undo();if(CH.cpu&&g.turn()===CH.cpu&&g.history().length)g.undo();CH.said=null;CH.sel=null;CH.pend=null;CH.promo=null;return chessDraw()}
+    if(b.id==='cundo'){if(CH.think||CHC.quiz)return;g.undo();if(CH.cpu&&g.turn()===CH.cpu&&g.history().length)g.undo();CH.said=null;CH.sel=null;CH.pend=null;CH.promo=null;return chessDraw()}
     if(b.id==='cnew')return chessNew(CH.flip);
     if(b.id==='cend')return chessSetup();
-    const sq=b.dataset.sq;if(!sq||over||CH.pend||CH.promo||CH.think||(CH.cpu&&turn===CH.cpu))return;
+    const sq=b.dataset.sq;if(!sq||over||CHC.quiz||CH.pend||CH.promo||CH.think||(CH.cpu&&turn===CH.cpu))return;
     const mv=legal.filter(m=>m.to===sq);
     if(mv.length){if(mv.length>1&&mv[0].promotion){CH.promo=mv;return chessDraw()}
       if(CHC.say){CH.pend=mv[0];return chessDraw()}return chessDo(mv[0])}

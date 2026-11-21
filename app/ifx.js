@@ -65,10 +65,16 @@
   var _unlocked = unlocked; unlocked = function (ui, cid) { var c = BY[cid]; if (c && c.ef) { var u = c.units[ui]; if (!u) return false; if (EF[cid] && EF[cid].at) return !!EF[cid].open[u.id]; return ui < (access().signed ? 2 : FREE_UNITS) || !!access().member; } return _unlocked(ui, cid); };   // before the server's list has loaded (Grammar, Vocabulary and search pages): the same rule the server applies
   /* Free taster without an account: the first unit of every course (above), the placement test and these.
      Everything else asks visitors to create a free account (which also starts the full-access trial). */
-  var FREE_IDS = { 'voc-a1': 1, 'voc-b1': 1, 'voc-ket': 1, 'skill-games': 1, 'live': 1, 'if-kart': 1, 'kids-quest': 1, 'bq-kids': 1, 'g-skill': 1, 'placement': 1, 'ielts-centre': 1, 'timetable': 1 };
+  /* Director's rule, 21 Nov 2026: outsiders need a guest pass (QR or code, 3 days) or an account for every game.
+     Only joining a class game with a PIN (IF Live) stays open, because students join it in class. */
+  var FREE_IDS = { 'voc-a1': 1, 'voc-b1': 1, 'voc-ket': 1, 'live': 1, 'placement': 1, 'ielts-centre': 1, 'timetable': 1 };
+  /* Guest pass (pass/pass.js saves it on this device): opens every game, with no daily limit, until it ends. */
+  function passInfo() { try { var p = JSON.parse(localStorage.getItem('if.pass')); return p && p.until && Date.parse(p.until) > Date.now() ? p : null; } catch (e) { return null; } }
+  var isGame = function (it) { return !!it && (it.s === 'games' || it.s === 'archive' || it.s === 'grammar' && !!it.href); };
+  (function () { var p = passInfo(); if (!p || !p.code) return; fetch('/api/pass/' + encodeURIComponent(p.code)).then(function (r) { if (r.status === 404) return { left: 0 }; return r.ok ? r.json() : null; }).then(function (d) { if (!d) return; try { if (!d.left) localStorage.removeItem('if.pass'); else localStorage.setItem('if.pass', JSON.stringify({ code: p.code, until: d.until, level: d.level })); } catch (e) {} }).catch(function () {}); })();
   var isFree = function (it) { return !!(it && FREE_IDS[it.id]); };
   var LEVEL_WALL = false;
-  var canOpen = function (it) { if (LEVEL_WALL && S.cls && !fullView() && !fits(it) && it.s !== 'more') return false; return isFree(it) || access().signed; };
+  var canOpen = function (it) { if (LEVEL_WALL && S.cls && !fullView() && !fits(it) && it.s !== 'more') return false; return isFree(it) || access().signed || (isGame(it) && !!passInfo()); };
   /* Where a locked unit sends you. Someone who is not signed in is told to sign in (an IF Academy student on a new device
      saw "Full access" and the price page, though signing in opens everything for them); a signed-in free account sees the plans. */
   function lockTo() {
@@ -104,13 +110,14 @@
   function gamesToday() { var g; try { g = JSON.parse(localStorage.getItem(GKEY)); } catch (e) {} return g && g.d === day() ? g : { d: day(), ids: [] }; }
   function gameLeft() { return Math.max(0, GAME_LIMIT - gamesToday().ids.length); }
   function useGame(it) {   // true if this game may open now
-    if (!counted(it) || access().member) return true;
+    if (!counted(it) || access().member || passInfo()) return true;
     var g = gamesToday(); if (g.ids.indexOf(it.id) >= 0) return true;
     if (g.ids.length >= GAME_LIMIT) return false;
     g.ids.push(it.id); try { localStorage.setItem(GKEY, JSON.stringify(g)); } catch (e) {}
     return true;
   }
   function gamesChip(sec) {
+    if (passInfo() && !access().member && sec === 'games') { var pd = Math.ceil((Date.parse(passInfo().until) - Date.now()) / 3600e3); return '<div class="gleft">🎟 Guest pass: every game is open · ' + (pd > 48 ? Math.ceil(pd / 24) + ' days' : pd + ' hours') + ' left</div>'; }
     if (!meLoaded || access().member || (sec !== 'games' && sec !== 'grammar')) return '';
     var n = gameLeft();
     return '<div class="gleft' + (n ? '' : ' none') + '">🎮 ' + (n ? n + ' of ' + GAME_LIMIT + ' free games left today' : 'No free games left today — come back tomorrow') + ' · <a href="/me/#/upgrade">Unlimited with full access</a></div>';
@@ -804,7 +811,7 @@
   function goalBar() { if (S.cls) return '<div class="goalbar">' + (S.own ? '🎚' : '🏫') + ' <span>' + (S.own ? 'Your level' : 'Your class') + ': <b>' + esc(mine().map(function (k) { return SNAME[k]; }).join(' · ')) + '</b></span>' + addOnHTML() + (ME && ME.student ? '<a href="#/level">Change level & materials</a>' : '') + '</div>'; return '<div class="goalbar">🎯 <span>For your goals: <b>' + esc(mine().map(function (k) { return SNAME[k]; }).join(' · ')) + '</b></span>' + addOnHTML() + '<a href="#/onboard">Change goals</a></div>'; }
   function secCount(k) { if (k === 'ielts') return mine().indexOf('ielts') >= 0 ? 1 : 0; var n = IFX_DIR.filter(function (x) { return x.s === k && fits(x); }).length; if (k === 'grammar' || k === 'vocab') n += lessonsOf([k === 'grammar' ? 'grammar' : 'vocab']).filter(function (x) { return myCourses().indexOf(x.c) >= 0; }).length; return n; }
   function focusNav() { if (APP) return; var full = fullView(); $$('a[data-k]').forEach(function (a) { var k = a.dataset && a.dataset.k; if (!k || ['grammar', 'games', 'tests', 'ielts'].indexOf(k) < 0) return; a.style.display = full || secCount(k) ? '' : 'none'; }); }
-  function fits(it) { var m = mine(); if (!m.length || S.teacher) return true;
+  function fits(it) { var m = mine(); if (!m.length || S.teacher || it.all) return true;   // all: for every learner, whatever the class or level (chess)
     if (S.cls && it.id === 'placement') return false;   // already placed in a class
     if (S.cls && (it.s === 'tests' || it.s === 'vocab')) {   // class tests and vocabulary: exactly their book / Cambridge level
       var own = { 'book:teens-b1': ['teens-b1', 'voc-tb1'], 'book:teens-b2': ['teens-b2', 'voc-tb2'], 'yl:starters': ['starters-t', 'voc-starters'], 'yl:movers': ['movers-t', 'voc-movers'], 'yl:flyers': ['flyers-t', 'voc-flyers'] };
@@ -1435,7 +1442,8 @@
       if (S.cls && access().signed) { view().innerHTML = '<div class="join"><span class="ic">🏫</span><h2>' + esc(it.t) + '</h2><p>This isn\'t part of your class. You can open everything for your class and level: ' + esc(mine().map(function (k) { return SNAME[k]; }).join(', ')) + '.</p><div class="row" style="justify-content:center"><a class="btn gold" href="#/">Back to my class</a></div></div>'; return; }
       view().innerHTML = '<div class="join"><span class="ic">' + it.icon + '</span><h2>' + esc(it.t) + '</h2><p>This is part of the full IF App. Create a free account (it takes a minute) to open it — you also get the first two units of every course and 7 days of full access.</p>' +
         '<div class="row" style="justify-content:center;gap:10px;flex-wrap:wrap"><a class="btn gold" href="' + JOIN + '">Create a free account</a><a class="btn ghost" href="/me/#/login?next=' + encodeURIComponent('/app/#/play/' + it.id) + '">Sign in</a></div>' +
-        '<p class="note">Free without an account: the first unit of every course, the placement test, IF Live, IF Kart, Kids Quest, IF Skill Games, the IELTS Centre and three vocabulary courses.</p>' +
+        '<p class="note">🎟 Have a guest pass from IF Academy? <a href="/pass/">Scan your QR code again or type your code</a>: every game opens for 3 days.</p>' +
+        '<p class="note">Free without an account: the first unit of every course, the placement test, joining a class game (IF Live), the IELTS Centre and three vocabulary courses.</p>' +
         '<a class="chip" href="#/' + (SEC[it.s] ? it.s : 'more') + '">← Back</a></div>';
       return;
     }
