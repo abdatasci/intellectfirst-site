@@ -2,24 +2,25 @@
 <title>IELTS Speaking Lab</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,500;6..72,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caladea:wght@400;700&family=Carlito:wght@400;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
 <style>
 /* Layout: indigo masthead band with mode switch, then a two-column studio — topic rail left, active drill right; stacks on phones. */
 :root{
-  --ink:#1C1640; --indigo:#2E2469; --ice:#EDEAF9; --coral:#E8573A; --coral-soft:#FFE6DF;
-  --bg:#F7F6FC; --surface:#FFFFFF; --fg:#1E1A33; --muted:#5F5A7A; --line:#DCD8EE;
+  /* IF navy and gold, the same palette as the IELTS Studio, which now shows this page as its Speaking tab (21 Nov 2026) */
+  --ink:#0B2250; --indigo:#0B2250; --ice:#E9EEF7; --coral:#8A6410; --coral-soft:#FBF1D9;
+  --bg:#F5F7FB; --surface:#FFFFFF; --fg:#0F1B33; --muted:#55607A; --line:#D7DEEA; --btn:#0B2250; --btn-fg:#FFFFFF;
   --ok:#1F8A5B; --ok-soft:#DDF3E8; --warn:#B7791F;
-  --band-fg:#FFFFFF; --band-muted:#BEB7EA;
-  --f-display:"Newsreader", Georgia, "Times New Roman", serif;
-  --f-body:"IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --band-fg:#FFFFFF; --band-muted:#B9C6E2;
+  --f-display:Cambria, "Caladea", Georgia, "Times New Roman", serif;
+  --f-body:Calibri, "Carlito", "Segoe UI", system-ui, -apple-system, sans-serif;
   --f-mono:"IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --bg:#13102A; --surface:#1D1940; --fg:#ECEAF8; --muted:#A9A3CC; --line:#332D63; --ice:#262058;
-  --coral:#FF7A5C; --coral-soft:#3B2233; --ok:#4CC28C; --ok-soft:#183A2D; --warn:#E3A74A; --indigo:#2A2163; color-scheme:dark}}
+  --bg:#09122A; --surface:#101C38; --fg:#E8EDF7; --muted:#9FB0CF; --line:#22325A; --ice:#16264A;
+  --coral:#E0B25A; --coral-soft:#33290F; --ok:#4CC28C; --ok-soft:#183A2D; --warn:#E3A74A; --indigo:#0E1F47; --btn:#E0B25A; --btn-fg:#0B1630; color-scheme:dark}}
 :root[data-theme="dark"]{
-  --bg:#13102A; --surface:#1D1940; --fg:#ECEAF8; --muted:#A9A3CC; --line:#332D63; --ice:#262058;
-  --coral:#FF7A5C; --coral-soft:#3B2233; --ok:#4CC28C; --ok-soft:#183A2D; --warn:#E3A74A; --indigo:#2A2163; color-scheme:dark}
+  --bg:#09122A; --surface:#101C38; --fg:#E8EDF7; --muted:#9FB0CF; --line:#22325A; --ice:#16264A;
+  --coral:#E0B25A; --coral-soft:#33290F; --ok:#4CC28C; --ok-soft:#183A2D; --warn:#E3A74A; --indigo:#0E1F47; --btn:#E0B25A; --btn-fg:#0B1630; color-scheme:dark}
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15px;line-height:1.55}
 .wrap{max-width:1180px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
@@ -29,7 +30,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px soli
 .band .wrap{padding-block:28px 0}
 .eyebrow{font-family:var(--f-mono);font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--band-muted)}
 h1{font-family:var(--f-display);font-weight:700;font-size:clamp(30px,5vw,46px);line-height:1.05;margin:6px 0 8px;text-wrap:balance}
-h1 em{font-style:italic;color:#FF8F75;font-weight:500}
+h1 em{font-style:italic;color:#E0B25A;font-weight:500}
 .lede{max-width:62ch;color:var(--band-muted);margin:0 0 20px}
 .stats{display:flex;flex-wrap:wrap;gap:22px;margin-bottom:22px}
 .stat b{display:block;font-family:var(--f-mono);font-size:22px;font-variant-numeric:tabular-nums;color:#fff}
@@ -58,8 +59,8 @@ main.wrap{padding-block:26px 60px}
 .part[aria-selected="true"]{background:var(--indigo);border-color:var(--indigo);color:#fff}
 .frame{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;background:var(--ice);border-radius:10px;padding:10px 14px;font-size:13.5px;margin-bottom:18px}
 .frame b{font-family:var(--f-mono);letter-spacing:.06em;color:var(--indigo)}
-:root[data-theme="dark"] .frame b{color:#C9C1FF}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .frame b{color:#C9C1FF}}
+:root[data-theme="dark"] .frame b{color:#B9CBEE}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .frame b{color:#B9CBEE}}
 .frame span{color:var(--muted)}
 .stage{display:grid;grid-template-columns:minmax(0,1fr) 190px;gap:22px;align-items:start}
 @media (max-width:640px){.stage{grid-template-columns:1fr}}
@@ -82,13 +83,13 @@ main.wrap{padding-block:26px 60px}
 .ring .track{stroke:var(--line)}
 .ring .arc{stroke:var(--coral);transition:stroke-dashoffset .25s linear}
 .ring .arc.prep{stroke:var(--indigo)}
-:root[data-theme="dark"] .ring .arc.prep{stroke:#9C8FFF}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .ring .arc.prep{stroke:#9C8FFF}}
+:root[data-theme="dark"] .ring .arc.prep{stroke:#7FA3E0}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .ring .arc.prep{stroke:#7FA3E0}}
 .ring .num{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--f-mono);font-size:30px;font-weight:600;font-variant-numeric:tabular-nums}
 .tlabel{font-family:var(--f-mono);font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);text-align:center}
 .btns{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
 .btn{border:1px solid var(--line);background:var(--surface);color:var(--fg);padding:8px 14px;border-radius:8px;font-weight:500;font-size:14px}
-.btn.primary{background:var(--coral);border-color:var(--coral);color:#fff}
+.btn.primary{background:var(--btn);border-color:var(--btn);color:var(--btn-fg)}
 .btn.dark{background:var(--indigo);border-color:var(--indigo);color:#fff}
 .btn:disabled{opacity:.45;cursor:default}
 .vocab{margin-top:6px}

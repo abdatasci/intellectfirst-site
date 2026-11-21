@@ -387,3 +387,8 @@ input,textarea,[contenteditable]{caret-color:currentColor}
 .path.map .node.rt .go{align-self:flex-end}
 .path.map .node .go svg{width:13px;height:13px;fill:#F3D98B}
 @media (prefers-color-scheme:dark){:root:not([data-theme=light]) .path.map .node.done .t em{color:#9DB7E6}:root:not([data-theme=light]) .path.map .node.next .t em{color:#E3C15A}:root:not([data-theme=light]) .path.map svg.p3line .dn{stroke:#5E86C8}:root:not([data-theme=light]) .path.map svg.p3line .td{stroke:#3A4A66}}
+/* menu line icons and the unit progress ring (21 Nov 2026) */
+.nav a i svg{width:23px;height:23px;display:block;margin:0 auto;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.nav a.on i svg{stroke-width:2.1}
+.uring{flex:none;width:54px;height:54px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(#fff var(--p),rgba(255,255,255,.2) 0)}
+.uring b{width:42px;height:42px;border-radius:50%;background:var(--navy);display:grid;place-items:center;font:700 12.5px Inter,sans-serif;color:#fff}
