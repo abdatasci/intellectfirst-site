@@ -332,12 +332,13 @@
       var cov = e.mode === 'staff' && e.classes.length ? '<div class="cover">' + e.classes.map(function (k) { var on = k.covered.indexOf(u.id) >= 0; return '<label class="chip' + (on ? ' on' : '') + '"><input type="checkbox" data-cover="' + esc(k.id) + '" data-unit="' + esc(u.id) + '"' + (on ? ' checked' : '') + '> Covered · ' + esc(k.label) + '</label>'; }).join('') + '</div>' : '';
       html += '<section class="unit' + (open ? '' : ' unit-locked') + '"><div class="unit-h"><div style="flex:1"><small>' + (u.test ? '📝 Mock test' : u.extra ? '🗣️ Speaking words' : u.label ? esc(u.label) : esc(t('unit')) + ' ' + esc(u.id)) + (u.g ? ' · ' + esc(u.g) : '') + (e.mode === 'class' && (e.covered || []).indexOf(u.id) >= 0 ? ' · ✅ covered in class' : '') + '</small><h3>' + esc(u.title) + '</h3>' + (open ? '<ul class="objs">' + u.obj.map(function (o) { return '<li>🎯 ' + esc(o) + '</li>'; }).join('') + '</ul>' : '') + cov + '</div>' +
         (open ? '' : e.mode === 'class' ? '<span class="btn sm gold" style="cursor:default">🔒 Not covered in class yet</span>' : '<a class="btn sm gold" href="/me/#/upgrade">🔒 ' + esc(t('locked')) + '</a>') + '</div>' +
-        (open ? '<div class="path">' + u.lessons.map(function (l) {
+        (open ? IFXPath.html(u.lessons.map(function (l) {
           var done = isDone(c.id, u.id, l.id), isNext = nx && nx.u.id === u.id && nx.l.id === l.id;
-          return '<a class="node' + (done ? ' done' : '') + (isNext ? ' next' : '') + '" style="--c:' + COLORS[l.type] + '" href="#/lesson/' + c.id + '/' + u.id + '/' + l.id + '"><span class="b">' + ICONS[l.type] + '</span><span>' + esc(l.title) + '</span><em>' + esc(TYPE[l.type]) + (done ? ' · ' + S.done[key3(c.id, u.id, l.id)].score + '%' : '') + '</em></a>';
-        }).join('') + '</div>' : '') + '</section>';
+          return { href: '#/lesson/' + c.id + '/' + u.id + '/' + l.id, title: l.title, type: l.type, state: done ? 'done' : isNext ? 'next' : 'todo', sub: TYPE[l.type] + (done ? ' · ' + S.done[key3(c.id, u.id, l.id)].score + '%' : '') };
+        }), t('cont')) : '') + '</section>';
     });
     view().innerHTML = html;
+    IFXPath.draw(view());
     $$('[data-cover]').forEach(function (b) {
       b.onchange = function () {
         b.disabled = true;
@@ -430,7 +431,7 @@
     }
     var V = { t0: Date.now(), n: 0, ok: 0 }, v = view(), mName = (VMODES.filter(function (m) { return m[0] === mode; })[0] || VMODES[0])[2], label = mName + ' · ' + u.title;
     var three = function (x) { return shuffle([x].concat(shuffle(ws.filter(function (y) { return y !== x && y.d !== x.d; })).slice(0, 3))); };
-    var blank = function (w) { if (!w.e) return ''; var re = new RegExp(w.w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\w*', 'i'); return re.test(w.e) ? w.e.replace(re, '_____') : ''; };
+    var blank = function (w) { return gapOf(w.w, w.e); };
     var ruLine = function (w) { return w.ru ? (ruC(c) ? ruChip(w.ru + (w.rd ? '\n' + w.rd : '')) : '<p class="ve" style="text-align:center">🇷🇺 ' + esc(w.ru) + '</p>') : ''; };
     var end = function (title, line, score) {
       var secs = Math.round((Date.now() - V.t0) / 1000); addXP(5 + Math.round((score == null ? 100 : score) / 25)); save(); actEvent('vocab', key + '/' + mode, mName + ': ' + u.title, score == null ? null : score, secs);
@@ -929,14 +930,15 @@
     if (sd) html += '<div class="std"><div class="std-l"><b>' + esc(sd.level) + '</b><span>Standard</span></div><div class="grow"><p class="std-ref">📐 Referenced to the ' + esc(sd.ref) + '</p><p>' + esc(sd.desc) + '</p><div class="std-m">' + sd.modes.map(function (m) { return '<span>' + esc(m) + '</span>'; }).join('') + '</div></div></div>';
     c.units.forEach(function (u, ui) {
       var open = unlocked(ui, c.id), waitC = !open && ui === 1 && GATE && (GATE.done[c.id] || 0) < GATE.total;
-      html += '<section class="unit"><div class="unit-h">' + DOODLE(c.id, u.id, 'doodle uh') + '<div style="flex:1"><small>' + esc(t('unit')) + ' ' + (ui + 1) + ' · ' + esc(u.topic) + '</small><h3>' + esc(u.title) + '</h3>' + (window.IFStd && IFStd.unit(c.id, u.id) ? '<p class="cando">🎯 ' + esc(IFStd.unit(c.id, u.id)) + '</p>' : '') + '</div>' + (open ? '' : waitC ? '<span class="btn sm gold" style="cursor:default">🔒 Opens when your class finishes Unit 1 (' + (GATE.done[c.id] || 0) + ' of ' + GATE.total + ')</span>' : '<a class="btn sm gold" href="/me/#/upgrade">🔒 ' + esc(t('locked')) + '</a>') + '</div><div class="path">' +
-        u.lessons.map(function (l) {
+      html += '<section class="unit"><div class="unit-h">' + DOODLE(c.id, u.id, 'doodle uh') + '<div style="flex:1"><small>' + esc(t('unit')) + ' ' + (ui + 1) + ' · ' + esc(u.topic) + '</small><h3>' + esc(u.title) + '</h3>' + (window.IFStd && IFStd.unit(c.id, u.id) ? '<p class="cando">🎯 ' + esc(IFStd.unit(c.id, u.id)) + '</p>' : '') + '</div>' + (open ? '' : waitC ? '<span class="btn sm gold" style="cursor:default">🔒 Opens when your class finishes Unit 1 (' + (GATE.done[c.id] || 0) + ' of ' + GATE.total + ')</span>' : '<a class="btn sm gold" href="/me/#/upgrade">🔒 ' + esc(t('locked')) + '</a>') + '</div>' +
+        IFXPath.html(u.lessons.map(function (l) {
           var done = isDone(c.id, u.id, l.id), isNext = nx && nx.u.id === u.id && nx.l.id === l.id;
-          return '<a class="node' + (done ? ' done' : '') + (isNext ? ' next' : '') + (open ? '' : ' locked') + '" style="--c:' + COLORS[l.type] + '" href="' + (open ? '#/lesson/' + c.id + '/' + u.id + '/' + l.id : waitC ? '#/course/' + c.id : '/me/#/upgrade') + '"><span class="b">' + (open ? ICONS[l.type] : '🔒') + '</span><span>' + esc(l.title) + '</span><em>' + esc(TYPE[l.type]) + (done ? ' · ' + S.done[key3(c.id, u.id, l.id)].score + '%' : '') + '</em></a>';
-        }).join('') + '</div></section>';
+          return { href: open ? '#/lesson/' + c.id + '/' + u.id + '/' + l.id : waitC ? '#/course/' + c.id : '/me/#/upgrade', title: l.title, type: l.type, state: !open ? 'locked' : done ? 'done' : isNext ? 'next' : 'todo', sub: TYPE[l.type] + (done ? ' · ' + S.done[key3(c.id, u.id, l.id)].score + '%' : '') };
+        }), t('cont')) + '</section>';
     });
     if (a.teacher) html += '<p style="text-align:center;color:var(--soft)">👩‍🏫 Teacher: open a lesson and press <b>Teach mode</b> to show it on the projector.</p>';
     view().innerHTML = html;
+    IFXPath.draw(view());
   }
 
   /* ---------- lesson player ---------- */
@@ -1008,11 +1010,34 @@
     out.push({ k: 'ex', e: { t: 'match', p: shuffle(words).slice(0, 4).map(function (x) { return [x.w, x.ru || x.d]; }) } });
     return out;
   }
+  /* Gap for a word in its example sentence. Handles phrases whose words change form ("remain stable" in "remained stable")
+     and never cuts inside another word. Returns '' when no clean gap can be made (irregular forms), so the caller asks about
+     the meaning instead of showing the sentence with the answer still in it. */
+  function gapOf(w, e) {
+    if (!w || !e) return '';
+    var rx = function (t) { return t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); };
+    var stem = function (t) { t = rx(t); return t.length > 3 ? t.replace(/(e|y)$/i, '') : t; };
+    var parts = String(w).replace(/\(.*?\)/g, '').replace(/\b(sb|sth|someone|something|somebody|one's|your)\b/gi, ' ').trim().split(/\s+/).filter(Boolean);
+    while (parts.length > 1 && /^(to|a|an|the|be)$/i.test(parts[0])) parts.shift();
+    parts = parts.filter(function (x, i) { return i === 0 || !/^(a|an|the)$/i.test(x); });
+    if (!parts.length) return '';
+    var re;
+    try { re = new RegExp('(^|[^A-Za-z])(' + parts.map(function (x) { return stem(x) + "[A-Za-z']*"; }).join("(?:[\\s-]+(?:[A-Za-z']+[\\s-]+){0,2}?)") + ')', 'i'); } catch (err) { return ''; }
+    if (!re.test(e)) return '';
+    var out = e.replace(re, function (a, b) { return b + '_____'; });
+    var head = parts.reduce(function (a, b) { return b.length > a.length ? b : a; }, '');
+    if (head.length > 3 && new RegExp('(^|[^A-Za-z])' + stem(head), 'i').test(out)) return '';
+    return out;
+  }
   function vocabEx(words) {
     if (words[0] && words[0].pic) return kidsEx(words);
     var w = shuffle(words), out = [];
     w.slice(0, 4).forEach(function (x) { var o = shuffle([x].concat(shuffle(words.filter(function (y) { return y !== x; })).slice(0, 2))); out.push({ k: 'ex', e: { t: 'mc', q: 'What does “' + x.w + '” mean?', o: o.map(function (y) { return y.d; }), a: o.indexOf(x), say: x.w } }); });
-    w.slice(4, 8).forEach(function (x) { if (!x.e) { var o2 = shuffle([x].concat(shuffle(words.filter(function (y) { return y !== x; })).slice(0, 2))); out.push({ k: 'ex', e: { t: 'mc', q: 'Which word or phrase means: “' + x.d + '”?', o: o2.map(function (y) { return y.w; }), a: o2.indexOf(x), say: x.w } }); return; } var re = new RegExp(x.w.split(' ')[0].replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\w*', 'i'); var m = x.e.match(re); if (!m) return; var o = shuffle([x].concat(shuffle(words.filter(function (y) { return y !== x; })).slice(0, 2))); out.push({ k: 'ex', e: { t: 'mc', q: x.e.replace(x.w.split(' ').length > 1 ? new RegExp(x.w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\w*', 'i') : re, '_____'), o: o.map(function (y) { return y.w; }), a: o.indexOf(x), why: x.e } }); });
+    w.slice(4, 8).forEach(function (x) {
+      var o = shuffle([x].concat(shuffle(words.filter(function (y) { return y !== x; })).slice(0, 2))), g = gapOf(x.w, x.e);
+      if (g) out.push({ k: 'ex', e: { t: 'mc', q: g, o: o.map(function (y) { return y.w; }), a: o.indexOf(x), why: x.e } });
+      else out.push({ k: 'ex', e: { t: 'mc', q: 'Which word or phrase means: “' + x.d + '”?', o: o.map(function (y) { return y.w; }), a: o.indexOf(x), say: x.w, why: x.e || '' } });
+    });
     out.push({ k: 'ex', e: { t: 'match', p: shuffle(words).slice(0, 4).map(function (x) { return [x.w, x.ru || x.d]; }) } });
     return out;
   }
