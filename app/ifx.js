@@ -65,7 +65,7 @@
   var _unlocked = unlocked; unlocked = function (ui, cid) { var c = BY[cid]; if (c && c.ef) { var u = c.units[ui]; if (!u) return false; if (EF[cid] && EF[cid].at) return !!EF[cid].open[u.id]; return ui < (access().signed ? 2 : FREE_UNITS) || !!access().member; } return _unlocked(ui, cid); };   // before the server's list has loaded (Grammar, Vocabulary and search pages): the same rule the server applies
   /* Free taster without an account: the first unit of every course (above), the placement test and these.
      Everything else asks visitors to create a free account (which also starts the full-access trial). */
-  var FREE_IDS = { 'voc-a1': 1, 'voc-b1': 1, 'voc-ket': 1, 'skill-games': 1, 'live': 1, 'if-kart': 1, 'kids-quest': 1, 'bq-kids': 1, 'g-skill': 1, 'placement': 1, 'ielts-centre': 1, 'timetable': 1 };
+  var FREE_IDS = { 'voc-a1': 1, 'voc-b1': 1, 'voc-ket': 1, 'skill-games': 1, 'live': 1, 'if-kart': 1, 'kids-quest': 1, 'bq-kids': 1, 'g-skill': 1, 'placement': 1, 'ielts-centre': 1, 'timetable': 1, 'chess': 1 };
   var isFree = function (it) { return !!(it && FREE_IDS[it.id]); };
   var LEVEL_WALL = false;
   var canOpen = function (it) { if (LEVEL_WALL && S.cls && !fullView() && !fits(it) && it.s !== 'more') return false; return isFree(it) || access().signed; };
@@ -804,7 +804,7 @@
   function goalBar() { if (S.cls) return '<div class="goalbar">' + (S.own ? '🎚' : '🏫') + ' <span>' + (S.own ? 'Your level' : 'Your class') + ': <b>' + esc(mine().map(function (k) { return SNAME[k]; }).join(' · ')) + '</b></span>' + addOnHTML() + (ME && ME.student ? '<a href="#/level">Change level & materials</a>' : '') + '</div>'; return '<div class="goalbar">🎯 <span>For your goals: <b>' + esc(mine().map(function (k) { return SNAME[k]; }).join(' · ')) + '</b></span>' + addOnHTML() + '<a href="#/onboard">Change goals</a></div>'; }
   function secCount(k) { if (k === 'ielts') return mine().indexOf('ielts') >= 0 ? 1 : 0; var n = IFX_DIR.filter(function (x) { return x.s === k && fits(x); }).length; if (k === 'grammar' || k === 'vocab') n += lessonsOf([k === 'grammar' ? 'grammar' : 'vocab']).filter(function (x) { return myCourses().indexOf(x.c) >= 0; }).length; return n; }
   function focusNav() { if (APP) return; var full = fullView(); $$('a[data-k]').forEach(function (a) { var k = a.dataset && a.dataset.k; if (!k || ['grammar', 'games', 'tests', 'ielts'].indexOf(k) < 0) return; a.style.display = full || secCount(k) ? '' : 'none'; }); }
-  function fits(it) { var m = mine(); if (!m.length || S.teacher) return true;
+  function fits(it) { var m = mine(); if (!m.length || S.teacher || it.all) return true;   // all: for every learner, whatever the class or level (chess)
     if (S.cls && it.id === 'placement') return false;   // already placed in a class
     if (S.cls && (it.s === 'tests' || it.s === 'vocab')) {   // class tests and vocabulary: exactly their book / Cambridge level
       var own = { 'book:teens-b1': ['teens-b1', 'voc-tb1'], 'book:teens-b2': ['teens-b2', 'voc-tb2'], 'yl:starters': ['starters-t', 'voc-starters'], 'yl:movers': ['movers-t', 'voc-movers'], 'yl:flyers': ['flyers-t', 'voc-flyers'] };
