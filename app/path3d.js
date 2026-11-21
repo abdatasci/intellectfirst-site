@@ -36,7 +36,7 @@
   function html(nodes, goText) {
     return '<div class="path map">' + nodes.map(function (n, i) {
       var x = XS[i % 4], st = n.state;
-      return '<a class="node ' + st + (x >= 50 ? ' rt' : '') + '" style="--x:' + x + '%" href="' + esc(n.href) + '" data-st="' + st + '">' +
+      return '<a class="node ' + st + (x >= 50 ? ' rt' : '') + '" style="--x:' + x + '%" href="' + esc(n.href) + '"' + (n.top ? ' target="_top"' : '') + ' data-st="' + st + '">' +
         '<span class="b">' + icon(st === 'locked' ? 'lock' : n.type) + (st === 'done' ? '<i class="tk" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></i>' : '') + '</span>' +
         '<span class="t"><b>' + esc(n.title) + '</b><em>' + esc(n.sub) + '</em>' + (st === 'next' ? '<i class="go"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M8 5l11 7-11 7z"/></svg>' + esc(goText || 'Continue') + '</i>' : '') + '</span></a>';
     }).join('') + '</div>';
