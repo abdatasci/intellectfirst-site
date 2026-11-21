@@ -67,7 +67,8 @@
      Everything else asks visitors to create a free account (which also starts the full-access trial). */
   var FREE_IDS = { 'voc-a1': 1, 'voc-b1': 1, 'voc-ket': 1, 'skill-games': 1, 'live': 1, 'if-kart': 1, 'kids-quest': 1, 'bq-kids': 1, 'g-skill': 1, 'placement': 1, 'ielts-centre': 1, 'timetable': 1 };
   var isFree = function (it) { return !!(it && FREE_IDS[it.id]); };
-  var canOpen = function (it) { if (S.cls && !fullView() && !fits(it) && it.s !== 'more') return false; return isFree(it) || access().signed; };
+  var LEVEL_WALL = false;
+  var canOpen = function (it) { if (LEVEL_WALL && S.cls && !fullView() && !fits(it) && it.s !== 'more') return false; return isFree(it) || access().signed; };
   /* Where a locked unit sends you. Someone who is not signed in is told to sign in (an IF Academy student on a new device
      saw "Full access" and the price page, though signing in opens everything for them); a signed-in free account sees the plans. */
   function lockTo() {
@@ -266,7 +267,7 @@
     setNav('home');
     var list = appCourses().filter(function (c) { return !ownLocked(c); }), h = '';
     if (APP === 'ge') {
-      var ai = list.filter(function (c) { return /^ge-/.test(c.id); }), bookOfMine = mine().filter(function (k) { return /^book:/.test(k); }).map(function (k) { return k.slice(5); });
+      var myLv = (S.cls || []).filter(function (k) { return /^ge:/.test(k); }).map(function (k) { return 'ge-' + k.slice(3).toLowerCase(); }), ai = list.filter(function (c) { return /^ge-/.test(c.id); }).sort(function (a, b) { return (myLv.indexOf(b.id) >= 0) - (myLv.indexOf(a.id) >= 0); }), bookOfMine = mine().filter(function (k) { return /^book:/.test(k); }).map(function (k) { return k.slice(5); });
       var ef = list.filter(function (c) { return c.ef || c.book; }).sort(function (a, b) { return (bookOfMine.indexOf(b.id) >= 0) - (bookOfMine.indexOf(a.id) >= 0); });
       var rest = list.filter(function (c) { return ai.indexOf(c) < 0 && ef.indexOf(c) < 0; });
       h = appHero('IF General English', 'Choose a track. You can follow both: your progress is kept for each.', list) +
@@ -932,7 +933,10 @@
   }
   /* A level course outside this student's level. Class students see their own level only (class-access.js gives the keys);
      a student with a personal level sees it until the next level opens. Staff and people without a class see everything. */
+  /* Director's rule from 21 Nov 2026: during the free period every signed-in student opens every level and every course.
+     Their own level is still listed first. Set LEVEL_WALL to true to bring the level rule back. */
   function ownLocked(c) {
+    if (!LEVEL_WALL) return false;
     var keys = S.cls || [];
     if (!c || !keys.length || S.teacher || access().staff || access().teacher) return false;
     var has = function (lv) { return keys.indexOf('ge:' + lv) >= 0 || keys.indexOf('be:' + lv) >= 0; };
