@@ -12,7 +12,7 @@
     /** Add more units to a course (full courses are written in parts). */
     ruNotes: function (cid, map) { var c = BY[cid]; if (c) c.units.forEach(function (u) { if (map[u.id]) u.lessons.forEach(function (l) { if (l.type === 'grammar') l.ru = map[u.id]; }); }); },
     /* The word bank: more words for a unit's Vocabulary set (not for its lesson). "word | part of speech | meaning | example | Russian" */
-    moreWords: function (cid, map) { var c = BY[cid]; if (c) c.units.forEach(function (u) { if (map[u.id]) u.xw = String(map[u.id]).trim().split('\n').map(function (l) { var p = l.split('|').map(function (x) { return x.trim(); }); return { w: p[0], p: p[1], d: p[2], e: p[3], ru: p[4] || '' }; }).filter(function (w) { return w.w && w.d; }); }); },
+    moreWords: function (cid, map) { var c = BY[cid]; if (c) c.units.forEach(function (u) { if (map[u.id]) u.xw = (u.xw || []).concat(String(map[u.id]).trim().split('\n').map(function (l) { var p = l.split('|').map(function (x) { return x.trim(); }); return { w: p[0], p: p[1], d: p[2], e: p[3], ru: p[4] || '' }; }).filter(function (w) { return w.w && w.d; })); }); },
     units: function (cid, list) { var c = BY[cid]; if (c) list.forEach(function (u) { if (!c.units.some(function (x) { return x.id === u.id; })) c.units.push(u); }); },
     /** Add a listening lesson to a unit (before the unit check). */
     listening: function (cid, uid, l) { var c = BY[cid], u = c && c.units.filter(function (x) { return x.id === uid; })[0]; if (!u) return; l.type = 'listen'; l.id = l.id || 'li'; var i = u.lessons.map(function (x) { return x.type; }).indexOf('check'); u.lessons.splice(i < 0 ? u.lessons.length : i, 0, l); } };
@@ -393,6 +393,20 @@
   var wordCount = function (c, u) { return c.ef && !u.words ? (u.n || 0) : wordsOf(u).length; };
   var ruC = function (c) { return /^(PA1|A0|A1|A2)/.test(c.level || ''); };
   function vocCourses() { var list = APP ? appCourses() : fullView() ? COURSES.filter(function (c) { return !c.daily; }) : myCourses(); return list.filter(function (c) { return c.units.some(function (u) { return wordCount(c, u) > 0; }); }); }
+  /* Vocabulary sets. A unit with a word bank (u.xw) is shown as several sets of about 22 words, so no set is too long to study
+     in one sitting: "My day 1" holds the 8 lesson words and the first of the bank, "My day 2…4" the rest. Each part carries
+     its own words, its own id (u1, u1.2, u1.3…) for progress, and the index of its unit (_ui) for the lock. */
+  var VSET = 22;
+  function vsets(c) {
+    if (c._vs) return c._vs;
+    var out = [];
+    c.units.forEach(function (u, i) {
+      if (!u.xw || !u.xw.length) { out.push(u); return; }
+      var all = wordsOf(u), n = Math.max(1, Math.round(all.length / VSET)), size = Math.ceil(all.length / n);
+      for (var k = 0; k < n; k++) out.push({ id: k ? u.id + '.' + (k + 1) : u.id, title: u.title + ' ' + (k + 1), words: all.slice(k * size, (k + 1) * size), lessons: [], _ui: i });
+    });
+    return (c._vs = out);
+  }
   function knownIn(c, u) { return wordsOf(u).filter(function (w) { return S.vk[w.w]; }).length; }
   function vTop(back, pct, label) { return '<div class="p-top"><a class="x" href="' + back + '" aria-label="Close">✕</a><div class="bar"><i style="width:' + Math.round(pct) + '%"></i></div></div><p class="p-title">' + esc(label) + '</p>'; }
   function vWords(cid, uid, mode) {
@@ -404,16 +418,16 @@
       view().innerHTML = '<div class="page-h"><div><p class="h-eyebrow">' + esc(t('vocab')) + '</p><h1>Vocabulary</h1><p>The words of your courses, unit by unit. Study each set five ways: flashcards, learn, write, match and test.</p></div></div>' +
         '<div class="grid">' + list.map(function (k) {
           var n = 0; k.units.forEach(function (u) { n += wordCount(k, u); });
-          return '<a class="card" href="#/words/' + k.id + '"><span class="ic">' + k.icon + '</span><h3>' + esc(k.title) + '</h3><p>' + k.units.length + ' sets · ' + n + ' words</p><div class="meta"><span class="tag ' + tagFor(k.track) + '">' + esc(k.level) + '</span>' + (k.ef || k.book ? '<span class="tag">English Files</span>' : '') + '</div></a>';
+          return '<a class="card" href="#/words/' + k.id + '"><span class="ic">' + k.icon + '</span><h3>' + esc(k.title) + '</h3><p>' + vsets(k).length + ' sets · ' + n + ' words</p><div class="meta"><span class="tag ' + tagFor(k.track) + '">' + esc(k.level) + '</span>' + (k.ef || k.book ? '<span class="tag">English Files</span>' : '') + '</div></a>';
         }).join('') + '</div>' + (list.length ? '' : '<p class="sec-d">Choose your courses first: <a href="#/onboard">My courses and levels</a>.</p>') +
         (other.length ? '<div class="sec"><h2>Word lists for young learners and Cambridge exams</h2></div><div class="grid">' + other.map(itemCard).join('') + '</div>' : '');
       return;
     }
     if (c.ef && (!EF[c.id] || Date.now() - EF[c.id].at > 60000)) { var here = location.hash, had = !!(EF[c.id] && EF[c.id].at); efLoad(c.id).then(function () { if (location.hash === here && !had) vWords(cid, uid, mode); }); if (!had) { view().innerHTML = '<p style="text-align:center;margin-top:40px">Loading…</p>'; return; } }
-    var ui = uid ? c.units.findIndex(function (x) { return x.id === uid; }) : -1, u = c.units[ui];
+    var VS = vsets(c), vi = uid ? VS.findIndex(function (x) { return x.id === uid; }) : -1, u = VS[vi], ui = u ? (u._ui != null ? u._ui : c.units.indexOf(u)) : -1;
     if (!u) {
-      view().innerHTML = '<div class="page-h"><div><p class="h-eyebrow"><a href="#/vocab">← Vocabulary</a></p><h1>' + esc(c.title) + '</h1><p>Choose a unit. Locked sets open with the unit itself.</p></div></div><div class="vsets">' + c.units.map(function (x, i) {
-        var n = wordCount(c, x); if (!n) return '';
+      view().innerHTML = '<div class="page-h"><div><p class="h-eyebrow"><a href="#/vocab">← Vocabulary</a></p><h1>' + esc(c.title) + '</h1><p>Choose a set. Locked sets open with the unit itself.</p></div></div><div class="vsets">' + VS.map(function (x) {
+        var i = x._ui != null ? x._ui : c.units.indexOf(x), n = wordCount(c, x); if (!n) return '';
         var open = unlocked(i, c.id), k = x.words || !c.ef ? knownIn(c, x) : 0, sc = S.vs[c.id + '/' + x.id] || {};
         return '<a class="vset' + (open ? '' : ' locked') + '" href="' + (open ? '#/words/' + c.id + '/' + encodeURIComponent(x.id) : c.ef && EF[c.id] && EF[c.id].mode === 'class' ? '#/course/' + c.id : '/me/#/upgrade') + '"><b>' + (open ? '' : '🔒 ') + esc(c.ef ? x.id + ' · ' + x.title : x.title) + '</b><span>' + n + ' words' + (k ? ' · ' + k + ' known' : '') + (sc.test != null ? ' · test ' + sc.test + '%' : '') + '</span><i style="width:' + Math.round(k / n * 100) + '%"></i></a>';
       }).join('') + '</div>';
