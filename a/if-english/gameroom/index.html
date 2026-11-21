@@ -1175,6 +1175,12 @@ const XTASK={explain:'Explain the word without saying it.',sentence:'Make a corr
 let CHC=gs.get('chc',{names:['White','Black'],say:true,opp:'human',level:'medium',side:'w'});if(!CHC.opp){CHC.opp='human';CHC.level='medium';CHC.side='w'}let CH=null;
 const CHW={p:'Pawn',n:'Knight',b:'Bishop',r:'Rook',q:'Queen',k:'King'},CHG={p:'♟',n:'♞',b:'♝',r:'♜',q:'♛',k:'♚'};
 const CHV=[['king','король'],['queen','ферзь'],['rook','ладья'],['bishop','слон'],['knight','конь'],['pawn','пешка'],['check','шах'],['checkmate','мат'],['stalemate','пат'],['castle','рокировка'],['take / capture','взять'],['square','клетка'],['file (a–h)','вертикаль'],['rank (1–8)','горизонталь'],['promote','превратить пешку'],['draw','ничья'],['resign','сдаться'],['move','ход'],['zugzwang','цугцванг (вынужденный ход)']];
+/* English level for chess (21 Nov 2026): A = short calls, B = full sentences, C = commentary. The word list grows with the level. */
+const CHV_B=[['attack','атаковать'],['defend','защищать'],['threaten','угрожать'],['exchange','размен'],['sacrifice','жертва'],['opening','дебют'],['middlegame','миттельшпиль'],['endgame','эндшпиль'],['fork','вилка'],['pin','связка'],['blunder','грубая ошибка, зевок'],['advantage','преимущество']];
+const CHV_C=[['develop a piece','развивать фигуру'],['material','материал'],['tempo','темп'],['initiative','инициатива'],['gambit','гамбит'],['en passant','взятие на проходе'],['open file','открытая линия'],['outpost','форпост'],['fianchetto','фианкетто'],['zwischenzug','промежуточный ход']];
+const CHLV=[['A','A1–A2 · short calls','Knight to f3'],['B','B1–B2 · full sentences','I’m moving my knight from g1 to f3.'],['C','C1–C2 · commentary','I’m developing my knight to f3.']];
+function chessWords(){const L=CHC.lang||'A';return CHV.concat(L==='A'?[]:CHV_B,L==='C'?CHV_C:[])}
+function chessWordsHTML(){return `<div class="row" style="flex-wrap:wrap;gap:8px">${chessWords().map(([e,r])=>`<span class="btn" style="cursor:default"><b>${e}</b> · ${r}</span>`).join('')}</div>`}
 function chessLoad(){return window.Chess?Promise.resolve():new Promise((ok,no)=>{const s=document.createElement('script');s.src='chess-engine.js';s.onload=ok;s.onerror=no;document.head.appendChild(s)})}
 function chessSetup(){
   CH=null;
@@ -1182,12 +1188,14 @@ function chessSetup(){
   <section class="panel"><div class="lab">Players</div><div class="teamin">${CHC.names.map((t,i)=>`<label class="tin"><span class="xo-m ${i?'o':'x'}">${i?'♚':'♔'}</span><input id="cn${i}" value="${esc(t)}" maxlength="24"></label>`).join('')}</div>
   <div class="row"><span class="sublab w">Opponent</span>${[['human','Another player'],['cpu','Computer']].map(([k,l])=>`<button class="btn ${CHC.opp===k?'on':''}" data-copp="${k}">${l}</button>`).join('')}</div>
   ${CHC.opp==='cpu'?`<div class="row"><span class="sublab w">Level</span>${[['easy','Easy'],['medium','Medium'],['hard','Hard']].map(([k,l])=>`<button class="btn ${CHC.level===k?'on':''}" data-clv="${k}">${l}</button>`).join('')}</div><div class="row"><span class="sublab w">You play</span>${[['w','White'],['b','Black']].map(([k,l])=>`<button class="btn ${CHC.side===k?'on':''}" data-cside="${k}">${l}</button>`).join('')}</div>`:''}
-  <div class="row"><span class="sublab w">Say it in English</span>${[[true,'On'],[false,'Off']].map(([v,l])=>`<button class="btn ${CHC.say===v?'on':''}" data-csay="${v}">${l}</button>`).join('')}</div></section>
-  <section class="panel"><div class="lab">Chess words · шахматные слова</div><div class="row" style="flex-wrap:wrap;gap:8px">${CHV.map(([e,r])=>`<span class="btn" style="cursor:default"><b>${e}</b> · ${r}</span>`).join('')}</div><p class="lead" style="margin:10px 0 0;font-size:14px"><b>Zugzwang</b> (German for “compulsion to move”): you must move, but every move makes your position worse. / Цугцванг: вы обязаны ходить, но любой ход ухудшает позицию.</p></section>
+  <div class="row"><span class="sublab w">Say it in English</span>${[[true,'On'],[false,'Off']].map(([v,l])=>`<button class="btn ${CHC.say===v?'on':''}" data-csay="${v}">${l}</button>`).join('')}</div>
+  <div class="row"><span class="sublab w">English level</span>${CHLV.map(([k,l])=>`<button class="btn ${(CHC.lang||'A')===k?'on':''}" data-clang="${k}">${l}</button>`).join('')}</div>
+  <p class="lead" style="margin:8px 0 0;font-size:14px">At this level you say, for example: <b>“${CHLV.find(x=>x[0]===(CHC.lang||'A'))[2]}”</b></p></section>
+  <section class="panel"><div class="lab">Chess words · шахматные слова</div>${chessWordsHTML()}<p class="lead" style="margin:10px 0 0;font-size:14px"><b>Zugzwang</b> (German for “compulsion to move”): you must move, but every move makes your position worse. / Цугцванг: вы обязаны ходить, но любой ход ухудшает позицию.</p></section>
   <div class="row end"><button class="btn gold big" id="cgo">Start</button></div>`;
   app.onclick=e=>{const b=e.target.closest('button');if(!b)return;
     CHC.names=[0,1].map(i=>($('#cn'+i)||{value:CHC.names[i]}).value.trim()||['White','Black'][i]);
-    if(b.dataset.csay!=null)CHC.say=b.dataset.csay==='true';if(b.dataset.copp)CHC.opp=b.dataset.copp;if(b.dataset.clv)CHC.level=b.dataset.clv;if(b.dataset.cside)CHC.side=b.dataset.cside;gs.set('chc',CHC);
+    if(b.dataset.csay!=null)CHC.say=b.dataset.csay==='true';if(b.dataset.copp)CHC.opp=b.dataset.copp;if(b.dataset.clv)CHC.level=b.dataset.clv;if(b.dataset.cside)CHC.side=b.dataset.cside;if(b.dataset.clang)CHC.lang=b.dataset.clang;gs.set('chc',CHC);
     if(b.id==='cgo'){b.disabled=true;return chessLoad().then(()=>{chessNew(false)}).catch(()=>{b.disabled=false;alert('Chess could not load. Check the connection and try again.')})}
     rerender(chessSetup)};
 }
@@ -1209,10 +1217,33 @@ function chessCpu(){
 }
 function chessSpeak(t){try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='en-GB';u.rate=.9;speechSynthesis.speak(u)}catch(e){}}
 function chessSay(m){
-  if(m.flags.includes('k'))return 'Castle kingside';if(m.flags.includes('q'))return 'Castle queenside';
-  let t=CHW[m.piece]+(m.captured?' takes ':' to ')+m.to+(m.flags.includes('e')?' (en passant)':'');
-  if(m.promotion)t+=' and promotes to '+CHW[m.promotion];
-  if(/#/.test(m.san))t+=', checkmate!';else if(/\+/.test(m.san))t+=', check!';return t;
+  const L=CHC.lang||'A',ck=/#/.test(m.san)?'mate':/\+/.test(m.san)?'check':'',P=x=>CHW[x].toLowerCase(),ep=m.flags.includes('e');
+  if(L==='A'){
+    if(m.flags.includes('k'))return 'Castle kingside';if(m.flags.includes('q'))return 'Castle queenside';
+    let t=CHW[m.piece]+(m.captured?' takes ':' to ')+m.to+(ep?' (en passant)':'');
+    if(m.promotion)t+=' and promotes to '+CHW[m.promotion];
+    return t+(ck==='mate'?', checkmate!':ck?', check!':'');
+  }
+  if(L==='B'){
+    let t=m.flags.includes('k')?'I’m castling kingside.':m.flags.includes('q')?'I’m castling queenside.':
+      ep?'My pawn takes the pawn on '+m.to+' en passant.':
+      m.captured?'My '+P(m.piece)+' takes the '+P(m.captured)+' on '+m.to+'.':'I’m moving my '+P(m.piece)+' from '+m.from+' to '+m.to+'.';
+    if(m.promotion)t=t.slice(0,-1)+' and I’m promoting it to a '+P(m.promotion)+'.';
+    return t+(ck==='mate'?' Checkmate!':ck?' Check!':'');
+  }
+  // C1–C2: commentary. Every phrase is true of the move itself (no claims about the position that the app cannot check).
+  const V={p:1,n:3,b:3,r:5,q:9,k:0},home=m.color==='w'?'1':'8',centre=/^[de][45]$/.test(m.to);let t;
+  if(m.flags.includes('k'))t='I’ll castle kingside to tuck my king away';
+  else if(m.flags.includes('q'))t='I’ll castle queenside, bringing my rook towards the centre';
+  else if(ep)t='I’ll capture the pawn en passant on '+m.to;
+  else if(m.captured)t='I’ll capture the '+P(m.captured)+' on '+m.to+' with my '+P(m.piece)+(V[m.captured]>V[m.piece]&&m.piece!=='k'?', which wins material':'');
+  else if(m.piece==='p')t=centre?'I’m advancing my pawn to '+m.to+' to fight for the centre':'I’m pushing my pawn to '+m.to;
+  else if((m.piece==='n'||m.piece==='b')&&m.from[1]===home)t='I’m developing my '+P(m.piece)+' to '+m.to;
+  else if(m.piece==='k')t='I’m stepping my king to '+m.to;
+  else if(m.piece==='n'||m.piece==='b')t='I’m repositioning my '+P(m.piece)+' on '+m.to;
+  else t='I’m bringing my '+P(m.piece)+' to '+m.to;
+  if(m.promotion)t+=', promoting to a '+P(m.promotion);
+  return t+(ck==='mate'?', and that is checkmate.':ck?', delivering check.':'.');
 }
 function chessDo(m){CH.g.move({from:m.from,to:m.to,promotion:m.promotion});CH.sel=null;CH.pend=null;CH.promo=null;CH.said=null;chessDraw();chessCpu()}
 function chessDraw(){
@@ -1231,13 +1262,13 @@ function chessDraw(){
   else status=`<div class="chmv">${esc(name(cur))} to move${inChk?' · <span style="color:var(--red)">check!</span>':''}</div>`;
   let bar='';if(CH.said&&!CH.think)bar=`<div class="panel"><div class="lab">The computer played</div><div class="row"><div class="chmv" style="font-size:1.8rem">${esc(CH.said)}</div><button class="btn" id="chear">🔊 Hear it</button></div></div>`;
   if(CH.promo)bar+=`<div class="panel"><div class="lab">Promote the pawn to…</div><div class="row">${['q','r','b','n'].map(t=>`<button class="btn big" data-promo="${t}">${CHG[t]} ${CHW[t]}</button>`).join('')}</div></div>`;
-  else if(CH.pend)bar+=`<div class="panel"><div class="lab">Say it in English</div><div class="chmv" style="font-size:2rem">${esc(chessSay(CH.pend))}</div><div class="acts"><button class="act no" id="cno">✕ Not correct · choose again</button><button class="act ok" id="cok">✓ Said it · play the move</button></div></div>`;
+  else if(CH.pend)bar+=`<div class="panel"><div class="lab">Say it in English</div><div class="chmv" style="font-size:${(CHC.lang||'A')==='A'?'2rem':'1.5rem'}">${esc(chessSay(CH.pend))}</div><div class="acts"><button class="act no" id="cno">✕ Not correct · choose again</button><button class="act ok" id="cok">✓ Said it · play the move</button></div></div>`;
   const log=[];for(let i=0;i<hist.length;i+=2)log.push(`<span>${i/2+1}.</span><span>${esc(hist[i].san)}</span><span>${hist[i+1]?esc(hist[i+1].san):''}</span>`);
   app.innerHTML=`<div class="scores">${[0,1].map(i=>`<div class="sc ${i===cur&&!over?'cur':''}"><span><span class="xo-m ${i?'o':'x'}">${i?'♚':'♔'}</span> ${esc(name(i))}</span><span class="chcap">${cap(i?'w':'b')}</span></div>`).join('')}</div>
   <div class="chg"><div><div class="chb">${cells}</div></div><div style="display:flex;flex-direction:column;gap:12px;min-width:0">${status}${bar}
    ${hist.length?`<section class="panel"><div class="lab">Moves${last?' · last: '+esc(chessSay(last)):''}</div><div class="chlog">${log.join('')}</div></section>`:''}
    <div class="row" style="flex-wrap:wrap"><button class="btn" id="cflip">⇅ Flip board</button><button class="btn" id="cundo" ${hist.length?'':'disabled'}>↶ Undo</button><button class="btn" id="cnew">New game</button><button class="btn" id="cend">Back to setup</button></div>
-   <section class="panel"><div class="lab">Chess words · шахматные слова</div><div class="row" style="flex-wrap:wrap;gap:6px">${CHV.slice(0,12).map(([e,r])=>`<span class="btn" style="cursor:default;padding:5px 10px;font-size:.85rem"><b>${e}</b> · ${r}</span>`).join('')}</div></section></div></div>`;
+   <section class="panel"><div class="lab">Chess words · шахматные слова</div><div class="row" style="flex-wrap:wrap;gap:6px">${((CHC.lang||'A')==='A'?CHV.slice(0,12):CHC.lang==='B'?CHV_B:CHV_C).map(([e,r])=>`<span class="btn" style="cursor:default;padding:5px 10px;font-size:.85rem"><b>${e}</b> · ${r}</span>`).join('')}</div></section></div></div>`;
   app.onclick=e=>{const b=e.target.closest('button');if(!b)return;
     if(b.id==='cok'){return chessDo(CH.pend)}
     if(b.id==='cno'){CH.pend=null;CH.sel=null;return chessDraw()}
