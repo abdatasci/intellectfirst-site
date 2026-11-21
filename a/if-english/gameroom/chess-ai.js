@@ -48,7 +48,11 @@ onmessage = function (ev) {
   var g = new Chess(ev.data.fen), lv = ev.data.level, ms = g.moves({ verbose: true }), out;
   if (!ms.length) return postMessage(null);
   try {
-    if (lv === 'easy') {
+    if (lv === 'bad') {   // "Answer English questions": a wrong answer plays one of the weakest moves
+      deadline = Date.now() + 2000;
+      var sb = search(g, 2), worst = sb.slice(-Math.max(1, Math.min(3, Math.ceil(sb.length / 4))));
+      out = worst[Math.floor(Math.random() * worst.length)].m;
+    } else if (lv === 'easy') {
       deadline = Date.now() + 1500;
       var sc = search(g, 1), pick;
       if (Math.random() < 0.3) pick = ms[Math.floor(Math.random() * ms.length)];
