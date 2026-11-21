@@ -69,7 +69,12 @@
     if (cls.some(indiv) && !lv && !isI) {
       add('book:ef-a0'); ['A1', 'A2', 'B1', 'B2', 'C1'].forEach(function (l) { add('ge:' + l); add('book:' + PRIMARY[l]); });
     }
-    if (lv && !kids) {
+    /* Director's rule, 21 Nov 2026: up to B1 a class sees its own course only, by default. A PET or KET class sees PET or
+       KET; a class with a coursebook sees that book. General English and the English Files book of the level are added
+       only when the class has neither (so the student still has something to study). Other courses stay open in Courses. */
+    var low = /^(A0|A1|A2|B1)$/.test(lv), exam = out.indexOf('pet') >= 0 || out.indexOf('ket') >= 0, hasBook = out.some(function (k) { return /^book:/.test(k); });
+    if (lv && !kids && low && !biz && (exam || hasBook)) { /* own course only */ }
+    else if (lv && !kids) {
       if (biz) add('be:' + (lv === 'A1' || lv === 'A0' ? 'A2' : lv === 'C2' ? 'C1' : lv)); else ge(lv);
       if (!out.some(function (k) { return /^book:/.test(k); })) add('book:' + PRIMARY[lv]);   // no coursebook set for the class: the English Files book of its level
       if (lv === 'B2') add('ielts');
