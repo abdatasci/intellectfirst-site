@@ -30,7 +30,13 @@
   var persist = function () { try { localStorage.setItem('ifbq', JSON.stringify(SAVE)); } catch (e) {} };
   var shuffle = function (a) { a = a.slice(); for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)), t = a[i]; a[i] = a[j]; a[j] = t; } return a; };
   var say = function (t) { try { speechSynthesis.cancel(); var u = new SpeechSynthesisUtterance(t); u.lang = 'en-GB'; speechSynthesis.speak(u); } catch (e) {} };
-  var toastT; function toast(m) { var el = $('#toast'); el.textContent = m; el.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(function () { el.classList.remove('on'); }, 2200); }
+  /* The narrator: every message on the screen is also read aloud (the next say() replaces it, so a question or
+     an answer is never talked over). Missions give the mine a story: collect 3, 6, 10, 15… gems. */
+  var NARR = true; try { NARR = localStorage.getItem('bq.narr') !== '0'; } catch (e) {}
+  function narr(m) { if (!NARR) return; var t = String(m).replace(/[^\w\s.,!?'’:;-]/g, ' ').replace(/\s+/g, ' ').trim(); if (t) say(t); }
+  var MISSIONS = [3, 6, 10, 15, 20, 30, 40];
+  function mission() { if (!G || G.mode !== 'mine') return; var n = MISSIONS.filter(function (x) { return x > G.gems && x <= G.total; })[0]; G.goal = n || G.total; }
+  var toastT; function toast(m) { narr(m); var el = $('#toast'); el.textContent = m; el.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(function () { el.classList.remove('on'); }, 2200); }
   var AC; function beep(kind) {
     try { AC = AC || new (window.AudioContext || window.webkitAudioContext)();
       var notes = { ok: [660, 880, 1175], bad: [260, 200], gem: [880, 1320], jump: [420], fall: [300, 180, 120], win: [523, 659, 784, 1047], dig: [160] }[kind] || [440];
@@ -216,6 +222,7 @@
     var player = makePlayer(); scene.add(player);
     var p = { x: 0.5, y: H[N / 2][N / 2] + 0.01, z: 0.5, vy: 0, ground: true };
     G = { mode: 'mine', level: level, player: player, p: p, H: H, ores: ores, gems: 0, total: ores.length, sun: sun, t0: performance.now(), done: 0 };
+    mission(); setTimeout(function () { if (G && G.mode === 'mine' && !G.over) toast('Welcome to the Word Mine! Find the glowing blocks and mine them. Your first mission: collect ' + G.goal + ' gems.'); }, 900);
     $('#hint').textContent = 'Find the glowing gold blocks · walk next to one and press E (or ⛏) to mine it';
     updateMineHud();
   }
@@ -242,7 +249,7 @@
       ask(near.q, function (first) {
         near.done = true; G.done++; scene.remove(near.tag); burst(near.mesh.position, first ? 0xffcf3f : 0x8f96a3);
         scene.remove(near.mesh); G.H[near.i][near.j] -= 1;
-        if (first) { G.gems++; beep('gem'); toast('💎 +1 gem!'); } else toast('The block crumbled — no gem this time.');
+        if (first) { G.gems++; beep('gem'); if (G.goal && G.gems >= G.goal && G.gems < G.total) { var was = G.goal; mission(); toast('⭐ Mission complete: ' + was + ' gems! Next mission: ' + G.goal + ' gems.'); } else toast('💎 +1 gem! ' + (G.goal ? (G.goal - G.gems) + ' more for your mission.' : '')); } else toast('The block crumbled — no gem this time.');
         updateMineHud(); if (G.done >= G.total) finish();
       });
     }
@@ -301,6 +308,7 @@
     var player = makePlayer(); scene.add(player);
     var p = { x: 0, y: 0.01, z: 1, vy: 0, ground: true, on: null, cp: { x: 0, y: 0.5, z: 1 } };
     G = { mode: 'obby', level: level, player: player, p: p, plats: plats, gates: gates, falls: 0, right: 0, t0: performance.now(), trophy: trophy, fin: fin };
+    setTimeout(function () { if (G && G.mode === 'obby' && !G.over) toast('Welcome to the Grammar Obby! Run, jump, and land on the right answer. There are ' + G.gates.length + ' questions on the way to the trophy.'); }, 900);
     $('#hint').textContent = 'Read the sign, then jump onto the platform with the right answer · Space to jump · drag to look around';
     updateObbyHud();
   }
@@ -334,7 +342,7 @@
     if (P.kind === 'check') { p.cp = { x: P.x, y: P.y, z: P.z }; var g = G.gates[P.gate]; if (g && !g.announced) { g.announced = true; toast('Checkpoint ✓ Read the question on the sign!'); say(g.q.q.replace(/___/g, 'blank')); } }
     if (P.kind === 'answer') {
       var gate = G.gates[P.gate];
-      if (P.correct) { if (!gate.passed) { gate.passed = true; if (!gate.missed) G.right++; beep('ok'); burst(new THREE.Vector3(P.x, P.y + 0.5, P.z), 0x4cc76a); say(gate.q.say || ''); toast(gate.missed ? 'Correct — keep going!' : '✅ Correct!'); P.m.material = mat(0x4cc76a); p.cp = { x: P.x, y: P.y, z: P.z }; updateObbyHud(); } }
+      if (P.correct) { if (!gate.passed) { gate.passed = true; if (!gate.missed) G.right++; beep('ok'); burst(new THREE.Vector3(P.x, P.y + 0.5, P.z), 0x4cc76a); say(gate.q.say || ''); toast(gate.missed ? 'Correct — keep going!' : '✅ Correct! ' + (function () { var d = G.gates.filter(function (g) { return g.passed; }).length, n = G.gates.length; return d >= n ? 'That was the last one. Run to the trophy!' : d + ' of ' + n + ' done.'; })()); P.m.material = mat(0x4cc76a); p.cp = { x: P.x, y: P.y, z: P.z }; updateObbyHud(); } }
       else { gate.missed = true; P.m.material = mat(0xd64545); beep('bad'); toast('✗ Wrong — it falls!'); setTimeout(function () { P.dropping = true; P.gone = true; }, 350); }
     }
     if (P.kind === 'finish' && !G.over) finish();
@@ -390,6 +398,7 @@
     var player = makePlayer(); scene.add(player);
     var p = { x: 0, y: 0.01, z: R + 1, vy: 0, ground: true, on: null, cp: { x: 0, y: 0.5, z: R + 1 } };
     G = { mode: 'tower', level: level, player: player, p: p, plats: plats, gates: gates, falls: 0, right: 0, coins: coins, got: 0, t0: performance.now(), trophy: trophy, fin: fin, top: y };
+    setTimeout(function () { if (G && G.mode === 'tower' && !G.over) toast('Welcome to the Tower Climb! Red bricks send you back. Green pads bounce you up. Answer at every checkpoint: there are ' + G.gates.length + ' on the way to the top.'); }, 900);
     $('#hint').textContent = 'Climb the tower · red bricks send you back · green pads bounce you up · answer at every checkpoint';
     updateObbyHud();
   }

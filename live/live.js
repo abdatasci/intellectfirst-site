@@ -176,6 +176,16 @@
 
   /* little sound effects (no files): ok, no, coin, bad, win, hack, splash */
   var AC = null;
+  /* The narrator on the big screen: reads what happens in the game aloud, in English. One line at a time, with a
+     pause between lines so it never talks non-stop. Switched on and off with the Narrator button (kept on this device). */
+  LIVE.narr = { on: LIVE.ls.get('live.narr') !== false, last: 0, text: '' };
+  LIVE.narrate = function (text, urgent) {
+    if (!LIVE.narr.on || !window.speechSynthesis) return;
+    var t = String(text || '').replace(/[^\w\s.,!?'’:;-]/g, ' ').replace(/\s+/g, ' ').trim(), now = Date.now();
+    if (!t || t === LIVE.narr.text && now - LIVE.narr.last < 20000) return;
+    if (!urgent && (now - LIVE.narr.last < 5000 || speechSynthesis.speaking)) return;
+    try { if (urgent) speechSynthesis.cancel(); var u = new SpeechSynthesisUtterance(t); u.lang = 'en-GB'; u.rate = 1.02; u.pitch = 1.05; speechSynthesis.speak(u); LIVE.narr.last = now; LIVE.narr.text = t; } catch (e) {}
+  };
   LIVE.sfx = function (kind) {
     if (LIVE.sfx.off) return;
     try {

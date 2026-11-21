@@ -7,7 +7,7 @@
   var cv = null, cx = null, raf = 0, W = 0, H = 0, DPR = 1;
   var cars = {}, order = [];              // id → {name, score, z, x, color, bump}
   var cam = { x: 0, y: 12, z: -14, lx: 0, lz: 20, f: 1 }, shot = { kind: 'wide', id: null, until: 0, i: 0 }, leader = null, cap = '';
-  var t0 = performance.now(), last = t0, road = 0, OPT = { kind: 'car', per: .11, unit: '' };
+  var said = '', t0 = performance.now(), last = t0, road = 0, OPT = { kind: 'car', per: .11, unit: '', gem: '#39c6e8' };
   var SEQ = [['wide', 7000], ['lead', 5500], ['wide', 5000], ['duel', 5500]];
   var STARS = []; for (var i = 0; i < 70; i++) STARS.push([Math.random(), Math.random() * .42, Math.random() * 1.6 + .4]);
 
@@ -61,12 +61,12 @@
     var a0 = P(x + .75, hop + 1.6, z + .1), a1 = P(x + 1.25 + c.bump * .5, hop + 3.0 - c.bump * 1.2, z + .1);
     if (a0 && a1) { cx.strokeStyle = '#9a6a3c'; cx.lineWidth = Math.max(2, .13 * F / a0[2]); cx.lineCap = 'round'; cx.beginPath(); cx.moveTo(a0[0], a0[1]); cx.lineTo(a1[0], a1[1]); cx.stroke(); var r = .5 * F / a1[2]; cx.strokeStyle = '#cfd6e4'; cx.lineWidth = Math.max(2, .16 * F / a1[2]); cx.beginPath(); cx.arc(a1[0], a1[1] + r * .5, r, Math.PI * 1.15, Math.PI * 1.85); cx.stroke(); }
     // the gems they carry: a small diamond block that pops when they score
-    var g = .45 + Math.min(.5, c.score / 400) + c.bump * .2; box(x - g / 2, 0, z - 1.5 - g, x + g / 2, g, z - 1.5, '#39c6e8');
+    var g = .45 + Math.min(.5, c.score / 400) + c.bump * .2; box(x - g / 2, 0, z - 1.5 - g, x + g / 2, g, z - 1.5, OPT.gem);
     tag(c, rank, P(x, hop + 3.9, z + .2));
   }
   function tag(c, rank, tp) {
     if (!tp) return; var col = c.color;
-    var k = Math.max(.85, Math.min(2.4, 9 / tp[2] * (H / 420))), fs = Math.round(15 * k), txt = (rank + 1) + '  ' + c.name, pts = c.score + (OPT.unit ? ' ' + OPT.unit : '');
+    var k = Math.max(.85, Math.min(2.4, 9 / tp[2] * (H / 420))), fs = Math.round(15 * k), txt = (rank + 1) + '  ' + c.name, pts = (LIVE.fmtN ? LIVE.fmtN(c.score) : c.score) + (OPT.unit ? ' ' + OPT.unit : '');
     cx.font = '700 ' + fs + 'px Lato, system-ui, sans-serif'; var tw = cx.measureText(txt).width; cx.font = '800 ' + fs + 'px Lato, system-ui, sans-serif'; var pw = cx.measureText(pts).width;
     var bw = tw + pw + fs * 2.1, bh = fs * 1.7, bx = tp[0] - bw / 2, by = tp[1] - bh;
     cx.fillStyle = 'rgba(8,16,40,.86)'; rr(bx, by, bw, bh, bh / 2); cx.fill(); cx.lineWidth = Math.max(1.5, k * 1.6); cx.strokeStyle = rank === 0 ? '#e8c36a' : col; cx.stroke();
@@ -153,14 +153,15 @@
     // cars, far ones first
     var rankOf = {}; ids.slice().sort(function (a, b) { return cars[b].score - cars[a].score; }).forEach(function (id, i) { rankOf[id] = i; });
     ids.slice().sort(function (a, b) { return cars[b].z - cars[a].z; }).forEach(function (id) { if (cars[id].z > cam.z + 1) car(cars[id], rankOf[id]); });
-    // caption
+    // caption (also read aloud by the narrator when it changes)
+    if (cap && cap !== said) { said = cap; if (LIVE.narrate) LIVE.narrate(cap, cap.indexOf('takes the lead') >= 0); }
     if (cap) { cx.font = '700 ' + Math.round(Math.max(16, H * .042)) + 'px Lato, system-ui, sans-serif'; cx.textAlign = 'center'; cx.textBaseline = 'middle'; var tw = cx.measureText(cap).width, bh = Math.max(34, H * .075); cx.fillStyle = 'rgba(8,16,40,.8)'; rr(W / 2 - tw / 2 - 22, H - bh - 14, tw + 44, bh, bh / 2); cx.fill(); cx.strokeStyle = '#e8c36a'; cx.lineWidth = 2; cx.stroke(); cx.fillStyle = '#fff'; cx.fillText(cap, W / 2, H - bh / 2 - 13); }
   }
 
   window.LIVE = window.LIVE || {};
   LIVE.Race3D = {
     show: function (slot, list, opt) {
-      OPT = { kind: (opt && opt.kind) || 'car', per: (opt && opt.per) || .11, unit: (opt && opt.unit) || '' };
+      OPT = { kind: (opt && opt.kind) || 'car', per: (opt && opt.per) || .11, unit: (opt && opt.unit) || '', gem: (opt && opt.gem) || '#39c6e8' };
       if (!cv) { cv = document.createElement('canvas'); cv.className = 'race3d'; cx = cv.getContext('2d'); addEventListener('resize', size); }
       if (cv.parentNode !== slot) { slot.appendChild(cv); size(); }
       var seen = {}, n = list.length;
