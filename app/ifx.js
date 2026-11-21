@@ -67,7 +67,15 @@
      Everything else asks visitors to create a free account (which also starts the full-access trial). */
   var FREE_IDS = { 'voc-a1': 1, 'voc-b1': 1, 'voc-ket': 1, 'skill-games': 1, 'live': 1, 'if-kart': 1, 'kids-quest': 1, 'bq-kids': 1, 'g-skill': 1, 'placement': 1, 'ielts-centre': 1, 'timetable': 1 };
   var isFree = function (it) { return !!(it && FREE_IDS[it.id]); };
-  var canOpen = function (it) { if (S.cls && !fullView() && !fits(it) && it.s !== 'more') return false; return isFree(it) || access().signed; };
+  var LEVEL_WALL = false;
+  var canOpen = function (it) { if (LEVEL_WALL && S.cls && !fullView() && !fits(it) && it.s !== 'more') return false; return isFree(it) || access().signed; };
+  /* Where a locked unit sends you. Someone who is not signed in is told to sign in (an IF Academy student on a new device
+     saw "Full access" and the price page, though signing in opens everything for them); a signed-in free account sees the plans. */
+  function lockTo() {
+    var top = (function () { try { return window.top !== window.self; } catch (e) { return true; } })();
+    return access().signed ? { href: '/me/#/upgrade', label: '🔒 ' + t('locked'), attr: top ? ' target="_top"' : '' }
+      : { href: '/me/#/login?next=' + encodeURIComponent(location.pathname + location.hash), label: '🔑 Sign in to open', attr: top ? ' target="_top"' : '' };
+  }
   var JOIN = '/me/#/register?next=' + encodeURIComponent('/app/');
   function tasterHTML() { return meLoaded && !access().signed ? '<div class="taster"><div><b>You are trying IF App free — no account needed.</b><span>Open the first unit of every course, the placement test and a selection of games. Create a free account for the first two units of every course, a 7-day trial of everything, and your progress on every device.</span></div><a class="btn gold" href="' + JOIN + '">Create a free account</a></div>' : ''; }
   /* Full-access trial countdown (guests in their 7-day trial, not paid). */
@@ -259,7 +267,7 @@
     setNav('home');
     var list = appCourses().filter(function (c) { return !ownLocked(c); }), h = '';
     if (APP === 'ge') {
-      var ai = list.filter(function (c) { return /^ge-/.test(c.id); }), bookOfMine = mine().filter(function (k) { return /^book:/.test(k); }).map(function (k) { return k.slice(5); });
+      var myLv = (S.cls || []).filter(function (k) { return /^ge:/.test(k); }).map(function (k) { return 'ge-' + k.slice(3).toLowerCase(); }), ai = list.filter(function (c) { return /^ge-/.test(c.id); }).sort(function (a, b) { return (myLv.indexOf(b.id) >= 0) - (myLv.indexOf(a.id) >= 0); }), bookOfMine = mine().filter(function (k) { return /^book:/.test(k); }).map(function (k) { return k.slice(5); });
       var ef = list.filter(function (c) { return c.ef || c.book; }).sort(function (a, b) { return (bookOfMine.indexOf(b.id) >= 0) - (bookOfMine.indexOf(a.id) >= 0); });
       var rest = list.filter(function (c) { return ai.indexOf(c) < 0 && ef.indexOf(c) < 0; });
       h = appHero('IF General English', 'Choose a track. You can follow both: your progress is kept for each.', list) +
@@ -341,7 +349,7 @@
       var open = !!e.open[u.id];
       var cov = e.mode === 'staff' && e.classes.length ? '<div class="cover">' + e.classes.map(function (k) { var on = k.covered.indexOf(u.id) >= 0; return '<label class="chip' + (on ? ' on' : '') + '"><input type="checkbox" data-cover="' + esc(k.id) + '" data-unit="' + esc(u.id) + '"' + (on ? ' checked' : '') + '> Covered · ' + esc(k.label) + '</label>'; }).join('') + '</div>' : '';
       html += '<section class="unit' + (open ? '' : ' unit-locked') + '"><div class="unit-h"><div style="flex:1"><small>' + (u.test ? '📝 Mock test' : u.extra ? '🗣️ Speaking words' : u.label ? esc(u.label) : esc(t('unit')) + ' ' + esc(u.id)) + (u.g ? ' · ' + esc(u.g) : '') + (e.mode === 'class' && (e.covered || []).indexOf(u.id) >= 0 ? ' · ✅ covered in class' : '') + '</small><h3>' + esc(u.title) + '</h3>' + (open ? '<ul class="objs">' + u.obj.map(function (o) { return '<li>🎯 ' + esc(o) + '</li>'; }).join('') + '</ul>' : '') + cov + '</div>' +
-        (open ? IFXPath.ring(u.lessons.filter(function (l) { return isDone(c.id, u.id, l.id); }).length, u.lessons.length) : e.mode === 'class' ? '<span class="btn sm gold" style="cursor:default">🔒 Not covered in class yet</span>' : '<a class="btn sm gold" href="/me/#/upgrade">🔒 ' + esc(t('locked')) + '</a>') + '</div>' +
+        (open ? IFXPath.ring(u.lessons.filter(function (l) { return isDone(c.id, u.id, l.id); }).length, u.lessons.length) : e.mode === 'class' ? '<span class="btn sm gold" style="cursor:default">🔒 Not covered in class yet</span>' : '<a class="btn sm gold" href="' + lockTo().href + '"' + lockTo().attr + '>' + esc(lockTo().label) + '</a>') + '</div>' +
         (open ? IFXPath.html(u.lessons.map(function (l) {
           var done = isDone(c.id, u.id, l.id), isNext = nx && nx.u.id === u.id && nx.l.id === l.id;
           return { href: '#/lesson/' + c.id + '/' + u.id + '/' + l.id, title: l.title, type: l.type, state: done ? 'done' : isNext ? 'next' : 'todo', sub: TYPE[l.type] + (done ? ' · ' + S.done[key3(c.id, u.id, l.id)].score + '%' : '') };
@@ -925,7 +933,10 @@
   }
   /* A level course outside this student's level. Class students see their own level only (class-access.js gives the keys);
      a student with a personal level sees it until the next level opens. Staff and people without a class see everything. */
+  /* Director's rule from 21 Nov 2026: during the free period every signed-in student opens every level and every course.
+     Their own level is still listed first. Set LEVEL_WALL to true to bring the level rule back. */
   function ownLocked(c) {
+    if (!LEVEL_WALL) return false;
     var keys = S.cls || [];
     if (!c || !keys.length || S.teacher || access().staff || access().teacher) return false;
     var has = function (lv) { return keys.indexOf('ge:' + lv) >= 0 || keys.indexOf('be:' + lv) >= 0; };
@@ -954,10 +965,10 @@
     if (sd) html += '<div class="std"><div class="std-l"><b>' + esc(sd.level) + '</b><span>Standard</span></div><div class="grow"><p class="std-ref">📐 Referenced to the ' + esc(sd.ref) + '</p><p>' + esc(sd.desc) + '</p><div class="std-m">' + sd.modes.map(function (m) { return '<span>' + esc(m) + '</span>'; }).join('') + '</div></div></div>';
     c.units.forEach(function (u, ui) {
       var open = unlocked(ui, c.id), waitC = !open && ui === 1 && GATE && (GATE.done[c.id] || 0) < GATE.total;
-      html += '<section class="unit"><div class="unit-h">' + DOODLE(c.id, u.id, 'doodle uh') + '<div style="flex:1"><small>' + esc(t('unit')) + ' ' + (ui + 1) + ' · ' + esc(u.topic) + '</small><h3>' + esc(u.title) + '</h3>' + (window.IFStd && IFStd.unit(c.id, u.id) ? '<p class="cando">🎯 ' + esc(IFStd.unit(c.id, u.id)) + '</p>' : '') + '</div>' + (open ? IFXPath.ring(u.lessons.filter(function (l) { return isDone(c.id, u.id, l.id); }).length, u.lessons.length) : waitC ? '<span class="btn sm gold" style="cursor:default">🔒 Opens when your class finishes Unit 1 (' + (GATE.done[c.id] || 0) + ' of ' + GATE.total + ')</span>' : '<a class="btn sm gold" href="/me/#/upgrade">🔒 ' + esc(t('locked')) + '</a>') + '</div>' +
+      html += '<section class="unit"><div class="unit-h">' + DOODLE(c.id, u.id, 'doodle uh') + '<div style="flex:1"><small>' + esc(t('unit')) + ' ' + (ui + 1) + ' · ' + esc(u.topic) + '</small><h3>' + esc(u.title) + '</h3>' + (window.IFStd && IFStd.unit(c.id, u.id) ? '<p class="cando">🎯 ' + esc(IFStd.unit(c.id, u.id)) + '</p>' : '') + '</div>' + (open ? IFXPath.ring(u.lessons.filter(function (l) { return isDone(c.id, u.id, l.id); }).length, u.lessons.length) : waitC ? '<span class="btn sm gold" style="cursor:default">🔒 Opens when your class finishes Unit 1 (' + (GATE.done[c.id] || 0) + ' of ' + GATE.total + ')</span>' : '<a class="btn sm gold" href="' + lockTo().href + '"' + lockTo().attr + '>' + esc(lockTo().label) + '</a>') + '</div>' +
         IFXPath.html(u.lessons.map(function (l) {
           var done = isDone(c.id, u.id, l.id), isNext = nx && nx.u.id === u.id && nx.l.id === l.id;
-          return { href: open ? '#/lesson/' + c.id + '/' + u.id + '/' + l.id : waitC ? '#/course/' + c.id : '/me/#/upgrade', title: l.title, type: l.type, state: !open ? 'locked' : done ? 'done' : isNext ? 'next' : 'todo', sub: TYPE[l.type] + (done ? ' · ' + S.done[key3(c.id, u.id, l.id)].score + '%' : '') };
+          return { href: open ? '#/lesson/' + c.id + '/' + u.id + '/' + l.id : waitC ? '#/course/' + c.id : lockTo().href, top: !open && !waitC, title: l.title, type: l.type, state: !open ? 'locked' : done ? 'done' : isNext ? 'next' : 'todo', sub: TYPE[l.type] + (done ? ' · ' + S.done[key3(c.id, u.id, l.id)].score + '%' : '') };
         }), t('cont')) + '</section>';
     });
     if (a.teacher) html += '<p style="text-align:center;color:var(--soft)">👩‍🏫 Teacher: open a lesson and press <b>Teach mode</b> to show it on the projector.</p>';
@@ -1203,26 +1214,69 @@
   }
   var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   var words = function (s) { return norm(s).replace(/[^a-z0-9' ]/g, ' ').split(/\s+/).filter(Boolean); };
+  /* "Say it aloud" exercise. Chrome and Android hear the sentence live. iPhone, iPad and the Telegram mini-app cannot
+     (their built-in recognition hangs, which left this step stuck on "Listening…" with Check greyed out), so there the
+     sentence is recorded and the server (/api/stt) writes down what it heard. Whatever goes wrong, the step can never
+     trap the student: it stops by itself, and after a failed attempt Check opens so they can read aloud and carry on. */
   function bindSpeak(e) {
-    var ck = $('#ck'), hd = $('#hd'), mic = $('#mic'), score = 0;
+    var ck = $('#ck'), hd = $('#hd'), mic = $('#mic'), score = 0, fails = 0, cur = null;
+    // "five" and "5", "per cent" and "%" count as the same word, and one wrong letter in a long word is forgiven
+    var NUM = { zero: '0', one: '1', two: '2', three: '3', four: '4', five: '5', six: '6', seven: '7', eight: '8', nine: '9', ten: '10', eleven: '11', twelve: '12', fifteen: '15', twenty: '20', thirty: '30', forty: '40', fifty: '50', sixty: '60', seventy: '70', eighty: '80', ninety: '90', hundred: '100', percent: '%' };
+    var nums = function (a) { return a.join(' ').replace(/per cent/g, 'percent').split(' ').map(function (w) { return NUM[w] || w; }).filter(function (w) { return w !== 'dollars' && w !== 'dollar' && w !== '%'; }); };
+    var want = nums(words(String(e.a).replace(/%/g, ' percent '))), maxMs = Math.min(15000, 4000 + want.length * 700);
     $('#sq2').onclick = function () { say(e.a); };
-    if (!SR) { ck.disabled = false; ck.onclick = function () { result(true, e); }; return; }
+    function grade(alts) {
+      var best = '', bs = -1;
+      alts.forEach(function (tr) { var said = nums(words(tr)), hit = want.filter(function (w) { return said.some(function (y) { return y === w || (w.length >= 5 && lev(w, y) <= 1); }); }).length / want.length; if (hit > bs) { bs = hit; best = tr; } });
+      score = Math.round(Math.max(0, bs) * 100);
+      hd.innerHTML = 'I heard: <b>“' + esc(best) + '”</b> · ' + score + '% of the words';
+      ck.disabled = false;
+    }
+    function idle(label) { mic.disabled = false; mic.classList.remove('on'); mic.textContent = label || '🎙 Try again'; }
+    function selfCheck(msg) { fails++; hd.textContent = msg; score = 100; ck.disabled = false; idle(); }   // could not listen: the student reads aloud and presses Check
+    function unheard() { fails++; idle(); if (fails >= 2) return selfCheck('I still could not hear you. Read the sentence aloud, then press Check.'); hd.textContent = 'I could not hear you. Press Try again and speak a little louder.'; }
+    if (!(SAY_SR || (navigator.mediaDevices && navigator.mediaDevices.getUserMedia && window.MediaRecorder))) { ck.disabled = false; ck.onclick = function () { result(true, e); }; return; }
     mic.onclick = function () {
-      var r = new SR(); r.lang = 'en-GB'; r.interimResults = false; r.maxAlternatives = 3;
-      mic.disabled = true; mic.textContent = '🎙 Listening…'; hd.textContent = '';
-      r.onresult = function (ev) {
-        var best = '', bs = -1;
-        for (var k = 0; k < ev.results[0].length; k++) { var said = words(ev.results[0][k].transcript), want = words(e.a), hit = want.filter(function (w) { return said.indexOf(w) >= 0; }).length / want.length; if (hit > bs) { bs = hit; best = ev.results[0][k].transcript; } }
-        score = Math.round(bs * 100);
-        hd.innerHTML = 'I heard: <b>“' + esc(best) + '”</b> · ' + score + '% of the words';
-        ck.disabled = false;
-      };
-      r.onerror = function (ev) { hd.textContent = ev && /not-allowed|service/.test(ev.error) ? 'The microphone is off for this page. Read the sentence aloud, then press Check.' : 'I could not hear you. Check the microphone and try again.'; if (ev && /not-allowed|service/.test(ev.error)) { score = 100; ck.disabled = false; } };
-      r.onend = function () { mic.disabled = false; mic.textContent = '🎙 Try again'; };
-      try { r.start(); } catch (x) { mic.disabled = false; }
+      if (cur) { cur.stop(); return; }   // second press = stop now
+      try { speechSynthesis.cancel(); } catch (x) {}
+      hd.textContent = ''; ck.disabled = true; score = 0; mic.classList.add('on');
+      var me = cur = { done: false, stop: function () {} };
+      var end = function (fn) { if (me.done) return; me.done = true; clearTimeout(me.to); if (cur === me) cur = null; fn(); };
+      if (SAY_SR) {
+        var r = new SAY_SR(); r.lang = 'en-GB'; r.interimResults = false; r.maxAlternatives = 3;
+        mic.textContent = '🎙 Listening…';
+        me.stop = function () { try { r.abort(); } catch (x) {} end(unheard); };
+        r.onresult = function (ev) { var a = []; for (var k = 0; k < ev.results[0].length; k++) a.push(ev.results[0][k].transcript); end(function () { idle(); grade(a); }); };
+        r.onerror = function (ev) { var off = ev && /not-allowed|service/.test(ev.error); end(function () { off ? selfCheck('The microphone is off for this page. Read the sentence aloud, then press Check.') : unheard(); }); };
+        r.onend = function () { end(unheard); };
+        try { r.start(); } catch (x) { return end(unheard); }
+        me.to = setTimeout(me.stop, maxMs + 3000);
+        return;
+      }
+      mic.textContent = '⏹ Stop';
+      navigator.mediaDevices.getUserMedia({ audio: true }).then(function (st) {
+        if (me.done) { st.getTracks().forEach(function (x) { x.stop(); }); return; }
+        var ch = [], mr;
+        try { mr = new MediaRecorder(st); } catch (x) { st.getTracks().forEach(function (y) { y.stop(); }); return end(function () { selfCheck('Recording is not available here. Read the sentence aloud, then press Check.'); }); }
+        mr.ondataavailable = function (ev) { if (ev.data && ev.data.size) ch.push(ev.data); };
+        mr.onstop = function () {
+          st.getTracks().forEach(function (x) { x.stop(); });
+          var blob = ch.length ? new Blob(ch, { type: mr.mimeType || 'audio/mp4' }) : null;
+          if (!blob || blob.size < 800) return end(unheard);
+          mic.disabled = true; mic.classList.remove('on'); mic.textContent = '… Checking';
+          var gone = setTimeout(function () { end(function () { selfCheck('I couldn’t check the recording just now. Read the sentence aloud, then press Check.'); }); }, 12000);
+          fetch('/api/stt', { method: 'POST', headers: { 'Content-Type': blob.type || 'audio/mp4' }, body: blob })
+            .then(function (res) { return res.ok ? res.json() : Promise.reject(res.status); })
+            .then(function (d) { clearTimeout(gone); var txt = String(d.text || '').trim(); end(function () { if (!txt) return unheard(); idle(); grade([txt]); }); })
+            .catch(function () { clearTimeout(gone); end(function () { selfCheck('I couldn’t check the recording just now. Read the sentence aloud, then press Check.'); }); });
+        };
+        me.stop = function () { clearTimeout(me.to); if (mr.state !== 'inactive') { try { mr.stop(); } catch (x) {} } };
+        hd.textContent = 'Recording… say the sentence, then press Stop.';
+        mr.start(); me.to = setTimeout(me.stop, maxMs);
+      }).catch(function () { end(function () { selfCheck(SAY_IOS && SAY_TG ? 'Telegram cannot use the microphone. Read the sentence aloud, then press Check.' : 'The microphone is off for this page. Read the sentence aloud, then press Check.'); }); });
     };
-    $('#skp').onclick = function () { mic.disabled = true; this.remove(); result(true, e, '', true); };
-    ck.onclick = function () { mic.disabled = true; result(score >= 70, e, score >= 70 ? '' : 'Try to say every word: ' + e.a); };
+    $('#skp').onclick = function () { if (cur) cur.stop(); mic.disabled = true; this.remove(); result(true, e, '', true); };
+    ck.onclick = function () { if (cur) cur.stop(); mic.disabled = true; result(score >= 70, e, score >= 70 ? '' : 'Try to say every word: ' + e.a); };
   }
   var norm = function (s) { return String(s).toLowerCase().replace(/[’‘`]/g, "'").replace(/\s+/g, ' ').replace(/[.?!]$/, '').trim(); };
   function reveal(e) {

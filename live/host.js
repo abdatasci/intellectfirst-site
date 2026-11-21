@@ -374,7 +374,7 @@
     var rk = ranked().filter(function (p) { return !p.kicked; }), you = {}, roster = {};
     rk.forEach(function (p, i) { you[p.pid] = [p.score, i + 1, p.gain, p.ok, p.streak]; roster[p.pid] = [p.name, p.team]; });
     var s = { phase: H.phase, mode: H.mode, title: H.title, pin: H.pin, i: H.i, n: H.qs.length, teams: L.TEAMS.slice(0, H.teamsN), roster: roster, you: you,
-      board: rk.slice(0, full ? 40 : 10).map(function (p) { return [p.name, p.score, p.team, p.correct, p.answered, p.lf || '']; }), tboard: teamBoard(), count: rk.length };
+      board: rk.slice(0, full ? 40 : 10).map(function (p) { return [p.name, p.score, p.team, p.correct, p.answered, p.lf || '', p.pid]; }), tboard: teamBoard(), count: rk.length };
     var q = H.qs[H.i];
     if (H.phase === 'q') { s.q = { p: q.p, o: q.o }; s.left = Math.max(0, H.time * 1000 - (Date.now() - H.qStart)); s.dur = H.time * 1000; s.answered = Object.keys(H.ans).length; }
     if (H.phase === 'reveal' || H.phase === 'board') {
@@ -578,9 +578,10 @@
       var cy = s.mode === 'hack' && race;
       if (cy) h += '<div class="cyhud"><span>▣ IF-NET // SECURE SERVER CLUSTER</span><span class="blink">● LIVE INTRUSION MONITOR</span><span>NODES ONLINE: ' + s.board.length + '</span></div>';
       if (MM.power) h += '<div class="pgrid">';
-      h += '<div class="board"><h2' + (cy ? ' class="glitch" data-t="' + esc('> ' + s.title.toUpperCase()) + '"' : '') + '>' + (cy ? esc('> ' + s.title.toUpperCase()) : (race ? (MM.power ? MM.icon + ' ' : '') + esc(s.title) : 'Scoreboard')) + '</h2>' + (race ? '<div style="text-align:center;margin-bottom:6px"><span class="pill" style="font-size:22px">⏱ <span id="rtime">' + fmt(s.left) + '</span></span>' + (s.mode === 'fish' ? ' <span class="pill fz" id="fzbar"' + (s.fz ? '' : ' hidden') + '>🌊 FRENZY ×2</span>' : '') + '</div>' : '');
+      h += '<div class="board' + (race && s.mode === 'race' && L.Race3D ? ' r3' : '') + '"><h2' + (cy ? ' class="glitch" data-t="' + esc('> ' + s.title.toUpperCase()) + '"' : '') + '>' + (cy ? esc('> ' + s.title.toUpperCase()) : (race ? (MM.power ? MM.icon + ' ' : '') + esc(s.title) : 'Scoreboard')) + '</h2>' + (race ? '<div style="text-align:center;margin-bottom:6px"><span class="pill" style="font-size:22px">⏱ <span id="rtime">' + fmt(s.left) + '</span></span>' + (s.mode === 'fish' ? ' <span class="pill fz" id="fzbar"' + (s.fz ? '' : ' hidden') + '>🌊 FRENZY ×2</span>' : '') + '</div>' : '');
       if (s.tboard.length) { var tm = Math.max(1, s.tboard[0][1]); h += s.tboard.map(function (t, i) { return '<div class="brow t" style="--c:' + L.HEX[t[2]] + '"><span class="fill" style="width:' + (t[1] / tm * 100) + '%;background:' + L.HEX[t[2]] + '40"></span><span class="r">' + (i + 1) + '</span><span class="n">' + esc(t[0]) + ' <small style="opacity:.6">· ' + t[3] + ' players · average</small></span><span class="s">' + t[1] + '</span></div>'; }).join('') + '<div style="height:8px"></div>'; }
       if (race && s.mode === 'fish') h += lake(s, s.board.slice(0, 10)); else
+      if (race && s.mode === 'race' && L.Race3D) h += '<div class="r3slot" id="r3slot"></div></div>'; else
       h += top.map(function (p, i) { return '<div class="brow' + (i === 0 ? ' first' : '') + '" style="--k:' + ROWC[i % ROWC.length] + '"><span class="fill" style="width:' + (p[1] / max * 100) + '%"></span><span class="r">' + (cy ? ('0' + (i + 1)).slice(-2) : i + 1) + '</span><span class="n">' + (cy ? esc(p[0].toUpperCase().replace(/\s+/g, '_')) + '<small class="ip">' + ip(p[0]) + '</small>' : esc(p[0])) + (p[2] >= 0 && s.teams.length ? ' <small style="color:' + teamColor(p[2]) + '">●</small>' : '') + '</span><span class="s">' + (MM.power ? L.fmtN(p[1]) + cur : p[1]) + '</span></div>'; }).join('') + '</div>';
       if (MM.power) h += '<div class="feed"><h3>' + (cy ? 'root@if-net:~$ tail -f breach.log' : 'Live feed') + '</h3>' + ((s.feed || []).slice().reverse().map(function (e) { return '<div class="fe ' + esc(e.k) + '">' + (cy ? (e.k === 'hack' || e.k === 'steal' ? '<b>ACCESS GRANTED</b> ' : '<b class="ok">&gt;</b> ') : '') + esc(e.t) + '</div>'; }).join('') || '<p class="mini" style="color:rgba(255,255,255,.6)">' + (s.mode === 'gold' ? 'Steals and swaps appear here…' : s.mode === 'hack' ? 'Hacks appear here…' : s.mode === 'mine' ? 'Gold and diamonds appear here…' : 'Big catches appear here…') + '</p>') + '</div></div>';
       if (host) h += '<div class="ctrl" style="justify-content:flex-end">' + (race ? ADDT() + '<button class="btn ghost sm" id="endnow">End race now</button>' : '<button class="btn big" id="nextq">' + (s.i + 1 >= s.n ? 'Final results →' : 'Next question →') + '</button><button class="btn ghost sm" id="endnow">End game</button>') + '</div>';
@@ -604,6 +605,7 @@
     }
     h += '</div>';
     view.innerHTML = h;
+    if (L.Race3D) { var r3 = $('#r3slot'); if (r3) L.Race3D.show(r3, s.board.slice(0, 12).map(function (p, i) { return { id: p[6] || p[0] + '#' + i, name: p[0], score: p[1], color: ROWC[H && H.order && p[6] ? Math.max(0, H.order.indexOf(p[6])) % ROWC.length : i % ROWC.length] }; })); else L.Race3D.stop(); }
     if (!host) return;
     var on = function (id, fn) { var el = $('#' + id); if (el) el.onclick = fn; };
     on('begin', begin); on('cancel', function () { if (!L.local) L.api('state', { pin: H.pin, status: 'ended' }).catch(function () {}); H.phase = 'end'; push(true); closeGame(); });
@@ -621,7 +623,12 @@
 
   /* ================= watch mode ================= */
   async function vWatch(pin) {
+    // This browser started the game: watching it would leave the game with no host screen (students play on, but
+    // nothing is counted or shown). Take the host screen back instead.
+    var mine = L.ls.get('live.host');
+    if (mine && String(mine.pin) === String(pin)) { history.replaceState(null, '', location.pathname); return resumeGame(mine); }
     WATCH = pin;
+    setTimeout(function () { if (!ST && WATCH) view.innerHTML = '<div class="stage"><h2>No picture from this game yet</h2><p>The scoreboard is sent by the screen that started the game. That screen is closed, asleep or offline.</p><p>On the computer that started the game, open <b>intellectfirst.com/live/host/</b> and press <b>Resume it</b>. This page will show the game by itself as soon as it is back.</p><p><a class="btn" href="/live/host/">Back</a></p></div>'; }, 9000);
     var wb = $('#wbar'); wb.hidden = false; wb.textContent = 'Watching game ' + pin + ' live';
     view.innerHTML = '<div class="stage"><p>Connecting…</p></div>'; stage(true);
     try {
