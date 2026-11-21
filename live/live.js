@@ -158,7 +158,7 @@
     boss: { name: 'Boss Battle', icon: '👾', tag: 'Whole class together', self: true, power: true, unit: 'hits', cur: '⚔️', blurb: 'The whole class fights Mumbleclaw the Word Monster. Every right answer is a hit; streaks hit harder. Beat the monster before time runs out!' },
     balloon: { name: 'Balloon Race', icon: '🎈', tag: 'Self-paced · great for kids', self: true, power: true, unit: 'm', cur: 'm', blurb: 'Every right answer lifts your hot-air balloon higher. The screen shows everyone floating up. Highest balloon wins!' },
     kart: { name: 'Kart Quest', icon: '🏎️', tag: 'Self-paced · great for kids', self: true, power: true, unit: 'laps', cur: '🏁', blurb: 'From IF Kids Quest: every right answer drives your kart forward, and 3 in a row gives a turbo boost. The big screen shows the whole class racing to the finish flag. A wrong answer makes your kart spin out!' },
-    mine: { name: 'Block Mine', icon: '⛏️', tag: 'Self-paced · 3D block world', self: true, power: true, unit: 'gems', cur: '💎', blurb: 'From IF Block Quest: every right answer lets you mine one of three blocks — stone, coal, iron, gold or diamond… or TNT! Collect the most gems to win. A wrong answer drops some of your gems.' },
+    mine: { name: 'Block Mine', icon: '⛏️', tag: 'Self-paced · like Minecraft', self: true, power: true, unit: 'gems', cur: '💎', blurb: 'From IF Block Quest: every right answer lets you mine one of three blocks — stone, coal, iron, gold or diamond… or TNT! Collect the most gems to win. A wrong answer drops some of your gems.' },
     cash: { name: 'Cash Climb', icon: '💰', tag: 'Self-paced · shop & upgrades', self: true, power: true, unit: 'coins', cur: '💰', blurb: 'Right answers earn coins. Spend them in the shop on upgrades: more coins per answer, streak bonuses and multipliers. Richest player wins!' },
     match: { name: 'Team Match', icon: '🤝', tag: 'Teams · talk together', team: true, unit: 'points', blurb: 'Played in teams. The answers are split across teammates\' phones, so they must talk to find the right one. A wrong answer sends the team back to zero!' }
   };
@@ -176,6 +176,16 @@
 
   /* little sound effects (no files): ok, no, coin, bad, win, hack, splash */
   var AC = null;
+  /* The narrator on the big screen: reads what happens in the game aloud, in English. One line at a time, with a
+     pause between lines so it never talks non-stop. Switched on and off with the Narrator button (kept on this device). */
+  LIVE.narr = { on: LIVE.ls.get('live.narr') !== false, last: 0, text: '' };
+  LIVE.narrate = function (text, urgent) {
+    if (!LIVE.narr.on || !window.speechSynthesis) return;
+    var t = String(text || '').replace(/[^\w\s.,!?'’:;-]/g, ' ').replace(/\s+/g, ' ').trim(), now = Date.now();
+    if (!t || t === LIVE.narr.text && now - LIVE.narr.last < 20000) return;
+    if (!urgent && (now - LIVE.narr.last < 5000 || speechSynthesis.speaking)) return;
+    try { if (urgent) speechSynthesis.cancel(); var u = new SpeechSynthesisUtterance(t); u.lang = 'en-GB'; u.rate = 1.02; u.pitch = 1.05; speechSynthesis.speak(u); LIVE.narr.last = now; LIVE.narr.text = t; } catch (e) {}
+  };
   LIVE.sfx = function (kind) {
     if (LIVE.sfx.off) return;
     try {

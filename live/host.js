@@ -7,7 +7,8 @@
   var CFG = Object.assign({ source: 'gen', level: 'B1', focus: 'mix', topic: '', ai: true, bank: 'v-A2', units: [], qtype: 'def', count: '15', mode: 'classic', time: 20, race: 5, teams: 0, custom: '', title: '', drive: true }, L.ls.get('live.cfg') || {});
 
   if (qsp.get('bank')) { var pb = qsp.get('bank'); CFG.bank = pb; CFG.source = /^y-/.test(pb) ? 'y' : /^g-/.test(pb) ? 'g' : 'v'; CFG.units = qsp.get('units') ? qsp.get('units').split(',') : []; if (CFG.source === 'y' && ['classic', 'race', 'tug', 'boss', 'balloon', 'kart'].indexOf(CFG.mode) < 0) CFG.mode = 'tug'; }
-  function stage(on) { document.body.classList.toggle('light', !on); $('#fs').hidden = !on; $('#back').hidden = !!on; }
+  function stage(on) { document.body.classList.toggle('light', !on); $('#fs').hidden = !on; if ($('#narr')) $('#narr').hidden = !on; $('#back').hidden = !!on; }
+  (function () { var nb = $('#narr'); if (!nb) return; var draw = function () { nb.textContent = (L.narr.on ? '🗣 Narrator on' : '🔇 Narrator off'); }; draw(); nb.onclick = function () { L.narr.on = !L.narr.on; L.ls.set('live.narr', L.narr.on); if (!L.narr.on && window.speechSynthesis) speechSynthesis.cancel(); draw(); if (L.narr.on) L.narrate('Narrator on.', true); }; })();
   $('#fs').onclick = function () { if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen().catch(function () {}); };
   function joinUrl(pin) { return location.origin + '/live/?pin=' + pin + (L.local ? '&bus=local' : ''); }
 
@@ -252,6 +253,7 @@
   function feed(text, a, b, k, extra) {
     var e = Object.assign({ id: ++H.evn, t: text, a: a || null, b: b || null, k: k || '' }, extra || {});
     H.feed.push(e); if (H.feed.length > 12) H.feed.shift();
+    if (L.narrate && (e.k === 'big' || e.k === 'steal' || e.k === 'hack')) L.narrate(e.t);
     BUS.pub('h', 'ev', e);
   }
   function pwOptions(pw) {
@@ -410,6 +412,7 @@
   function lobby() { H.phase = 'lobby'; save(); render(); push(true); }
   function begin() {
     if (!activeCount()) return;
+    if (L.narrate) L.narrate(L.mode(H.mode).self ? 'Ready, steady, go! Answer on your phones.' : 'The game starts now. Good luck!', true);
     if (!L.local) L.api('state', { pin: H.pin, status: 'playing', players: H.order.length }).catch(function () {});
     if (H.mode === 'match') return startMatch();
     var act0 = H.order.filter(function (pid) { return !H.players[pid].kicked; });
@@ -469,6 +472,7 @@
   }
   function fmt(ms) { var s = Math.max(0, Math.ceil(ms / 1000)); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); }
   async function finish() {
+    try { var w1 = ranked().filter(function (p) { return !p.kicked; })[0]; if (L.narrate && w1 && H.phase !== 'end') L.narrate(H.teamsN || H.mode === 'boss' || H.mode === 'tug' ? 'Time is up! Well done, everyone!' : 'Time is up! The winner is ' + w1.name + '. Well done, everyone!', true); } catch (e) {}
     clearInterval(timers.q); clearInterval(timers.race);
     if (H.phase === 'end') return;
     H.phase = 'end'; L.sfx('win'); save(); render(); push(true);
@@ -583,7 +587,7 @@
       h += '<div class="board' + (race && s.mode === 'race' && L.Race3D ? ' r3' : '') + '"><h2' + (cy ? ' class="glitch" data-t="' + esc('> ' + s.title.toUpperCase()) + '"' : '') + '>' + (cy ? esc('> ' + s.title.toUpperCase()) : (race ? (MM.power ? MM.icon + ' ' : '') + esc(s.title) : 'Scoreboard')) + '</h2>' + (race ? '<div style="text-align:center;margin-bottom:6px"><span class="pill" style="font-size:22px">⏱ <span id="rtime">' + fmt(s.left) + '</span></span>' + (s.mode === 'fish' ? ' <span class="pill fz" id="fzbar"' + (s.fz ? '' : ' hidden') + '>🌊 FRENZY ×2</span>' : '') + '</div>' : '');
       if (s.tboard.length) { var tm = Math.max(1, s.tboard[0][1]); h += s.tboard.map(function (t, i) { return '<div class="brow t" style="--c:' + L.HEX[t[2]] + '"><span class="fill" style="width:' + (t[1] / tm * 100) + '%;background:' + L.HEX[t[2]] + '40"></span><span class="r">' + (i + 1) + '</span><span class="n">' + esc(t[0]) + ' <small style="opacity:.6">· ' + t[3] + ' players · average</small></span><span class="s">' + t[1] + '</span></div>'; }).join('') + '<div style="height:8px"></div>'; }
       if (race && s.mode === 'fish') h += lake(s, s.board.slice(0, 10)); else
-      if (race && s.mode === 'race' && L.Race3D) h += '<div class="r3slot" id="r3slot"></div></div>'; else
+      if (race && (s.mode === 'race' || s.mode === 'mine' || s.mode === 'gold' || s.mode === 'cash') && L.Race3D) h += '<div class="r3slot" id="r3slot"></div></div>'; else
       h += top.map(function (p, i) { return '<div class="brow' + (i === 0 ? ' first' : '') + '" style="--k:' + ROWC[i % ROWC.length] + '"><span class="fill" style="width:' + (p[1] / max * 100) + '%"></span><span class="r">' + (cy ? ('0' + (i + 1)).slice(-2) : i + 1) + '</span><span class="n">' + (cy ? esc(p[0].toUpperCase().replace(/\s+/g, '_')) + '<small class="ip">' + ip(p[0]) + '</small>' : esc(p[0])) + (p[2] >= 0 && s.teams.length ? ' <small style="color:' + teamColor(p[2]) + '">●</small>' : '') + '</span><span class="s">' + (MM.power ? L.fmtN(p[1]) + cur : p[1]) + '</span></div>'; }).join('') + '</div>';
       if (MM.power) h += '<div class="feed"><h3>' + (cy ? 'root@if-net:~$ tail -f breach.log' : 'Live feed') + '</h3>' + ((s.feed || []).slice().reverse().map(function (e) { return '<div class="fe ' + esc(e.k) + '">' + (cy ? (e.k === 'hack' || e.k === 'steal' ? '<b>ACCESS GRANTED</b> ' : '<b class="ok">&gt;</b> ') : '') + esc(e.t) + '</div>'; }).join('') || '<p class="mini" style="color:rgba(255,255,255,.6)">' + (s.mode === 'gold' ? 'Steals and swaps appear here…' : s.mode === 'hack' ? 'Hacks appear here…' : s.mode === 'mine' ? 'Gold and diamonds appear here…' : 'Big catches appear here…') + '</p>') + '</div></div>';
       if (host) h += '<div class="ctrl" style="justify-content:flex-end">' + (race ? ADDT() + '<button class="btn ghost sm" id="endnow">End race now</button>' : '<button class="btn big" id="nextq">' + (s.i + 1 >= s.n ? 'Final results →' : 'Next question →') + '</button><button class="btn ghost sm" id="endnow">End game</button>') + '</div>';
@@ -607,7 +611,7 @@
     }
     h += '</div>';
     view.innerHTML = h;
-    if (L.Race3D) { var r3 = $('#r3slot'); if (r3) L.Race3D.show(r3, s.board.slice(0, 12).map(function (p, i) { return { id: p[6] || p[0] + '#' + i, name: p[0], score: p[1], color: ROWC[H && H.order && p[6] ? Math.max(0, H.order.indexOf(p[6])) % ROWC.length : i % ROWC.length] }; }), s.mode === 'balloon' ? { kind: 'balloon', per: 2.6, unit: 'm' } : s.mode === 'kart' ? { per: 2.6, unit: 'laps' } : null); else L.Race3D.stop(); }
+    if (L.Race3D) { var r3 = $('#r3slot'); if (r3) L.Race3D.show(r3, s.board.slice(0, 12).map(function (p, i) { return { id: p[6] || p[0] + '#' + i, name: p[0], score: p[1], color: ROWC[H && H.order && p[6] ? Math.max(0, H.order.indexOf(p[6])) % ROWC.length : i % ROWC.length] }; }), s.mode === 'balloon' ? { kind: 'balloon', per: 2.6, unit: 'm' } : s.mode === 'kart' ? { per: 2.6, unit: 'laps' } : s.mode === 'mine' ? { kind: 'mine', per: .5, unit: '💎' } : s.mode === 'gold' ? { kind: 'mine', per: .05, unit: '🪙', gem: '#e8c36a' } : s.mode === 'cash' ? { kind: 'mine', per: .05, unit: '💰', gem: '#5fd068' } : null); else L.Race3D.stop(); }
     if (!host) return;
     var on = function (id, fn) { var el = $('#' + id); if (el) el.onclick = fn; };
     on('begin', begin); on('cancel', function () { if (!L.local) L.api('state', { pin: H.pin, status: 'ended' }).catch(function () {}); H.phase = 'end'; push(true); closeGame(); });
