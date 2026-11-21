@@ -621,7 +621,12 @@
 
   /* ================= watch mode ================= */
   async function vWatch(pin) {
+    // This browser started the game: watching it would leave the game with no host screen (students play on, but
+    // nothing is counted or shown). Take the host screen back instead.
+    var mine = L.ls.get('live.host');
+    if (mine && String(mine.pin) === String(pin)) { history.replaceState(null, '', location.pathname); return resumeGame(mine); }
     WATCH = pin;
+    setTimeout(function () { if (!ST && WATCH) view.innerHTML = '<div class="stage"><h2>No picture from this game yet</h2><p>The scoreboard is sent by the screen that started the game. That screen is closed, asleep or offline.</p><p>On the computer that started the game, open <b>intellectfirst.com/live/host/</b> and press <b>Resume it</b>. This page will show the game by itself as soon as it is back.</p><p><a class="btn" href="/live/host/">Back</a></p></div>'; }, 9000);
     var wb = $('#wbar'); wb.hidden = false; wb.textContent = 'Watching game ' + pin + ' live';
     view.innerHTML = '<div class="stage"><p>Connecting…</p></div>'; stage(true);
     try {
