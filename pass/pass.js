@@ -38,7 +38,12 @@
   function left(ms) { var h = Math.ceil(ms / 3600e3); return h > 48 ? Math.ceil(h / 24) + ' days left' : h > 1 ? h + ' hours left' : 'less than 1 hour left'; }
   var view = $('#view'), code = (new URLSearchParams(location.search).get('c') || '').replace(/[^A-Za-z0-9]/g, '').toUpperCase();
   function gone(h, p) { view.innerHTML = '<div class="hero"><h1>' + h + '</h1><p>' + p + '</p></div><div class="note">IF Academy · Al-Farabi 19, Kostanay. Ask us for a new pass, or <a href="/me/#/register">create a free account</a>.</div>'; }
-  if (!code) return gone('This page needs a pass', 'Scan the QR code from IF Academy to open your games.');
+  if (!code) {   // no QR: type the 8-letter code
+    view.innerHTML = '<div class="hero"><h1>Your free pass</h1><p>Scan the QR code from IF Academy, or type your code here.</p></div><div class="panel"><label class="f">Pass code (8 letters and numbers)</label><input type="text" id="pc" maxlength="12" autocomplete="off" autocapitalize="characters" placeholder="ABCD2345" style="font-size:22px;letter-spacing:.2em;text-align:center;text-transform:uppercase"><p class="err" id="perr"></p><button class="btn gold" id="pgo">Open my games</button></div>';
+    var goCode = function () { var v = $('#pc').value.replace(/[^A-Za-z0-9]/g, '').toUpperCase(); if (v.length !== 8) { $('#perr').textContent = 'The code has 8 letters and numbers.'; return; } location.href = '/pass/?c=' + v; };
+    $('#pgo').onclick = goCode; $('#pc').onkeydown = function (e) { if (e.key === 'Enter') goCode(); };
+    return;
+  }
   fetch('/api/pass/' + code).then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); }).then(function (p) {
     if (!p.left) { try { localStorage.removeItem('if.pass'); } catch (e) {} return gone('Your free pass has finished', 'We hope you enjoyed it, ' + esc(p.first) + '!'); }
     try { localStorage.setItem('if.pass', JSON.stringify({ code: code, until: p.until, level: p.level })); } catch (e) {}
@@ -47,6 +52,7 @@
       var g = C[k]; if (!g) return;
       h += '<h2>' + IC[k] + esc(g.t) + '</h2><p class="sd">' + esc(g.s) + '</p><div class="grid">' + g.c.map(function (c) { return '<a class="card" href="' + esc(c[2]) + '">' + IC[k] + '<div><b>' + esc(c[0]) + '</b><span>' + esc(c[1]) + '</span></div></a>'; }).join('') + '</div>';
     });
+    h += '<h2>🎮 All games</h2><p class="sd">Your pass opens every game in IF App until it ends.</p><p><a class="btn gold" href="/app/#/games">Open all games</a></p>';
     h += '<div class="note">Keep this page: add it to your home screen, or scan the QR code again to come back. For parents: this is a free trial from IF Academy, Al-Farabi 19, Kostanay.</div>';
     view.innerHTML = h;
   }).catch(function (s) { gone(s === 404 ? 'We cannot find this pass' : 'Could not open the pass', s === 404 ? 'Please scan the QR code again.' : 'Check the internet connection and try again.'); });
