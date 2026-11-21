@@ -118,14 +118,14 @@
     { id: 'write', t: 'WRITE', e: '✍️', sk: 'write', n: 10, p: 'Read the meaning and write the word.' },
     { id: 'spell', t: 'SPELL', e: '🔤', sk: 'write', n: 10, p: 'Listen to the word and type what you hear.' },
     { id: 'scramble', t: 'SCRAMBLE', e: '🔀', sk: 'write', n: 10, p: 'Put the letters back in the right order.' },
-    { id: 'speed', t: 'SPEED QUIZ', e: '⏱️', sk: 'speed', n: 40, p: '60 seconds. How many meanings can you match?' },
-    { id: 'gravity', t: 'GRAVITY', e: '🪐', sk: 'speed', n: 30, p: 'Type the word before its meaning hits the ground.' },
+    { id: 'speed', t: 'SPEED QUIZ', e: '⏱️', sk: 'speed', n: 80, p: '60 seconds. How many meanings can you match?' },
+    { id: 'gravity', t: 'GRAVITY', e: '🪐', sk: 'speed', n: 60, p: 'Type the word before its meaning hits the ground.' },
     { id: 'search', t: 'WORD SEARCH', e: '🔎', sk: 'focus', n: 10, p: 'Find the hidden words in the grid — across, down and diagonal.' },
     { id: 'memory', t: 'MEMORY', e: '🃏', sk: 'focus', n: 8, p: 'Turn two cards at a time and pair each word with its meaning.' },
-    { id: 'blast', t: 'BLAST', e: '🚀', sk: 'vocab', n: 25, p: 'Shoot the asteroid that matches the meaning.' },
-    { id: 'treasure', t: 'TREASURE HUNT', e: '💰', sk: 'vocab', n: 25, p: 'Answer to open chests. Beat three bots to the most gold.' },
-    { id: 'fishing', t: 'FISHING', e: '🎣', sk: 'vocab', n: 25, p: 'Answer to cast. Catch the heaviest fish in 2½ minutes.' },
-    { id: 'race', t: 'RACE', e: '🏎️', sk: 'vocab', n: 25, p: 'Every right answer moves your car. Beat three bots to the line.' },
+    { id: 'blast', t: 'BLAST', e: '🚀', sk: 'vocab', n: 120, p: 'Shoot the asteroid that matches the meaning.' },
+    { id: 'treasure', t: 'TREASURE HUNT', e: '💰', sk: 'vocab', n: 60, p: 'Answer to open chests. Beat three bots to the most gold.' },
+    { id: 'fishing', t: 'FISHING', e: '🎣', sk: 'vocab', n: 60, p: 'Answer to cast. Catch the heaviest fish in 2½ minutes.' },
+    { id: 'race', t: 'RACE', e: '🏎️', sk: 'vocab', n: 60, p: 'Every right answer moves your car. Beat three bots to the line.' },
     { id: 'factory', t: 'FACTORY', e: '🏭', sk: 'vocab', n: 25, p: 'Answer to earn cash, build machines and get rich.' },
     { id: 'cafe', t: 'CAFÉ', e: '☕', sk: 'vocab', n: 25, p: 'Answer to restock. Serve customers before they leave.' },
     { id: 'defense', t: 'MONSTER DEFENSE', e: '🛡️', sk: 'vocab', n: 25, p: 'Answer to fire at monsters before they reach your castle.' },
@@ -135,11 +135,20 @@
   var wgById = function (id) { return WG.filter(function (g) { return g.id === id; })[0]; };
   var wkey = function (id) { return (S.tr === 'general' ? '' : S.tr + ':') + 'w:' + id; };
   var wlevel = function (id) { var v = S.wlv[wkey(id)]; return v == null ? Math.max(0, WL.indexOf(S.lv)) : Math.min(v, WMAX); };   // teens and adults start at B1; it adapts from the first round
+  /* Words for one round. The games that keep going until you lose (Blast, Gravity, Speed quiz…) get a long list, so a word
+     does not come round twice in one game; and each new round starts with words you have not had yet at this level
+     (SEEN, kept while the page is open), in a fresh random order. */
+  var SEEN = {};
   function wordsFor(id, lvi) {
-    var B = window.ML_WORDS || { levels: {} }, L = B.levels[WL[lvi]] || [], pick = shuffle(L).slice(0, 60);
-    if (S.tr === 'ielts' && lvi >= 3) pick = shuffle((B.ielts || []).concat(lvi >= 5 ? L : [])).slice(0, 60);
-    if (S.tr === 'business') { var bz = B.business || {}, k = ['A2', 'A2', 'A2', 'B1', 'B2', 'C1', 'C1'][lvi]; pick = shuffle((bz[k] || []).concat(pick.slice(0, 20))); }
-    var seen = {}; return pick.filter(function (x) { var k = x[0].toLowerCase(); if (seen[k]) return false; seen[k] = 1; return true; }).slice(0, wgById(id).n).map(function (x) { return { w: x[0], d: x[1], ru: '', dr: '' }; });
+    var B = window.ML_WORDS || { levels: {} }, L = B.levels[WL[lvi]] || [], n = wgById(id).n, all = L;
+    if (S.tr === 'ielts' && lvi >= 3) all = (B.ielts || []).concat(lvi >= 5 ? L : []);
+    if (S.tr === 'business') { var bz = B.business || {}, k = ['A2', 'A2', 'A2', 'B1', 'B2', 'C1', 'C1'][lvi], own = bz[k] || []; all = own.concat(shuffle(L).slice(0, Math.max(20, n - own.length))); }
+    var uniq = {}, pool = all.filter(function (x) { var w = x[0].toLowerCase(); if (uniq[w]) return false; uniq[w] = 1; return true; });
+    var sk = S.tr + ':' + lvi, seen = SEEN[sk] || (SEEN[sk] = {}), fresh = pool.filter(function (x) { return !seen[x[0].toLowerCase()]; });
+    if (fresh.length < Math.min(n, pool.length)) { seen = SEEN[sk] = {}; fresh = pool; }   // every word at this level has been used: start again
+    var pick = shuffle(fresh).slice(0, n);
+    pick.forEach(function (x) { seen[x[0].toLowerCase()] = 1; });
+    return pick.map(function (x) { return { w: x[0], d: x[1], ru: '', dr: '' }; });
   }
   function bankAt(lv) {
     var B = window.ML_WORDS || { levels: {} }, L = (B.levels[lv] || []).filter(function (x) { return x[0].length <= 22; }), i = WL.indexOf(lv);
