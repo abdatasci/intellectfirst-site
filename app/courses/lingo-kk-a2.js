@@ -1,10 +1,10 @@
 /* IF Lingo · Kazakh A2: an original IF Academy course for people who speak English and have finished Kazakh A1.
    Word lines: word | part of speech | meaning in English | example | (empty) | how to say it | the example in English.
-   Plan: 20 units and a level test (project doc claude/if-lingo.md). Built so far: units 1 to 13. */
+   Plan: 20 units and a level test (project doc claude/if-lingo.md). All 20 units are here; the listening lessons, word bank and level test are in their own files when built. */
 IFX.course({
   id: 'kk-a2', track: 'lang', lang: 'kk-KZ', level: 'A2', next: 'B1', icon: '🇰🇿',
   title: 'Kazakh A2', sub: 'Everyday Kazakh',
-  blurb: 'Say where you are from, describe your city and people, order in a restaurant, ask the way, see a doctor and make plans with friends. The first 13 of 20 units, explained in English.',
+  blurb: 'Say where you are from, describe your city and people, order in a restaurant, ask the way, see a doctor and make plans with friends. 20 units, explained in English.',
   units: []
 });
 (function () {
@@ -255,6 +255,140 @@ IFX.course({
         k.tf('In “Мен ыдыс жуып, демаламын” only the last verb has the person ending.', true),
         k.ord('Мен ыдыс жуып демаламын')]],
       r: ['Saturday is cleaning day', 'Сенбі — үй жинайтын күн. Біздің отбасымызда бәрі көмектеседі.\n\nАнам: «Кім не істейді?»\n\nӘкем: «Мен ыдыс жуып, қоқыс шығарамын».\n\nМен: «Мен бөлмемді жинаймын. Шаңсорғыш қайда?»\n\nӘпкем: «Мен кір жуып, содан кейін үтіктеймін».\n\nЕкі сағаттан кейін пәтерде тәртіп. Енді демалуға болады!\n\n(үй жинайтын күн = the day for cleaning the house · бәрі = everyone · енді = now)', [
-        k.mc('Who will wash the dishes?', ['the father', 'the mother', 'the sister'], 0), k.tf('The sister asks for the vacuum cleaner.', false), k.mc('Which day is cleaning day?', ['Saturday', 'Sunday', 'Friday'], 0)]] }
+        k.mc('Who will wash the dishes?', ['the father', 'the mother', 'the sister'], 0), k.tf('The sister asks for the vacuum cleaner.', false), k.mc('Which day is cleaning day?', ['Saturday', 'Sunday', 'Friday'], 0)]] },
+
+    { id: 'u14', t: 'Егер… Plans and conditions', topic: 'Plans',
+      v: ['Plans and decisions', `
+егер | word | if | Егер жаңбыр жауса, мен үйде боламын. | | ye-GER | If it rains, I will be at home.
+шешу | verb | to decide | Мен қазақша үйренемін деп шештім. | | she-SHOO | I decided to learn Kazakh.
+оқуға түсу | verb | to enter (a university) | Ол университетке оқуға түсті. | | o-qoo-GHA tu-SOO | She entered university.
+көшу | verb | to move (to a new home) | Біз Астанаға көштік. | | ko-SHOO | We moved to Astana.
+бәлкім | adverb | perhaps | Бәлкім, ол үйде. | | bal-KIM | Perhaps he is at home.
+міндетті түрде | phrase | definitely | Мен міндетті түрде келемін. | | min-det-TI tur-DE | I will definitely come.
+ниет | noun | intention | Менің ниетім жақсы. | | ni-YET | My intention is good.
+үміт | noun | hope | Менің үмітім бар. | | u-MIT | I have hope.`],
+      g: ['If…: -са, -се', '<p>For <b>if</b>, the verb takes <b>-са</b> (hard words) or <b>-се</b> (soft words), then the person ending. The word <b>егер</b> (if) can start the sentence.</p><table><tr><th>Who</th><th>бару (to go)</th><th>келу (to come)</th></tr><tr><td>мен</td><td>бар<b>сам</b></td><td>кел<b>сем</b></td></tr><tr><td>сіз</td><td>бар<b>саңыз</b></td><td>кел<b>сеңіз</b></td></tr><tr><td>ол</td><td>бар<b>са</b></td><td>кел<b>се</b></td></tr><tr><td>біз</td><td>бар<b>сақ</b></td><td>кел<b>сек</b></td></tr></table><ul><li>Егер ауа райы жақсы бол<b>са</b>, біз паркке барамыз. = If the weather is good, we will go to the park.</li><li>Егер уақытым бол<b>са</b>, келемін. = If I have time, I will come.</li></ul>', [
+        k.mc('Егер ауа райы жақсы бол___, біз паркке барамыз.', ['са', 'се', 'сам'], 0),
+        k.mc('Егер мен Астанаға бар___, сізге хабарласамын.', ['сам', 'сем', 'са'], 0),
+        k.mc('Егер сіз кел___, мен қуанамын.', ['сеңіз', 'саңыз', 'се'], 0),
+        k.tf('“Егер” means “if”.', true),
+        k.ord('Егер уақытым болса мен келемін')]],
+      r: ['Aigul’s plans', 'Менің атым Айгүл. Менің жоспарым көп.\n\nБиыл мен мектепті бітіремін. Менің мақсатым — Астанадағы университетке оқуға түсу. Егер оқуға түссем, Астанаға көшемін. Бәлкім, тәтемнің үйінде тұрамын.\n\nАлты жылдан кейін дәрігер боламын. Мен шештім: міндетті түрде өз қаламдағы ауруханада жұмыс істеймін.\n\n(биыл = this year · өз қаламдағы = in my own city)', [
+        k.mc('What is Aigul’s goal?', ['to enter university', 'to finish work', 'to buy a flat'], 0), k.tf('Perhaps she will live at her aunt’s home.', true), k.mc('What will she be in six years?', ['a doctor', 'a teacher', 'a student'], 0)]] },
+
+    { id: 'u15', t: 'Алло! Phone and messages', topic: 'Communication',
+      v: ['Calls and messages', `
+хабарлама | noun | message | Мен хабарламаңызды алдым. | | kha-bar-la-MA | I got your message.
+қоңырау | noun | call, bell | Бұл маңызды қоңырау. | | qo-ngy-RAU | This is an important call.
+қоңырау шалу | verb | to call, to phone | Мен кешке қоңырау шаламын. | | qo-ngy-RAU sha-LOO | I will call in the evening.
+жіберу | verb | to send | Мен хат жібердім. | | zhi-be-ROO | I sent a letter.
+жеткізу | verb | to pass on, to deliver | Мен оған жеткіземін. | | zhet-ki-ZOO | I will pass it on to him.
+байланыс | noun | connection, signal | Мұнда байланыс нашар. | | bay-la-NYS | The signal is bad here.
+зарядтау | verb | to charge | Телефонды зарядтау керек. | | za-ryad-TAU | The phone needs charging.
+өшіру | verb | to switch off | Телефонды өшіріңізші. | | o-shi-ROO | Please switch off the phone.`],
+      g: ['To whom? маған, оған, Маратқа', '<p>The person who <b>gets</b> the call, the message or the thing takes the “to” ending you know from places (<b>-ға, -ге, -қа, -ке</b>).</p><table><tr><th>мен</th><th>сен</th><th>сіз</th><th>ол</th><th>біз</th><th>олар</th></tr><tr><td>маған</td><td>саған</td><td>сізге</td><td>оған</td><td>бізге</td><td>оларға</td></tr></table><ul><li>Марат<b>қа</b> қоңырау шалыңыз. = Call Marat.</li><li>Айгүл<b>ге</b> хабарлама жібердім. = I sent Aigul a message.</li><li><b>Маған</b> ертең қоңырау шалыңыз. = Call me tomorrow.</li></ul><p>After “my” (<b>-м</b>) the ending is <b>-а, -е</b>: анам → анам<b>а</b> (to my mother), әкем → әкем<b>е</b> (to my father).</p>', [
+        k.mc('Мен Марат___ қоңырау шалдым.', ['қа', 'ға', 'ке'], 0),
+        k.mc('Айгүл___ хабарлама жіберіңіз.', ['ге', 'ға', 'ке'], 0),
+        k.mc('___ ертең қоңырау шалыңыз. (me)', ['Маған', 'Мен', 'Менің'], 0),
+        k.mc('Мен ___ кітап бердім. (to him)', ['оған', 'ол', 'оның'], 0),
+        k.ord('Мен анама кешке қоңырау шаламын')]],
+      r: ['A phone call', '— Алло! Сәлеметсіз бе. Маратты шақырыңызшы.\n\n— Ол қазір жоқ. Оған не айтайын?\n\n— Мен Джонмын, оның әріптесімін. Оған айтыңызшы: жиналыс сағат онда болады.\n\n— Жақсы, жеткіземін. Ол сізге қоңырау шалады.\n\n— Рақмет. Мен оған хабарлама да жіберемін. Сау болыңыз!\n\nКешке Марат хабарламаны алып, Джонға қоңырау шалды.\n\n(не айтайын = what shall I say)', [
+        k.mc('Who is calling?', ['John, a colleague', 'Marat’s brother', 'a doctor'], 0), k.tf('Marat answers the phone.', false), k.mc('When is the meeting?', ['at ten', 'at two', 'at nine'], 0)]] },
+
+    { id: 'u16', t: 'Мерекелер. Holidays and dates', topic: 'Holidays',
+      v: ['Celebrating', `
+Жаңа жыл | noun | New Year | Жақында Жаңа жыл! | | zha-NGA zhyl | New Year is soon!
+құттықтау | verb | to congratulate | Мен сізді құттықтаймын! | | qoot-tyq-TAU | I congratulate you!
+тілеу | verb | to wish | Сізге денсаулық тілеймін. | | ti-LEU | I wish you good health.
+бақыт | noun | happiness | Сізге бақыт тілеймін! | | ba-QYT | I wish you happiness!
+дәстүр | noun | tradition | Бұл ескі дәстүр. | | das-TUR | This is an old tradition.
+тойлау | verb | to celebrate | Біз туған күнді тойлаймыз. | | toy-LAU | We are celebrating a birthday.
+бірінші | number | first | Бұл бірінші сабақ. | | bi-rin-SHI | This is the first lesson.
+екінші | number | second | Біз екінші қабатта тұрамыз. | | ye-kin-SHI | We live on the second floor.`],
+      g: ['First, second, third… and dates', '<p>Add <b>-ншы, -нші</b> after a vowel and <b>-ыншы, -інші</b> after a consonant.</p><table><tr><th>1</th><td>бір<b>інші</b></td><th>6</th><td>алты<b>ншы</b></td></tr><tr><th>2</th><td>екі<b>нші</b></td><th>7</th><td>жеті<b>нші</b></td></tr><tr><th>3</th><td>үш<b>інші</b></td><th>8</th><td>сегіз<b>інші</b></td></tr><tr><th>4</th><td>төрт<b>інші</b></td><th>9</th><td>тоғыз<b>ыншы</b></td></tr><tr><th>5</th><td>бес<b>інші</b></td><th>10</th><td>он<b>ыншы</b></td></tr></table><p><b>Dates:</b> the number in this form, then the month.</p><ul><li>Бүгін бірінші қаңтар. = Today is the first of January.</li><li>Менің туған күнім бесінші мамыр<b>да</b>. = My birthday is on the fifth of May.</li></ul><p>For a holiday: <b>Жаңа жылыңызбен!</b> = Happy New Year! <b>Туған күніңізбен!</b> = Happy birthday!</p>', [
+        k.mc('5 → …', ['бесінші', 'бесыншы', 'бесншы'], 0),
+        k.mc('6 → …', ['алтыншы', 'алтынші', 'алтыыншы'], 0),
+        k.mc('Жаңа жыл — ___ қаңтарда. (the first)', ['бірінші', 'бір', 'біріншы'], 0),
+        k.mc('“Happy New Year!” = …', ['Жаңа жылыңызбен!', 'Жаңа жыл бар!', 'Туған күніңізбен!'], 0),
+        k.ord('Бүгін бірінші қаңтар')]],
+      r: ['Holidays in Kazakhstan', 'Қазақстанда мереке көп.\n\nЖаңа жылды бірінші қаңтарда тойлайды. Жиырма екінші наурыз — Наурыз мейрамы. Бұл ескі дәстүр: адамдар наурыз көже дайындайды және қонаққа барады.\n\nСегізінші наурызда ер адамдар әйелдерді құттықтайды және гүл сыйлайды.\n\nМерекеде біз: «Құттықтаймын! Сізге бақыт пен денсаулық тілеймін!» — дейміз.\n\n(гүл сыйлайды = give flowers · дейміз = we say)', [
+        k.mc('When is Nauryz?', ['on 22 March', 'on 1 January', 'on 8 March'], 0), k.tf('New Year is celebrated on the first of January.', true), k.mc('What do people wish each other?', ['happiness and health', 'money', 'good weather'], 0)]] },
+
+    { id: 'u17', t: 'Менің ойымша… Feelings and opinions', topic: 'Opinions',
+      v: ['How you feel, what you think', `
+қуанышты | adjective | glad | Мен сізді көргеніме қуаныштымын. | | qoo-a-nysh-TY | I am glad to see you.
+көңілсіз | adjective | sad | Бұл көңілсіз фильм. | | ko-ngil-SIZ | This is a sad film.
+уайымдау | verb | to worry | Уайымдамаңыз! | | oo-ay-ym-DAU | Do not worry!
+қорқу | verb | to be afraid | Мен иттен қорқамын. | | qor-QOO | I am afraid of dogs.
+қызықсыз | adjective | boring | Бұл кітап қызықсыз. | | qy-zyq-SYZ | This book is boring.
+пікір | noun | opinion | Сіздің пікіріңіз қандай? | | pi-KIR | What is your opinion?
+менің ойымша | phrase | in my opinion | Менің ойымша, бұл жақсы идея. | | me-NING o-yym-SHA | In my opinion, this is a good idea.
+сезім | noun | feeling | Бұл жақсы сезім. | | se-ZIM | This is a good feeling.`],
+      g: ['I think that…: деп ойлаймын', '<p>Two ways to give an opinion:</p><ul><li><b>Менің ойымша,</b> бұл жақсы фильм. = In my opinion, this is a good film.</li><li>Бұл жақсы фильм <b>деп ойлаймын</b>. = I think that this is a good film.</li></ul><p>With <b>деп ойлаймын</b> the opinion comes <b>first</b>, like a full sentence, and <b>деп</b> closes it:</p><table><tr><th>The opinion</th><th></th><th>Meaning</th></tr><tr><td>Ол келеді</td><td><b>деп ойлаймын</b>.</td><td>I think he will come.</td></tr><tr><td>Бұл қымбат</td><td><b>деп ойлаймын</b>.</td><td>I think this is expensive.</td></tr></table><p>You know <b>ұнайды</b> from A1. The past is <b>ұнады</b>, and “did not like” is <b>ұнамады</b>: Маған фильм ұнады. Маған фильм ұнамады.</p>', [
+        k.mc('___ ойымша, бұл жақсы фильм.', ['Менің', 'Мен', 'Маған'], 0),
+        k.mc('Бұл жақсы кітап ___ ойлаймын.', ['деп', 'және', 'егер'], 0),
+        k.mc('Маған бұл фильм ___. (did not like)', ['ұнамады', 'ұнады', 'ұнайды'], 0),
+        k.mc('“I think he will come.” = …', ['Ол келеді деп ойлаймын.', 'Мен ол келеді ойлаймын деп.', 'Ол келді ме?'], 0),
+        k.ord('Бұл жақсы фильм деп ойлаймын')]],
+      r: ['After the film', '— Фильм саған ұнады ма?\n\n— Маған өте ұнады! Менің ойымша, бұл биылғы ең жақсы фильм. Ал саған?\n\n— Маған онша ұнамады. Қызықсыз болды.\n\n— Шынымен бе? Неге?\n\n— Оқиға көңілсіз, актерлер де ұнамады.\n\n— Ал мен актерлер жақсы ойнады деп ойлаймын. Мен тіпті соңында уайымдадым!\n\n— Жарайды, әркімнің өз пікірі бар. Саған ұнағанына қуаныштымын.\n\n(биылғы = this year’s · онша = not very · соңында = at the end · әркімнің өз пікірі бар = everyone has their own opinion)', [
+        k.mc('What are they talking about?', ['a film', 'a book', 'a concert'], 0), k.tf('Both of them liked it.', false), k.mc('What did the second speaker think of the film?', ['it was boring', 'it was frightening', 'it was wonderful'], 0)]] },
+
+    { id: 'u18', t: 'Қызмет көрсету. Getting things done', topic: 'Services',
+      v: ['Services in town', `
+шаштараз | noun | hairdresser’s | Мен шаштаразға барамын. | | shash-ta-RAZ | I am going to the hairdresser’s.
+шаш қию | verb | to cut hair | Маған шаш қию керек. | | shash qi-YOO | I need a haircut.
+жөндеу | verb | to repair, to fix | Мен телефоныңызды жөндеймін. | | zhon-DEU | I will fix your phone.
+сәлемдеме | noun | parcel | Сізге сәлемдеме келді. | | sa-lem-de-ME | A parcel has come for you.
+кезек | noun | queue | Мұнда кезек үлкен. | | ke-ZEK | There is a long queue here.
+бұзылу | verb | to break down | Менің телефоным бұзылды. | | boo-zy-LOO | My phone has broken.
+қызмет | noun | service | Бұл қызмет қанша тұрады? | | qyz-MET | How much is this service?
+шебер | noun | repairman, master | Шебер ертең келеді. | | she-BER | The repairman will come tomorrow.`],
+      g: ['In order to: -у үшін', '<p>To say <b>why</b> you go somewhere or do something, use the dictionary form of the verb (<b>-у</b>) + <b>үшін</b>.</p><ul><li>Мен сәлемдеме <b>алу үшін</b> поштаға барамын. = I am going to the post office to get a parcel.</li><li>Ол қазақша <b>үйрену үшін</b> Қазақстанға келді. = He came to Kazakhstan to learn Kazakh.</li><li>Мен нан <b>сатып алу үшін</b> дүкенге барамын. = I am going to the shop to buy bread.</li></ul><p>Word order: the reason (with <b>үшін</b>) comes <b>before</b> the place and the main verb.</p><p><b>үшін</b> after a noun or a name means <b>for</b>: бұл <b>сіз үшін</b> (this is for you), <b>балалар үшін</b> (for children).</p>', [
+        k.mc('Мен сәлемдеме алу ___ поштаға барамын.', ['үшін', 'деп', 'және'], 0),
+        k.mc('Ол қазақша үйрен___ үшін Қазақстанға келді.', ['у', 'іп', 'ген'], 0),
+        k.mc('“I am going to the shop to buy bread.” = …', ['Мен нан сатып алу үшін дүкенге барамын.', 'Мен дүкенге нан сатып алдым.', 'Мен дүкен үшін нан аламын.'], 0),
+        k.tf('“үшін” after a verb with -у means “in order to”.', true),
+        k.ord('Мен телефонды жөндеу үшін келдім')]],
+      r: ['A busy day', 'Бүгін менің жұмысым көп.\n\nТаңертең мен сәлемдеме алу үшін поштаға барамын. Поштада кезек үлкен!\n\nСодан кейін шаштаразға барамын: маған шаш қию керек.\n\nКеше менің телефоным бұзылды. Түстен кейін телефонды жөндеу үшін шеберге барамын. Шебер: «Телефоныңызды ертең жөндеймін», — дейді.\n\nКешке мен үйдемін. Қатты шаршадым!\n\n(түстен кейін = in the afternoon · дейді = says)', [
+        k.mc('Why does the writer go to the post office?', ['to get a parcel', 'to send a letter', 'to pay a bill'], 0), k.tf('The phone will be ready today.', false), k.mc('Where does the writer go after the post office?', ['to the hairdresser’s', 'to the bank', 'home'], 0)]] },
+
+    { id: 'u19', t: 'Не болды? Telling a story', topic: 'Stories',
+      v: ['Story words', `
+кенеттен | adverb | suddenly | Кенеттен мен досымды көрдім. | | ke-net-TEN | Suddenly I saw my friend.
+ақырында | adverb | finally | Ақырында біз үйдеміз! | | a-qy-ryn-DA | Finally we are home!
+жоғалту | verb | to lose | Мен телефонымды жоғалттым. | | zho-ghal-TOO | I lost my phone.
+еске түсіру | verb | to recall | Мен оның атын есіме түсірдім. | | es-KE tu-si-ROO | I recalled his name.
+іздеу | verb | to look for | Мен кілтті іздеп жатырмын. | | iz-DEU | I am looking for the key.
+біртүрлі | adjective | strange | Бұл біртүрлі оқиға. | | bir-tur-LI | This is a strange story.
+өйткені | word | because | Мен үйдемін, өйткені шаршадым. | | oyt-ke-NI | I am at home because I am tired.
+сондықтан | word | so, that is why | Мен шаршадым, сондықтан үйдемін. | | son-dyq-TAN | I am tired, so I am at home.`],
+      g: ['Joining ideas: өйткені, сондықтан, бірақ', '<table><tr><th>Word</th><th>Meaning</th><th>Example</th></tr><tr><td><b>өйткені</b></td><td>because</td><td>Мен кешіктім, <b>өйткені</b> кептеліс болды.</td></tr><tr><td><b>сондықтан</b></td><td>so, that is why</td><td>Кептеліс болды, <b>сондықтан</b> мен кешіктім.</td></tr><tr><td><b>бірақ</b></td><td>but</td><td>Мен кілтті іздедім, <b>бірақ</b> таппадым.</td></tr></table><p><b>өйткені</b> comes before the reason. <b>сондықтан</b> comes before the result. Put a comma before all three words when they join two parts.</p><p>For <b>when</b>, use the <b>-ған, -ген</b> form from Unit 7 + <b>кезде</b>: Мен үйге кел<b>ген кезде</b>, анама қоңырау шалдым. = When I came home, I called my mother.</p>', [
+        k.mc('Мен кешіктім, ___ кептеліс болды.', ['өйткені', 'сондықтан', 'бірақ'], 0),
+        k.mc('Кептеліс болды, ___ мен кешіктім.', ['сондықтан', 'өйткені', 'бірақ'], 0),
+        k.mc('Мен көп іздедім, ___ таппадым.', ['бірақ', 'сондықтан', 'өйткені'], 0),
+        k.tf('“өйткені” means “because”.', true),
+        k.ord('Мен шаршадым сондықтан үйдемін')]],
+      r: ['The keys', 'Кеше менде біртүрлі оқиға болды.\n\nМен кешке үйге келдім. Кенеттен түсіндім: кілтім жоқ! Мен қорықтым, өйткені үйде ешкім болмады.\n\nАлдымен кілтті сөмкеден іздедім, бірақ таппадым. «Автобуста жоғалттым», — деп ойладым.\n\nСодан кейін есіме түсірдім: таңертең кілтті әпкеме бердім! Мен оған қоңырау шалдым, ол бір сағаттан кейін келді.\n\nАқырында мен үйге кірдім.\n\n(ешкім болмады = there was nobody)', [
+        k.mc('What could the writer not find?', ['the key', 'the phone', 'the bag'], 0), k.tf('The writer lost it on the bus.', false), k.mc('Who had it?', ['the older sister', 'the mother', 'the bus driver'], 0)]] },
+
+    { id: 'u20', t: 'Қайталау. A2 review', topic: 'Review',
+      v: ['Useful small words', `
+мысалы | word | for example | Мен жеміс жақсы көремін, мысалы алма. | | my-sa-LY | I like fruit, for example apples.
+әсіресе | adverb | especially | Маған қала ұнайды, әсіресе жазда. | | a-si-re-SE | I like the city, especially in summer.
+шынымен | adverb | really | Бұл шынымен қызықты. | | shy-ny-MEN | This is really interesting.
+айтпақшы | word | by the way | Айтпақшы, ағаңыз қалай? | | ayt-paq-SHY | By the way, how is your brother?
+мүлдем | adverb | completely, at all | Мен мүлдем шаршаған жоқпын. | | mul-DEM | I am not tired at all.
+жалпы | adverb | in general | Жалпы, маған мұнда ұнайды. | | zhal-PY | In general, I like it here.
+басқа | adjective | other | Басқа сұрақ бар ма? | | bas-QA | Is there another question?
+барлық | word | all | Барлық студенттер келді. | | bar-LYQ | All the students came.`],
+      g: ['What you can do now', '<p>The main patterns of Kazakh A2:</p><table><tr><th>Unit</th><th>Pattern</th><th>Example</th></tr><tr><td>1, 2, 12</td><td>from, than</td><td>Лондон<b>нан</b> келдім; Қостанай<b>дан</b> үлкенірек; <b>ең</b> суық</td></tr><tr><td>3, 13</td><td>the -п form</td><td>оқы<b>п</b> жатырмын; ыдыс жу<b>ып</b>, демаламын</td></tr><tr><td>4, 10</td><td>want to</td><td>шай іш<b>кім</b> келеді; дәрігер бол<b>ғым</b> келеді</td></tr><tr><td>5, 6</td><td>object and owner</td><td>кітап<b>ты</b> оқимын; Айгүл<b>дің</b> кітаб<b>ы</b></td></tr><tr><td>7</td><td>have done</td><td>Алматыда бол<b>ған</b>мын</td></tr><tr><td>8, 11</td><td>do it; let’s</td><td>бар<b>ыңыз</b>; бар<b>айық</b>; бара <b>аламын</b></td></tr><tr><td>9, 18</td><td>need to; in order to</td><td>демалу <b>керек</b>; алу <b>үшін</b></td></tr><tr><td>14, 19</td><td>joining ideas</td><td>бол<b>са</b>; өйткені; сондықтан</td></tr></table>', [
+        k.mc('Ол Астана___ келді.', ['дан', 'нан', 'тан'], 0),
+        k.mc('Ол хат жаз___ жатыр.', ['ып', 'іп', 'п'], 0),
+        k.mc('Менің үйге бар___ келеді.', ['ғым', 'гім', 'кім'], 0),
+        k.mc('Сіз қымыз іш___сіз бе?', ['кен', 'ген', 'ған'], 0),
+        k.mc('Паркке бар___!', ['айық', 'ейік', 'йық'], 0),
+        k.ord('Мен мұғалім болып жұмыс істеймін')]],
+      r: ['A letter to Tom', 'Сәлем, Том!\n\nМен бір жылға жуық Қостанайда тұрып жатырмын. Маған мұнда шынымен ұнайды, әсіресе жазда. Қыста өте суық — Лондонға қарағанда суығырақ!\n\nМен мектепте мұғалім болып жұмыс істеймін. Әріптестерім жақсы. Мысалы, Марат маған қазақ тілін үйренуге жиі көмектеседі. Айтпақшы, мен көп жаңа сөз жаттадым!\n\nЕгер демалысың болса, қонаққа кел. Жазда кездесейік!\n\nДжон\n\n(бір жылға жуық = almost a year · мұнда = here)', [
+        k.mc('How long has John lived in Kostanay?', ['almost a year', 'five years', 'one month'], 0), k.tf('Winter in Kostanay is warmer than in London.', false), k.mc('What is John’s job?', ['teacher', 'engineer', 'doctor'], 0)]] }
   ]);
 })();
