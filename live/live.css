@@ -392,3 +392,17 @@ body.heist .feed h3{color:#ff6b74;letter-spacing:.08em}
 body.heist .feed .fe{background:rgba(255,255,255,.04);border-left:4px solid #ff3b4a;box-shadow:none;color:#e8eaf0}
 body.heist .cashshop button{background:linear-gradient(170deg,#1c1f27,#111318);border:1px solid #3a3f4a;color:#e8eaf0}
 body.heist .cashshop button:not([disabled]){border-color:#4fa35a;box-shadow:0 0 12px rgba(79,163,90,.3)}
+/* chess puzzles: a board drawn from the question (LIVE.board) */
+.qboard{display:grid;grid-template-columns:repeat(8,1fr);grid-template-rows:repeat(8,1fr);aspect-ratio:1;width:min(300px,78vw);flex:none;border:3px solid #c9972e;border-radius:6px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+.qboard i{position:relative;min-width:0;min-height:0;overflow:hidden;display:flex;align-items:center;justify-content:center;background:#ecdcb8;font-style:normal;line-height:1}
+.qboard i.dk{background:#4f72a8}
+.qboard b{font-size:calc(min(300px,78vw)/8*.78);font-weight:400;font-family:"Segoe UI Symbol","Noto Sans Symbols 2","DejaVu Sans",serif}
+.qboard b.w{color:#fff;text-shadow:0 0 2px #000,0 0 1px #000,0 1px 2px #000}
+.qboard b.k{color:#14181f;text-shadow:0 0 1px rgba(255,255,255,.6)}
+.pq .prompt:has(.qboard){flex-direction:column;gap:12px}
+.qtext:has(.qboard){gap:4%;text-align:left}
+.qtext .qboard{width:min(52vh,38vw)}.qtext .qboard b{font-size:calc(min(52vh,38vw)/8*.78)}
+.qbt{display:block}
+.qboard s{position:absolute;text-decoration:none;font:700 10px/1 var(--sans);color:rgba(20,24,31,.6)}.qboard i.dk s{color:rgba(255,255,255,.75)}
+.qboard s.rk{left:3px;top:3px}.qboard s.fl{right:3px;bottom:2px}
+.qtext .qboard s{font-size:13px}

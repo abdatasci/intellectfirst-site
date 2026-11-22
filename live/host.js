@@ -29,7 +29,7 @@
     if (!ROOMS.ready) h += '<div class="note"><b>Live games need one setting before the first game.</b> Create a free account at ably.com, copy the API key from your app\'s <i>API Keys</i> tab (it looks like <code>xVLyHw.A-pwh7w:…</code>) and add it in Netlify → Project configuration → Environment variables as <code>ABLY_API_KEY</code>. Then redeploy the site.</div>';
     if (resume) h += '<div class="note">Your game <b>' + esc(resume.title) + '</b> (PIN ' + resume.pin + ') is still open. <button class="linkbtn" id="resume">Resume it</button> · <button class="linkbtn" id="drop">Close it</button></div>';
     h += '<div class="grid2"><div class="panel"><h2>Start a live game</h2><p class="sub">Students join on their phones with the QR code or the PIN. You run the game from this screen; project it in class.</p>' +
-      '<label class="f">Questions from</label><div class="seg" id="src">' + [['gen', 'General English ✨'], ['v', 'Book vocabulary'], ['g', 'Grammar'], ['y', 'Young Learners 🧸'], ['custom', 'My own questions']].map(function (s) { return '<button data-v="' + s[0] + '" class="' + (CFG.source === s[0] ? 'on' : '') + '">' + s[1] + '</button>'; }).join('') + '</div>' +
+      '<label class="f">Questions from</label><div class="seg" id="src">' + [['gen', 'General English ✨'], ['v', 'Book vocabulary'], ['g', 'Grammar'], ['y', 'Young Learners 🧸'], ['chess', 'Chess ♟️'], ['custom', 'My own questions']].map(function (s) { return '<button data-v="' + s[0] + '" class="' + (CFG.source === s[0] ? 'on' : '') + '">' + s[1] + '</button>'; }).join('') + '</div>' +
       '<div id="srcbox"></div>' +
       '<label class="f">Game mode</label><div class="modes" id="mode">' + Object.keys(L.MODES).map(function (k) { var m = L.MODES[k]; return '<button data-v="' + k + '" class="' + (CFG.mode === k ? 'on' : '') + '"><span class="mi">' + m.icon + '</span><b>' + esc(m.name) + '</b><small>' + esc(m.tag) + '</small></button>'; }).join('') + '</div>' +
       '<p class="mini" style="margin:6px 0 0">Full 3D games to play on their own (homework or a free lesson): <a href="/a/kids-quest/" target="_blank" rel="noopener">🏎️ IF Kids Quest</a> (Young Learners) · <a href="/a/block-quest/" target="_blank" rel="noopener">⛏️ IF Block Quest</a> (teens and adults).</p>' +
@@ -53,7 +53,7 @@
         b.onclick = function () {
           $('#' + id).querySelectorAll('button').forEach(function (x) { x.classList.toggle('on', x === b); });
           var v = b.dataset.v;
-          if (id === 'src') { CFG.source = v; if (v !== 'custom' && v !== 'gen' && (bankOf(CFG.bank) || {}).kind !== v) { CFG.bank = BANKS.filter(function (x) { return x.kind === v; })[0].id; CFG.units = []; } srcBox(); }
+          if (id === 'src') { CFG.source = v; if (v !== 'custom' && v !== 'gen' && v !== 'chess' && (bankOf(CFG.bank) || {}).kind !== v) { CFG.bank = BANKS.filter(function (x) { return x.kind === v; })[0].id; CFG.units = []; } srcBox(); }
           if (id === 'mode') { CFG.mode = v; timeBox(); }
           if (id === 'teams') CFG.teams = +v;
           count();
@@ -68,6 +68,14 @@
       box.innerHTML = L.genForm(CFG) + '<label class="f">Number of questions</label><div class="seg" id="cnt">' + ['10', '15', '20', '30'].map(function (s) { return '<button data-v="' + s + '" class="' + (CFG.count === s ? 'on' : '') + '">' + s + '</button>'; }).join('') + '</div>';
       L.genWire(box, CFG, count);
       var c0 = $('#cnt'); c0.querySelectorAll('button').forEach(function (bt) { bt.onclick = function () { c0.querySelectorAll('button').forEach(function (x) { x.classList.toggle('on', x === bt); }); CFG.count = bt.dataset.v; count(); }; });
+      return count();
+    }
+    if (CFG.source === 'chess') {   // chess: puzzles on a real board, pieces & rules, chess words (any game mode)
+      if (!CFG.chess) CFG.chess = 'mix';
+      box.innerHTML = '<label class="f">Chess questions</label><div class="seg" id="chf">' + L.CHESS_FOCUS.map(function (s) { return '<button data-v="' + s[0] + '" class="' + (CFG.chess === s[0] ? 'on' : '') + '">' + s[1] + '</button>'; }).join('') + '</div>' +
+        '<p class="mini" style="margin-top:6px">Puzzles show the board on the big screen and on every phone; students choose the move said in English (“Rook to a8”). Good with any mode. For a full lesson first, open <a href="/a/if-english/gameroom/index.html?only=chess#chesslessons" target="_blank" rel="noopener">📘 Chess lessons and tips</a>.</p>' +
+        '<label class="f">Number of questions</label><div class="seg" id="cnt">' + ['10', '15', '20', '30', 'all'].map(function (s) { return '<button data-v="' + s + '" class="' + (CFG.count === s ? 'on' : '') + '">' + (s === 'all' ? 'All' : s) + '</button>'; }).join('') + '</div>';
+      [['chf', 'chess'], ['cnt', 'count']].forEach(function (p) { var el = $('#' + p[0]); el.querySelectorAll('button').forEach(function (bt) { bt.onclick = function () { el.querySelectorAll('button').forEach(function (x) { x.classList.toggle('on', x === bt); }); CFG[p[1]] = bt.dataset.v; count(); }; }); });
       return count();
     }
     if (CFG.source === 'custom') {
@@ -120,6 +128,7 @@
   }
   function defaultTitle() {
     if (CFG.source === 'custom') return 'Class quiz';
+    if (CFG.source === 'chess') return 'Chess ♟️' + ({ puzzles: ' · Puzzles', rules: ' · Pieces & rules', words: ' · Chess words' }[CFG.chess] || '');
     if (CFG.source === 'gen') return L.genTitle(CFG);
     var b = bankOf(CFG.bank); if (!b) return 'Live game';
     var u = b.units.filter(function (x) { return CFG.units.indexOf(x.id) >= 0; });
@@ -148,7 +157,7 @@
   /* ================= running a game ================= */
   async function start() {
     var err = $('#err'); err.textContent = '';
-    if (CFG.source !== 'custom' && CFG.source !== 'gen' && !CFG.units.length) { err.textContent = 'Choose at least one unit.'; return; }
+    if (CFG.source !== 'custom' && CFG.source !== 'gen' && CFG.source !== 'chess' && !CFG.units.length) { err.textContent = 'Choose at least one unit.'; return; }
     var title = ($('#title').value.trim() || defaultTitle());
     L.ls.set('live.cfg', Object.assign({}, CFG, { title: '' }));
     $('#go').disabled = true;
