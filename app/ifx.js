@@ -1419,7 +1419,7 @@
       var adv = gl(['if-kart', 'block-quest', 'kids-quest']);
       view().innerHTML = '<div class="page-h"><div><p class="h-eyebrow">' + esc(t(k)) + '</p><h1>' + esc(sc.h) + '</h1><p>' + esc(sc.p) + '</p></div></div>' + (full ? '' : goalBar()) + gamesChip(k) +
         grp('🧠 Mind Lab', 'Daily mind training that uses every skill: words, grammar, memory and logic.', gl(['mind-lab', 'mind-lab-kids'])) +
-        grp('⚔️ Play online', 'See who is online and challenge them: Chess, Connect Four or a Word Duel.', gl(['arena'])) +
+        grp('⚔️ Play online', 'See who is online and challenge them: Chess, Connect Four, a Word Duel, or a party race for up to 8 players.', gl(['arena'])) +
         grp('👥 Play together', 'For the class or a group of friends: one screen or everyone on their phones.', gl(['live', 'mafia-live', 'mystery-live', 'spyfall', 'alibi'])) +
         grp('♟️ Board games', 'Learn chess step by step, then play the computer or a friend. Say every move in English.', gl(['chess-lessons', 'chess'])) +
         grp('🏁 Adventure and racing', 'Play alone at your own level.', adv, adv.map(function (x) { return levelRow(x.id, x.id, true, kidsOK); }).join(''));

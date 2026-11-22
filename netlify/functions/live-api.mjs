@@ -20,6 +20,7 @@ const fail = (s, error) => json({ error }, s);
 const str = (v, n = 80) => (v == null ? '' : String(v)).replace(/\s+/g, ' ').trim().slice(0, n);
 const ROOM_HOURS = 4;
 const PARTY = ['mafia', 'mystery', 'kart'];   // kart: an IF Kart live race (a/if-kart/live.js)
+const ARENA = ['race', 'gold', 'hack', 'fish', 'balloon', 'kart', 'mine', 'cash'];   // self-paced IF Live modes that IF Arena players can host
 
 function tokenRequest(clientId, capability) {
   const key = process.env.ABLY_API_KEY || '';
@@ -86,7 +87,7 @@ export default async (req) => {
     catch (e) { console.error('generate', e); return fail(502, 'ai'); }
   }
   // Party games (Mafia, Mystery): any signed-in person can host, students included. Staff have no daily limit.
-  if (path === 'host' && PARTY.includes(body.mode)) {
+  if (path === 'host' && (PARTY.includes(body.mode) || (body.arena && ARENA.includes(body.mode)))) {   // IF Arena: a player hosts a self-paced game for friends
     if (!ready) return fail(503, 'not-configured');
     if (!isStaff(profile?.role)) {
       const k = `quota/party/${user.id}/${new Date().toISOString().slice(0, 10)}`, used = (await L().get(k, { type: 'json' })) || 0;
@@ -96,7 +97,7 @@ export default async (req) => {
     let pin = '';
     for (let i = 0; i < 20 && !pin; i++) { const p = String(randomInt(100000, 999999)); if (!alive(await L().get('r/' + p, { type: 'json' }))) pin = p; }
     if (!pin) return fail(500, 'busy');
-    const room = { pin, title: str(body.title, 120) || 'Mafia Live', mode: body.mode, party: true, host: user.id, hostName: profile?.name || 'Host', created: Date.now(), status: 'lobby' };
+    const room = { pin, title: str(body.title, 120) || 'Mafia Live', mode: body.mode, party: true, arena: !!body.arena, host: user.id, hostName: profile?.name || 'Host', created: Date.now(), status: 'lobby' };
     await L().setJSON('r/' + pin, room);
     return json({ room, token: tokenRequest('host-' + user.id, hostCap(pin)) });
   }

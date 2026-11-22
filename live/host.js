@@ -298,7 +298,7 @@
     BUS.sub('p', onPlayer);
     clearInterval(timers.beat); timers.beat = setInterval(function () { push(true); }, 5000);
   }
-  function save() { L.ls.set('live.host', H); }
+  function save() { if (H && !H.arena) L.ls.set('live.host', H); }
   function list() { return H.order.map(function (pid) { return Object.assign({ pid: pid }, H.players[pid]); }); }
   function ranked() { return list().sort(function (a, b) { return b.score - a.score || b.correct - a.correct; }); }
   function teamSizes() { var s = []; for (var t = 0; t < H.teamsN; t++) s.push(0); list().forEach(function (p) { if (p.team >= 0) s[p.team]++; }); return s; }
@@ -758,6 +758,27 @@
     } catch (e) { view.innerHTML = '<div class="stage"><p>' + (e.code === 'room' ? 'This game has finished.' : e.status === 401 ? 'Please sign in with your teacher account.' : 'Could not open this game.') + '</p><p><a class="btn" href="/live/host/">Back</a></p></div>'; }
   }
 
-  if (qsp.get('watch')) vWatch(qsp.get('watch').replace(/\D/g, ''));
+  /* IF Arena party: /play/ opens this page in a hidden frame on the challenger's phone. It runs the game for the invited
+     players (General English at their level, a self-paced mode), tells the page the PIN, starts when the page says so,
+     and reports the players and the final ranking. */
+  async function arenaHost(A) {
+    var up = function (m) { try { parent.postMessage(Object.assign({ arena: 1 }, m), location.origin); } catch (e) {} };
+    L.narr.on = false; L.sfx.off = true;
+    try {
+      BANKS = (await (await fetch('/live/banks.json')).json()).banks;
+      CFG = Object.assign({}, CFG, { source: 'gen', level: A.level || 'B1', focus: 'mix', topic: '', ai: false, mode: A.mode, race: Math.max(2, Math.min(10, +A.mins || 4)), teams: 0, count: 'all', drive: false, time: 20 });
+      var qs = poolQs(); if (!qs.length) qs = buildQs();
+      var title = 'IF Arena · ' + L.mode(A.mode).name;
+      var r = L.local ? { room: { pin: String(100000 + Math.floor(Math.random() * 899999)), created: Date.now() }, token: null } : await L.api('host', { title: title, mode: A.mode, arena: true });
+      H = { pin: r.room.pin, created: r.room.created, title: title, mode: A.mode, drive: false, time: 20, race: CFG.race, teamsN: 0, source: 'IF Arena · General English ' + CFG.level, arena: true,
+        qs: qs, i: -1, phase: 'lobby', players: {}, order: [], ans: {}, qStart: 0, raceEnd: 0, raceId: 0, salt: Math.floor(Math.random() * 1000), feed: [], evn: 0, fzAt: 0, fzEnd: 0 };
+      await connect(r.token); lobby();
+      up({ t: 'room', pin: H.pin });
+    } catch (e) { up({ t: 'error', code: e.code || e.status || 'x' }); return; }
+    addEventListener('message', function (e) { if (e.origin !== location.origin || !e.data || !e.data.arena) return; if (e.data.t === 'begin' && H && H.phase === 'lobby') begin(); if (e.data.t === 'close' && H) { H.phase = 'end'; push(true); } });
+    setInterval(function () { if (!H) return; up({ t: 'st', phase: H.phase, left: H.raceEnd ? Math.max(0, H.raceEnd - Date.now()) : 0, players: ranked().filter(function (p) { return !p.kicked; }).map(function (p) { return { name: p.name, uid: p.uid || null, score: p.score, correct: p.correct }; }) }); }, 1000);
+  }
+  if (qsp.get('arena')) { try { arenaHost(JSON.parse(qsp.get('arena'))); } catch (e) {} }
+  else if (qsp.get('watch')) vWatch(qsp.get('watch').replace(/\D/g, ''));
   else vSetup();
 })();

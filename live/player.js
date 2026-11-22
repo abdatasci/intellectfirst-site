@@ -500,6 +500,7 @@
     $('#change').onclick = vPractice;
   }
   if (/[?&]practice\b/.test(location.search)) { vPractice(); return; }
+  if (qsp.get('arena') && S.pin && qsp.get('name')) { show('<div class="wait"><div class="pulse"></div><h2>Joining the Arena game…</h2></div>'); vJoin().then(function () { join(S.pin, String(qsp.get('name')).slice(0, 24)); }); return; }   // invited from IF Arena
 
   // opened again without the PIN (closed the tab by accident): go back to the last game from the last 3 hours
   if (!S.pin) { var last = String(L.ls.get('live.last') || '').split('|'); if (last[0] && Date.now() - +last[1] < 3 * 3600e3) S.pin = last[0]; }
