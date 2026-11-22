@@ -257,6 +257,7 @@ export default async (req) => {
     // class tasks still open: send them to students who connected to the bot after the task was sent ({classId?})
     if (path === 'ctask/status' && method === 'GET') { const { taskStatus } = await import('../lib/classtask.mjs'); return json(await taskStatus()); }
     if (path === 'ctask/sendlate' && method === 'POST') { const b = await req.json().catch(() => ({})), { sendLate } = await import('../lib/classtask.mjs'); return json({ ok: true, sent: await sendLate(String(b.classId || ''), !!b.force) }); }
+    if (path === 'studentkb' && method === 'POST') { const b = await req.json().catch(() => ({})), { pushStudentKb } = await import('../lib/classtask.mjs'); return json({ ok: true, sent: await pushStudentKb(b.classId || null) }); }
     if (path === 'ctask/catchup' && method === 'POST') {
       const b = await req.json().catch(() => ({})), { catchUp } = await import('../lib/classtask.mjs');
       return json({ ok: true, sent: await catchUp(b.classId || null) });

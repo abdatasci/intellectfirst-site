@@ -20,7 +20,7 @@ const CASH = {
   ru: { ask0: 'Оплатили наличными в школе? Сообщите здесь вместо чека:', btn: '💵 Я оплатил(а) наличными', ask: (n, m) => `💵 Оплата наличными: ${n} (${m}). Сколько вы заплатили?`, paid: a => `✅ Я оплатил(а) ${a} наличными`, other: '✍️ Другая сумма', type: 'Напишите сумму, которую вы оплатили наличными, например 45000', thanks: (a, m) => `💵 Спасибо! Оплата наличными ${a} за ${m} отмечена. Школа подтвердит её после получения денег, и вы получите сообщение здесь.`, waiting: 'Ваша прошлая оплата ещё ждёт подтверждения школы. Вы получите сообщение здесь.', none: 'Не нашёл вашу запись ученика. Пожалуйста, сообщите школе, что вы оплатили наличными.' },
   kk: { ask0: 'Мектепте қолма-қол төледіңіз бе? Түбіртектің орнына осында хабарлаңыз:', btn: '💵 Қолма-қол төледім', ask: (n, m) => `💵 Қолма-қол төлем: ${n} (${m}). Қанша төледіңіз?`, paid: a => `✅ ${a} қолма-қол төледім`, other: '✍️ Басқа сома', type: 'Қолма-қол төлеген соманы жазыңыз, мысалы 45000', thanks: (a, m) => `💵 Рахмет! ${m} үшін ${a} қолма-қол төлем белгіленді. Мектеп ақшаны алған соң растайды, хабарламаны осында аласыз.`, waiting: 'Алдыңғы төлеміңіз мектептің растауын күтуде. Хабарламаны осында аласыз.', none: 'Оқушы жазбаңызды таппадым. Мектепке қолма-қол төлегеніңізді айтыңыз.' }
 };
-const KB = { keyboard: [[{ text: '📚 IF English' }, { text: '👤 My account' }], [{ text: '🎯 Class task' }, { text: '📅 Next lessons' }], [{ text: '📝 Homework & tests' }, { text: '📊 My results' }], [{ text: '💳 Payment' }, { text: '📎 Send receipt' }], [{ text: '❓ Help' }]], resize_keyboard: true, is_persistent: true };
+import { STUDENT_KB as KB, ensureStudentKb } from '../lib/classtask.mjs';
 const L = {
   en: {
     hello: n => `Hi ${n}! 👋 Your IF Academy account is connected.\nI'll remind you about lessons (the evening before and 2 hours before), homework, tests and tuition payments. After paying, send the receipt here.\nAsk me anything about your classes, or practise English with me.`,
@@ -284,6 +284,7 @@ export default async (req) => {
     const me = await getProfile(uid).catch(() => null);
     await syncCommands(chatId, isStaff(me));
     if (isStaff(me) && await ensureStaffKb(chatId, me) && /^\/start\b|^\/help\b|^❓|^💳|^📎|^📝 Homework/i.test(text)) return new Response('ok');
+    if (!isStaff(me) && links[uid] && await ensureStudentKb(chatId, lang) && /^\/start\b|^\/help\b|^❓/i.test(text)) return new Response('ok');
     if (isStaff(me) && /^📝 Send homework|^\/sendhw\b|^\/sethw\b/i.test(text)) { await startHomework(chatId, me); return new Response('ok'); }
     // Apps opened from the reply keyboard get no sign-in data from Telegram, so these buttons answer with buttons
     // under the message (which do), and the bot's Menu button (next to the text box) opens My account directly.

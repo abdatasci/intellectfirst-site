@@ -294,6 +294,27 @@ export async function studentTask(chatId, ctx, lang) {
   return false;
 }
 
+/* The students' reply keyboard (the buttons under the text box). Telegram keeps the last keyboard a chat was sent,
+   so when it changes (SKBV), each student gets the new one once: with their next message, or pushed by the school. */
+export const STUDENT_KB = { keyboard: [[{ text: '📚 IF English' }, { text: '👤 My account' }], [{ text: '🎯 Class task' }, { text: '📅 Next lessons' }], [{ text: '📝 Homework & tests' }, { text: '📊 My results' }], [{ text: '💳 Payment' }, { text: '📎 Send receipt' }], [{ text: '❓ Help' }]], resize_keyboard: true, is_persistent: true };
+export const SKBV = '2026-11-22';
+const KB_MSG = { en: '📲 Your menu is updated: 📚 IF English, 👤 My account and 🎯 Class task are on the buttons below.', ru: '📲 Меню обновлено: 📚 IF English, 👤 Мой аккаунт и 🎯 задание на уроке — на кнопках ниже.' };
+export async function ensureStudentKb(chatId, lang, force) {
+  const k = `bot/skb/${chatId}`;
+  if (!force && (await S().get(k)) === SKBV) return false;
+  await tgSend(chatId, KB_MSG[lang === 'en' ? 'en' : 'ru'], { reply_markup: STUDENT_KB });
+  await S().set(k, SKBV); return true;
+}
+/** Push the new keyboard now to the connected students of one class (or all classes). */
+export async function pushStudentKb(classId) {
+  const classes = (await doc('classes')).filter(c => !classId || c.id === classId), done = new Set(), out = [];
+  for (const cls of classes) for (const x of await roster(cls)) {
+    if (!x.chatId || done.has(x.chatId)) continue; done.add(x.chatId);
+    try { if (await ensureStudentKb(x.chatId, x.lang, !!classId)) out.push(x.sid); } catch (e) { console.error('kb', x.sid, e.message); }
+  }
+  return out;
+}
+
 /* ---------------- answers ---------------- */
 async function answersOf(id) {
   const { blobs } = await S().list({ prefix: `ctask/${id}/a/` });
