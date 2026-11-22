@@ -4,7 +4,7 @@
 IFX.course({
   id: 'ru-a1', track: 'lang', lang: 'ru-RU', level: 'A1', next: 'A2', icon: '🇷🇺',
   title: 'Russian A1', sub: 'Your first steps in Russian',
-  blurb: 'Say hello, talk about your family, order food, find your way and go shopping: the alphabet, 104 words and 13 grammar points so far, explained in English.',
+  blurb: 'Say hello, talk about your family, order food, find your way and go shopping: the alphabet, 160 words and 20 grammar points, explained in English.',
   units: []
 });
 (function () {
@@ -245,4 +245,145 @@ IFX.course({
         k.mc('How many rooms are there in the flat?', ['one', 'two', 'three'], 0), k.tf('There is a book on the table.', true), k.mc('What is big?', ['the window', 'the flat', 'the table'], 0)]] }
   ]);
   IFX.order('ru-a1', ['u0', 'u1', 'u2', 'u3', 'u4', 'u5', 'u6', 'u7', 'u8', 'u9', 'u10', 'u11', 'u12']);
+})();
+
+/* ---- Batch 3 (22 Nov 2026): units 13 to 19. Russian A1 now has all 20 units of the plan. ---- */
+(function () {
+  var k = IFX.k;
+  IFX.make('ru-a1', [
+    { id: 'u13', t: 'Как доехать? Transport', topic: 'Transport',
+      v: ['Getting around', `
+автобус | noun | bus | Я еду на автобусе. | | af-TO-boos | I am going by bus.
+поезд | noun | train | Поезд в шесть часов. | | PO-yeest | The train is at six o’clock.
+самолёт | noun | plane | Самолёт большой. | | sa-ma-LYOT | The plane is big.
+вокзал | noun | railway station | Где вокзал? | | vak-ZAL | Where is the railway station?
+остановка | noun | bus stop | Остановка здесь. | | as-ta-NOF-ka | The bus stop is here.
+билет | noun | ticket | Один билет, пожалуйста. | | bee-LYET | One ticket, please.
+идти | verb | to go on foot | Я иду в магазин. | | eet-TEE | I am going to the shop.
+ехать | verb | to go by transport | Мы едем в Астану. | | YE-khat | We are going to Astana.`],
+      g: ['Going: идти, ехать, в + place', '<p>Russian has two verbs for “go”: <b>идти</b> on foot, <b>ехать</b> by car, bus or train.</p><table><tr><th>Who</th><th>идти</th><th>ехать</th></tr><tr><td>я</td><td>ид<b>у</b></td><td>ед<b>у</b></td></tr><tr><td>ты</td><td>ид<b>ёшь</b></td><td>ед<b>ешь</b></td></tr><tr><td>он, она</td><td>ид<b>ёт</b></td><td>ед<b>ет</b></td></tr><tr><td>мы</td><td>ид<b>ём</b></td><td>ед<b>ем</b></td></tr><tr><td>вы</td><td>ид<b>ёте</b></td><td>ед<b>ете</b></td></tr><tr><td>они</td><td>ид<b>ут</b></td><td>ед<b>ут</b></td></tr></table><p><b>To</b> a place = <b>в</b> + the place. Words that end in <b>-а</b> change it to <b>-у</b>: школа → в школ<b>у</b>, Астана → в Астан<b>у</b>. Other words do not change: в магазин, в парк.</p><p><b>By</b> transport = <b>на</b> + <b>-е</b>: на автобус<b>е</b>, на поезд<b>е</b>, на машин<b>е</b>, на такси.</p>', [
+        k.mc('Я ___ в школу. (on foot)', ['иду', 'еду', 'идёт'], 0),
+        k.mc('Мы ___ в Астану на поезде.', ['идём', 'едем', 'едут'], 1),
+        k.mc('школа → to school = в …', ['школа', 'школе', 'школу'], 2),
+        k.mc('by bus = …', ['на автобусе', 'в автобус', 'у автобуса'], 0),
+        k.ord('Я еду на автобусе')]],
+      r: ['A trip to Astana', 'В субботу мы едем в Астану. Мы едем на поезде. Поезд в семь часов.\n\nУтром мы едем на вокзал на такси. У меня есть билет.\n\nВ Астане мы идём в парк и в кафе.\n\n(на вокзал = to the station)', [
+        k.mc('How are they travelling to Astana?', ['by train', 'by bus', 'by plane'], 0), k.tf('They go to the station by bus.', false), k.mc('What time is the train?', ['seven o’clock', 'six o’clock', 'nine o’clock'], 0)]] },
+
+    { id: 'u14', t: 'Что у вас болит? Health', topic: 'Health',
+      v: ['The body and the doctor', `
+голова | noun | head | У меня болит голова. | | ga-la-VA | I have a headache.
+рука | noun | hand; arm | Это моя рука. | | roo-KA | This is my hand.
+нога | noun | leg; foot | У меня болит нога. | | na-GA | My leg hurts.
+живот | noun | stomach | У него болит живот. | | zhee-VOT | He has a stomach ache.
+зуб | noun | tooth | У меня болит зуб. | | zoop | I have a toothache.
+врач | noun | doctor | Врач в больнице. | | vrach | The doctor is at the hospital.
+больница | noun | hospital | Где больница? | | bal-NEE-tsa | Where is the hospital?
+аптека | noun | pharmacy | Аптека там. | | ap-TYE-ka | The pharmacy is there.`],
+      g: ['It hurts: у меня болит…', '<p><b>У меня болит голова.</b> = My head hurts. (Word for word: “At me hurts head.”)</p><table><tr><th>Whose</th><th>Russian</th></tr><tr><td>my</td><td><b>у меня</b> болит…</td></tr><tr><td>your (a friend)</td><td><b>у тебя</b> болит…</td></tr><tr><td>your (polite)</td><td><b>у вас</b> болит…</td></tr><tr><td>his</td><td><b>у него</b> болит…</td></tr><tr><td>her</td><td><b>у неё</b> болит…</td></tr></table><p>One thing hurts: <b>болит</b>. Two or more: <b>болят</b>. — У меня бол<b>ят</b> ноги. (ноги = legs)</p><p>The doctor asks: <b>Что у вас болит?</b> = What hurts?</p>', [
+        k.mc('У меня ___ голова.', ['болит', 'болят', 'болю'], 0),
+        k.mc('У меня ___ ноги. (ноги = legs)', ['болит', 'болят', 'боли'], 1),
+        k.mc('“She has a toothache.” = …', ['У неё болит зуб.', 'У него болит зуб.', 'Она болит зуб.'], 0),
+        k.tf('“Что у вас болит?” means “What hurts?”', true),
+        k.ord('У меня болит голова')]],
+      r: ['At the doctor’s', '— Здравствуйте! Что у вас болит?\n\n— Здравствуйте, доктор. У меня болит голова и живот.\n\n— Вы работаете сегодня?\n\n— Нет, сегодня я дома.\n\n— Хорошо. Аптека здесь, в больнице. Чай, вода и спать!\n\n— Спасибо, доктор.', [
+        k.mc('What hurts?', ['the head and the stomach', 'a tooth', 'a leg'], 0), k.tf('The patient is working today.', false), k.mc('Where is the pharmacy?', ['in the hospital', 'in the park', 'at the station'], 0)]] },
+
+    { id: 'u15', t: 'Одежда и цвета. Clothes and colours', topic: 'Clothes',
+      v: ['Clothes and three colours', `
+одежда | noun | clothes | Это новая одежда. | | a-DYEZH-da | These are new clothes.
+куртка | noun | jacket | У меня тёплая куртка. | | KOORT-ka | I have a warm jacket.
+рубашка | noun | shirt | Это белая рубашка. | | roo-BASH-ka | This is a white shirt.
+брюки | noun | trousers | Это мои брюки. | | BRYOO-kee | These are my trousers.
+обувь | noun | shoes, footwear | Где моя обувь? | | O-boof | Where are my shoes?
+белый | adjective | white | Снег белый. | | BYE-ly | Snow is white.
+чёрный | adjective | black | Это чёрный кофе. | | CHOR-ny | This is black coffee.
+красный | adjective | red | Это красная машина. | | KRAS-ny | This is a red car.`],
+      g: ['More than one: -ы, -и', '<p>To make the plural, change the end of the noun.</p><table><tr><th>Noun</th><th>Plural</th><th>Rule</th></tr><tr><td>стол, телефон</td><td>стол<b>ы</b>, телефон<b>ы</b></td><td>add <b>-ы</b></td></tr><tr><td>машина, комната</td><td>машин<b>ы</b>, комнат<b>ы</b></td><td>-а → <b>-ы</b></td></tr><tr><td>книга, куртка, рубашка</td><td>книг<b>и</b>, куртк<b>и</b>, рубашк<b>и</b></td><td>after <b>г, к, х, ж, ш, ч, щ</b> write <b>-и</b></td></tr><tr><td>окно</td><td>окн<b>а</b></td><td>-о → <b>-а</b></td></tr></table><p>The adjective ends in <b>-ые</b>: нов<b>ые</b> куртки, красн<b>ые</b> машины.</p>', [
+        k.mc('стол → …', ['столы', 'стола', 'столи'], 0),
+        k.mc('куртка → …', ['куртки', 'курткы', 'куртка'], 0),
+        k.mc('окно → …', ['окны', 'окна', 'окни'], 1),
+        k.mc('new jackets = …', ['новые куртки', 'новая куртки', 'новый куртки'], 0),
+        k.ord('Это мои новые брюки')]],
+      r: ['In a clothes shop', '— Здравствуйте! У вас есть куртки?\n\n— Да. Вот чёрные куртки, а вот красные.\n\n— Сколько стоит чёрная куртка?\n\n— Двадцать тысяч тенге.\n\n— Хорошо. И белая рубашка, пожалуйста.\n\n(вот = here is, here are · а = and, but · двадцать тысяч = twenty thousand)', [
+        k.mc('Which jacket does the customer ask the price of?', ['the black one', 'the red one', 'the white one'], 0), k.tf('The shop has red jackets.', true), k.mc('What else does the customer want?', ['a white shirt', 'black trousers', 'red shoes'], 0)]] },
+
+    { id: 'u16', t: 'Что вы любите? Free time', topic: 'Free time',
+      v: ['Things to do', `
+музыка | noun | music | Я люблю музыку. | | MOO-zy-ka | I love music.
+фильм | noun | film | Это хороший фильм. | | feelm | This is a good film.
+книга | noun | book | Я читаю книгу. | | KNEE-ga | I am reading a book.
+спорт | noun | sport | Я люблю спорт. | | sport | I love sport.
+футбол | noun | football | Мы играем в футбол. | | foot-BOL | We play football.
+играть | verb | to play | Дети играют в парке. | | ee-GRAT | The children play in the park.
+смотреть | verb | to watch | Вечером я смотрю фильм. | | sma-TRYET | In the evening I watch a film.
+слушать | verb | to listen to | Я слушаю музыку. | | SLOO-shat | I listen to music.`],
+      g: ['I like doing it; the object ending -у', '<p><b>любить</b> + a verb = to like doing: <b>Я люблю читать.</b> = I like reading.</p><p>я любл<b>ю</b> · ты люб<b>ишь</b> · он, она люб<b>ит</b> · мы люб<b>им</b> · вы люб<b>ите</b> · они люб<b>ят</b></p><p>When a word in <b>-а</b> is the thing you read, love or hear, <b>-а</b> becomes <b>-у</b>:</p><ul><li>музыка → Я слушаю музык<b>у</b>.</li><li>книга → Я читаю книг<b>у</b>.</li></ul><p>Words like <b>фильм, спорт, футбол</b> do not change: Я смотрю фильм.</p>', [
+        k.mc('Я слушаю ___.', ['музыка', 'музыку', 'музыке'], 1),
+        k.mc('Я читаю ___.', ['книгу', 'книга', 'книги'], 0),
+        k.mc('Я смотрю ___.', ['фильм', 'фильму', 'фильма'], 0),
+        k.mc('“I like to read.” = …', ['Я люблю читать.', 'Я люблю читаю.', 'Я любить читать.'], 0),
+        k.ord('Мы играем в футбол')]],
+      r: ['Tom’s Saturday', 'Меня зовут Том. В субботу я не работаю.\n\nУтром я читаю книгу. Днём мы играем в футбол в парке. Я очень люблю футбол!\n\nВечером я слушаю музыку или смотрю фильм.\n\nА что вы любите?\n\n(или = or · очень = very much)', [
+        k.mc('What does Tom do in the morning?', ['He reads a book.', 'He plays football.', 'He works.'], 0), k.tf('Tom plays football in the park.', true), k.mc('What does Tom do in the evening?', ['He listens to music or watches a film.', 'He reads a book.', 'He goes to the shop.'], 0)]] },
+
+    { id: 'u17', t: 'Что вы делали вчера? Yesterday', topic: 'The past',
+      v: ['Yesterday', `
+делать | verb | to do; to make | Что вы делаете? | | DYE-lat | What are you doing?
+быть | verb | to be | Вчера я был дома. | | byt | Yesterday I was at home.
+гулять | verb | to go for a walk | Мы гуляли в парке. | | goo-LYAT | We walked in the park.
+купить | verb | to buy | Я купил хлеб. | | koo-PEET | I bought bread.
+видеть | verb | to see | Я видел Анну в парке. | | VEE-deet | I saw Anna in the park.
+неделя | noun | week | Неделя — это семь дней. | | nee-DYE-lya | A week is seven days.
+год | noun | year | Это хороший год. | | got | This is a good year.
+давно | adverb | a long time ago | Я был там давно. | | dav-NO | I was there a long time ago.`],
+      g: ['The past: -л, -ла, -ли', '<p>Take <b>-ть</b> off the verb and add:</p><table><tr><th>Who did it</th><th>Ending</th><th>работать</th><th>быть</th></tr><tr><td>a man (я, ты, он)</td><td><b>-л</b></td><td>работа<b>л</b></td><td>бы<b>л</b></td></tr><tr><td>a woman (я, ты, она)</td><td><b>-ла</b></td><td>работа<b>ла</b></td><td>бы<b>ла</b></td></tr><tr><td>more than one (мы, вы, они)</td><td><b>-ли</b></td><td>работа<b>ли</b></td><td>бы<b>ли</b></td></tr></table><p>The ending shows who did it, a man or a woman. Tom says: <b>Я работал.</b> Anna says: <b>Я работала.</b></p><p><b>Было тепло.</b> = It was warm.</p>', [
+        k.mc('Вчера Анна ___ дома.', ['был', 'была', 'были'], 1),
+        k.mc('Вчера Том ___ в парке.', ['гулял', 'гуляла', 'гуляли'], 0),
+        k.mc('Вчера мы ___ фильм.', ['смотрел', 'смотрела', 'смотрели'], 2),
+        k.tf('A woman says “Я работала”.', true),
+        k.ord('Вчера я был дома')]],
+      r: ['Anna’s Sunday', 'Вчера было воскресенье. Анна не работала.\n\nУтром она была дома и читала книгу. Днём Анна и Том гуляли в парке. Было тепло.\n\nПотом они были в магазине. Анна купила хлеб и молоко.\n\nВечером они смотрели фильм.', [
+        k.mc('What did Anna do in the morning?', ['She read a book at home.', 'She worked.', 'She went to the park.'], 0), k.tf('It was cold.', false), k.mc('What did Anna buy?', ['bread and milk', 'a book', 'a ticket'], 0)]] },
+
+    { id: 'u18', t: 'Что вы будете делать? Plans', topic: 'The future',
+      v: ['Holidays and plans', `
+отпуск | noun | holiday from work | В июле у меня отпуск. | | OT-poosk | I have a holiday in July.
+каникулы | noun | school holidays | Летом у меня каникулы. | | ka-NEE-koo-ly | I have holidays in summer.
+море | noun | sea | Летом мы будем на море. | | MO-rye | In summer we will be at the sea.
+гора | noun | mountain | Это большая гора. | | ga-RA | This is a big mountain.
+отдыхать | verb | to rest, to relax | В субботу я отдыхаю. | | ad-dy-KHAT | On Saturday I rest.
+учить | verb | to learn | Я учу русский язык. | | oo-CHEET | I am learning Russian.
+скоро | adverb | soon | Скоро лето. | | SKO-ra | Summer is soon.
+может быть | phrase | maybe | Может быть, завтра. | | MO-zhet byt | Maybe tomorrow.`],
+      g: ['The future: буду + verb', '<p>For the future, use <b>быть</b> in the future and the verb with <b>-ть</b>.</p><table><tr><th>Who</th><th>Future of “be”</th><th>Example</th></tr><tr><td>я</td><td><b>буду</b></td><td>Завтра я буду работать.</td></tr><tr><td>ты</td><td><b>будешь</b></td><td>Ты будешь читать?</td></tr><tr><td>он, она</td><td><b>будет</b></td><td>Анна будет отдыхать.</td></tr><tr><td>мы</td><td><b>будем</b></td><td>Мы будем гулять.</td></tr><tr><td>вы</td><td><b>будете</b></td><td>Что вы будете делать?</td></tr><tr><td>они</td><td><b>будут</b></td><td>Они будут играть.</td></tr></table><p>With no second verb it means <b>will be</b>: Завтра я буду дома.</p>', [
+        k.mc('Завтра я ___ работать.', ['буду', 'будет', 'будем'], 0),
+        k.mc('Летом мы ___ отдыхать.', ['буду', 'будем', 'будут'], 1),
+        k.mc('Завтра они ___ дома.', ['будет', 'будем', 'будут'], 2),
+        k.mc('“I will read.” = …', ['Я буду читать.', 'Я буду читаю.', 'Я будет читать.'], 0),
+        k.ord('Завтра я буду дома')]],
+      r: ['Summer plans', 'Скоро лето! В июле у меня отпуск.\n\nЯ не буду работать. Мы будем на море. Утром я буду гулять, а днём отдыхать.\n\nВечером я буду учить русский язык. Может быть, я буду читать книгу на русском!\n\n(в июле = in July · на русском = in Russian)', [
+        k.mc('When is the holiday?', ['in July', 'in winter', 'on Saturday'], 0), k.tf('The writer will work on holiday.', false), k.mc('What will the writer do in the evening?', ['learn Russian', 'go for a walk', 'watch a film'], 0)]] },
+
+    { id: 'u19', t: 'В путешествии. Travel and review', topic: 'Travel',
+      v: ['On a trip', `
+путешествие | noun | journey, trip | Это хорошее путешествие. | | poo-tee-SHEST-vee-ye | This is a good trip.
+гостиница | noun | hotel | Гостиница в центре города. | | gas-TEE-nee-tsa | The hotel is in the city centre.
+номер | noun | hotel room; number | У вас есть номер? | | NO-meer | Do you have a room?
+ключ | noun | key | Вот ваш ключ. | | klyooch | Here is your key.
+страна | noun | country | Казахстан — большая страна. | | stra-NA | Kazakhstan is a big country.
+аэропорт | noun | airport | Мы едем в аэропорт. | | a-e-ra-PORT | We are going to the airport.
+турист | noun | tourist | Я турист. | | too-REEST | I am a tourist.
+помогите | phrase | help me, please | Помогите, пожалуйста! | | pa-ma-GEE-tye | Help me, please!`],
+      g: ['Review: seven things you can say now', '<table><tr><th>You can…</th><th>Russian</th></tr><tr><td>say who you are</td><td>Меня зовут Том. Я турист.</td></tr><tr><td>say what you have</td><td><b>У меня есть</b> билет.</td></tr><tr><td>say where a thing is</td><td>Гостиница <b>в</b> центр<b>е</b>.</td></tr><tr><td>say where you are going</td><td>Я еду <b>в</b> Астан<b>у</b>.</td></tr><tr><td>say what you like</td><td><b>Я люблю</b> читать.</td></tr><tr><td>talk about yesterday</td><td>Вчера я бы<b>л</b> дома.</td></tr><tr><td>talk about tomorrow</td><td>Завтра я <b>буду</b> работать.</td></tr></table><p>This is the end of Russian A1. Well done!</p>', [
+        k.mc('У меня ___ билет.', ['есть', 'буду', 'был'], 0),
+        k.mc('Гостиница ___ центре.', ['в', 'на', 'у'], 0),
+        k.mc('Вчера Анна ___ в аэропорту.', ['был', 'была', 'будет'], 1),
+        k.mc('Завтра мы ___ в гостинице.', ['были', 'будем', 'есть'], 1),
+        k.mc('Я еду в ___.', ['Астана', 'Астану', 'Астане'], 1),
+        k.ord('У вас есть номер')]],
+      r: ['At the hotel', '— Здравствуйте! У вас есть номер?\n\n— Здравствуйте! Да, есть. Вы турист?\n\n— Да, я из Англии. Вчера я был в Астане, а сегодня я в Костанае.\n\n— Хорошо. Номер стоит двадцать тысяч тенге. Вот ваш ключ.\n\n— Спасибо! А где кафе?\n\n— Кафе здесь, в гостинице.\n\n(из Англии = from England)', [
+        k.mc('Where is the tourist from?', ['England', 'Astana', 'Kostanay'], 0), k.tf('He was in Astana yesterday.', true), k.mc('Where is the café?', ['in the hotel', 'in the park', 'at the airport'], 0)]] }
+  ]);
+  IFX.order('ru-a1', ['u0', 'u1', 'u2', 'u3', 'u4', 'u5', 'u6', 'u7', 'u8', 'u9', 'u10', 'u11', 'u12', 'u13', 'u14', 'u15', 'u16', 'u17', 'u18', 'u19']);
 })();

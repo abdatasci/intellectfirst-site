@@ -4,7 +4,7 @@
 IFX.course({
   id: 'kk-a1', track: 'lang', lang: 'kk-KZ', level: 'A1', next: 'A2', icon: '🇰🇿',
   title: 'Kazakh A1', sub: 'Your first steps in Kazakh',
-  blurb: 'Say hello, talk about your family, order food, find your way and go shopping: the alphabet, 104 words and 13 grammar points so far, explained in English.',
+  blurb: 'Say hello, talk about your family, order food, find your way and go shopping: the alphabet, 160 words and 20 grammar points, explained in English.',
   units: []
 });
 (function () {
@@ -241,4 +241,145 @@ IFX.course({
         k.mc('How many rooms are there in the flat?', ['one', 'two', 'three'], 0), k.tf('There is a book on the table.', true), k.mc('What is big?', ['the window', 'the flat', 'the table'], 0)]] }
   ]);
   IFX.order('kk-a1', ['u0', 'u1', 'u2', 'u3', 'u4', 'u5', 'u6', 'u7', 'u8', 'u9', 'u10', 'u11', 'u12']);
+})();
+
+/* ---- Batch 3 (22 Nov 2026): units 13 to 19. Kazakh A1 now has all 20 units of the plan. ---- */
+(function () {
+  var k = IFX.k;
+  IFX.make('kk-a1', [
+    { id: 'u13', t: 'Қалай барамын? Transport', topic: 'Transport',
+      v: ['Getting around', `
+автобус | noun | bus | Мен автобуспен барамын. | | af-TO-boos | I go by bus.
+пойыз | noun | train | Пойыз сағат алтыда. | | po-YYZ | The train is at six o’clock.
+ұшақ | noun | plane | Ұшақ үлкен. | | oo-SHAQ | The plane is big.
+вокзал | noun | railway station | Вокзал қайда? | | vak-ZAL | Where is the railway station?
+аялдама | noun | bus stop | Аялдама осында. | | a-yal-da-MA | The bus stop is here.
+билет | noun | ticket | Бір билет беріңізші. | | bi-LET | One ticket, please.
+бару | verb | to go | Мен дүкенге барамын. | | ba-ROO | I am going to the shop.
+келу | verb | to come | Ол үйге келеді. | | ke-LOO | He is coming home.`],
+      g: ['To a place: -ға, -ге, -қа, -ке', '<p>For <b>to</b> a place, add an ending to the place.</p><table><tr><th>The word</th><th>Ending</th><th>Examples</th></tr><tr><td>has а, о, ұ, ы</td><td><b>-ға</b></td><td>қала → қала<b>ға</b>, Астана → Астана<b>ға</b>, вокзал → вокзал<b>ға</b></td></tr><tr><td>has ә, е, і, ө, ү</td><td><b>-ге</b></td><td>үй → үй<b>ге</b>, дүкен → дүкен<b>ге</b>, кафе → кафе<b>ге</b></td></tr><tr><td>ends in к, қ, п, с, т, ш</td><td><b>-қа</b> or <b>-ке</b></td><td>жұмыс → жұмыс<b>қа</b>, мектеп → мектеп<b>ке</b>, парк → парк<b>ке</b></td></tr></table><p>The verb: мен бара<b>мын</b> · сіз бара<b>сыз</b> · ол бара<b>ды</b> · біз бара<b>мыз</b>.</p><p><b>By</b> transport: add <b>-мен, -бен</b> or <b>-пен</b>: такси<b>мен</b>, пойыз<b>бен</b>, автобус<b>пен</b>.</p>', [
+        k.mc('Мен дүкен___ барамын.', ['ге', 'ға', 'де'], 0),
+        k.mc('Біз Астана___ барамыз.', ['ге', 'ға', 'да'], 1),
+        k.mc('Ол мектеп___ барады.', ['ке', 'ге', 'ға'], 0),
+        k.mc('by bus = …', ['автобуспен', 'автобусқа', 'автобуста'], 0),
+        k.ord('Мен дүкенге барамын')]],
+      r: ['A trip to Astana', 'Сенбіде біз Астанаға барамыз. Біз пойызбен барамыз. Пойыз сағат жетіде.\n\nТаңертең біз вокзалға таксимен барамыз. Менде билет бар.\n\nАстанада біз паркке және кафеге барамыз.', [
+        k.mc('How are they travelling to Astana?', ['by train', 'by bus', 'by plane'], 0), k.tf('They go to the station by bus.', false), k.mc('What time is the train?', ['seven o’clock', 'six o’clock', 'nine o’clock'], 0)]] },
+
+    { id: 'u14', t: 'Қай жеріңіз ауырады? Health', topic: 'Health',
+      v: ['The body and the doctor', `
+бас | noun | head | Менің басым ауырады. | | bas | I have a headache.
+қол | noun | hand; arm | Бұл менің қолым. | | qol | This is my hand.
+аяқ | noun | leg; foot | Менің аяғым ауырады. | | a-YAQ | My leg hurts.
+іш | noun | stomach | Оның іші ауырады. | | ish | He has a stomach ache.
+тіс | noun | tooth | Менің тісім ауырады. | | tis | I have a toothache.
+дәрігер | noun | doctor | Дәрігер ауруханада. | | da-ri-GER | The doctor is at the hospital.
+аурухана | noun | hospital | Аурухана қайда? | | a-oo-roo-kha-NA | Where is the hospital?
+дәріхана | noun | pharmacy | Дәріхана анда. | | da-ri-kha-NA | The pharmacy is there.`],
+      g: ['It hurts: менің … ауырады', '<p><b>Менің басым ауырады.</b> = My head hurts.</p><p>Use the “my” endings from Unit 3:</p><table><tr><th>Noun</th><th>My …</th><th>His, her …</th></tr><tr><td>бас</td><td>менің бас<b>ым</b></td><td>оның бас<b>ы</b></td></tr><tr><td>тіс</td><td>менің тіс<b>ім</b></td><td>оның тіс<b>і</b></td></tr><tr><td>қол</td><td>менің қол<b>ым</b></td><td>оның қол<b>ы</b></td></tr><tr><td>аяқ</td><td>менің ая<b>ғым</b></td><td>оның ая<b>ғы</b></td></tr></table><p>Before the ending, <b>қ</b> becomes <b>ғ</b>: аяқ → аяғым.</p><p>The doctor asks: <b>Қай жеріңіз ауырады?</b> = Where does it hurt?</p>', [
+        k.mc('Менің бас___ ауырады.', ['ым', 'ім', 'ы'], 0),
+        k.mc('Менің тіс___ ауырады.', ['ым', 'ім', 'і'], 1),
+        k.mc('аяқ → my leg = менің …', ['аяқым', 'аяғым', 'аяқ'], 1),
+        k.tf('“Оның басы ауырады” can mean “His head hurts” or “Her head hurts”.', true),
+        k.ord('Менің басым ауырады')]],
+      r: ['At the doctor’s', '— Сәлеметсіз бе! Қай жеріңіз ауырады?\n\n— Сәлеметсіз бе, дәрігер. Менің басым және ішім ауырады.\n\n— Сіз бүгін жұмыс істейсіз бе?\n\n— Жоқ, бүгін мен үйдемін.\n\n— Жақсы. Дәріхана осында, ауруханада. Шай, су ішіңіз және ұйықтаңыз!\n\n— Рақмет, дәрігер.\n\n(ішіңіз = drink · ұйықтаңыз = sleep)', [
+        k.mc('What hurts?', ['the head and the stomach', 'a tooth', 'a leg'], 0), k.tf('The patient is working today.', false), k.mc('Where is the pharmacy?', ['in the hospital', 'in the park', 'at the station'], 0)]] },
+
+    { id: 'u15', t: 'Киім және түстер. Clothes and colours', topic: 'Clothes',
+      v: ['Clothes and three colours', `
+киім | noun | clothes | Бұл жаңа киім. | | ki-IM | These are new clothes.
+күрте | noun | jacket | Менде жылы күрте бар. | | koor-TE | I have a warm jacket.
+көйлек | noun | shirt; dress | Бұл ақ көйлек. | | koy-LEK | This is a white shirt.
+шалбар | noun | trousers | Бұл менің шалбарым. | | shal-BAR | These are my trousers.
+аяқ киім | noun | shoes | Менің аяқ киімім қайда? | | a-YAQ ki-IM | Where are my shoes?
+ақ | adjective | white | Қар ақ. | | aq | Snow is white.
+қара | adjective | black | Бұл қара кофе. | | qa-RA | This is black coffee.
+қызыл | adjective | red | Бұл қызыл көлік. | | qy-ZYL | This is a red car.`],
+      g: ['More than one: -лар, -дар, -тар', '<p>The plural ending has three forms. Each has a hard and a soft pair.</p><table><tr><th>The word ends in…</th><th>Ending</th><th>Examples</th></tr><tr><td>a vowel, or р, й, у</td><td><b>-лар, -лер</b></td><td>бала → бала<b>лар</b> (children), күрте → күрте<b>лер</b>, шалбар → шалбар<b>лар</b></td></tr><tr><td>л, м, н, ң, з, ж</td><td><b>-дар, -дер</b></td><td>қыз → қыз<b>дар</b>, дүкен → дүкен<b>дер</b>, үстел → үстел<b>дер</b></td></tr><tr><td>к, қ, п, с, т, ш</td><td><b>-тар, -тер</b></td><td>кітап → кітап<b>тар</b>, дос → дос<b>тар</b>, көйлек → көйлек<b>тер</b></td></tr></table><p>After a number, the noun stays as it is: <b>екі кітап</b> = two books.</p>', [
+        k.mc('кітап → …', ['кітаптар', 'кітаплар', 'кітапдар'], 0),
+        k.mc('күрте → …', ['күртелар', 'күртелер', 'күртедер'], 1),
+        k.mc('дүкен → …', ['дүкендер', 'дүкенлер', 'дүкентер'], 0),
+        k.mc('two books = …', ['екі кітап', 'екі кітаптар', 'екі кітаплар'], 0),
+        k.ord('Бұл менің жаңа шалбарым')]],
+      r: ['In a clothes shop', '— Сәлеметсіз бе! Сізде күртелер бар ма?\n\n— Иә. Міне, қара күртелер, ал мынау қызыл күртелер.\n\n— Қара күрте қанша тұрады?\n\n— Жиырма мың теңге.\n\n— Жақсы. Және ақ көйлек беріңізші.\n\n(міне = here is, here are · ал мынау = and these are · жиырма мың = twenty thousand)', [
+        k.mc('Which jacket does the customer ask the price of?', ['the black one', 'the red one', 'the white one'], 0), k.tf('The shop has red jackets.', true), k.mc('What else does the customer want?', ['a white shirt', 'black trousers', 'red shoes'], 0)]] },
+
+    { id: 'u16', t: 'Сізге не ұнайды? Free time', topic: 'Free time',
+      v: ['Things to do', `
+музыка | noun | music | Маған музыка ұнайды. | | MOO-zy-ka | I like music.
+фильм | noun | film | Бұл жақсы фильм. | | film | This is a good film.
+спорт | noun | sport | Маған спорт ұнайды. | | sport | I like sport.
+ойын | noun | game | Бұл жаңа ойын. | | o-YYN | This is a new game.
+ойнау | verb | to play | Балалар паркте ойнайды. | | oy-NAU | The children play in the park.
+көру | verb | to see; to watch | Кешке мен фильм көремін. | | ko-ROO | In the evening I watch a film.
+тыңдау | verb | to listen to | Мен музыка тыңдаймын. | | tyng-DAU | I listen to music.
+демалу | verb | to rest | Сенбіде мен демаламын. | | de-ma-LOO | On Saturday I rest.`],
+      g: ['I like: маған … ұнайды', '<p><b>Маған музыка ұнайды.</b> = I like music. (Word for word: “To me music is pleasing.”)</p><table><tr><th>Who likes it</th><th>Kazakh</th></tr><tr><td>I</td><td><b>маған</b> … ұнайды</td></tr><tr><td>you (polite)</td><td><b>сізге</b> … ұнайды</td></tr><tr><td>he, she</td><td><b>оған</b> … ұнайды</td></tr><tr><td>we</td><td><b>бізге</b> … ұнайды</td></tr></table><ul><li>To like <b>doing</b>: use the verb with <b>-у</b>: <b>Маған кітап оқу ұнайды.</b> = I like reading books.</li><li>Not: <b>ұнамайды</b>. — Маған футбол ұнамайды. = I do not like football.</li><li>The question: <b>Сізге не ұнайды?</b> = What do you like?</li></ul>', [
+        k.mc('___ музыка ұнайды. (I)', ['Маған', 'Мен', 'Менде'], 0),
+        k.mc('“I like reading books.” = …', ['Маған кітап оқу ұнайды.', 'Мен кітап оқу ұнайды.', 'Маған кітап оқимын ұнайды.'], 0),
+        k.mc('“I do not like football.” = Маған футбол …', ['ұнамайды', 'ұнайды', 'жоқ ұнайды'], 0),
+        k.tf('“Сізге не ұнайды?” means “What do you like?”', true),
+        k.ord('Маған музыка ұнайды')]],
+      r: ['Tom’s Saturday', 'Менің атым Том. Сенбіде мен жұмыс істемеймін.\n\nТаңертең мен кітап оқимын. Күндіз біз паркте футбол ойнаймыз. Маған футбол өте ұнайды!\n\nКешке мен музыка тыңдаймын немесе фильм көремін.\n\nАл сізге не ұнайды?\n\n(немесе = or · ал = and, but)', [
+        k.mc('What does Tom do in the morning?', ['He reads a book.', 'He plays football.', 'He works.'], 0), k.tf('Tom plays football in the park.', true), k.mc('What does Tom do in the evening?', ['He listens to music or watches a film.', 'He reads a book.', 'He goes to the shop.'], 0)]] },
+
+    { id: 'u17', t: 'Кеше не істедіңіз? Yesterday', topic: 'The past',
+      v: ['Yesterday', `
+істеу | verb | to do | Сіз не істейсіз? | | is-TEU | What are you doing?
+болу | verb | to be | Кеше мен үйде болдым. | | bo-LOO | Yesterday I was at home.
+серуендеу | verb | to go for a walk | Біз паркте серуендедік. | | se-roo-en-DEU | We walked in the park.
+сатып алу | verb | to buy | Мен нан сатып алдым. | | sa-TYP a-LOO | I bought bread.
+апта | noun | week | Аптада жеті күн бар. | | ap-TA | There are seven days in a week.
+жыл | noun | year | Бұл жақсы жыл. | | zhyl | This is a good year.
+күн | noun | day | Бүгін жақсы күн. | | koon | Today is a good day.
+бұрын | adverb | before, earlier | Мен бұрын Астанада тұрдым. | | boo-RYN | I lived in Astana before.`],
+      g: ['The past: -ды, -ді, -ты, -ті', '<p>Take <b>-у</b> off the verb, add the past ending, then the person.</p><table><tr><th>Who</th><th>бару (go)</th><th>келу (come)</th><th>ішу (drink)</th></tr><tr><td>мен</td><td>бар<b>дым</b></td><td>кел<b>дім</b></td><td>іш<b>тім</b></td></tr><tr><td>сіз</td><td>бар<b>дыңыз</b></td><td>кел<b>діңіз</b></td><td>іш<b>тіңіз</b></td></tr><tr><td>ол, олар</td><td>бар<b>ды</b></td><td>кел<b>ді</b></td><td>іш<b>ті</b></td></tr><tr><td>біз</td><td>бар<b>дық</b></td><td>кел<b>дік</b></td><td>іш<b>тік</b></td></tr></table><p>After <b>к, қ, п, с, т, ш</b> the ending starts with <b>т</b>: іш → іш<b>ті</b>.</p><p>Not: add <b>-ма, -ме</b> first: істе<b>ме</b>ді = did not do.</p>', [
+        k.mc('Кеше мен дүкенге бар___.', ['дым', 'дім', 'тым'], 0),
+        k.mc('Кеше біз үйге кел___.', ['дік', 'дық', 'дім'], 0),
+        k.mc('Кеше ол шай іш___.', ['ті', 'ді', 'ты'], 0),
+        k.tf('“Мен кітап оқыдым” means “I read a book” (in the past).', true),
+        k.ord('Кеше мен үйде болдым')]],
+      r: ['Aigul’s Sunday', 'Кеше жексенбі болды. Айгүл жұмыс істемеді.\n\nТаңертең ол үйде болды, кітап оқыды. Күндіз Айгүл мен Том паркте серуендеді. Күн жылы болды.\n\nСодан кейін олар дүкенге барды. Айгүл нан мен сүт сатып алды.\n\nКешке олар фильм көрді.\n\n(нан мен сүт = bread and milk)', [
+        k.mc('What did Aigul do in the morning?', ['She read a book at home.', 'She worked.', 'She went to the park.'], 0), k.tf('It was cold.', false), k.mc('What did Aigul buy?', ['bread and milk', 'a book', 'a ticket'], 0)]] },
+
+    { id: 'u18', t: 'Жоспарлар. Plans', topic: 'The future',
+      v: ['Holidays and plans', `
+жоспар | noun | plan | Менің жоспарым бар. | | zhos-PAR | I have a plan.
+демалыс | noun | holiday; day off | Жазда менде демалыс бар. | | de-ma-LYS | I have a holiday in summer.
+теңіз | noun | sea | Жазда біз теңізге барамыз. | | te-NGIZ | In summer we go to the sea.
+тау | noun | mountain | Бұл үлкен тау. | | tau | This is a big mountain.
+үйрену | verb | to learn | Мен қазақ тілін үйренемін. | | ooy-re-NOO | I am learning Kazakh.
+жақында | adverb | soon | Жақында жаз келеді. | | zha-qyn-DA | Summer is coming soon.
+мүмкін | word | maybe | Мүмкін, ертең. | | moom-KIN | Maybe tomorrow.
+келесі | adjective | next | Келесі аптада мен Астанаға барамын. | | ke-le-SI | Next week I am going to Astana.`],
+      g: ['The future: the same verb and a time word', '<p>Kazakh uses the present form for the future too. A time word shows which one you mean.</p><ul><li><b>Мен жұмыс істеймін.</b> = I work.</li><li><b>Мен ертең жұмыс істеймін.</b> = I will work tomorrow.</li></ul><p>Time words: <b>ертең</b> tomorrow · <b>жақында</b> soon · <b>келесі аптада</b> next week · <b>жазда</b> in summer.</p><p><b>Will not</b>: put <b>-ма</b> or <b>-ме</b> (after к, қ, п, с, т, ш: <b>-па, -пе</b>) before the ending.</p><table><tr><th>Verb</th><th>I will not…</th></tr><tr><td>бару</td><td>бар<b>ма</b>ймын</td></tr><tr><td>келу</td><td>кел<b>ме</b>ймін</td></tr><tr><td>істеу</td><td>істе<b>ме</b>ймін</td></tr></table>', [
+        k.mc('“I will work tomorrow.” = …', ['Мен ертең жұмыс істеймін.', 'Мен кеше жұмыс істедім.', 'Мен ертең жұмыс істедім.'], 0),
+        k.mc('“I will not go.” = Мен бар___мын.', ['май', 'мей', 'ды'], 0),
+        k.mc('“I will not come.” = Мен кел___мін.', ['май', 'мей', 'ді'], 1),
+        k.tf('Kazakh can use the same verb form for “now” and for “tomorrow”.', true),
+        k.ord('Ертең мен үйде боламын')]],
+      r: ['Summer plans', 'Жақында жаз келеді! Шілдеде менде демалыс бар.\n\nМен жұмыс істемеймін. Біз теңізге барамыз. Таңертең мен серуендеймін, ал күндіз демаламын.\n\nКешке мен қазақ тілін үйренемін. Мүмкін, мен қазақша кітап оқимын!\n\n(шілдеде = in July · қазақша = in Kazakh)', [
+        k.mc('When is the holiday?', ['in July', 'in winter', 'on Saturday'], 0), k.tf('The writer will work on holiday.', false), k.mc('What will the writer do in the evening?', ['learn Kazakh', 'go for a walk', 'watch a film'], 0)]] },
+
+    { id: 'u19', t: 'Саяхат. Travel and review', topic: 'Travel',
+      v: ['On a trip', `
+саяхат | noun | journey, trip | Бұл жақсы саяхат. | | sa-ya-KHAT | This is a good trip.
+қонақүй | noun | hotel | Қонақүй қала орталығында. | | qo-naq-OOY | The hotel is in the city centre.
+кілт | noun | key | Міне, сіздің кілтіңіз. | | kilt | Here is your key.
+ел | noun | country | Қазақстан — үлкен ел. | | yel | Kazakhstan is a big country.
+әуежай | noun | airport | Біз әуежайға барамыз. | | a-oo-e-ZHAY | We are going to the airport.
+турист | noun | tourist | Мен туристпін. | | too-RIST | I am a tourist.
+орталық | noun | centre | Орталықта үлкен парк бар. | | or-ta-LYQ | There is a big park in the centre.
+көмектесіңізші | phrase | help me, please | Көмектесіңізші! | | ko-mek-te-si-NGIZ-shi | Help me, please!`],
+      g: ['Review: seven things you can say now', '<table><tr><th>You can…</th><th>Kazakh</th></tr><tr><td>say who you are</td><td>Менің атым Том. Мен туристпін.</td></tr><tr><td>say what you have</td><td><b>Менде</b> билет <b>бар</b>.</td></tr><tr><td>say where a thing is</td><td>Қонақүй орталық<b>та</b>.</td></tr><tr><td>say where you are going</td><td>Мен Астана<b>ға</b> барамын.</td></tr><tr><td>say what you like</td><td><b>Маған</b> музыка <b>ұнайды</b>.</td></tr><tr><td>talk about yesterday</td><td>Кеше мен үйде бол<b>дым</b>.</td></tr><tr><td>talk about tomorrow</td><td><b>Ертең</b> мен жұмыс істеймін.</td></tr></table><p>This is the end of Kazakh A1. Well done!</p>', [
+        k.mc('Менде билет ___.', ['бар', 'барамын', 'болды'], 0),
+        k.mc('Қонақүй орталық___.', ['та', 'да', 'қа'], 0),
+        k.mc('Кеше Айгүл әуежайда бол___.', ['ды', 'ады', 'дым'], 0),
+        k.mc('Біз Астана___ барамыз.', ['ға', 'да', 'ге'], 0),
+        k.mc('___ музыка ұнайды.', ['Маған', 'Мен', 'Менде'], 0),
+        k.ord('Сізде бөлме бар ма')]],
+      r: ['At the hotel', '— Сәлеметсіз бе! Сізде бөлме бар ма?\n\n— Сәлеметсіз бе! Иә, бар. Сіз туристсіз бе?\n\n— Иә, мен Англияданмын. Кеше мен Астанада болдым, ал бүгін Қостанайдамын.\n\n— Жақсы. Бөлме жиырма мың теңге тұрады. Міне, сіздің кілтіңіз.\n\n— Рақмет! Ал кафе қайда?\n\n— Кафе осында, қонақүйде.\n\n(Англияданмын = I am from England)', [
+        k.mc('Where is the tourist from?', ['England', 'Astana', 'Kostanay'], 0), k.tf('He was in Astana yesterday.', true), k.mc('Where is the café?', ['in the hotel', 'in the park', 'at the airport'], 0)]] }
+  ]);
+  IFX.order('kk-a1', ['u0', 'u1', 'u2', 'u3', 'u4', 'u5', 'u6', 'u7', 'u8', 'u9', 'u10', 'u11', 'u12', 'u13', 'u14', 'u15', 'u16', 'u17', 'u18', 'u19']);
 })();
