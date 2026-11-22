@@ -241,6 +241,11 @@ details.ans summary{cursor:pointer;color:#8A6A1E;font-weight:700}
 .xo-m{font:700 1.2rem var(--serif);color:var(--gold)}.xo-m.o{color:#5B9BE0}
 /* chess */
 .chg{display:grid;grid-template-columns:minmax(0,560px) minmax(0,1fr);gap:18px;align-items:start}
+.chlg{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px}
+.chlc{display:flex;flex-direction:column;align-items:flex-start;gap:3px;text-align:left;padding:12px 14px;border-radius:12px;border:1px solid rgba(201,162,74,.45);background:rgba(255,255,255,.06);color:inherit;cursor:pointer;font:inherit}
+.chlc .n{display:inline-grid;place-items:center;width:28px;height:28px;border-radius:50%;background:var(--gold,#C9A24A);color:#0B1428;font-weight:800;font-size:14px}
+.chlc.done .n{background:var(--green,#4FB386);color:#fff}.chlc b{font-size:1.02rem}.chlc small{opacity:.75}
+.chlx{margin:0;padding-left:20px;line-height:1.5}.chlx li{margin:3px 0}
 .chb{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));grid-template-rows:repeat(8,minmax(0,1fr));aspect-ratio:1;width:100%;border:3px solid var(--gold);border-radius:8px;overflow:hidden;user-select:none}
 .chs{aspect-ratio:1;overflow:hidden;position:relative;display:flex;align-items:center;justify-content:center;border:0;padding:0;border-radius:0;font-size:clamp(1.6rem,6.4vw,3.3rem);line-height:1;min-width:0;background:#E7D8B1;color:#000}
 .chs.dk{background:#4B6A9E}
@@ -614,7 +619,7 @@ const GAMES=[
 ];
 const GBY=Object.fromEntries(GAMES.map(g=>[g[0],g]));
 const TAB_OF={alias:'words',taboo:'words',hotseat:'words'};
-const VIEWS={mafia:()=>mafiaSetup(),cases:()=>casesHome(),puzzles:()=>puzzles(),riddles:()=>riddles(),alibi:()=>alibi(),words:()=>wgSetup(),snowman:()=>snowSetup(),race:()=>raceSetup(),xo:()=>xoSetup(),chess:()=>chessSetup(),ships:()=>shipSetup(),quiz:()=>quizSetup(),bingo:()=>bingoSetup(),memory:()=>memSetup(),snap:()=>snapSetup(),spy:()=>spySetup(),agents:()=>agentsSetup(),clues:()=>cluesGame(),bank:()=>bank()};
+const VIEWS={mafia:()=>mafiaSetup(),cases:()=>casesHome(),puzzles:()=>puzzles(),riddles:()=>riddles(),alibi:()=>alibi(),words:()=>wgSetup(),snowman:()=>snowSetup(),race:()=>raceSetup(),xo:()=>xoSetup(),chess:()=>chessSetup(),chesslessons:()=>chessLoad().then(chlHome),ships:()=>shipSetup(),quiz:()=>quizSetup(),bingo:()=>bingoSetup(),memory:()=>memSetup(),snap:()=>snapSetup(),spy:()=>spySetup(),agents:()=>agentsSetup(),clues:()=>cluesGame(),bank:()=>bank()};
 let curCat=null;
 function stopAll(){stopTimer();wgStop();if(typeof memStop==='function')memStop()}
 /* Opened as ?only=chess (the students' Chess card): the menu of the other class games is hidden. */
@@ -628,6 +633,7 @@ function route(){
   let cat=null;
   if(h.startsWith('c-')&&CATS.some(c=>'c-'+c[0]===h)){cat=h.slice(2);view='home'}
   else if(GBY[key]){cat=GBY[key][1]}
+  else if(key==='chesslessons'){cat=GBY.chess?GBY.chess[1]:null}
   else if(/^c-(role|puzzle|card)$/.test(key)){cat=key==='c-card'?'board':'mystery';view='home'}
   else {view='home';key='home'}
   curCat=cat;
@@ -1182,6 +1188,119 @@ const CHLV=[['A','A1–A2 · short calls','Knight to f3'],['B','B1–B2 · full 
 function chessWords(){const L=CHC.lang||'A';return CHV.concat(L==='A'?[]:CHV_B,L==='C'?CHV_C:[])}
 function chessWordsHTML(){return `<div class="row" style="flex-wrap:wrap;gap:8px">${chessWords().map(([e,r])=>`<span class="btn" style="cursor:default"><b>${e}</b> · ${r}</span>`).join('')}</div>`}
 function chessLoad(){return window.Chess?Promise.resolve():new Promise((ok,no)=>{const s=document.createElement('script');s.src='chess-engine.js';s.onload=ok;s.onerror=no;document.head.appendChild(s)})}
+/* ---------- Chess lessons and tips (22 Nov 2026): learn to play, in English. Each lesson explains one idea (English,
+   with a Russian line), lists its words, and ends with practice on a real board: the student makes the move, the app
+   checks it with chess.js and reads the move aloud. Tips: short strategy advice with an example to try. */
+const CHL=[
+ {id:'board',t:'The board',ru:'Доска',ex:['The chessboard has 64 squares: 8 columns and 8 rows.','The columns are called <b>files</b>: a, b, c, d, e, f, g, h.','The rows are called <b>ranks</b>: 1 to 8. White starts on ranks 1 and 2.','Every square has a name: the file, then the rank. For example <b>e4</b>.'],
+  rx:'64 клетки: вертикали (a–h) и горизонтали (1–8). Каждая клетка имеет имя, например e4.',w:[['square','клетка'],['file','вертикаль'],['rank','горизонталь'],['board','доска']],
+  tasks:[{type:'sq',fen:'start',to:'e4',q:'Tap the square e4.'},{type:'sq',fen:'start',to:'d5',q:'Tap the square d5.'},{type:'sq',fen:'start',to:'h8',q:'Tap the square h8, in the corner.'}]},
+ {id:'pawn',t:'The pawn',ru:'Пешка',ex:['The pawn moves <b>forward</b>, one square at a time.','On its first move it can go <b>two squares</b>.','It <b>captures diagonally</b>: one square forward to the left or right.','A pawn never moves backwards.'],
+  rx:'Пешка ходит вперёд на одну клетку (первый ход — на две), а бьёт по диагонали.',w:[['pawn','пешка'],['forward','вперёд'],['capture','брать, бить'],['diagonally','по диагонали']],
+  tasks:[{fen:'7k/8/8/8/8/8/4P3/K7 w - - 0 1',ok:['e4'],q:'Move the white pawn two squares forward, from e2 to e4.'},{fen:'7k/8/8/3p4/4P3/8/8/K7 w - - 0 1',ok:['exd5'],q:'Capture the black pawn.'}]},
+ {id:'rook',t:'The rook',ru:'Ладья',ex:['The rook moves in <b>straight lines</b>: along files and ranks.','It can go as far as it likes, but it cannot jump over pieces.','A rook is worth about <b>5 pawns</b>.'],
+  rx:'Ладья ходит по прямым линиям на любое расстояние, но не перепрыгивает фигуры.',w:[['rook','ладья'],['straight line','прямая линия'],['jump over','перепрыгнуть']],
+  tasks:[{fen:'7k/8/8/8/8/8/8/R2n3K w - - 0 1',ok:['Rxd1'],q:'Capture the black knight with your rook.'},{fen:'7k/8/8/8/8/8/8/R6K w - - 0 1',ok:['Ra8+'],q:'Move the rook up to a8 and give check.'}]},
+ {id:'bishop',t:'The bishop',ru:'Слон',ex:['The bishop moves <b>diagonally</b>, as far as it likes.','A bishop always stays on squares of <b>one colour</b>.','A bishop is worth about <b>3 pawns</b>.'],
+  rx:'Слон ходит по диагонали и всегда остаётся на клетках одного цвета.',w:[['bishop','слон'],['diagonal','диагональ'],['light / dark square','светлое / тёмное поле']],
+  tasks:[{fen:'7k/8/8/8/5r2/8/8/2B4K w - - 0 1',ok:['Bxf4'],q:'Capture the black rook with your bishop.'}]},
+ {id:'queen',t:'The queen',ru:'Ферзь',ex:['The queen is the <b>strongest piece</b>.','She moves like a rook <b>and</b> like a bishop: straight lines and diagonals.','A queen is worth about <b>9 pawns</b>. Keep her safe!'],
+  rx:'Ферзь — самая сильная фигура: ходит как ладья и как слон.',w:[['queen','ферзь'],['strongest','самый сильный'],['safe','в безопасности']],
+  tasks:[{fen:'7k/8/8/8/1b6/8/8/4Q2K w - - 0 1',ok:['Qxb4'],q:'Capture the black bishop with your queen (diagonally).'},{fen:'7k/8/4n3/8/8/8/8/4Q2K w - - 0 1',ok:['Qxe6'],q:'Capture the black knight with your queen (in a straight line).'}]},
+ {id:'knight',t:'The knight',ru:'Конь',ex:['The knight moves in an <b>L shape</b>: two squares one way, then one square to the side.','It is the only piece that can <b>jump over</b> other pieces.','A knight is worth about <b>3 pawns</b>.'],
+  rx:'Конь ходит буквой «Г» и может перепрыгивать через фигуры.',w:[['knight','конь'],['L shape','буква «Г»'],['jump','прыгать']],
+  tasks:[{fen:'7k/8/8/8/3q4/8/4N3/7K w - - 0 1',ok:['Nxd4'],q:'Capture the black queen with your knight!'},{fen:'7k/8/8/8/8/2ppp3/2pNp3/K7 w - - 0 1',ok:['Nb3','Nb1','Nf1','Nf3','Ne4','Nc4'],any:true,q:'The knight is surrounded. Jump out of the circle of pawns!'}]},
+ {id:'king',t:'The king and check',ru:'Король и шах',ex:['The king moves <b>one square</b> in any direction.','When the king is attacked, it is <b>check</b>. You must get out of check at once.','Three ways: <b>move</b> the king, <b>block</b> the attack, or <b>capture</b> the attacker.'],
+  rx:'Король ходит на одну клетку. Если король атакован — это шах; нужно уйти, закрыться или взять атакующую фигуру.',w:[['king','король'],['check','шах'],['block','закрыться'],['attack','атаковать']],
+  tasks:[{fen:'7k/8/8/8/8/8/8/r5K1 w - - 0 1',any:true,q:'Your king is in check from the rook. Move the king out of check.'},{fen:'4r2k/8/8/8/8/8/3R4/4K3 w - - 0 1',ok:['Re2'],q:'Block the check: put your rook between the kings.'}]},
+ {id:'castle',t:'Castling',ru:'Рокировка',ex:['Castling is a special move of the <b>king and a rook</b> together.','The king moves <b>two squares</b> towards the rook, and the rook jumps to the other side of the king.','You can castle only if the king and that rook have not moved, nothing stands between them, and the king is not in check.'],
+  rx:'Рокировка: король идёт на две клетки к ладье, ладья перепрыгивает через короля.',w:[['castle','делать рокировку'],['kingside / short','короткая'],['queenside / long','длинная']],
+  tasks:[{fen:'7k/8/8/8/8/8/8/4K2R w K - 0 1',ok:['O-O'],q:'Castle kingside: tap the king, then g1.'},{fen:'7k/8/8/8/8/8/8/R3K3 w Q - 0 1',ok:['O-O-O'],q:'Castle queenside: tap the king, then c1.'}]},
+ {id:'mate',t:'Checkmate',ru:'Мат',ex:['<b>Checkmate</b> ends the game: the king is in check and there is no way out.','A <b>back-rank mate</b>: the king is trapped behind its own pawns.','<b>Stalemate</b> is different: no legal move and no check. It is a draw.'],
+  rx:'Мат — королю шах, и спастись нельзя. Пат — ходов нет, но шаха нет: ничья.',w:[['checkmate','мат'],['stalemate','пат'],['draw','ничья'],['trapped','в ловушке']],
+  tasks:[{fen:'6k1/5ppp/8/8/8/8/8/R5K1 w - - 0 1',mate:true,q:'Checkmate in one move! (Look at the back rank.)'},{fen:'6k1/8/6K1/8/8/8/8/Q7 w - - 0 1',mate:true,q:'Checkmate in one move with the queen.'}]},
+ {id:'special',t:'Promotion and en passant',ru:'Превращение и взятие на проходе',ex:['When a pawn reaches the <b>last rank</b>, it <b>promotes</b>: it becomes a queen, rook, bishop or knight. Most players choose a queen.','<b>En passant</b> (French: “in passing”): if a pawn moves two squares and lands next to your pawn, you can capture it as if it had moved one square. Only on the very next move!'],
+  rx:'Пешка на последней горизонтали превращается в фигуру. Взятие на проходе — особое взятие пешкой.',w:[['promote','превращать'],['last rank','последняя горизонталь'],['en passant','взятие на проходе']],
+  tasks:[{fen:'7k/4P3/8/8/8/8/8/K7 w - - 0 1',ok:['e8=Q+'],q:'Promote your pawn to a queen: move it to e8.'},{fen:'7k/8/8/3pP3/8/8/8/K7 w - d6 0 1',ok:['exd6'],q:'Black just played d7–d5. Capture en passant!'}]}
+];
+const CHT=[
+ ['Fight for the centre','Put pawns and pieces on the centre squares (d4, d5, e4, e5). Pieces in the centre control more squares.','Боритесь за центр: фигуры в центре контролируют больше полей.','start','e4'],
+ ['Develop your pieces','In the opening, bring out your knights and bishops first. Do not move the same piece many times.','Развивайте фигуры: сначала кони и слоны.','start','Nf3'],
+ ['Castle early','Castle in the first ten moves. Your king is safer, and your rook joins the game.','Делайте рокировку рано — король в безопасности.','r1bqk2r/pppp1ppp/2n2n2/2b1p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4','O-O'],
+ ['Don’t bring the queen out too early','If the queen comes out early, the other player attacks her with pieces and gains time.','Не выводите ферзя слишком рано.',null,null],
+ ['Check every capture','Before you move, ask: “Can my opponent capture something? Can I capture something?”','Перед каждым ходом проверяйте все взятия.','7k/8/8/8/4q3/8/3N4/K7 w - - 0 1','Nxe4'],
+ ['Count the value','Pawn 1, knight 3, bishop 3, rook 5, queen 9. Don’t give a piece for something smaller.','Считайте ценность: пешка 1, конь 3, слон 3, ладья 5, ферзь 9.',null,null],
+ ['Look for forks','A fork attacks two pieces at once. Knights are great at forks.','Вилка — атака сразу двух фигур. Кони отлично делают вилки.','r3k3/8/8/1N6/8/8/8/7K w - - 0 1','Nc7+'],
+ ['Rooks love open files','Put your rooks on files with no pawns. Two rooks together are very strong.','Ставьте ладьи на открытые вертикали.',null,null],
+ ['In the endgame, use your king','When most pieces are gone, the king becomes a strong piece. Bring it to the centre.','В эндшпиле король — сильная фигура, ведите его в центр.',null,null],
+ ['Think about your opponent’s plan','After every move, ask: “Why did they play that? What do they want?”','После каждого хода соперника спрашивайте: «Что он хочет?»',null,null]
+];
+let CHLS=null;
+function chlDone(){return gs.get('chl',{})}
+function chlHome(){
+  CHLS=null;const d=chlDone(),n=CHL.filter(l=>d[l.id]).length;
+  app.innerHTML=`<div><h2>Chess lessons</h2><p class="lead">Learn to play chess in English, step by step. Every lesson ends with practice on a real board. / Учитесь играть в шахматы на английском: каждый урок заканчивается практикой.</p></div>
+  <section class="panel"><div class="lab">Lessons · ${n} of ${CHL.length} done</div><div class="chlg">${CHL.map((l,i)=>`<button class="chlc ${d[l.id]?'done':''}" data-l="${i}"><span class="n">${d[l.id]?'✓':i+1}</span><b>${esc(l.t)}</b><small>${esc(l.ru)}</small></button>`).join('')}</div></section>
+  <section class="panel"><div class="lab">Tips · советы</div><div class="chlg">${CHT.map((x,i)=>`<button class="chlc tip" data-t="${i}"><span class="n">💡</span><b>${esc(x[0])}</b><small>${esc(x[2])}</small></button>`).join('')}</div></section>
+  <div class="row"><button class="btn" id="chlplay">♟️ Play a game</button></div>`;
+  app.onclick=e=>{const b=e.target.closest('button');if(!b)return;
+    if(b.id==='chlplay')return chessSetup();
+    if(b.dataset.l!=null)return chlOpen(+b.dataset.l,0);
+    if(b.dataset.t!=null)return chlTip(+b.dataset.t)}
+  window.scrollTo(0,0);
+}
+function chlBoard(g,sel,targets){
+  const B=g.board();return `<div class="chb">${[0,1,2,3,4,5,6,7].map(r=>[0,1,2,3,4,5,6,7].map(c=>{const p=B[r][c],sq='abcdefgh'[c]+(8-r),dk=(r+c)%2===1;
+    return `<button class="chs ${dk?'dk':''} ${sel===sq?'sel':''} ${targets.has(sq)?'tg':''} ${targets.has(sq)&&p?'cp':''}" data-sq="${sq}" aria-label="${sq}">${p?`<span class="${p.color==='w'?'pw':'pb'}">${CHG[p.type]}</span>`:''}${c===0?`<i class="chc2 r">${8-r}</i>`:''}${r===7?`<i class="chc2 f">${'abcdefgh'[c]}</i>`:''}</button>`}).join('')).join('')}</div>`;
+}
+function chlSpeak(t){if(CHC.narr!==false)chessSpeak(String(t).replace(/<[^>]+>/g,''))}
+function chlOpen(i,k){
+  const L=CHL[i],T=L.tasks[k];CHLS={i,k,g:new Chess(T.fen==='start'?undefined:T.fen),sel:null,res:null};
+  if(k===0)chlSpeak(L.t+'. '+L.ex.join(' '));else chlSpeak(T.q);
+  chlDraw();window.scrollTo(0,0);
+}
+function chlDraw(){
+  const S=CHLS,L=CHL[S.i],T=L.tasks[S.k],g=S.g,legal=S.sel?g.moves({square:S.sel,verbose:true}):[],tg=new Set(legal.map(m=>m.to));
+  const res=S.res?`<div class="panel" style="border-left:5px solid ${S.res.ok?'var(--green,#4FB386)':'var(--red,#D2654F)'}"><div class="lab">${S.res.ok?'✓ Correct!':'✗ Not quite'}</div><div class="chmv" style="font-size:1.2rem">${esc(S.res.msg)}</div>${S.res.ok?'':'<p class="lead" style="margin:6px 0 0;font-size:14px">Try again. / Попробуйте ещё раз.</p>'}</div>`:'';
+  const last=S.k===L.tasks.length-1,next=S.res&&S.res.ok?`<div class="row end">${last?`<button class="btn gold big" id="chlfin">${S.i<CHL.length-1?'Next lesson →':'Finish ✓'}</button>`:`<button class="btn gold big" id="chlnext">Next task →</button>`}</div>`:'';
+  app.innerHTML=`<div class="row" style="margin-bottom:8px"><button class="btn" id="chlback">← Lessons</button><span class="lead" style="margin:0">Lesson ${S.i+1} of ${CHL.length}</span></div>
+  <div class="chg"><div>${chlBoard(g,S.sel,tg)}</div><div style="display:flex;flex-direction:column;gap:12px;min-width:0">
+   <section class="panel"><div class="lab">Lesson ${S.i+1} · ${esc(L.ru)}</div><h2 style="margin:0 0 8px">${esc(L.t)}</h2><ul class="chlx">${L.ex.map(x=>`<li>${x}</li>`).join('')}</ul><p class="lead" style="margin:6px 0 0;font-size:14px">${esc(L.rx)}</p>
+    <div class="row" style="flex-wrap:wrap;gap:6px;margin-top:8px">${L.w.map(([e,r])=>`<span class="btn" style="cursor:default;padding:5px 10px;font-size:.85rem"><b>${esc(e)}</b> · ${esc(r)}</span>`).join('')}</div>
+    <div class="row" style="margin-top:8px"><button class="btn" id="chlhear">🔊 Listen</button></div></section>
+   <section class="panel"><div class="lab">Practice · task ${S.k+1} of ${L.tasks.length}</div><div class="chmv" style="font-size:1.25rem">${esc(T.q)}</div></section>
+   ${res}${next}</div></div>`;
+  app.onclick=e=>{const b=e.target.closest('button');if(!b)return;
+    if(b.id==='chlback')return chlHome();
+    if(b.id==='chlhear')return chlSpeak(L.t+'. '+L.ex.join(' '));
+    if(b.id==='chlnext')return chlOpen(S.i,S.k+1);
+    if(b.id==='chlfin'){const d=chlDone();d[L.id]=1;gs.set('chl',d);return S.i<CHL.length-1?chlOpen(S.i+1,0):chlHome()}
+    const sq=b.dataset.sq;if(!sq||(S.res&&S.res.ok))return;
+    if(T.type==='sq'){const ok=sq===T.to;S.res={ok,msg:ok?'Yes! That is '+sq+'.':'That is '+sq+', not '+T.to+'.'};chlSpeak(S.res.msg);return chlDraw()}
+    const p=g.get(sq);
+    if(S.sel&&tg.has(sq)){const mv=legal.find(m=>m.to===sq&&(!m.promotion||m.promotion==='q'));const r=g.move({from:mv.from,to:mv.to,promotion:mv.promotion});
+      const ok=T.mate?g.in_checkmate():T.any?true:(T.ok||[]).includes(r.san);const said=chessSay(r);
+      S.res={ok,msg:ok?said:said+' — that is not the move we need here.'};S.sel=null;chlSpeak(ok?'Correct! '+said:'Not quite. Try again.');
+      if(!ok){setTimeout(()=>{if(CHLS===S){g.undo();S.res=S.res&&{...S.res};chlDraw()}},1400)}return chlDraw()}
+    if(p&&p.color===g.turn()){S.sel=sq;S.res=null}else S.sel=null;chlDraw()};
+}
+function chlTip(i){
+  const x=CHT[i],g=x[3]?new Chess(x[3]==='start'?undefined:x[3]):null;CHLS=null;
+  let sel=null,done=null;chlSpeak(x[0]+'. '+x[1]);
+  const draw=()=>{const legal=g&&sel?g.moves({square:sel,verbose:true}):[],tg=new Set(legal.map(m=>m.to));
+    app.innerHTML=`<div class="row" style="margin-bottom:8px"><button class="btn" id="chlback">← Lessons and tips</button></div>
+    <div class="${g?'chg':''}">${g?`<div>${chlBoard(g,sel,tg)}</div>`:''}<div style="display:flex;flex-direction:column;gap:12px;min-width:0">
+    <section class="panel"><div class="lab">Tip ${i+1} of ${CHT.length} · совет</div><h2 style="margin:0 0 8px">💡 ${esc(x[0])}</h2><p style="font-size:1.15rem;margin:0">${esc(x[1])}</p><p class="lead" style="margin:8px 0 0;font-size:14px">${esc(x[2])}</p><div class="row" style="margin-top:8px"><button class="btn" id="chlhear">🔊 Listen</button></div></section>
+    ${g?`<section class="panel"><div class="lab">Try it</div><div class="chmv" style="font-size:1.15rem">${done?esc(done):'Find a good move for White that follows this tip.'}</div>${done?'':`<p class="lead" style="margin:6px 0 0;font-size:14px">Hint: ${esc(x[4])}</p>`}</div></section>`:''}
+    <div class="row">${i>0?'<button class="btn" id="tprev">← Previous tip</button>':''}${i<CHT.length-1?'<button class="btn gold" id="tnext">Next tip →</button>':''}</div></div></div>`;
+    app.onclick=e=>{const b=e.target.closest('button');if(!b)return;
+      if(b.id==='chlback')return chlHome();if(b.id==='chlhear')return chlSpeak(x[0]+'. '+x[1]);if(b.id==='tprev')return chlTip(i-1);if(b.id==='tnext')return chlTip(i+1);
+      const sq=b.dataset.sq;if(!sq||!g||done)return;const p=g.get(sq);
+      if(sel&&tg.has(sq)){const mv=legal.find(m=>m.to===sq);const r=g.move({from:mv.from,to:mv.to,promotion:mv.promotion||'q'});
+        if(r.san===x[4]||r.san.replace(/[+#]/,'')===x[4].replace(/[+#]/,'')){done='✓ '+chessSay(r);chlSpeak('Well done! '+chessSay(r))}else{g.undo();chlSpeak('Not this time. Look again.')}sel=null;return draw()}
+      sel=p&&p.color===g.turn()?sq:null;draw()}};
+  if(g)draw();else draw();window.scrollTo(0,0);
+}
 function chessSetup(){
   CH=null;
   app.innerHTML=`<div><h2>Chess</h2><p class="lead">A real chess board for two players. Say each move in English before you play it. / Скажите ход по-английски, прежде чем сделать его.</p></div>
@@ -1194,10 +1313,12 @@ function chessSetup(){
   <div class="row"><span class="sublab w">English level</span>${CHLV.map(([k,l])=>`<button class="btn ${(CHC.lang||'A')===k?'on':''}" data-clang="${k}">${l}</button>`).join('')}</div>
   <p class="lead" style="margin:8px 0 0;font-size:14px">At this level you say, for example: <b>“${CHLV.find(x=>x[0]===(CHC.lang||'A'))[2]}”</b></p></section>
   <section class="panel"><div class="lab">Chess words · шахматные слова</div>${chessWordsHTML()}<p class="lead" style="margin:10px 0 0;font-size:14px"><b>Zugzwang</b> (German for “compulsion to move”): you must move, but every move makes your position worse. / Цугцванг: вы обязаны ходить, но любой ход ухудшает позицию.</p></section>
+  <section class="panel"><div class="lab">New to chess? · Впервые играете?</div><div class="row" style="flex-wrap:wrap"><button class="btn gold" id="clessons">📘 Chess lessons and tips</button><span class="lead" style="margin:0;font-size:14px">10 short lessons with practice on the board, and 10 tips to play better.</span></div></section>
   <div class="row end"><button class="btn gold big" id="cgo">Start</button></div>`;
   app.onclick=e=>{const b=e.target.closest('button');if(!b)return;
     CHC.names=[0,1].map(i=>($('#cn'+i)||{value:CHC.names[i]}).value.trim()||['White','Black'][i]);
     if(b.dataset.csay!=null)CHC.say=b.dataset.csay==='true';if(b.dataset.copp)CHC.opp=b.dataset.copp;if(b.dataset.clv)CHC.level=b.dataset.clv;if(b.dataset.cside)CHC.side=b.dataset.cside;if(b.dataset.clang)CHC.lang=b.dataset.clang;if(b.dataset.cquiz!=null)CHC.quiz=b.dataset.cquiz==='true';gs.set('chc',CHC);
+    if(b.id==='clessons')return chessLoad().then(chlHome);
     if(b.id==='cgo'){b.disabled=true;return chessLoad().then(()=>{chessNew(false)}).catch(()=>{b.disabled=false;alert('Chess could not load. Check the connection and try again.')})}
     rerender(chessSetup)};
 }
