@@ -1,5 +1,5 @@
-/* IF Lingo · Russian A1 word bank: 12 more words for every unit (240 words), studied in the Vocabulary tab.
-   With the 160 lesson words this makes 400 words; the plan is about 500.
+/* IF Lingo · Russian A1 word bank: 17 more words for every unit (340 words), studied in the Vocabulary tab.
+   With the 160 lesson words this makes 500 words.
    word | part of speech | meaning in English | example | (empty) | how to say it | the example in English */
 IFX.moreWords('ru-a1', {
 u0: `
@@ -262,4 +262,128 @@ u19: `
 озеро | noun | lake | Мы были на озере. | | O-zee-ra | We were at the lake.
 лес | noun | forest | Мы гуляли в лесу. | | lyes | We walked in the forest.
 мир | noun | world; peace | Мир большой. | | meer | The world is big.`
+});
+
+/* ---- The last 100: five more words for every unit. Russian A1 now has 500 words. ---- */
+IFX.moreWords('ru-a1', {
+u0: `
+отель | noun | hotel | Это отель. | | a-TEL | This is a hotel.
+журнал | noun | magazine | Это журнал. | | zhoor-NAL | This is a magazine.
+газета | noun | newspaper | Это газета. | | ga-ZYE-ta | This is a newspaper.
+класс | noun | class; classroom | Это мой класс. | | klas | This is my class.
+группа | noun | group | Это моя группа. | | GROO-pa | This is my group.`,
+u1: `
+имя | noun | first name | Моё имя Том. | | EE-mya | My name is Tom.
+фамилия | noun | surname | Моя фамилия Смит. | | fa-MEE-lee-ya | My surname is Smith.
+очень приятно | phrase | pleased to meet you | Очень приятно! | | O-cheen pree-YAT-na | Pleased to meet you!
+ты | pronoun | you (to a friend) | Ты студент? | | ty | Are you a student?
+мы | pronoun | we | Мы студенты. | | my | We are students.`,
+u2: `
+они | pronoun | they | Они мои друзья. | | a-NEE | They are my friends.
+тётя | noun | aunt | Это моя тётя. | | TYO-tya | This is my aunt.
+дядя | noun | uncle | Это мой дядя. | | DYA-dya | This is my uncle.
+подруга | noun | friend (a woman or girl) | Анна — моя подруга. | | pa-DROO-ga | Anna is my friend.
+человек | noun | person | Он хороший человек. | | chee-la-VYEK | He is a good person.`,
+u3: `
+сорок | number | forty | Ей сорок лет. | | SO-rak | She is forty years old.
+пятьдесят | number | fifty | Это стоит пятьдесят тенге. | | pee-dee-SYAT | It costs fifty tenge.
+много | adverb | many, a lot | У меня много книг. | | MNO-ga | I have a lot of books.
+мало | adverb | few, little | У меня мало времени. | | MA-la | I have little time.
+возраст | noun | age | Какой у вас возраст? | | VOZ-rast | What is your age?`,
+u4: `
+овощи | noun | vegetables | Я ем овощи. | | O-va-shchee | I eat vegetables.
+фрукты | noun | fruit | Я люблю фрукты. | | FROOK-ty | I love fruit.
+картошка | noun | potatoes | Мясо и картошка. | | kar-TOSH-ka | Meat and potatoes.
+масло | noun | butter; oil | Хлеб и масло. | | MAS-la | Bread and butter.
+стакан | noun | glass | Стакан воды, пожалуйста. | | sta-KAN | A glass of water, please.`,
+u5: `
+здание | noun | building | Это большое здание. | | ZDA-nee-ye | This is a big building.
+угол | noun | corner | Магазин на углу. | | OO-gal | The shop is on the corner.
+рядом | adverb | nearby, next to | Школа рядом. | | RYA-dam | The school is nearby.
+напротив | adverb | opposite | Банк напротив. | | na-PRO-teef | The bank is opposite.
+между | preposition | between | Кафе между банком и школой. | | MYEZH-doo | The café is between the bank and the school.`,
+u6: `
+учиться | verb | to study | Я учусь в университете. | | oo-CHEET-sa | I study at the university.
+повторять | verb | to repeat | Повторите, пожалуйста. | | paf-ta-RYAT | Repeat, please.
+объяснять | verb | to explain | Учитель объясняет. | | ab-yas-NYAT | The teacher is explaining.
+значить | verb | to mean | Что это значит? | | ZNA-cheet | What does this mean?
+правильно | adverb | correct, correctly | Это правильно. | | PRA-veel-na | This is correct.`,
+u7: `
+очки | noun | glasses | Где мои очки? | | ach-KEE | Where are my glasses?
+зонт | noun | umbrella | У меня есть зонт. | | zont | I have an umbrella.
+кошелёк | noun | wallet | Где мой кошелёк? | | ka-shee-LYOK | Where is my wallet?
+документ | noun | document | Это мой документ. | | da-koo-MYENT | This is my document.
+секунда | noun | second | Одна секунда! | | see-KOON-da | One second!`,
+u8: `
+покупать | verb | to buy (often) | Я покупаю хлеб здесь. | | pa-koo-PAT | I buy bread here.
+продавать | verb | to sell | Здесь продают фрукты. | | pra-da-VAT | They sell fruit here.
+сдача | noun | change (money) | Вот ваша сдача. | | ZDA-cha | Here is your change.
+скидка | noun | discount | Сегодня скидка. | | SKEET-ka | There is a discount today.
+закрыт | adjective | closed | Банк закрыт. | | za-KRYT | The bank is closed.`,
+u9: `
+январь | noun | January | В январе холодно. | | yeen-VAR | It is cold in January.
+июль | noun | July | В июле жарко. | | ee-YOOL | It is hot in July.
+дата | noun | date | Какая сегодня дата? | | DA-ta | What is the date today?
+календарь | noun | calendar | Это календарь. | | ka-leen-DAR | This is a calendar.
+полдень | noun | noon | Сейчас полдень. | | POL-dyen | It is noon now.`,
+u10: `
+облако | noun | cloud | На небе облако. | | OB-la-ka | There is a cloud in the sky.
+лёд | noun | ice | Зимой лёд. | | lyot | There is ice in winter.
+туман | noun | fog | Сегодня туман. | | too-MAN | It is foggy today.
+воздух | noun | air | Воздух чистый. | | VOZ-dookh | The air is clean.
+чистый | adjective | clean | Это чистая вода. | | CHEES-ty | This is clean water.`,
+u11: `
+заканчивать | verb | to finish | Я заканчиваю работу в шесть. | | za-KAN-chee-vat | I finish work at six.
+умываться | verb | to wash (yourself) | Утром я умываюсь. | | oo-my-VAT-sa | In the morning I wash.
+одеваться | verb | to get dressed | Я одеваюсь быстро. | | a-dee-VAT-sa | I get dressed quickly.
+еда | noun | food | Еда вкусная. | | ye-DA | The food is tasty.
+после | preposition | after | После работы я дома. | | POS-lye | After work I am at home.`,
+u12: `
+зеркало | noun | mirror | Это зеркало. | | ZYER-ka-la | This is a mirror.
+полка | noun | shelf | Книга на полке. | | POL-ka | The book is on the shelf.
+кресло | noun | armchair | Это новое кресло. | | KRYES-la | This is a new armchair.
+балкон | noun | balcony | У нас есть балкон. | | bal-KON | We have a balcony.
+лестница | noun | stairs | Лестница там. | | LYES-nee-tsa | The stairs are there.`,
+u13: `
+пешком | adverb | on foot | Я иду пешком. | | peesh-KOM | I am going on foot.
+пробка | noun | traffic jam | В городе пробка. | | PROP-ka | There is a traffic jam in the city.
+расписание | noun | timetable | Где расписание? | | ras-pee-SA-nee-ye | Where is the timetable?
+опаздывать | verb | to be late | Я опаздываю. | | a-PAZ-dy-vat | I am late.
+останавливаться | verb | to stop | Автобус останавливается здесь. | | as-ta-NAV-lee-vat-sa | The bus stops here.`,
+u14: `
+палец | noun | finger | У меня болит палец. | | PA-leets | My finger hurts.
+лицо | noun | face | Это лицо. | | lee-TSO | This is a face.
+волосы | noun | hair | У неё длинные волосы. | | VO-la-sy | She has long hair.
+больной | adjective | ill | Он больной. | | bal-NOY | He is ill.
+здоровый | adjective | healthy | Я здоровый. | | zda-RO-vy | I am healthy.`,
+u15: `
+костюм | noun | suit | Это новый костюм. | | kas-TYOOM | This is a new suit.
+джинсы | noun | jeans | Это мои джинсы. | | DZHYN-sy | These are my jeans.
+перчатки | noun | gloves | Где мои перчатки? | | peer-CHAT-kee | Where are my gloves?
+носить | verb | to wear | Я ношу куртку. | | na-SEET | I wear a jacket.
+коричневый | adjective | brown | Это коричневая сумка. | | ka-REECH-nee-vy | This is a brown bag.`,
+u16: `
+концерт | noun | concert | Вечером концерт. | | kan-TSERT | There is a concert in the evening.
+хобби | noun | hobby | Моё хобби — музыка. | | KHO-bee | My hobby is music.
+команда | noun | team | Это моя команда. | | ka-MAN-da | This is my team.
+отдых | noun | rest | Отдых — это хорошо. | | OD-dykh | Rest is good.
+путешествовать | verb | to travel | Я люблю путешествовать. | | poo-tee-SHEST-va-vat | I like travelling.`,
+u17: `
+найти | verb | to find | Я нашёл телефон. | | nay-TEE | I found the phone.
+забыть | verb | to forget | Я забыл ключ. | | za-BYT | I forgot the key.
+открыть | verb | to open | Он открыл дверь. | | at-KRYT | He opened the door.
+закрыть | verb | to close | Я закрыл окно. | | za-KRYT | I closed the window.
+история | noun | history; story | Это интересная история. | | ees-TO-ree-ya | This is an interesting story.`,
+u18: `
+пригласить | verb | to invite | Я хочу пригласить вас. | | pree-gla-SEET | I want to invite you.
+готов | adjective | ready (a man says) | Я готов. | | ga-TOF | I am ready.
+собираться | verb | to be going to | Я собираюсь в Астану. | | sa-bee-RAT-sa | I am going to go to Astana.
+мечта | noun | dream | Это моя мечта. | | meech-TA | This is my dream.
+будущее | noun | the future | Это наше будущее. | | BOO-doo-shche-ye | This is our future.`,
+u19: `
+столица | noun | capital city | Астана — столица Казахстана. | | sta-LEE-tsa | Astana is the capital of Kazakhstan.
+остров | noun | island | Это большой остров. | | OST-raf | This is a big island.
+пляж | noun | beach | Мы были на пляже. | | plyash | We were at the beach.
+сувенир | noun | souvenir | Это сувенир. | | soo-vee-NEER | This is a souvenir.
+путешественник | noun | traveller | Он путешественник. | | poo-tee-SHEST-vee-neek | He is a traveller.`
 });

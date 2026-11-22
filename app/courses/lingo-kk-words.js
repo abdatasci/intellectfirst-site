@@ -1,5 +1,5 @@
-/* IF Lingo · Kazakh A1 word bank: 12 more words for every unit (240 words), studied in the Vocabulary tab.
-   With the 160 lesson words this makes 400 words; the plan is about 500.
+/* IF Lingo · Kazakh A1 word bank: 17 more words for every unit (340 words), studied in the Vocabulary tab.
+   With the 160 lesson words this makes 500 words.
    word | part of speech | meaning in English | example | (empty) | how to say it | the example in English */
 IFX.moreWords('kk-a1', {
 u0: `
@@ -262,4 +262,128 @@ u19: `
 көл | noun | lake | Біз көлде болдық. | | kol | We were at the lake.
 орман | noun | forest | Біз орманда серуендедік. | | or-MAN | We walked in the forest.
 әлем | noun | world | Әлем үлкен. | | a-LEM | The world is big.`
+});
+
+/* ---- The last 100: five more words for every unit. Kazakh A1 now has 500 words. ---- */
+IFX.moreWords('kk-a1', {
+u0: `
+супермаркет | noun | supermarket | Супермаркет қайда? | | soo-per-MAR-ket | Where is the supermarket?
+журнал | noun | magazine | Бұл журнал. | | zhoor-NAL | This is a magazine.
+газет | noun | newspaper | Бұл газет. | | ga-ZET | This is a newspaper.
+сынып | noun | class; classroom | Бұл менің сыныбым. | | sy-NYP | This is my class.
+топ | noun | group | Бұл менің тобым. | | top | This is my group.`,
+u1: `
+есім | noun | first name | Менің есімім Том. | | e-SIM | My name is Tom.
+аты-жөні | noun | full name | Сіздің аты-жөніңіз қандай? | | a-TY zho-NI | What is your full name?
+олар | pronoun | they | Олар үйде. | | o-LAR | They are at home.
+қош келдіңіз | phrase | welcome | Қош келдіңіз! | | qosh kel-di-NGIZ | Welcome!
+өтінемін | phrase | please (formal) | Өтінемін, отырыңыз. | | o-ti-ne-MIN | Please, sit down.`,
+u2: `
+тәте | noun | aunt | Бұл менің тәтем. | | ta-TE | This is my aunt.
+құрбы | noun | friend (a woman or girl) | Айгүл — менің құрбым. | | qoor-BY | Aigul is my friend.
+адам | noun | person | Ол жақсы адам. | | a-DAM | He is a good person.
+немере | noun | grandchild | Бұл менің немерем. | | ne-me-RE | This is my grandchild.
+туыс | noun | relative | Ол менің туысым. | | too-YS | He is my relative.`,
+u3: `
+қырық | number | forty | Ол қырық жаста. | | qy-RYQ | She is forty years old.
+елу | number | fifty | Бұл елу теңге тұрады. | | e-LOO | It costs fifty tenge.
+көп | adjective | many, a lot | Менде көп кітап бар. | | kop | I have a lot of books.
+аз | adjective | few, little | Менде уақыт аз. | | az | I have little time.
+сан | noun | number, figure | Бұл қандай сан? | | san | What number is this?`,
+u4: `
+картоп | noun | potato | Ет пен картоп. | | kar-TOP | Meat and potatoes.
+май | noun | butter; oil | Нан мен май. | | may | Bread and butter.
+стақан | noun | glass | Бір стақан су беріңізші. | | sta-QAN | A glass of water, please.
+тәтті | adjective | sweet | Бұл тәтті алма. | | tat-TI | This is a sweet apple.
+ащы | adjective | bitter; spicy | Бұл тамақ ащы. | | ash-SHY | This food is spicy.`,
+u5: `
+ғимарат | noun | building | Бұл үлкен ғимарат. | | ghi-ma-RAT | This is a big building.
+бұрыш | noun | corner | Дүкен бұрышта. | | boo-RYSH | The shop is on the corner.
+жанында | word | next to | Мектеп банктің жанында. | | zha-nyn-DA | The school is next to the bank.
+қарсы | word | opposite | Банк мектепке қарсы. | | qar-SY | The bank is opposite the school.
+арасында | word | between | Кафе банк пен мектептің арасында. | | a-ra-syn-DA | The café is between the bank and the school.`,
+u6: `
+қайталау | verb | to repeat | Қайталаңызшы. | | qay-ta-LAU | Repeat, please.
+түсіндіру | verb | to explain | Мұғалім түсіндіреді. | | too-sin-di-ROO | The teacher is explaining.
+дұрыс | adjective | correct | Бұл дұрыс. | | doo-RYS | This is correct.
+қате | noun | mistake | Бұл қате. | | qa-TE | This is a mistake.
+мағына | noun | meaning | Бұл сөздің мағынасы қандай? | | ma-ghy-NA | What is the meaning of this word?`,
+u7: `
+көзілдірік | noun | glasses | Менің көзілдірігім қайда? | | ko-zil-di-RIK | Where are my glasses?
+қолшатыр | noun | umbrella | Менде қолшатыр бар. | | qol-sha-TYR | I have an umbrella.
+әмиян | noun | wallet | Менің әмияным қайда? | | a-mi-YAN | Where is my wallet?
+құжат | noun | document | Бұл менің құжатым. | | qoo-ZHAT | This is my document.
+секунд | noun | second | Бір секунд! | | se-KOOND | One second!`,
+u8: `
+сату | verb | to sell | Осында жеміс сатады. | | sa-TOO | They sell fruit here.
+жеңілдік | noun | discount | Бүгін жеңілдік бар. | | zhe-ngil-DIK | There is a discount today.
+тегін | adjective | free (no cost) | Бұл тегін. | | te-GIN | This is free.
+ұзын | adjective | long | Бұл ұзын көше. | | oo-ZYN | This is a long street.
+қысқа | adjective | short | Бұл қысқа жол. | | qys-QA | This is a short road.`,
+u9: `
+жыл мезгілі | noun | season | Қыс — жыл мезгілі. | | zhyl mez-gi-LI | Winter is a season.
+наурыз | noun | March | Наурызда мереке бар. | | na-oo-RYZ | There is a holiday in March.
+желтоқсан | noun | December | Желтоқсанда қар жауады. | | zhel-toq-SAN | It snows in December.
+күн сайын | phrase | every day | Мен күн сайын оқимын. | | koon sa-YYN | I read every day.
+уақытында | adverb | on time | Мен уақытында келемін. | | oo-a-qy-tyn-DA | I come on time.`,
+u10: `
+жұлдыз | noun | star | Аспанда жұлдыз көп. | | zhool-DYZ | There are many stars in the sky.
+құрғақ | adjective | dry | Бүгін ауа құрғақ. | | qoor-GHAQ | The air is dry today.
+жер | noun | ground; earth | Жерде қар бар. | | zher | There is snow on the ground.
+от | noun | fire | От ыстық. | | ot | Fire is hot.
+жарық | adjective | light, bright | Бөлме жарық. | | zha-RYQ | The room is bright.`,
+u11: `
+киіну | verb | to get dressed | Мен тез киінемін. | | ki-i-NOO | I get dressed quickly.
+жату | verb | to lie down, to go to bed | Мен он бірде жатамын. | | zha-TOO | I go to bed at eleven.
+кейін | word | after; later | Жұмыстан кейін мен үйдемін. | | ke-YIN | After work I am at home.
+дейін | word | until | Мен алтыға дейін жұмыс істеймін. | | de-YIN | I work until six.
+асығу | verb | to hurry | Мен асығамын. | | a-sy-GHOO | I am in a hurry.`,
+u12: `
+айна | noun | mirror | Бұл айна. | | ay-NA | This is a mirror.
+сөре | noun | shelf | Кітап сөреде. | | so-RE | The book is on the shelf.
+балкон | noun | balcony | Бізде балкон бар. | | bal-KON | We have a balcony.
+баспалдақ | noun | stairs | Баспалдақ анда. | | bas-pal-DAQ | The stairs are there.
+жиһаз | noun | furniture | Бұл жаңа жиһаз. | | zhi-HAZ | This is new furniture.`,
+u13: `
+кептеліс | noun | traffic jam | Қалада кептеліс. | | kep-te-LIS | There is a traffic jam in the city.
+кесте | noun | timetable | Кесте қайда? | | kes-TE | Where is the timetable?
+кешігу | verb | to be late | Мен кешігемін. | | ke-shi-GOO | I am late.
+жүру | verb | to walk; to go | Мен жаяу жүремін. | | zhoo-ROO | I go on foot.
+түсу | verb | to get off | Мен осы аялдамада түсемін. | | too-SOO | I get off at this stop.`,
+u14: `
+саусақ | noun | finger | Менің саусағым ауырады. | | sa-oo-SAQ | My finger hurts.
+бет | noun | face | Бұл бет. | | bet | This is a face.
+шаш | noun | hair | Оның шашы ұзын. | | shash | She has long hair.
+сау | adjective | healthy | Мен саумын. | | sau | I am healthy.
+науқас | adjective | ill | Ол науқас. | | na-oo-QAS | He is ill.`,
+u15: `
+костюм | noun | suit | Бұл жаңа костюм. | | kos-TYOOM | This is a new suit.
+джинсы | noun | jeans | Бұл менің джинсым. | | DZHIN-sy | These are my jeans.
+қолғап | noun | gloves | Менің қолғабым қайда? | | qol-GHAP | Where are my gloves?
+қоңыр | adjective | brown | Бұл қоңыр сөмке. | | qo-NGYR | This is a brown bag.
+ыңғайлы | adjective | comfortable | Бұл ыңғайлы аяқ киім. | | yng-ghay-LY | These are comfortable shoes.`,
+u16: `
+концерт | noun | concert | Кешке концерт бар. | | kon-TSERT | There is a concert in the evening.
+хобби | noun | hobby | Менің хоббиім — музыка. | | KHOB-bi | My hobby is music.
+команда | noun | team | Бұл менің командам. | | ko-MAN-da | This is my team.
+саяхаттау | verb | to travel | Маған саяхаттау ұнайды. | | sa-ya-khat-TAU | I like travelling.
+би | noun | dance | Бұл әдемі би. | | bi | This is a beautiful dance.`,
+u17: `
+тарих | noun | history | Бұл қызық тарих. | | ta-RIKH | This is interesting history.
+оқиға | noun | event; story | Бұл қызық оқиға. | | o-qi-GHA | This is an interesting story.
+қайту | verb | to return | Мен үйге қайттым. | | qay-TOO | I returned home.
+шығу | verb | to go out | Ол үйден шықты. | | shy-GHOO | He went out of the house.
+кіру | verb | to come in | Мен бөлмеге кірдім. | | ki-ROO | I came into the room.`,
+u18: `
+арман | noun | dream | Бұл менің арманым. | | ar-MAN | This is my dream.
+болашақ | noun | the future | Бұл біздің болашағымыз. | | bo-la-SHAQ | This is our future.
+мақсат | noun | goal | Менің мақсатым бар. | | maq-SAT | I have a goal.
+дайындалу | verb | to prepare | Мен емтиханға дайындаламын. | | da-yyn-da-LOO | I am preparing for the exam.
+сену | verb | to believe | Мен сізге сенемін. | | se-NOO | I believe you.`,
+u19: `
+астана | noun | capital city | Астана — Қазақстанның астанасы. | | as-ta-NA | Astana is the capital of Kazakhstan.
+арал | noun | island | Бұл үлкен арал. | | a-RAL | This is a big island.
+жағажай | noun | beach | Біз жағажайда болдық. | | zha-gha-ZHAY | We were at the beach.
+кәдесый | noun | souvenir | Бұл кәдесый. | | ka-de-SYY | This is a souvenir.
+саяхатшы | noun | traveller | Ол саяхатшы. | | sa-ya-khat-SHY | He is a traveller.`
 });
