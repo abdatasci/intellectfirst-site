@@ -4,7 +4,7 @@
 IFX.course({
   id: 'ru-a1', track: 'lang', lang: 'ru-RU', level: 'A1', next: 'A2', icon: '🇷🇺',
   title: 'Russian A1', sub: 'Your first steps in Russian',
-  blurb: 'Say hello, talk about your family, order food, find your way and go shopping: the alphabet, 160 words and 20 grammar points, explained in English.',
+  blurb: 'Say hello, talk about your family, order food, find your way and go shopping: the alphabet, 400 words, 20 grammar points, listening in every unit and a level test, explained in English.',
   units: []
 });
 (function () {
