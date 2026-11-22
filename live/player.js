@@ -5,7 +5,7 @@
   var qsp = new URLSearchParams(location.search);
   var S = { pin: (qsp.get('pin') || '').replace(/\D/g, ''), name: '', pid: null, uid: null, bus: null, st: null, answered: {}, team: -1, race: null };
 
-  function show(h) { view.innerHTML = h; }
+  function show(h) { view.innerHTML = h; document.body.classList.toggle('treasure', !!(S.st && S.st.mode === 'gold')); document.body.classList.toggle('heist', !!(S.st && S.st.mode === 'cash')); }
   function flash(ok) { var f = $('#flash'); f.className = 'flash ' + (ok ? 'ok' : 'no'); clearTimeout(flash.t); flash.t = setTimeout(function () { f.className = 'flash'; }, 380); }
   function meChip() { var m = $('#me'), M = L.mode(S.st && S.st.mode); m.hidden = !S.name; m.innerHTML = esc(S.name) + (S.st && S.st.you && S.st.you[S.pid] ? ' · <span class="score-chip">' + (M.power ? L.fmtN(S.st.you[S.pid][0]) + ' ' + M.cur : S.st.you[S.pid][0]) + '</span>' : ''); }
   function toast(text, kind) {
@@ -273,9 +273,9 @@
   }
   /* Cash Climb: coins per answer with upgrades bought in the shop */
   var CASH = {
-    per: { name: 'Coins per answer', lv: [10, 25, 50, 100, 250, 500, 1000, 2500], cost: [0, 60, 250, 800, 2500, 7000, 20000, 60000] },
-    streak: { name: 'Streak bonus', lv: [0, 5, 15, 40, 100, 300], cost: [0, 100, 500, 1500, 5000, 15000] },
-    mult: { name: 'Multiplier', lv: [1, 1.5, 2, 3, 5], cost: [0, 300, 1500, 5000, 15000] }
+    per: { name: 'Bigger money bag', lv: [10, 25, 50, 100, 250, 500, 1000, 2500], cost: [0, 60, 250, 800, 2500, 7000, 20000, 60000] },
+    streak: { name: 'Crew streak bonus', lv: [0, 5, 15, 40, 100, 300], cost: [0, 100, 500, 1500, 5000, 15000] },
+    mult: { name: 'Getaway multiplier', lv: [1, 1.5, 2, 3, 5], cost: [0, 300, 1500, 5000, 15000] }
   };
   function cashState() { return S.cash || (S.cash = { per: 0, streak: 0, mult: 0, bal: 0 }); }
   function cashEarn() {
@@ -283,11 +283,11 @@
     var earn = Math.round((CASH.per.lv[C.per] + CASH.streak.lv[C.streak] * Math.min(streak, 10)) * CASH.mult.lv[C.mult]);
     C.bal = Math.max(C.bal, myScore()) + earn;
     S.bus.pub('p', 'gain', { pid: S.pid, k: 'add', v: earn }); L.sfx('coin');
-    cashShop('+' + L.fmtN(earn) + ' 💰');
+    cashShop('💰 +' + L.fmtN(earn) + ' grabbed!');
   }
   function cashShop(msg) {
     var C = cashState(), bal = Math.max(C.bal, myScore());
-    show('<div class="pw"><h2>' + (msg || '💰 Shop') + '</h2><p style="color:rgba(255,255,255,.75)">You have <b style="color:var(--gold)">' + L.fmtN(bal) + ' coins</b></p><div class="cashshop">' +
+    show('<div class="pw"><h2>' + (msg || '🧰 Crew shop') + '</h2><p style="color:rgba(255,255,255,.75)">You have <b style="color:var(--gold)">' + L.fmtN(bal) + ' coins</b></p><div class="cashshop">' +
       Object.keys(CASH).map(function (k) { var U = CASH[k], lv = C[k], nx = lv + 1 < U.lv.length ? lv + 1 : null; return '<button data-k="' + k + '"' + (nx == null || U.cost[nx] > bal ? ' disabled' : '') + '><div><b>' + U.name + '</b><br><small>Now: ' + (k === 'mult' ? '×' + U.lv[lv] : k === 'streak' ? '+' + U.lv[lv] + ' per streak' : U.lv[lv] + ' per answer') + (nx != null ? ' → ' + (k === 'mult' ? '×' + U.lv[nx] : U.lv[nx]) : '') + '</small></div><span>' + (nx == null ? 'MAX' : L.fmtN(U.cost[nx]) + ' 💰') + '</span></button>'; }).join('') +
       '</div><p style="margin-top:16px"><button class="btn" id="nx">Next question →</button></p></div>');
     view.querySelectorAll('.cashshop button').forEach(function (b) {
@@ -311,8 +311,10 @@
     if (r < .9) { var pc = pick([.1, .25]); return { k: 'steal', v: pc, l: 'Take ' + pc * 100 + '%', ic: '🦝' }; }
     return { k: 'swap', l: 'Swap!', ic: '🔄' };
   }
+  // Treasure Hunt: a wooden chest with gold bands (drawn here, not an emoji)
+  var CHEST_SVG = '<svg class="tchest" viewBox="0 0 120 100" aria-hidden="true"><defs><linearGradient id="tw" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9a5a2a"/><stop offset="1" stop-color="#4a2810"/></linearGradient><linearGradient id="tl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b06c34"/><stop offset="1" stop-color="#6a3a18"/></linearGradient><linearGradient id="tg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe08a"/><stop offset="1" stop-color="#c98e24"/></linearGradient></defs><ellipse cx="60" cy="94" rx="50" ry="6" fill="rgba(0,0,0,.35)"/><path d="M10 44 Q60 2 110 44 Z" fill="url(#tl)"/><rect x="10" y="44" width="100" height="48" rx="5" fill="url(#tw)"/><rect x="10" y="56" width="100" height="7" fill="url(#tg)"/><rect x="24" y="22" width="9" height="70" fill="url(#tg)"/><rect x="87" y="22" width="9" height="70" fill="url(#tg)"/><rect x="50" y="50" width="20" height="22" rx="3" fill="url(#tg)"/><circle cx="60" cy="61" r="3.5" fill="#3a2010"/><rect x="58.5" y="61" width="3" height="7" fill="#3a2010"/></svg>';
   function chests(m) {
-    var opts = [outcome(m), outcome(m), outcome(m)], icon = m === 'hack' ? '🗄️' : '🎁';
+    var opts = [outcome(m), outcome(m), outcome(m)], icon = m === 'hack' ? '🗄️' : CHEST_SVG;
     show('<div class="pw"><h2>' + (m === 'hack' ? 'Pick a server' : 'Choose a chest!') + '</h2><div class="chests">' + opts.map(function (o, i) { return '<button class="chest" data-i="' + i + '"><span class="ci">' + icon + '</span><span class="cl"></span></button>'; }).join('') + '</div><p class="mini" style="color:rgba(255,255,255,.6)">' + L.fmtN(myScore()) + ' ' + L.mode(m).cur + ' now</p></div>');
     view.querySelectorAll('.chest').forEach(function (b) {
       b.onclick = function () {

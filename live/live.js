@@ -56,6 +56,7 @@
   function pick(pool, n, not) { return LIVE.shuffle(pool.filter(function (w) { return not.indexOf(w) < 0; })).slice(0, n); }
   LIVE.build = function (cfg, banks) {
     var qs = [];
+    if (cfg.source === 'chess') return LIVE.chess(cfg);
     if (cfg.source === 'custom') {
       String(cfg.custom || '').split(/\n+/).forEach(function (line) {
         var parts = line.split('|').map(function (s) { return s.trim(); }).filter(Boolean);
@@ -95,6 +96,7 @@
   LIVE.bigPool = function (cfg, banks) {
     var qs = [], seen = {};
     function add(list) { list.forEach(function (q) { var k = q.p + '|' + q.o[q.a]; if (!seen[k]) { seen[k] = 1; qs.push(q); } }); }
+    if (cfg.source === 'chess') return LIVE.chess(Object.assign({}, cfg, { count: 'all' }));
     if (cfg.source === 'custom') return LIVE.build(Object.assign({}, cfg, { count: 'all' }), banks);
     var ids = cfg.source === 'gen' ? (LEVEL_BANKS[cfg.level] || LEVEL_BANKS.B1).filter(function (id) { var b = banks.filter(function (x) { return x.id === id; })[0]; return b && !(cfg.focus === 'grammar' && b.kind !== 'g') && !(cfg.focus === 'vocab' && b.kind !== 'v'); }) : [cfg.bank];
     ids.forEach(function (id) {
@@ -145,6 +147,65 @@
     return LIVE.shuffle(qs).slice(0, +c.count || 15);
   };
 
+  /* ---- Chess (22 Nov 2026): a question set for every IF Live mode. Puzzles show a real board on the big screen and
+     on the phones (the prompt starts with ⟦FEN⟧, drawn by LIVE.qhtml); options are moves said in English.
+     Puzzle answers were checked with chess.js. Format: [fen, prompt, [right, wrong, wrong, wrong], explanation]. */
+  LIVE.CHESS_PUZ = [["6k1/5ppp/8/8/8/8/8/R5K1 w - - 0 1", "White to move. Which move is checkmate?", ["Rook to a8", "Rook to a7", "Rook to b1", "King to f2"], "Back-rank mate: the black king is trapped behind its own pawns."], ["6k1/8/6K1/8/8/8/8/Q7 w - - 0 1", "White to move. Which move is checkmate?", ["Queen to a8", "Queen to a7", "Queen to b2", "King to f6"], "The queen checks along the 8th rank and the white king covers f7, g7 and h7."], ["k7/8/1K6/8/8/8/8/7R w - - 0 1", "White to move. Which move is checkmate?", ["Rook to h8", "Rook to h7", "King to c6", "Rook to b1"], "The rook checks on the 8th rank; the white king covers a7 and b7."], ["6rk/6pp/8/6N1/8/8/8/K7 w - - 0 1", "White to move. Which move is checkmate?", ["Knight to f7", "Knight to h3", "Knight to e6", "King to b2"], "A smothered mate: the king is surrounded by its own pieces and the knight jumps in."], ["r1bqkb1r/pppp1ppp/2n2n2/4p2Q/2B1P3/8/PPPP1PPP/RNB1K1NR w KQkq - 4 4", "White to move. Which move is checkmate?", ["Queen takes f7", "Queen takes e5", "Bishop takes f7", "Knight to f3"], "The famous Scholar’s Mate: the bishop on c4 protects the queen on f7."], ["7k/8/8/8/1b6/8/8/4Q2K w - - 0 1", "White to move. Which move wins a piece for free?", ["Queen takes b4", "Queen to e8", "Queen to e5", "King to g2"], "The queen moves diagonally to b4 and takes the bishop."], ["7k/8/8/8/5r2/8/8/2B4K w - - 0 1", "White to move. What is the best move?", ["Bishop takes f4", "Bishop to b2", "King to g2", "Bishop to a3"], "The bishop takes the rook on the diagonal: a rook is worth 5 pawns."], ["7k/8/8/8/3q4/8/8/3R3K w - - 0 1", "White to move. What is the best move?", ["Rook takes d4", "Rook to d3", "Rook to a1", "King to g2"], "The rook takes the queen in a straight line."], ["r3k3/8/8/1N6/8/8/8/7K w - - 0 1", "White to move. Which move is a fork?", ["Knight to c7", "Knight to d6", "Knight to a7", "Knight to d4"], "A fork: the knight attacks the king and the rook at the same time."], ["7k/8/8/8/4q3/8/3N4/K7 w - - 0 1", "White to move. What is the best move?", ["Knight takes e4", "Knight to b3", "Knight to f3", "King to a2"], "Always check every capture: the knight can take the queen."], ["r1bqk2r/pppp1ppp/2n2n2/2b1p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4", "White to move. Which move is castling?", ["Castle kingside", "King to f1", "Rook to g1", "King to e2"], "Castling: the king moves two squares towards the rook, and the rook jumps over."], ["7k/4P3/8/8/8/8/8/K7 w - - 0 1", "White to move. What is the best move?", ["Pawn to e8 and promotes to a queen", "King to a2", "King to b2", "King to b1"], "The pawn reaches the last rank and becomes a queen."], ["7k/8/8/3pP3/8/8/8/K7 w - d6 0 1", "Black just played d7–d5. Which special capture can White make?", ["Pawn takes d6", "Pawn to e6", "King to a2", "King to b2"], "En passant: the pawn on e5 takes the d5 pawn as if it had moved only one square."], ["4k3/8/8/8/8/8/8/R3K3 w Q - 0 1", "White to move. Which move gives check?", ["Rook to a8", "Rook to a7", "Rook to b1", "King to d2"], "The rook attacks the king along the 8th rank."], ["4r2k/8/8/8/8/8/3R4/4K3 w - - 0 1", "White is in check. Which move blocks the check?", ["Rook to e2", "King to f2", "King to f1", "King to d1"], "The rook moves between the black rook and the white king."], ["7k/8/8/8/8/8/8/r5K1 w - - 0 1", "White is in check from the rook. Which move is legal?", ["King to g2", "King to f1", "King to h1", "Stay and do nothing"], "The king must leave the 1st rank: f1 and h1 are still attacked by the rook."]];
+  LIVE.CHESS_RULES = [
+    ['Which piece moves in an L shape?', ['Knight', 'Bishop', 'Rook', 'King'], 'Two squares one way, then one square to the side.'],
+    ['Which piece is the strongest?', ['Queen', 'King', 'Rook', 'Knight'], 'The queen moves like a rook and a bishop together.'],
+    ['Which piece can jump over other pieces?', ['Knight', 'Queen', 'Bishop', 'Pawn'], 'Only the knight can jump.'],
+    ['Which piece always stays on squares of one colour?', ['Bishop', 'Rook', 'Knight', 'King'], 'A bishop moves only diagonally, so it never changes colour.'],
+    ['Which piece moves only one square in any direction?', ['King', 'Queen', 'Knight', 'Bishop'], 'The king is slow, but the game is about him.'],
+    ['Which piece moves in straight lines along files and ranks?', ['Rook', 'Bishop', 'Knight', 'Pawn'], 'The rook goes up, down, left and right.'],
+    ['How many squares are there on a chessboard?', ['64', '32', '48', '100'], '8 files × 8 ranks = 64 squares.'],
+    ['Who moves first in chess?', ['White', 'Black', 'The older player', 'The younger player'], 'White always makes the first move.'],
+    ['How does a pawn capture?', ['Diagonally forward', 'Straight forward', 'Sideways', 'Backwards'], 'A pawn moves forward but captures one square diagonally.'],
+    ['On its first move, how far can a pawn go?', ['One or two squares', 'Only one square', 'Three squares', 'As far as it likes'], 'After the first move, only one square at a time.'],
+    ['The king is attacked and there is no way out. This is…', ['checkmate', 'check', 'stalemate', 'castling'], 'Checkmate ends the game.'],
+    ['A player has no legal move, but the king is not in check. This is…', ['stalemate', 'checkmate', 'check', 'en passant'], 'Stalemate is a draw.'],
+    ['A pawn reaches the last rank. What happens?', ['It becomes another piece', 'It goes back to the start', 'It leaves the board', 'It becomes a king'], 'This is called promotion. Most players choose a queen.'],
+    ['Castling is a special move of the king and…', ['a rook', 'a knight', 'the queen', 'a pawn'], 'The king moves two squares towards the rook, and the rook jumps over the king.'],
+    ['About how many pawns is a rook worth?', ['5', '3', '9', '1'], 'Pawn 1, knight 3, bishop 3, rook 5, queen 9.'],
+    ['About how many pawns is a queen worth?', ['9', '5', '3', '12'], 'Pawn 1, knight 3, bishop 3, rook 5, queen 9.'],
+    ['About how many pawns is a knight worth?', ['3', '1', '5', '9'], 'Knights and bishops are worth about 3 pawns.'],
+    ['The rows of the board (1 to 8) are called…', ['ranks', 'files', 'diagonals', 'lines'], 'Rows are ranks; columns (a to h) are files.'],
+    ['The columns of the board (a to h) are called…', ['files', 'ranks', 'diagonals', 'rows'], 'Columns are files; rows are ranks.'],
+    ['Your king is in check. What must you do?', ['Get out of check at once', 'Nothing', 'Give up the game', 'Move any piece you like'], 'Move the king, block the check, or capture the attacker.'],
+    ['Can a king move to a square where it is in check?', ['No, never', 'Yes, always', 'Only once a game', 'Only when castling'], 'A king can never move into check.'],
+    ['One piece attacks two enemy pieces at the same time. This is called…', ['a fork', 'a pin', 'a castle', 'a draw'], 'Knights are very good at forks.'],
+    ['Which is a good idea in the opening?', ['Bring out knights and bishops', 'Move only the queen', 'Move the king forward', 'Move the same piece again and again'], 'Develop your pieces and castle early.'],
+    ['Which squares are the centre of the board?', ['d4, d5, e4, e5', 'a1, a8, h1, h8', 'a4, b5, g4, h5', 'c1, d1, e1, f1'], 'Pieces in the centre control more squares.']
+  ];
+  LIVE.CHESS_WORDS = [['шах', 'check'], ['мат', 'checkmate'], ['пат', 'stalemate'], ['ничья', 'a draw'], ['ладья', 'rook'], ['слон', 'bishop'], ['ферзь', 'queen'], ['конь', 'knight'], ['пешка', 'pawn'], ['король', 'king'],
+    ['рокировка', 'castling'], ['доска', 'board'], ['клетка, поле', 'square'], ['взятие на проходе', 'en passant'], ['превращение пешки', 'promotion'], ['ход', 'a move'], ['брать (фигуру)', 'to capture'], ['соперник', 'opponent'], ['сдаваться', 'to resign'], ['вилка', 'a fork']];
+  LIVE.CHESS_NOTE = [['Nf3', 'Knight to f3'], ['Bxe5', 'Bishop takes e5'], ['O-O', 'Castle kingside'], ['O-O-O', 'Castle queenside'], ['Qh5+', 'Queen to h5, check'], ['Rxa8#', 'Rook takes a8, checkmate'], ['e4', 'Pawn to e4'], ['Kd2', 'King to d2'], ['exd5', 'Pawn takes d5'], ['e8=Q', 'Pawn to e8, promotes to a queen']];
+  LIVE.chess = function (c) {
+    var f = c.chess || 'mix', qs = [], mk = function (p, o, x, k) { var right = o[0], s = LIVE.shuffle(o); qs.push({ p: p, o: s, a: s.indexOf(right), x: x || '', k: k || 'c' }); };
+    if (f === 'mix' || f === 'puzzles') LIVE.CHESS_PUZ.forEach(function (q) { mk('⟦' + q[0] + '⟧' + q[1], q[2], q[3]); });
+    if (f === 'mix' || f === 'rules') LIVE.CHESS_RULES.forEach(function (q) { mk('♟️ ' + q[0], q[1], q[2]); });
+    if (f === 'mix' || f === 'words') {
+      var W = LIVE.CHESS_WORDS, N = LIVE.CHESS_NOTE;
+      W.forEach(function (w) { var o = [w[1]].concat(LIVE.shuffle(W.filter(function (x) { return x !== w; })).slice(0, 3).map(function (x) { return x[1]; })); mk('How do you say «' + w[0] + '» in English?', o, w[0] + ' — ' + w[1], 'v'); });
+      N.forEach(function (n) { var o = [n[1]].concat(LIVE.shuffle(N.filter(function (x) { return x !== n; })).slice(0, 3).map(function (x) { return x[1]; })); mk('How do you say the move “' + n[0] + '” in English?', o, n[0] + ' = ' + n[1], 'v'); });
+    }
+    qs = LIVE.shuffle(qs);
+    return c.count && c.count !== 'all' ? qs.slice(0, +c.count) : qs;
+  };
+  LIVE.CHESS_FOCUS = [['mix', 'Mixed'], ['puzzles', 'Puzzles on the board'], ['rules', 'Pieces & rules'], ['words', 'Chess words & moves']];
+  var CHG = { k: '♚', q: '♛', r: '♜', b: '♝', n: '♞', p: '♟' };
+  LIVE.board = function (fen) {
+    var rows = String(fen).split(' ')[0].split('/'), h = '<span class="qboard">';
+    rows.forEach(function (row, r) {
+      var c = 0;
+      row.split('').forEach(function (ch) {
+        var cell = function (inner) { h += '<i class="' + ((r + c) % 2 ? 'dk' : '') + '">' + inner + (c === 0 ? '<s class="rk">' + (8 - r) + '</s>' : '') + (r === 7 ? '<s class="fl">' + 'abcdefgh'[c] + '</s>' : '') + '</i>'; c++; };
+        if (/\d/.test(ch)) { for (var i = 0; i < +ch; i++) cell(''); return; }
+        if (CHG[ch.toLowerCase()]) cell('<b class="' + (ch === ch.toUpperCase() ? 'w' : 'k') + '">' + CHG[ch.toLowerCase()] + '</b>');
+      });
+    });
+    return h + '</span>';
+  };
   /* ---- game modes ----
      self: everyone plays at their own speed during a timed round (phase 'race'); power modes add rewards after right answers.
      The host decides anything that touches another player (steal, swap, hack) so totals stay fair. */
@@ -159,12 +220,14 @@
     balloon: { name: 'Balloon Race', icon: '🎈', tag: 'Self-paced · great for kids', self: true, power: true, unit: 'm', cur: 'm', blurb: 'Every right answer lifts your hot-air balloon higher. The screen shows everyone floating up. Highest balloon wins!' },
     kart: { name: 'Kart Quest', icon: '🏎️', tag: 'Self-paced · great for kids', self: true, power: true, unit: 'laps', cur: '🏁', blurb: 'From IF Kids Quest: every right answer drives your kart forward, and 3 in a row gives a turbo boost. The big screen shows the whole class racing to the finish flag. A wrong answer makes your kart spin out!' },
     mine: { name: 'Block Mine', icon: '⛏️', tag: 'Self-paced · like Minecraft', self: true, power: true, unit: 'gems', cur: '💎', blurb: 'From IF Block Quest: every right answer lets you mine one of three blocks — stone, coal, iron, gold or diamond… or TNT! Collect the most gems to win. A wrong answer drops some of your gems.' },
-    cash: { name: 'Cash Climb', icon: '💰', tag: 'Self-paced · shop & upgrades', self: true, power: true, unit: 'coins', cur: '💰', blurb: 'Right answers earn coins. Spend them in the shop on upgrades: more coins per answer, streak bonuses and multipliers. Richest player wins!' },
+    cash: { name: 'Bank Heist', icon: '💰', tag: 'Self-paced · crew upgrades', self: true, power: true, unit: 'coins', cur: '💰', blurb: 'Break into the IF National Bank! Every right answer grabs cash for your money bag. Spend it in the crew shop on bigger bags, streak bonuses and getaway multipliers. The richest robber wins!' },
     match: { name: 'Team Match', icon: '🤝', tag: 'Teams · talk together', team: true, unit: 'points', blurb: 'Played in teams. The answers are split across teammates\' phones, so they must talk to find the right one. A wrong answer sends the team back to zero!' }
   };
   /* a question that starts with a picture (emoji) shows the picture big: Young Learners questions */
   LIVE.qhtml = function (p, esc) {
-    var t = String(p || ''), m = t.match(/^((?:\p{Extended_Pictographic}|\p{Emoji_Presentation}|\u200d|\ufe0f)+)\s*(.*)$/u);
+    var t = String(p || ''), bd = t.match(/^⟦([^⟧]+)⟧\s*/);
+    if (bd) return LIVE.board(bd[1]) + '<span class="qbt">' + esc(t.slice(bd[0].length)) + '</span>';
+    var m = t.match(/^((?:\p{Extended_Pictographic}|\p{Emoji_Presentation}|\u200d|\ufe0f)+)\s*(.*)$/u);
     return m ? '<span class="qpic">' + esc(m[1]) + '</span>' + esc(m[2]) : esc(t);
   };
   LIVE.mode = function (m) { return LIVE.MODES[m] || LIVE.MODES.classic; };

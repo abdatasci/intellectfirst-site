@@ -253,6 +253,25 @@ export default async (req) => {
       return json({ ok: true, covered: Object.keys(cv[book]) });
     }
     // who taught one lesson (a cover): {key: '<classId>|<date>|<HH:MM>', teacherId | null} — pay and hours follow it
+    // a message from the school bot to one staff account: {uid, text, lesson?: lesson key → Clock in / Register buttons}
+    // class tasks still open: send them to students who connected to the bot after the task was sent ({classId?})
+    if (path === 'ctask/status' && method === 'GET') { const { taskStatus } = await import('../lib/classtask.mjs'); return json(await taskStatus()); }
+    if (path === 'ctask/sendlate' && method === 'POST') { const b = await req.json().catch(() => ({})), { sendLate } = await import('../lib/classtask.mjs'); return json({ ok: true, sent: await sendLate(String(b.classId || ''), !!b.force) }); }
+    if (path === 'studentkb' && method === 'POST') { const b = await req.json().catch(() => ({})), { pushStudentKb } = await import('../lib/classtask.mjs'); return json({ ok: true, sent: await pushStudentKb(b.classId || null) }); }
+    if (path === 'ctask/catchup' && method === 'POST') {
+      const b = await req.json().catch(() => ({})), { catchUp } = await import('../lib/classtask.mjs');
+      return json({ ok: true, sent: await catchUp(b.classId || null) });
+    }
+    if (path === 'staffmsg' && method === 'POST') {
+      const b = await req.json().catch(() => ({}));
+      if (!b.uid || !b.text) return fail(400, 'bad');
+      const { getLinks, tgSend, tgToken } = await import('../lib/bot-core.mjs'), l = (await getLinks())[String(b.uid)];
+      if (!l || !l.chatId || !tgToken()) return json({ ok: false, error: 'not-connected' });
+      let kb = null;
+      if (b.lesson) { const { lessonButtons } = await import('../lib/teachbot.mjs'); kb = { inline_keyboard: lessonButtons({ key: String(b.lesson) }, b.entry || null) }; }
+      await tgSend(l.chatId, String(b.text).slice(0, 1500), kb ? { reply_markup: kb } : {});
+      return json({ ok: true });
+    }
     if (path === 'cover' && method === 'POST') {
       const b = await req.json().catch(() => ({}));
       if (!/^[^|]+\|\d{4}-\d{2}-\d{2}\|\d{2}:\d{2}/.test(String(b.key || ''))) return fail(400, 'key');

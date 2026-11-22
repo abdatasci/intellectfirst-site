@@ -188,8 +188,20 @@ async function sendTask(st, p, teacherChat) {
   const teacher = (p.name || 'your teacher').split(' ')[0];
   const t = { id, classId: cls.id, label: cls.label, kind: st.kind, items: st.items || null, text: st.text || '', photo: st.photo || null, by: p.name || '', tChat: teacherChat, tMsg: null,
     at: new Date(now).toISOString(), closeAt, open: true, students: people.map(x => ({ sid: x.sid, name: x.name, tg: !!x.chatId })), msgs: {} };
+  for (const s of on) await deliver(t, s, cls.label, teacher);
+  const live = await tgSend(teacherChat, '🎯 Starting…');
+  t.tMsg = live.message_id;
+  await S().setJSON(`ctask/${id}`, t);
+  await S().setJSON(`ctask/last/${cls.id}`, { id, at: t.at });
+  await refresh(id);
+  if (!on.length) await tgSend(teacherChat, 'Nobody in this class is connected to the bot yet, so nobody received the task. Students connect from intellectfirst.com → My account → Assistant, or by sharing their phone number with the bot.');
+}
+
+/** Send one open task to one student (also used later for students who connect to the bot after it was sent). */
+async function deliver(t, s, label, teacher) {
+  const now = Date.now(), closeAt = t.closeAt || 0, id = t.id, cls = { label };
+  const st = { min: closeAt ? Math.max(1, Math.round((closeAt - now) / 60e3)) : 0 };
   const lim = st.min ? `⏱ ${st.min} min (until ${hm(new Date(closeAt))})` : '';
-  for (const s of on) {
     const ms = [];
     try {
       if (t.items) {
@@ -215,13 +227,92 @@ async function sendTask(st, p, teacherChat) {
       }
     } catch (e) { console.error('class task send', s.sid, e.message); }
     t.msgs[s.sid] = { chatId: s.chatId, ids: ms };
+  
+  const r = (t.students || []).find(x => x.sid === s.sid); if (r) r.tg = true; else (t.students = t.students || []).push({ sid: s.sid, name: s.name, tg: true });
+}
+const isOpen = t => !!t && t.open && (t.closeAt ? Date.now() < t.closeAt : Date.now() - Date.parse(t.at) < 3 * 3600e3);
+async function saveDelivered(t, sids) {
+  const fresh = (await S().get(`ctask/${t.id}`, { type: 'json' })) || t;
+  fresh.msgs = { ...(fresh.msgs || {}), ...Object.fromEntries(sids.map(x => [x, t.msgs[x]])) }; fresh.students = t.students;
+  await S().setJSON(`ctask/${t.id}`, fresh); await refresh(t.id).catch(() => {});
+}
+/** Students who connected to the bot after a task was sent: send them every task that is still open (once each). */
+export async function catchUp(onlyClass) {
+  const { blobs } = await S().list({ prefix: 'ctask/last/' }), out = [], classes = await doc('classes');
+  for (const b of blobs) {
+    const cid = b.key.slice('ctask/last/'.length); if (onlyClass && cid !== onlyClass) continue;
+    const last = await S().get(b.key, { type: 'json' }); if (!last) continue;
+    const t = await S().get(`ctask/${last.id}`, { type: 'json' }); if (!isOpen(t)) continue;
+    const cls = classes.find(c => c.id === cid); if (!cls) continue;
+    t.msgs = t.msgs || {};
+    const todo = (await roster(cls)).filter(x => x.chatId && !(t.msgs[x.sid] && t.msgs[x.sid].ids && t.msgs[x.sid].ids.length));
+    if (!todo.length) continue;
+    const teacher = (t.by || 'your teacher').split(' ')[0];
+    for (const x of todo) { await deliver(t, x, t.label, teacher); out.push({ classId: cid, sid: x.sid }); }
+    await saveDelivered(t, todo.map(x => x.sid));
   }
-  const live = await tgSend(teacherChat, '🎯 Starting…');
-  t.tMsg = live.message_id;
-  await S().setJSON(`ctask/${id}`, t);
-  await S().setJSON(`ctask/last/${cls.id}`, { id, at: t.at });
-  await refresh(id);
-  if (!on.length) await tgSend(teacherChat, 'Nobody in this class is connected to the bot yet, so nobody received the task. Students connect from intellectfirst.com → My account → Assistant, or by sharing their phone number with the bot.');
+  return out;
+}
+/** For IF Admin: the latest task of each class, and who has it / who could get it now. */
+export async function taskStatus() {
+  const { blobs } = await S().list({ prefix: 'ctask/last/' }), out = [], classes = await doc('classes');
+  for (const b of blobs) {
+    const cid = b.key.slice('ctask/last/'.length), last = await S().get(b.key, { type: 'json' }); if (!last) continue;
+    const t = await S().get(`ctask/${last.id}`, { type: 'json' }); if (!t) continue;
+    const cls = classes.find(c => c.id === cid), ppl = cls ? await roster(cls) : [];
+    out.push({ classId: cid, id: t.id, kind: t.kind, at: t.at, closeAt: t.closeAt, open: t.open, openNow: isOpen(t), text: String(t.text || (t.items || []).map(i => i.q).join(' | ')).slice(0, 120),
+      got: Object.keys(t.msgs || {}).filter(k => (t.msgs[k].ids || []).length), connected: ppl.filter(x => x.chatId).map(x => x.sid), notConnected: ppl.filter(x => !x.chatId).map(x => x.sid) });
+  }
+  return out.sort((a, b) => String(b.at).localeCompare(String(a.at)));
+}
+/** Send one closed or open task again to students who never got it ({id}), even after the time limit — used by the director. */
+export async function sendLate(classId, force) {
+  const last = await S().get(`ctask/last/${classId}`, { type: 'json' }); if (!last) return [];
+  const t = await S().get(`ctask/${last.id}`, { type: 'json' }); if (!t) return [];
+  const cls = (await doc('classes')).find(c => c.id === classId); if (!cls) return [];
+  if (!isOpen(t)) { if (!force) return []; t.open = true; t.closeAt = 0; t.at = new Date().toISOString(); }
+  t.msgs = t.msgs || {};
+  const todo = (await roster(cls)).filter(x => x.chatId && !(t.msgs[x.sid] && (t.msgs[x.sid].ids || []).length));
+  for (const x of todo) await deliver(t, x, t.label, (t.by || 'your teacher').split(' ')[0]);
+  const fresh = (await S().get(`ctask/${t.id}`, { type: 'json' })) || t;
+  Object.assign(fresh, { open: t.open, closeAt: t.closeAt, at: t.at, students: t.students, msgs: { ...(fresh.msgs || {}), ...Object.fromEntries(todo.map(x => [x.sid, t.msgs[x.sid]])) } });
+  await S().setJSON(`ctask/${t.id}`, fresh); await refresh(t.id).catch(() => {});
+  return todo.map(x => x.sid);
+}
+/** The student's "🎯 Class task" button: the task open now in their class (sent again, so they can answer). */
+export async function studentTask(chatId, ctx, lang) {
+  const en = lang === 'en', sid = ctx && ctx.student && ctx.student.id;
+  if (sid) for (const cls of ctx.classes || []) {
+    const last = await S().get(`ctask/last/${cls.id}`, { type: 'json' }); if (!last) continue;
+    const t = await S().get(`ctask/${last.id}`, { type: 'json' }); if (!isOpen(t)) continue;
+    t.msgs = t.msgs || {};
+    await deliver(t, { sid, name: `${ctx.student.first || ''} ${ctx.student.last || ''}`.trim() || sid, chatId, lang }, t.label, (t.by || 'your teacher').split(' ')[0]);
+    await saveDelivered(t, [sid]);
+    return true;
+  }
+  await tgSend(chatId, en ? '🎯 There is no class task right now. When your teacher starts one in the lesson, it comes here — or press 🎯 Class task.' : '🎯 Сейчас нет задания на уроке. Когда учитель отправит задание, оно придёт сюда — или нажмите 🎯 Class task.');
+  return false;
+}
+
+/* The students' reply keyboard (the buttons under the text box). Telegram keeps the last keyboard a chat was sent,
+   so when it changes (SKBV), each student gets the new one once: with their next message, or pushed by the school. */
+export const STUDENT_KB = { keyboard: [[{ text: '📚 IF English' }, { text: '👤 My account' }], [{ text: '🎯 Class task' }, { text: '📅 Next lessons' }], [{ text: '📝 Homework & tests' }, { text: '📊 My results' }], [{ text: '💳 Payment' }, { text: '📎 Send receipt' }], [{ text: '❓ Help' }]], resize_keyboard: true, is_persistent: true };
+export const SKBV = '2026-11-22';
+const KB_MSG = { en: '📲 Your menu is updated: 📚 IF English, 👤 My account and 🎯 Class task are on the buttons below.', ru: '📲 Меню обновлено: 📚 IF English, 👤 Мой аккаунт и 🎯 задание на уроке — на кнопках ниже.' };
+export async function ensureStudentKb(chatId, lang, force) {
+  const k = `bot/skb/${chatId}`;
+  if (!force && (await S().get(k)) === SKBV) return false;
+  await tgSend(chatId, KB_MSG[lang === 'en' ? 'en' : 'ru'], { reply_markup: STUDENT_KB });
+  await S().set(k, SKBV); return true;
+}
+/** Push the new keyboard now to the connected students of one class (or all classes). */
+export async function pushStudentKb(classId) {
+  const classes = (await doc('classes')).filter(c => !classId || c.id === classId), done = new Set(), out = [];
+  for (const cls of classes) for (const x of await roster(cls)) {
+    if (!x.chatId || done.has(x.chatId)) continue; done.add(x.chatId);
+    try { if (await ensureStudentKb(x.chatId, x.lang, !!classId)) out.push(x.sid); } catch (e) { console.error('kb', x.sid, e.message); }
+  }
+  return out;
 }
 
 /* ---------------- answers ---------------- */

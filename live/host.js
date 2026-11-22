@@ -29,7 +29,7 @@
     if (!ROOMS.ready) h += '<div class="note"><b>Live games need one setting before the first game.</b> Create a free account at ably.com, copy the API key from your app\'s <i>API Keys</i> tab (it looks like <code>xVLyHw.A-pwh7w:…</code>) and add it in Netlify → Project configuration → Environment variables as <code>ABLY_API_KEY</code>. Then redeploy the site.</div>';
     if (resume) h += '<div class="note">Your game <b>' + esc(resume.title) + '</b> (PIN ' + resume.pin + ') is still open. <button class="linkbtn" id="resume">Resume it</button> · <button class="linkbtn" id="drop">Close it</button></div>';
     h += '<div class="grid2"><div class="panel"><h2>Start a live game</h2><p class="sub">Students join on their phones with the QR code or the PIN. You run the game from this screen; project it in class.</p>' +
-      '<label class="f">Questions from</label><div class="seg" id="src">' + [['gen', 'General English ✨'], ['v', 'Book vocabulary'], ['g', 'Grammar'], ['y', 'Young Learners 🧸'], ['custom', 'My own questions']].map(function (s) { return '<button data-v="' + s[0] + '" class="' + (CFG.source === s[0] ? 'on' : '') + '">' + s[1] + '</button>'; }).join('') + '</div>' +
+      '<label class="f">Questions from</label><div class="seg" id="src">' + [['gen', 'General English ✨'], ['v', 'Book vocabulary'], ['g', 'Grammar'], ['y', 'Young Learners 🧸'], ['chess', 'Chess ♟️'], ['custom', 'My own questions']].map(function (s) { return '<button data-v="' + s[0] + '" class="' + (CFG.source === s[0] ? 'on' : '') + '">' + s[1] + '</button>'; }).join('') + '</div>' +
       '<div id="srcbox"></div>' +
       '<label class="f">Game mode</label><div class="modes" id="mode">' + Object.keys(L.MODES).map(function (k) { var m = L.MODES[k]; return '<button data-v="' + k + '" class="' + (CFG.mode === k ? 'on' : '') + '"><span class="mi">' + m.icon + '</span><b>' + esc(m.name) + '</b><small>' + esc(m.tag) + '</small></button>'; }).join('') + '</div>' +
       '<p class="mini" style="margin:6px 0 0">Full 3D games to play on their own (homework or a free lesson): <a href="/a/kids-quest/" target="_blank" rel="noopener">🏎️ IF Kids Quest</a> (Young Learners) · <a href="/a/block-quest/" target="_blank" rel="noopener">⛏️ IF Block Quest</a> (teens and adults).</p>' +
@@ -53,7 +53,7 @@
         b.onclick = function () {
           $('#' + id).querySelectorAll('button').forEach(function (x) { x.classList.toggle('on', x === b); });
           var v = b.dataset.v;
-          if (id === 'src') { CFG.source = v; if (v !== 'custom' && v !== 'gen' && (bankOf(CFG.bank) || {}).kind !== v) { CFG.bank = BANKS.filter(function (x) { return x.kind === v; })[0].id; CFG.units = []; } srcBox(); }
+          if (id === 'src') { CFG.source = v; if (v !== 'custom' && v !== 'gen' && v !== 'chess' && (bankOf(CFG.bank) || {}).kind !== v) { CFG.bank = BANKS.filter(function (x) { return x.kind === v; })[0].id; CFG.units = []; } srcBox(); }
           if (id === 'mode') { CFG.mode = v; timeBox(); }
           if (id === 'teams') CFG.teams = +v;
           count();
@@ -68,6 +68,14 @@
       box.innerHTML = L.genForm(CFG) + '<label class="f">Number of questions</label><div class="seg" id="cnt">' + ['10', '15', '20', '30'].map(function (s) { return '<button data-v="' + s + '" class="' + (CFG.count === s ? 'on' : '') + '">' + s + '</button>'; }).join('') + '</div>';
       L.genWire(box, CFG, count);
       var c0 = $('#cnt'); c0.querySelectorAll('button').forEach(function (bt) { bt.onclick = function () { c0.querySelectorAll('button').forEach(function (x) { x.classList.toggle('on', x === bt); }); CFG.count = bt.dataset.v; count(); }; });
+      return count();
+    }
+    if (CFG.source === 'chess') {   // chess: puzzles on a real board, pieces & rules, chess words (any game mode)
+      if (!CFG.chess) CFG.chess = 'mix';
+      box.innerHTML = '<label class="f">Chess questions</label><div class="seg" id="chf">' + L.CHESS_FOCUS.map(function (s) { return '<button data-v="' + s[0] + '" class="' + (CFG.chess === s[0] ? 'on' : '') + '">' + s[1] + '</button>'; }).join('') + '</div>' +
+        '<p class="mini" style="margin-top:6px">Puzzles show the board on the big screen and on every phone; students choose the move said in English (“Rook to a8”). Good with any mode. For a full lesson first, open <a href="/a/if-english/gameroom/index.html?only=chess#chesslessons" target="_blank" rel="noopener">📘 Chess lessons and tips</a>.</p>' +
+        '<label class="f">Number of questions</label><div class="seg" id="cnt">' + ['10', '15', '20', '30', 'all'].map(function (s) { return '<button data-v="' + s + '" class="' + (CFG.count === s ? 'on' : '') + '">' + (s === 'all' ? 'All' : s) + '</button>'; }).join('') + '</div>';
+      [['chf', 'chess'], ['cnt', 'count']].forEach(function (p) { var el = $('#' + p[0]); el.querySelectorAll('button').forEach(function (bt) { bt.onclick = function () { el.querySelectorAll('button').forEach(function (x) { x.classList.toggle('on', x === bt); }); CFG[p[1]] = bt.dataset.v; count(); }; }); });
       return count();
     }
     if (CFG.source === 'custom') {
@@ -120,6 +128,7 @@
   }
   function defaultTitle() {
     if (CFG.source === 'custom') return 'Class quiz';
+    if (CFG.source === 'chess') return 'Chess ♟️' + ({ puzzles: ' · Puzzles', rules: ' · Pieces & rules', words: ' · Chess words' }[CFG.chess] || '');
     if (CFG.source === 'gen') return L.genTitle(CFG);
     var b = bankOf(CFG.bank); if (!b) return 'Live game';
     var u = b.units.filter(function (x) { return CFG.units.indexOf(x.id) >= 0; });
@@ -148,7 +157,7 @@
   /* ================= running a game ================= */
   async function start() {
     var err = $('#err'); err.textContent = '';
-    if (CFG.source !== 'custom' && CFG.source !== 'gen' && !CFG.units.length) { err.textContent = 'Choose at least one unit.'; return; }
+    if (CFG.source !== 'custom' && CFG.source !== 'gen' && CFG.source !== 'chess' && !CFG.units.length) { err.textContent = 'Choose at least one unit.'; return; }
     var title = ($('#title').value.trim() || defaultTitle());
     L.ls.set('live.cfg', Object.assign({}, CFG, { title: '' }));
     $('#go').disabled = true;
@@ -539,6 +548,8 @@
     if (!s) return;
     stage(true);
     cyber(s.mode === 'hack' && (s.phase === 'race' || s.phase === 'end' || s.phase === 'lobby'));
+    document.body.classList.toggle('treasure', s.mode === 'gold' && (s.phase === 'race' || s.phase === 'end' || s.phase === 'lobby'));
+    document.body.classList.toggle('heist', s.mode === 'cash' && (s.phase === 'race' || s.phase === 'end' || s.phase === 'lobby'));
     var pp = $('#pinpill'); pp.hidden = s.phase === 'lobby' || s.phase === 'end'; pp.innerHTML = 'PIN <b>' + s.pin + '</b> · ' + s.count + ' players';
     var h = '<div class="stage">';
     if (s.phase === 'lobby') {
@@ -589,7 +600,7 @@
       if (race && s.mode === 'fish') h += lake(s, s.board.slice(0, 10)); else
       if (race && (s.mode === 'race' || s.mode === 'mine' || s.mode === 'gold' || s.mode === 'cash') && L.Race3D) h += '<div class="r3slot" id="r3slot"></div></div>'; else
       h += top.map(function (p, i) { return '<div class="brow' + (i === 0 ? ' first' : '') + '" style="--k:' + ROWC[i % ROWC.length] + '"><span class="fill" style="width:' + (p[1] / max * 100) + '%"></span><span class="r">' + (cy ? ('0' + (i + 1)).slice(-2) : i + 1) + '</span><span class="n">' + (cy ? esc(p[0].toUpperCase().replace(/\s+/g, '_')) + '<small class="ip">' + ip(p[0]) + '</small>' : esc(p[0])) + (p[2] >= 0 && s.teams.length ? ' <small style="color:' + teamColor(p[2]) + '">●</small>' : '') + '</span><span class="s">' + (MM.power ? L.fmtN(p[1]) + cur : p[1]) + '</span></div>'; }).join('') + '</div>';
-      if (MM.power) h += '<div class="feed"><h3>' + (cy ? 'root@if-net:~$ tail -f breach.log' : 'Live feed') + '</h3>' + ((s.feed || []).slice().reverse().map(function (e) { return '<div class="fe ' + esc(e.k) + '">' + (cy ? (e.k === 'hack' || e.k === 'steal' ? '<b>ACCESS GRANTED</b> ' : '<b class="ok">&gt;</b> ') : '') + esc(e.t) + '</div>'; }).join('') || '<p class="mini" style="color:rgba(255,255,255,.6)">' + (s.mode === 'gold' ? 'Steals and swaps appear here…' : s.mode === 'hack' ? 'Hacks appear here…' : s.mode === 'mine' ? 'Gold and diamonds appear here…' : 'Big catches appear here…') + '</p>') + '</div></div>';
+      if (MM.power) h += '<div class="feed"><h3>' + (cy ? 'root@if-net:~$ tail -f breach.log' : s.mode === 'gold' ? '📜 Captain’s log' : s.mode === 'cash' ? '🚨 Police scanner' : 'Live feed') + '</h3>' + ((s.feed || []).slice().reverse().map(function (e) { return '<div class="fe ' + esc(e.k) + '">' + (cy ? (e.k === 'hack' || e.k === 'steal' ? '<b>ACCESS GRANTED</b> ' : '<b class="ok">&gt;</b> ') : '') + esc(e.t) + '</div>'; }).join('') || '<p class="mini" style="color:rgba(255,255,255,.6)">' + (s.mode === 'gold' ? 'Steals and swaps appear here…' : s.mode === 'hack' ? 'Hacks appear here…' : s.mode === 'mine' ? 'Gold and diamonds appear here…' : 'Big catches appear here…') + '</p>') + '</div></div>';
       if (host) h += '<div class="ctrl" style="justify-content:flex-end">' + (race ? ADDT() + '<button class="btn ghost sm" id="endnow">End race now</button>' : '<button class="btn big" id="nextq">' + (s.i + 1 >= s.n ? 'Final results →' : 'Next question →') + '</button><button class="btn ghost sm" id="endnow">End game</button>') + '</div>';
     } else if (s.phase === 'match') {
       h += '<div class="board" style="max-width:1000px"><h2>🤝 ' + esc(s.title) + '</h2><div style="text-align:center;margin-bottom:8px"><span class="pill" style="font-size:22px">⏱ <span id="rtime">' + fmt(s.left) + '</span></span> <span class="pill">First team to ' + s.goal + ' right in a row wins</span></div>';
@@ -611,7 +622,7 @@
     }
     h += '</div>';
     view.innerHTML = h;
-    if (L.Race3D) { var r3 = $('#r3slot'); if (r3) L.Race3D.show(r3, s.board.slice(0, 12).map(function (p, i) { return { id: p[6] || p[0] + '#' + i, name: p[0], score: p[1], color: ROWC[H && H.order && p[6] ? Math.max(0, H.order.indexOf(p[6])) % ROWC.length : i % ROWC.length] }; }), s.mode === 'balloon' ? { kind: 'balloon', per: 2.6, unit: 'm' } : s.mode === 'kart' ? { per: 2.6, unit: 'laps' } : s.mode === 'mine' ? { kind: 'mine', per: .5, unit: '💎' } : s.mode === 'gold' ? { kind: 'mine', per: .05, unit: '🪙', gem: '#e8c36a' } : s.mode === 'cash' ? { kind: 'mine', per: .05, unit: '💰', gem: '#5fd068' } : null); else L.Race3D.stop(); }
+    if (L.Race3D) { var r3 = $('#r3slot'); if (r3) L.Race3D.show(r3, s.board.slice(0, 12).map(function (p, i) { return { id: p[6] || p[0] + '#' + i, name: p[0], score: p[1], color: ROWC[H && H.order && p[6] ? Math.max(0, H.order.indexOf(p[6])) % ROWC.length : i % ROWC.length] }; }), s.mode === 'balloon' ? { kind: 'balloon', per: 2.6, unit: 'm' } : s.mode === 'kart' ? { per: 2.6, unit: 'laps' } : s.mode === 'mine' ? { kind: 'mine', per: .5, unit: '💎' } : s.mode === 'gold' ? { kind: 'treasure', per: .05, unit: '🪙' } : s.mode === 'cash' ? { kind: 'heist', per: .05, unit: '💰' } : null); else L.Race3D.stop(); }
     if (!host) return;
     var on = function (id, fn) { var el = $('#' + id); if (el) el.onclick = fn; };
     on('begin', begin); on('cancel', function () { if (!L.local) L.api('state', { pin: H.pin, status: 'ended' }).catch(function () {}); H.phase = 'end'; push(true); closeGame(); });
