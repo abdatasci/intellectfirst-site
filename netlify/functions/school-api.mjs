@@ -4,7 +4,7 @@
 //   store "school" – students, classes, teachers, books (one JSON document each)
 //   store "photos" – profile photos by account id
 import { getStore } from '@netlify/blobs';
-import { DEV_COOKIE, qrLookup, tgAccount } from '../lib/tgauth.mjs';
+import { DEV_COOKIE, qrLookup, tgAccount, claimQr } from '../lib/tgauth.mjs';
 import { readFile } from 'node:fs/promises';
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import { join } from 'node:path';
@@ -416,9 +416,10 @@ export default async (req) => {
   if (path.startsWith('qr/') && method === 'GET') {
     const code = path.slice(3), secure = '; Path=/; HttpOnly; Secure; SameSite=Lax';
     if (code === 'out') return new Response(null, { status: 302, headers: { Location: '/app/', 'Set-Cookie': `${DEV_COOKIE}=; Max-Age=0` + secure } });
-    const q = await qrLookup(code);
+    let q = await qrLookup(code), go = '/app/';
+    if (!q) { const c = await claimQr(code, putProfile); if (c) { q = c; go = c.go; } }   // a child's QR made before the account: the first scan creates it
     if (!q) return new Response('<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width"><body style="font:18px system-ui;padding:32px;text-align:center"><h2>This QR code no longer works</h2><p>Please ask your teacher at IF Academy for a new one.</p><p>Этот QR-код больше не действует. Попросите у учителя новый.</p>', { status: 404, headers: { 'Content-Type': 'text/html; charset=utf-8' } });
-    return new Response(null, { status: 302, headers: { Location: '/app/', 'Set-Cookie': `${DEV_COOKIE}=${code}; Max-Age=31536000` + secure, 'Cache-Control': 'no-store' } });
+    return new Response(null, { status: 302, headers: { Location: go, 'Set-Cookie': `${DEV_COOKIE}=${code}; Max-Age=31536000` + secure, 'Cache-Control': 'no-store' } });
   }
 
   // a student's study report for the parents: a private signed link made by the school (no account needed)
@@ -514,6 +515,9 @@ export default async (req) => {
     if (profile) out.ielts = await ieltsSummary(uid);
     out.teachers = (await doc('teachers')).map(t => ({ id: t.id, name: t.name, photoUid: t.uid || null }));
     out.books = await doc('books');
+    // a device signed in by a personal QR code stays signed in: each visit renews the year-long cookie
+    const dk = user.device && (req.headers.get('cookie') || '').match(/(?:^|;\s*)if_dev=([\w-]{16,64})/);
+    if (dk) return Response.json(out, { headers: { 'Cache-Control': 'no-store', 'Set-Cookie': `${DEV_COOKIE}=${dk[1]}; Max-Age=31536000; Path=/; HttpOnly; Secure; SameSite=Lax` } });
     return json(out);
   }
 

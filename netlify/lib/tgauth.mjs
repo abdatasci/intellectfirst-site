@@ -94,3 +94,24 @@ export async function devAccount(req) {
   const prof = await U().get(`u/${q.uid}/profile`, { type: 'json' }); if (!prof) return null;
   return { id: q.uid, email: prof.email || '', name: prof.name || '', user_metadata: { full_name: prof.name || '' }, app_metadata: {}, device: true };
 }
+
+/** A QR code made in advance for a child who has no account yet (env IF_QR_ACCOUNTS, a secret: names and phones never go
+    in the public repo). The first scan creates the account; after that the code works like any personal QR sign-in.
+    IF_QR_ACCOUNTS = [{ c: code, n: name, b: 'YYYY-MM-DD', lv: level, st: [study keys], tr: track, ph: phone, go: '/app/' }] */
+export function pendingQr(code) {
+  if (!/^[\w-]{16,64}$/.test(String(code || ''))) return null;
+  try { return (JSON.parse(process.env.IF_QR_ACCOUNTS || '[]') || []).find(x => x && x.c === code) || null; } catch { return null; }
+}
+export async function claimQr(code, putProfile) {
+  const x = pendingQr(code); if (!x) return null;
+  const uid = 'qr-' + qhash(code).slice(0, 20);
+  if (!(await U().get(`u/${uid}/profile`, { type: 'json' }))) {
+    await putProfile(uid, { role: 'student', name: String(x.n || 'Student').slice(0, 80), track: x.tr || 'if', study: Array.isArray(x.st) ? x.st.slice(0, 8) : [],
+      level: String(x.lv || '').slice(0, 40), birth: /^\d{4}-\d{2}-\d{2}$/.test(x.b || '') ? x.b : '', phone: String(x.ph || '').slice(0, 20), via: 'qr', forever: true, createdAt: new Date().toISOString() });   // forever: free full access with no end date (director's family)
+  }
+  const idx = (await S().get('qr/index', { type: 'json' })) || {}, h = qhash(code);
+  if (idx[uid] && idx[uid] !== h) return null;   // a newer code was made for this child: this one is switched off
+  idx[uid] = h; await S().setJSON('qr/' + h, { uid, sid: '', name: x.n || '', at: new Date().toISOString() }); await S().setJSON('qr/index', idx);
+  return { uid, go: /^\/[\w\/-]*$/.test(x.go || '') ? x.go : '/app/' };
+}
+
