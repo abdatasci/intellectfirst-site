@@ -368,13 +368,21 @@ async function managerStarters() {
 /* 22 Nov 2026: the director's decision — late 3 times, 20 minutes each: one hour of pay taken off November.
    Stored in "paydeduct" (read only by the payroll), never names here. */
 const DEDUCT_2026_11_22 = [{ id: 'late-2026-11-t-joseph', teacherId: 't-joseph', date: '2026-11-22', min: 60, label: 'Lateness deduction', note: 'Late 3 times (20 min each) — 60 minutes deducted (director, 22 Nov)' }];
+/* later the same day: the director set the two late lessons to 20 min (21.11) and 15 min (22.11): 35 minutes in all */
+const DEDUCT_FIX_2026_11_22 = { id: 'late-2026-11-t-joseph', min: 35, note: 'Late twice: 21 Nov 20 min, 22 Nov 15 min — 35 minutes deducted (director, 22 Nov)' };
+async function fixDeduction(f) {
+  const W = S(), X = (await W.get('paydeduct', { type: 'json' })) || [], d = X.find(x => x.id === f.id);
+  if (!d) return ['not found: ' + f.id];
+  Object.assign(d, { min: f.min, note: f.note }); await W.setJSON('paydeduct', X);
+  return [f.id + ': ' + f.min + ' min'];
+}
 async function addDeductions(list) {
   const W = S(), X = (await W.get('paydeduct', { type: 'json' })) || [], lines = [];
   for (const d of list) if (!X.some(x => x.id === d.id)) { X.push(d); lines.push(d.date + ': −' + d.min + ' min (' + d.teacherId + ')'); }
   await W.setJSON('paydeduct', X);
   return lines;
 }
-const MIGRATIONS = [['deduct-2026-11-22', () => addDeductions(DEDUCT_2026_11_22)], ['timetable-2026-11-14', () => applyTimetable(TT_2026_11_14)], ['timetable-2026-11-14-pending', () => applyPending(PENDING_2026_11_14), true], ['private-2026-11-15', () => grantPrivate(PRIVATE_2026_11_15)], ['schedule-2026-11-15', schedule20261115], ['ontime-2026-11-15', onTime20261115], ['teacher-phones-2026-11-15', teacherPhones], ['cover-2026-11-16', cover20261116], ['smm-2026-11-16', smm20261116], ['aitach-record-2026-11-16', () => recordLessons(AITACH_REC)], ['alina-record-2026-11-17', () => recordByTime(ALINA_REC)], ['olya-record-2026-11-17', () => recordByStudent(OLYA_REC, OLYA_FP)], ['fixed-pay-2026-11-17', fixedPay], ['manager-starters-2026-11-22', managerStarters]];
+const MIGRATIONS = [['deduct-2026-11-22', () => addDeductions(DEDUCT_2026_11_22)], ['deduct-2026-11-22b', () => fixDeduction(DEDUCT_FIX_2026_11_22)], ['timetable-2026-11-14', () => applyTimetable(TT_2026_11_14)], ['timetable-2026-11-14-pending', () => applyPending(PENDING_2026_11_14), true], ['private-2026-11-15', () => grantPrivate(PRIVATE_2026_11_15)], ['schedule-2026-11-15', schedule20261115], ['ontime-2026-11-15', onTime20261115], ['teacher-phones-2026-11-15', teacherPhones], ['cover-2026-11-16', cover20261116], ['smm-2026-11-16', smm20261116], ['aitach-record-2026-11-16', () => recordLessons(AITACH_REC)], ['alina-record-2026-11-17', () => recordByTime(ALINA_REC)], ['olya-record-2026-11-17', () => recordByStudent(OLYA_REC, OLYA_FP)], ['fixed-pay-2026-11-17', fixedPay], ['manager-starters-2026-11-22', managerStarters]];
 let running = null;
 /** Run any migration that has not run yet. Safe to call on every request (cached per instance). */
 let checkedAt = 0;
