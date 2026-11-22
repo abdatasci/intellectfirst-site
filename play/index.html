@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>IF Arena · Play online</title>
+<meta name="description" content="Challenge another IF Academy player to Chess, Connect Four or a Word Duel.">
+<meta name="theme-color" content="#071528">
+<link rel="icon" href="/brand/favicon-64.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@600;700;800&family=Inter:wght@400;600;700&family=Instrument+Serif&display=swap">
+<link rel="stylesheet" href="/play/play.css?v=1">
+</head>
+<body data-no-nav>
+<header class="top">
+  <a class="brand" href="/app/"><img src="/brand/if-shield-3d-180.webp" alt=""><span><small>IF Academy</small><b>IF Arena</b></span></a>
+  <span class="spacer"></span>
+  <span class="pill" id="me" hidden></span>
+</header>
+<main class="wrap" id="view" aria-live="polite"><p class="muted center" style="padding:40px 0">Connecting…</p></main>
+<div class="toast" id="toast" hidden></div>
+<div class="flash" id="flash"></div>
+<script src="/live/vendor/ably.min.js?v=3.1.0"></script>
+<script src="/play/vendor/chess.js?v=0.10.3"></script>
+<script src="/play/play.js?v=1"></script>
+</body>
+</html>
