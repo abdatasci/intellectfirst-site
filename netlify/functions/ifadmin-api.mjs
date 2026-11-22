@@ -253,6 +253,17 @@ export default async (req) => {
       return json({ ok: true, covered: Object.keys(cv[book]) });
     }
     // who taught one lesson (a cover): {key: '<classId>|<date>|<HH:MM>', teacherId | null} — pay and hours follow it
+    // a message from the school bot to one staff account: {uid, text, lesson?: lesson key → Clock in / Register buttons}
+    if (path === 'staffmsg' && method === 'POST') {
+      const b = await req.json().catch(() => ({}));
+      if (!b.uid || !b.text) return fail(400, 'bad');
+      const { getLinks, tgSend, tgToken } = await import('../lib/bot-core.mjs'), l = (await getLinks())[String(b.uid)];
+      if (!l || !l.chatId || !tgToken()) return json({ ok: false, error: 'not-connected' });
+      let kb = null;
+      if (b.lesson) { const { lessonButtons } = await import('../lib/teachbot.mjs'); kb = { inline_keyboard: lessonButtons({ key: String(b.lesson) }, b.entry || null) }; }
+      await tgSend(l.chatId, String(b.text).slice(0, 1500), kb ? { reply_markup: kb } : {});
+      return json({ ok: true });
+    }
     if (path === 'cover' && method === 'POST') {
       const b = await req.json().catch(() => ({}));
       if (!/^[^|]+\|\d{4}-\d{2}-\d{2}\|\d{2}:\d{2}/.test(String(b.key || ''))) return fail(400, 'key');
