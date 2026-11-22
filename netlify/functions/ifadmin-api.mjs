@@ -254,6 +254,11 @@ export default async (req) => {
     }
     // who taught one lesson (a cover): {key: '<classId>|<date>|<HH:MM>', teacherId | null} — pay and hours follow it
     // a message from the school bot to one staff account: {uid, text, lesson?: lesson key → Clock in / Register buttons}
+    // class tasks still open: send them to students who connected to the bot after the task was sent ({classId?})
+    if (path === 'ctask/catchup' && method === 'POST') {
+      const b = await req.json().catch(() => ({})), { catchUp } = await import('../lib/classtask.mjs');
+      return json({ ok: true, sent: await catchUp(b.classId || null) });
+    }
     if (path === 'staffmsg' && method === 'POST') {
       const b = await req.json().catch(() => ({}));
       if (!b.uid || !b.text) return fail(400, 'bad');

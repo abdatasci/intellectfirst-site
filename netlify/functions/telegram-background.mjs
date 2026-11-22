@@ -8,7 +8,7 @@ import { loadHomework, forClasses, isUpcoming } from '../lib/homework.mjs';
 import { isStaff, STAFF_KB, STAFF_HELP, staffHello, sendToday, staffCallback, ensureStaffKb, cancelReasonText, sendRegisterMenu, kbFor, helpFor, helloFor, isAdminP, sendSchoolDay, sendTodo, sendWeek, sendChanges, sendFilming } from '../lib/teachbot.mjs';
 import { startCover, coverCallback } from '../lib/cover.mjs';
 import { startHomework, hwCallback, hwMessage } from '../lib/teachhw.mjs';
-import { startTask, ctCallback, ctMessage, ctAnswer, ctPollAnswer } from '../lib/classtask.mjs';
+import { startTask, ctCallback, ctMessage, ctAnswer, ctPollAnswer, studentTask, catchUp } from '../lib/classtask.mjs';
 import { U } from '../lib/bot-core.mjs';
 
 const SITE = 'https://intellectfirst.com/me/#/assistant';
@@ -20,7 +20,7 @@ const CASH = {
   ru: { ask0: 'Оплатили наличными в школе? Сообщите здесь вместо чека:', btn: '💵 Я оплатил(а) наличными', ask: (n, m) => `💵 Оплата наличными: ${n} (${m}). Сколько вы заплатили?`, paid: a => `✅ Я оплатил(а) ${a} наличными`, other: '✍️ Другая сумма', type: 'Напишите сумму, которую вы оплатили наличными, например 45000', thanks: (a, m) => `💵 Спасибо! Оплата наличными ${a} за ${m} отмечена. Школа подтвердит её после получения денег, и вы получите сообщение здесь.`, waiting: 'Ваша прошлая оплата ещё ждёт подтверждения школы. Вы получите сообщение здесь.', none: 'Не нашёл вашу запись ученика. Пожалуйста, сообщите школе, что вы оплатили наличными.' },
   kk: { ask0: 'Мектепте қолма-қол төледіңіз бе? Түбіртектің орнына осында хабарлаңыз:', btn: '💵 Қолма-қол төледім', ask: (n, m) => `💵 Қолма-қол төлем: ${n} (${m}). Қанша төледіңіз?`, paid: a => `✅ ${a} қолма-қол төледім`, other: '✍️ Басқа сома', type: 'Қолма-қол төлеген соманы жазыңыз, мысалы 45000', thanks: (a, m) => `💵 Рахмет! ${m} үшін ${a} қолма-қол төлем белгіленді. Мектеп ақшаны алған соң растайды, хабарламаны осында аласыз.`, waiting: 'Алдыңғы төлеміңіз мектептің растауын күтуде. Хабарламаны осында аласыз.', none: 'Оқушы жазбаңызды таппадым. Мектепке қолма-қол төлегеніңізді айтыңыз.' }
 };
-const KB = { keyboard: [[{ text: '📚 IF English' }, { text: '👤 My account' }], [{ text: '📅 Next lessons' }, { text: '📝 Homework & tests' }], [{ text: '📊 My results' }, { text: '💳 Payment' }], [{ text: '📎 Send receipt' }, { text: '❓ Help' }]], resize_keyboard: true, is_persistent: true };
+const KB = { keyboard: [[{ text: '📚 IF English' }, { text: '👤 My account' }], [{ text: '🎯 Class task' }, { text: '📅 Next lessons' }], [{ text: '📝 Homework & tests' }, { text: '📊 My results' }], [{ text: '💳 Payment' }, { text: '📎 Send receipt' }], [{ text: '❓ Help' }]], resize_keyboard: true, is_persistent: true };
 const L = {
   en: {
     hello: n => `Hi ${n}! 👋 Your IF Academy account is connected.\nI'll remind you about lessons (the evening before and 2 hours before), homework, tests and tuition payments. After paying, send the receipt here.\nAsk me anything about your classes, or practise English with me.`,
@@ -98,10 +98,10 @@ async function resultsText(ctx, uid, lang) {
 
 /* The bot's "Menu" (command list). Students get the general list; teachers get their own list in their chat.
    Updated automatically when the list changes (CMDV), so nobody has to press "Connect bot" again. */
-const CMDV = '2026-11-16e';
+const CMDV = '2026-11-22a';
 const CMDS = {
-  en: [['app', 'Open IF English'], ['account', 'My account: results, attendance, payments'], ['next', 'Next lessons'], ['cancel', "Can't come: cancel a lesson"], ['homework', 'Homework & tests'], ['results', 'My test results'], ['pay', 'Tuition status'], ['prices', 'Prices and packages'], ['help', 'What I can do'], ['stop', 'Disconnect this chat']],
-  ru: [['app', 'Открыть IF English'], ['account', 'Мой аккаунт: результаты, посещаемость, оплаты'], ['next', 'Ближайшие занятия'], ['cancel', 'Не смогу прийти: отменить занятие'], ['homework', 'Домашние задания и тесты'], ['results', 'Мои результаты'], ['pay', 'Статус оплаты'], ['prices', 'Цены и пакеты'], ['help', 'Что я умею'], ['stop', 'Отключить чат']]
+  en: [['app', 'Open IF English'], ['account', 'My account: results, attendance, payments'], ['task', 'Class task (in the lesson)'], ['next', 'Next lessons'], ['cancel', "Can't come: cancel a lesson"], ['homework', 'Homework & tests'], ['results', 'My test results'], ['pay', 'Tuition status'], ['prices', 'Prices and packages'], ['help', 'What I can do'], ['stop', 'Disconnect this chat']],
+  ru: [['app', 'Открыть IF English'], ['account', 'Мой аккаунт: результаты, посещаемость, оплаты'], ['task', 'Задание на уроке'], ['next', 'Ближайшие занятия'], ['cancel', 'Не смогу прийти: отменить занятие'], ['homework', 'Домашние задания и тесты'], ['results', 'Мои результаты'], ['pay', 'Статус оплаты'], ['prices', 'Цены и пакеты'], ['help', 'Что я умею'], ['stop', 'Отключить чат']]
 };
 const STAFF_CMDS = [['app', 'Open IF English (Teach mode too)'], ['account', 'My account: classes, registers, admin'], ['today', "Today's lessons: clock in, register"], ['register', 'Take or correct a register'], ['cover', 'Ask a colleague to cover a lesson'], ['task', 'Class task: quiz, poll, writing or speaking'], ['sendhw', 'Send homework or a test to a class'], ['next', 'Next lessons'], ['help', 'Help for teachers'], ['stop', 'Disconnect this chat']];
 const asCmds = l => l.map(([command, description]) => ({ command, description }));
@@ -186,7 +186,7 @@ export default async (req) => {
         if (!c) { await tg('answerCallbackQuery', { callback_query_id: q.id, text: 'Expired. Share your number again.' }); return new Response('ok'); }
         await linkChat(c.key, chatId, q.from?.username, lang); await S().delete(`bot/phonepick/${chatId}`);
         await tg('answerCallbackQuery', { callback_query_id: q.id, text: '✓' });
-        const pp = await getProfile(c.key), sp = isStaff(pp), f = c.name.split(' ')[0]; await tgSend(chatId, sp ? helloFor(pp, f) : L[lang].hello(f), { reply_markup: sp ? kbFor(pp) : KB });
+        const pp = await getProfile(c.key), sp = isStaff(pp), f = c.name.split(' ')[0]; await tgSend(chatId, sp ? helloFor(pp, f) : L[lang].hello(f), { reply_markup: sp ? kbFor(pp) : KB }); await catchUp().catch(e => console.error('ct catchup', e.message));
       } catch (e) { console.error('phone pick', e.message); }
       return new Response('ok');
     }
@@ -246,14 +246,14 @@ export default async (req) => {
       links[link.uid] = { chatId, username: m.from?.username || '', lang, at: new Date().toISOString() };
       await saveLinks(links); await S().set(`bot/chat/${chatId}`, link.uid);
       const p = await getProfile(link.uid);
-      const f = (p?.name || m.from?.first_name || '').split(' ')[0]; await tgSend(chatId, isStaff(p) ? helloFor(p, f) : L[lang].hello(f), { reply_markup: isStaff(p) ? kbFor(p) : KB });
+      const f = (p?.name || m.from?.first_name || '').split(' ')[0]; await tgSend(chatId, isStaff(p) ? helloFor(p, f) : L[lang].hello(f), { reply_markup: isStaff(p) ? kbFor(p) : KB }); await catchUp().catch(e => console.error('ct catchup', e.message));
       return new Response('ok');
     }
     if (m.contact) {   // connect by phone number (Telegram's "share my number" button)
       if (m.contact.user_id && m.contact.user_id !== m.from?.id) { await tgSend(chatId, L[lang].phoneOwn, { reply_markup: PHONE_KB(lang) }); return new Response('ok'); }
       const cands = await matchPhone(m.contact.phone_number);
       if (!cands.length) { await tgSend(chatId, L[lang].phoneNone('+' + String(m.contact.phone_number).replace(/^\+/, '')), { reply_markup: { remove_keyboard: true } }); return new Response('ok'); }
-      if (cands.length === 1) { await linkChat(cands[0].key, chatId, m.from?.username, lang); const pp = await getProfile(cands[0].key), sp = isStaff(pp), f = cands[0].name.split(' ')[0]; await tgSend(chatId, sp ? helloFor(pp, f) : L[lang].hello(f), { reply_markup: sp ? kbFor(pp) : KB }); return new Response('ok'); }
+      if (cands.length === 1) { await linkChat(cands[0].key, chatId, m.from?.username, lang); const pp = await getProfile(cands[0].key), sp = isStaff(pp), f = cands[0].name.split(' ')[0]; await tgSend(chatId, sp ? helloFor(pp, f) : L[lang].hello(f), { reply_markup: sp ? kbFor(pp) : KB }); await catchUp().catch(e => console.error('ct catchup', e.message)); return new Response('ok'); }
       await S().setJSON(`bot/phonepick/${chatId}`, { cands: cands.slice(0, 8), lang, exp: Date.now() + 30 * 60e3 });
       await tgSend(chatId, L[lang].phonePick, { reply_markup: { inline_keyboard: cands.slice(0, 8).map((c, i) => [{ text: c.name + (c.classes ? ' · ' + c.classes : ''), callback_data: 'ph:' + i }]) } });
       return new Response('ok');
@@ -336,6 +336,7 @@ export default async (req) => {
     const ctx = await contextFor(uid);
     if (!ctx) { await tgSend(chatId, L[lang].unlinked, { reply_markup: PHONE_KB(lang) }); return new Response('ok'); }
     if (!isStaff(ctx.profile) && await (await import('../lib/cancel.mjs')).botReason(chatId, uid, text, lang)) return new Response('ok');   // the reason for a cancellation
+    if (!isStaff(ctx.profile) && /^🎯|^\/task\b/i.test(text)) { await studentTask(chatId, ctx, lang); return new Response('ok'); }
     if (/^\/next\b|^📅|^\/cancel\b/i.test(text)) { await tgSend(chatId, ctx.student || ctx.classes.length ? nextText(ctx, lang) : L[lang].unlinkedRecord, { reply_markup: isStaff(ctx.profile) ? kbFor(ctx.profile) : KB }); if (!isStaff(ctx.profile)) await (await import('../lib/cancel.mjs')).botOffer(chatId, ctx, lang).catch(e => console.error('cancel offer', e.message)); return new Response('ok'); }
     if (/^\/hw\b|^\/homework\b|^📝/i.test(text)) {
       const items = ctx.classes.length ? forClasses(await loadHomework(), ctx.classes.map(c => c.id), { past: 0 }).filter(isUpcoming) : [];
