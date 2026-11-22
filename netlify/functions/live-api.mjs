@@ -9,6 +9,7 @@ import { getStore } from '@netlify/blobs';
 import { tgAccount } from '../lib/tgauth.mjs';
 import { getUser, refreshSession } from '@netlify/identity';
 import { isStaff } from '../lib/codes.mjs';
+import { doc, hidePrivate } from '../lib/bot-core.mjs';
 import { createHmac, randomBytes, randomInt } from 'node:crypto';
 
 import { isMember, FREE, ensureTrial } from '../lib/access.mjs';
@@ -37,6 +38,14 @@ async function who(req) {
   return { user, profile };
 }
 const alive = r => r && r.status !== 'ended' && Date.now() - r.created < ROOM_HOURS * 3600e3;
+/** The groups a teacher may start a game for (their own; the director and SMM see every group), each with its coursebook title.
+    One-student "classes" are left out: a live game is for a group, and their labels are students' names. */
+async function myGroups(profile) {
+  const [all, books] = await Promise.all([doc('classes'), doc('books')]);
+  const mine = profile.role === 'admin' || profile.smm ? hidePrivate(all, profile) : all.filter(c => profile.teacherId && c.teacherId === profile.teacherId);
+  return mine.filter(c => !c.left && !/^c-(ind|pv)-/.test(c.id || '') && !/\(individual\)/i.test(c.label || '') && !(c.studentIds && c.studentIds.length === 1 && c.group))
+    .map(c => ({ id: c.id, label: str(c.label, 60), book: str((books.find(b => b.id === c.bookId) || {}).title, 90) }));
+}
 const hostCap = pin => ({ [`live:${pin}:h`]: ['publish', 'subscribe', 'presence'], [`live:${pin}:p`]: ['subscribe', 'presence'] });
 
 export default async (req) => {
@@ -44,7 +53,10 @@ export default async (req) => {
   const body = req.method === 'POST' ? await req.json().catch(() => ({})) : {};
   const ready = !!(process.env.ABLY_API_KEY || '').includes(':');
 
-  if (path === 'status') return json({ ready });
+  if (path === 'status') {                     // staff: true → the join page offers the teacher "Start a class game"
+    let staff = false; try { staff = isStaff((await who(req)).profile?.role); } catch {}
+    return json({ ready, staff });
+  }
 
   // Student (or anyone with the PIN) joins. No account needed; signed-in students are linked.
   if (path === 'join') {
@@ -125,7 +137,8 @@ export default async (req) => {
     const res = (await L().list({ prefix: 'res/' })).blobs.map(b => b.key).sort().slice(-30).reverse();
     const recent = [];
     for (const k of res.slice(0, 15)) { const r = await L().get(k, { type: 'json' }); if (r) recent.push({ key: k.slice(4), title: r.title, mode: r.mode, at: r.at, hostName: r.hostName, players: (r.players || []).length, top: (r.players || []).slice(0, 3).map(p => p.name) }); }
-    return json({ ready, rooms: rooms.sort((a, b) => b.created - a.created), recent });
+    let classes = []; try { classes = await myGroups(profile); } catch (e) { console.error('groups', e); }
+    return json({ ready, rooms: rooms.sort((a, b) => b.created - a.created), recent, classes });
   }
   if (path === 'state') {                      // host keeps the room's phase up to date (for the rooms list)
     const pin = str(body.pin, 8).replace(/\D/g, '');

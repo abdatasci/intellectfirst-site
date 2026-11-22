@@ -3,7 +3,7 @@
   'use strict';
   var L = window.LIVE, $ = L.$, esc = L.esc, view = $('#view');
   var qsp = new URLSearchParams(location.search);
-  var BANKS = null, ROOMS = null, H = null, BUS = null, ST = null, WATCH = null, timers = {};
+  var BANKS = null, ROOMS = null, GROUPS = [], H = null, BUS = null, ST = null, WATCH = null, timers = {};
   var CFG = Object.assign({ source: 'gen', level: 'B1', focus: 'mix', topic: '', ai: true, bank: 'v-A2', units: [], qtype: 'def', count: '15', mode: 'classic', time: 20, race: 5, teams: 0, custom: '', title: '', drive: true }, L.ls.get('live.cfg') || {});
 
   if (qsp.get('bank')) { var pb = qsp.get('bank'); CFG.bank = pb; CFG.source = /^y-/.test(pb) ? 'y' : /^g-/.test(pb) ? 'g' : 'v'; CFG.units = qsp.get('units') ? qsp.get('units').split(',') : []; if (CFG.source === 'y' && ['classic', 'race', 'tug', 'boss', 'balloon', 'kart'].indexOf(CFG.mode) < 0) CFG.mode = 'tug'; }
@@ -18,7 +18,8 @@
     view.innerHTML = '<div class="hwrap"><div class="panel"><span class="mini">Loading…</span></div></div>';
     try {
       if (!BANKS) BANKS = (await (await fetch('/live/banks.json')).json()).banks;
-      ROOMS = L.local ? { ready: true, rooms: [], recent: [] } : await L.api('rooms');
+      ROOMS = L.local ? { ready: true, rooms: [], recent: [], classes: [] } : await L.api('rooms');
+      GROUPS = ROOMS.classes || []; if (CFG.cls && !groupOf(CFG.cls)) CFG.cls = '';
     } catch (e) {
       view.innerHTML = '<div class="hwrap"><div class="panel"><h2>IF Live</h2><p class="sub">' + (e.status === 401 ? 'Please sign in with your teacher account first.' : e.status === 403 ? 'Hosting live games is for teachers and staff. Ask the director to give your account the Teacher role.' : 'Could not load. Check the connection and try again.') + '</p><a class="btn navy" href="/me/#/login?next=/live/host/">Sign in</a></div></div>';
       return;
@@ -29,6 +30,7 @@
     if (!ROOMS.ready) h += '<div class="note"><b>Live games need one setting before the first game.</b> Create a free account at ably.com, copy the API key from your app\'s <i>API Keys</i> tab (it looks like <code>xVLyHw.A-pwh7w:…</code>) and add it in Netlify → Project configuration → Environment variables as <code>ABLY_API_KEY</code>. Then redeploy the site.</div>';
     if (resume) h += '<div class="note">Your game <b>' + esc(resume.title) + '</b> (PIN ' + resume.pin + ') is still open. <button class="linkbtn" id="resume">Resume it</button> · <button class="linkbtn" id="drop">Close it</button></div>';
     h += '<div class="grid2"><div class="panel"><h2>Start a live game</h2><p class="sub">Students join on their phones with the QR code or the PIN. You run the game from this screen; project it in class.</p>' +
+      (GROUPS.length ? '<label class="f">Which group is playing?</label><select class="inp" id="cls"><option value="">Choose a group…</option>' + GROUPS.map(function (c) { return '<option value="' + esc(c.id) + '"' + (c.id === CFG.cls ? ' selected' : '') + '>' + esc(c.label) + (c.book ? ' · ' + esc(c.book) : '') + '</option>'; }).join('') + '<option value="-">Another group or a mixed class</option></select><div id="clsbox"></div>' : '') +
       '<label class="f">Questions from</label><div class="seg" id="src">' + [['gen', 'General English ✨'], ['v', 'Book vocabulary'], ['g', 'Grammar'], ['y', 'Young Learners 🧸'], ['chess', 'Chess ♟️'], ['custom', 'My own questions']].map(function (s) { return '<button data-v="' + s[0] + '" class="' + (CFG.source === s[0] ? 'on' : '') + '">' + s[1] + '</button>'; }).join('') + '</div>' +
       '<div id="srcbox"></div>' +
       '<label class="f">Game mode</label><div class="modes" id="mode">' + Object.keys(L.MODES).map(function (k) { var m = L.MODES[k]; return '<button data-v="' + k + '" class="' + (CFG.mode === k ? 'on' : '') + '"><span class="mi">' + m.icon + '</span><b>' + esc(m.name) + '</b><small>' + esc(m.tag) + '</small></button>'; }).join('') + '</div>' +
@@ -44,6 +46,7 @@
     view.innerHTML = h;
     if (resume) { $('#resume').onclick = function () { resumeGame(resume); }; $('#drop').onclick = function () { L.ls.set('live.host', null); if (!L.local) L.api('state', { pin: resume.pin, status: 'ended' }).catch(function () {}); vSetup(); }; }
     segs(); srcBox(); timeBox();
+    if ($('#cls')) { $('#cls').onchange = function () { pickGroup(this.value === '-' ? '' : this.value); }; drawGroup(); }
     view.querySelectorAll('[data-res]').forEach(function (b) { b.onclick = function () { showResult(b.dataset.res); }; });
     $('#go').onclick = start;
   }
@@ -60,6 +63,56 @@
         };
       });
     });
+  }
+  /* ---- the group that is playing, and its course: the group's coursebook, or General English at the group's level ---- */
+  function groupOf(id) { return GROUPS.filter(function (c) { return c.id === id; })[0]; }
+  var BOOK_BANK = { 'ef-a1': 'v-A1', 'ef-a2': 'v-A2', 'ef-b1': 'v-B1', 'ef-b2': 'v-B2', 'ef-c1': 'v-C1', 'teens-b1': 'v-TeensB1', 'teens-b2': 'v-TeensB2' };
+  var BOOK_LEVEL = { 'ef-a0': 'A1', 'ef-a1': 'A1', 'ef-a2': 'A2', 'ef-b1': 'B1', 'ef-b1p': 'B1', 'ef-b2': 'B2', 'ef-c1': 'C1', 'ef-c2': 'C1', 'teens-b1': 'B1', 'teens-b2': 'B2' };
+  /** {bank, level, kids} for a group: bank is the question bank of its coursebook ('' when IF Live has none for that book). */
+  function planFor(c) {
+    var book = c.book || '', label = c.label || '', both = (book + ' ' + label).toLowerCase(), I = window.IFClass || {}, m, bank = '', lv = '', kids = false;
+    var yl = ['starters', 'movers', 'flyers'].filter(function (y) { return label.toLowerCase().indexOf(y) >= 0; })[0];
+    if (yl) { bank = 'y-' + yl; kids = true; }
+    else if (/young learners/i.test(book)) { bank = 'y-starters'; kids = true; }
+    else if ((m = book.match(/General English (A1|A2|B1|B2|C1|C2)/i))) { bank = 'v-ge-' + m[1].toLowerCase(); lv = m[1].toUpperCase(); }
+    else if (/a2 english for teens/i.test(book)) { bank = 'v-teens-a2'; lv = 'A2'; }
+    else if (/\bpet\b|preliminary/.test(both)) { bank = 'v-PET'; lv = 'B1'; }
+    else if (/\bket\b|a2 key/.test(both)) { bank = 'v-KET'; lv = 'A2'; }
+    else if (/ielts/.test(both)) { bank = 'v-IELTS'; lv = 'B2'; }
+    else { var k = I.bookKey ? I.bookKey(book) : ''; if (k) { bank = BOOK_BANK[k] || ''; lv = BOOK_LEVEL[k] || ''; } }
+    if (!lv && !kids && I.level) lv = I.level(book) || I.level(label);
+    if (lv === 'A0') lv = 'A1'; if (lv === 'C2') lv = 'C1';
+    if (bank && !bankOf(bank)) bank = '';
+    return { bank: bank, level: L.LEVELS.indexOf(lv) >= 0 ? lv : '', kids: kids };
+  }
+  function pickGroup(id) {
+    CFG.cls = id; var c = groupOf(id);
+    if (c) { var p = planFor(c), want = (CFG.clsPick || {})[id]; useCourse(want === 'gen' && p.level ? 'gen' : p.bank ? 'book' : p.level ? 'gen' : '', true); }
+    drawGroup(); var t = $('#title'); if (t && !t.dataset.touched) t.placeholder = defaultTitle();
+  }
+  /** Set the questions to the group's coursebook ('book') or to General English at its level ('gen'). */
+  function useCourse(kind, quiet) {
+    var c = groupOf(CFG.cls); if (!c || !kind) return;
+    var p = planFor(c);
+    if (kind === 'book' && p.bank) {
+      var b = bankOf(p.bank); if (CFG.bank !== b.id) CFG.units = [];
+      CFG.bank = b.id; CFG.source = b.kind;
+      if (b.kind === 'y' && ['classic', 'race', 'tug', 'boss', 'balloon', 'kart'].indexOf(CFG.mode) < 0) { CFG.mode = 'tug'; $('#mode').querySelectorAll('button').forEach(function (x) { x.classList.toggle('on', x.dataset.v === 'tug'); }); timeBox(); }
+    } else if (kind === 'gen' && p.level) { CFG.source = 'gen'; CFG.level = p.level; }
+    else return;
+    if (!quiet) { CFG.clsPick = CFG.clsPick || {}; CFG.clsPick[c.id] = kind; }
+    $('#src').querySelectorAll('button').forEach(function (x) { x.classList.toggle('on', x.dataset.v === CFG.source); });
+    srcBox();
+  }
+  function drawGroup() {
+    var box = $('#clsbox'); if (!box) return;
+    var c = groupOf(CFG.cls); if (!c) { box.innerHTML = '<p class="mini" style="margin:6px 0 0">Choose your group and IF Live sets the questions to its course. You can still change everything below.</p>'; return; }
+    var p = planFor(c), b = p.bank && bankOf(p.bank), onBook = b && CFG.source === b.kind && CFG.bank === b.id, onGen = p.level && CFG.source === 'gen' && CFG.level === p.level;
+    var btns = (b ? '<button type="button" data-v="book" class="' + (onBook ? 'on' : '') + '">' + (p.kids ? '🧸 ' : '📘 ') + esc(b.name) + '</button>' : '') + (p.level ? '<button type="button" data-v="gen" class="' + (onGen ? 'on' : '') + '">✨ General English ' + p.level + '</button>' : '');
+    box.innerHTML = (btns ? '<label class="f">Course for this group</label><div class="seg" id="clsc">' + btns + '</div>' : '') +
+      '<p class="mini" style="margin:6px 0 0">' + (c.book ? 'Coursebook on the school record: <b>' + esc(c.book) + '</b>.' : 'No coursebook is set for this group on the school record.') +
+      (!b && c.book ? ' IF Live has no question set for this book yet' + (p.level ? ', so General English ' + p.level + ' is offered.' : '; choose the questions below.') : !btns ? ' Choose the questions below.' : !onBook && !onGen ? ' You have chosen something else below.' : '') + '</p>';
+    box.querySelectorAll('#clsc button').forEach(function (x) { x.onclick = function () { useCourse(x.dataset.v); drawGroup(); }; });
   }
   function bankOf(id) { return BANKS.filter(function (b) { return b.id === id; })[0]; }
   function srcBox() {
@@ -120,13 +173,14 @@
   }
   document.addEventListener('click', function (e) { var b = e.target.closest && e.target.closest('[data-addmin]'); if (b) addTime(+b.dataset.addmin); });
   function count() {
-    var el = $('#qcount');
+    var el = $('#qcount'); drawGroup();
     if (useAI()) { if (el) el.textContent = '✨ AI will write ' + (CFG.count === 'all' ? 30 : CFG.count) + ' new questions (takes a few seconds)' + (L.mode(CFG.mode).self || L.mode(CFG.mode).team ? ' + ' + L.bigPool(CFG, BANKS).length + ' from the course, shuffled' : ''); }
     else { var tm = L.mode(CFG.mode).self || L.mode(CFG.mode).team, n = (tm ? L.bigPool(CFG, BANKS) : L.build(CFG, BANKS)).length; if (el) el.textContent = n ? n + ' questions ready' + (tm ? ' — shuffled for each student, every word asked in different ways' : '') : 'No questions yet'; }
     var t = $('#title'); if (t && !t.dataset.touched) t.placeholder = defaultTitle();
     if (t) t.oninput = function () { t.dataset.touched = 1; };
   }
-  function defaultTitle() {
+  function defaultTitle() { var g = groupOf(CFG.cls), t = courseTitle(); return g && g.label ? (g.label + ' · ' + t).slice(0, 80) : t; }
+  function courseTitle() {
     if (CFG.source === 'custom') return 'Class quiz';
     if (CFG.source === 'chess') return 'Chess ♟️' + ({ puzzles: ' · Puzzles', rules: ' · Pieces & rules', words: ' · Chess words' }[CFG.chess] || '');
     if (CFG.source === 'gen') return L.genTitle(CFG);
@@ -177,7 +231,7 @@
     if (!qs.length) { $('#go').disabled = false; err.textContent = CFG.source === 'custom' ? 'Write at least one question: question | right answer | wrong answer.' : 'No questions found for this choice.'; return; }
     try {
       var r = L.local ? { room: { pin: String(100000 + Math.floor(Math.random() * 899999)), created: Date.now() }, token: null } : await L.api('host', { title: title, mode: CFG.mode });
-      H = { pin: r.room.pin, created: r.room.created, title: title, mode: CFG.mode, drive: CFG.mode === 'race' && CFG.drive !== false, time: +CFG.time, race: +CFG.race, teamsN: +CFG.teams, source: CFG.source === 'custom' ? 'My questions' : defaultTitle(),
+      H = { pin: r.room.pin, created: r.room.created, title: title, mode: CFG.mode, drive: CFG.mode === 'race' && CFG.drive !== false, time: +CFG.time, race: +CFG.race, teamsN: +CFG.teams, source: CFG.source === 'custom' ? 'My questions' : courseTitle(),
         qs: qs, i: -1, phase: 'lobby', players: {}, order: [], ans: {}, qStart: 0, raceEnd: 0, raceId: 0, salt: Math.floor(Math.random() * 1000), feed: [], evn: 0, fzAt: 0, fzEnd: 0 };
       await connect(r.token);
       save(); lobby();
