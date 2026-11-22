@@ -31,7 +31,7 @@
     if (resume) h += '<div class="note">Your game <b>' + esc(resume.title) + '</b> (PIN ' + resume.pin + ') is still open. <button class="linkbtn" id="resume">Resume it</button> · <button class="linkbtn" id="drop">Close it</button></div>';
     h += '<div class="grid2"><div class="panel"><h2>Start a live game</h2><p class="sub">Students join on their phones with the QR code or the PIN. You run the game from this screen; project it in class.</p>' +
       (GROUPS.length ? '<label class="f">Which group is playing?</label><select class="inp" id="cls"><option value="">Choose a group…</option>' + GROUPS.map(function (c) { return '<option value="' + esc(c.id) + '"' + (c.id === CFG.cls ? ' selected' : '') + '>' + esc(c.label) + (c.book ? ' · ' + esc(c.book) : '') + '</option>'; }).join('') + '<option value="-">Another group or a mixed class</option></select><div id="clsbox"></div>' : '') +
-      '<label class="f">Questions from</label><div class="seg" id="src">' + [['gen', 'General English ✨'], ['v', 'Book vocabulary'], ['g', 'Grammar'], ['y', 'Young Learners 🧸'], ['chess', 'Chess ♟️'], ['custom', 'My own questions']].map(function (s) { return '<button data-v="' + s[0] + '" class="' + (CFG.source === s[0] ? 'on' : '') + '">' + s[1] + '</button>'; }).join('') + '</div>' +
+      '<label class="f">Questions from</label><div class="seg" id="src">' + [['gen', 'General English ✨'], ['v', 'Book vocabulary'], ['vg', 'Vocabulary + Grammar'], ['g', 'Grammar'], ['y', 'Young Learners 🧸'], ['chess', 'Chess ♟️'], ['custom', 'My own questions']].map(function (s) { return '<button data-v="' + s[0] + '" class="' + (CFG.source === s[0] ? 'on' : '') + '">' + s[1] + '</button>'; }).join('') + '</div>' +
       '<div id="srcbox"></div>' +
       '<label class="f">Game mode</label><div class="modes" id="mode">' + Object.keys(L.MODES).map(function (k) { var m = L.MODES[k]; return '<button data-v="' + k + '" class="' + (CFG.mode === k ? 'on' : '') + '"><span class="mi">' + m.icon + '</span><b>' + esc(m.name) + '</b><small>' + esc(m.tag) + '</small></button>'; }).join('') + '</div>' +
       '<p class="mini" style="margin:6px 0 0">Full 3D games to play on their own (homework or a free lesson): <a href="/a/kids-quest/" target="_blank" rel="noopener">🏎️ IF Kids Quest</a> (Young Learners) · <a href="/a/block-quest/" target="_blank" rel="noopener">⛏️ IF Block Quest</a> (teens and adults).</p>' +
@@ -56,7 +56,7 @@
         b.onclick = function () {
           $('#' + id).querySelectorAll('button').forEach(function (x) { x.classList.toggle('on', x === b); });
           var v = b.dataset.v;
-          if (id === 'src') { CFG.source = v; if (v !== 'custom' && v !== 'gen' && v !== 'chess' && (bankOf(CFG.bank) || {}).kind !== v) { CFG.bank = BANKS.filter(function (x) { return x.kind === v; })[0].id; CFG.units = []; } srcBox(); }
+          if (id === 'src') { CFG.source = v; var kd = v === 'vg' ? 'v' : v; if (v !== 'custom' && v !== 'gen' && v !== 'chess' && (bankOf(CFG.bank) || {}).kind !== kd) { CFG.bank = BANKS.filter(function (x) { return x.kind === kd; })[0].id; CFG.units = []; } srcBox(); }
           if (id === 'mode') { CFG.mode = v; timeBox(); }
           if (id === 'teams') CFG.teams = +v;
           count();
@@ -96,7 +96,7 @@
     var p = planFor(c);
     if (kind === 'book' && p.bank) {
       var b = bankOf(p.bank); if (CFG.bank !== b.id) CFG.units = [];
-      CFG.bank = b.id; CFG.source = b.kind;
+      CFG.bank = b.id; CFG.source = b.kind === 'v' && CFG.source === 'vg' ? 'vg' : b.kind;
       if (b.kind === 'y' && ['classic', 'race', 'tug', 'boss', 'balloon', 'kart'].indexOf(CFG.mode) < 0) { CFG.mode = 'tug'; $('#mode').querySelectorAll('button').forEach(function (x) { x.classList.toggle('on', x.dataset.v === 'tug'); }); timeBox(); }
     } else if (kind === 'gen' && p.level) { CFG.source = 'gen'; CFG.level = p.level; }
     else return;
@@ -107,12 +107,36 @@
   function drawGroup() {
     var box = $('#clsbox'); if (!box) return;
     var c = groupOf(CFG.cls); if (!c) { box.innerHTML = '<p class="mini" style="margin:6px 0 0">Choose your group and IF Live sets the questions to its course. You can still change everything below.</p>'; return; }
-    var p = planFor(c), b = p.bank && bankOf(p.bank), onBook = b && CFG.source === b.kind && CFG.bank === b.id, onGen = p.level && CFG.source === 'gen' && CFG.level === p.level;
+    var p = planFor(c), b = p.bank && bankOf(p.bank), onBook = b && (CFG.source === b.kind || (b.kind === 'v' && CFG.source === 'vg')) && CFG.bank === b.id, onGen = p.level && CFG.source === 'gen' && CFG.level === p.level;
     var btns = (b ? '<button type="button" data-v="book" class="' + (onBook ? 'on' : '') + '">' + (p.kids ? '🧸 ' : '📘 ') + esc(b.name) + '</button>' : '') + (p.level ? '<button type="button" data-v="gen" class="' + (onGen ? 'on' : '') + '">✨ General English ' + p.level + '</button>' : '');
     box.innerHTML = (btns ? '<label class="f">Course for this group</label><div class="seg" id="clsc">' + btns + '</div>' : '') +
       '<p class="mini" style="margin:6px 0 0">' + (c.book ? 'Coursebook on the school record: <b>' + esc(c.book) + '</b>.' : 'No coursebook is set for this group on the school record.') +
       (!b && c.book ? ' IF Live has no question set for this book yet' + (p.level ? ', so General English ' + p.level + ' is offered.' : '; choose the questions below.') : !btns ? ' Choose the questions below.' : !onBook && !onGen ? ' You have chosen something else below.' : '') + '</p>';
     box.querySelectorAll('#clsc button').forEach(function (x) { x.onclick = function () { useCourse(x.dataset.v); drawGroup(); }; });
+  }
+  /** The grammar set that goes with a book: the IF course's own grammar, or the grammar of the book's level. */
+  function grammarFor(id) {
+    var own = id.replace(/^v-/, 'g-'); if (bankOf(own)) return own;
+    var lv = { 'v-A1': 'ge-a1', 'v-Movers': 'ge-a1', 'v-A2': 'A2', 'v-Flyers': 'A2', 'v-KET': 'A2', 'v-B1': 'B1', 'v-PET': 'B1', 'v-TeensB1': 'B1', 'v-B2': 'B2', 'v-TeensB2': 'B2', 'v-C1': 'C1', 'v-IELTS': 'IELTS' }[id];
+    return bankOf('g-' + lv) ? 'g-' + lv : BANKS.filter(function (x) { return x.kind === 'g'; })[0].id;
+  }
+  /** A combined round is two ordinary choices: the book's words and the grammar set. */
+  function halves() { return [Object.assign({}, CFG, { source: 'v' }), Object.assign({}, CFG, { source: 'g', bank: CFG.gbank, units: CFG.gunits || [] })]; }
+  function mixed(a, b, n) {   // half and half, topped up from the other side when one is short
+    a = L.shuffle(a); b = L.shuffle(b); if (!n) return L.shuffle(a.concat(b));
+    var na = Math.min(a.length, Math.ceil(n / 2)), nb = Math.min(b.length, n - na); na = Math.min(a.length, n - nb);
+    return L.shuffle(a.slice(0, na).concat(b.slice(0, nb)));
+  }
+  function buildQs() {
+    if (CFG.source === 'gen') return L.general(CFG, BANKS);
+    if (CFG.source !== 'vg') return L.build(CFG, BANKS);
+    var h = halves(), all = function (c) { return L.build(Object.assign({}, c, { count: 'all' }), BANKS); };
+    return mixed(all(h[0]), all(h[1]), CFG.count === 'all' ? 0 : +CFG.count);
+  }
+  function poolQs() {
+    if (CFG.source !== 'vg') return L.bigPool(CFG, BANKS);
+    var h = halves(), g = L.bigPool(h[1], BANKS), v = L.bigPool(h[0], BANKS);
+    return L.shuffle(v.slice(0, Math.max(120, 240 - g.length)).concat(g)).slice(0, 240);
   }
   function bankOf(id) { return BANKS.filter(function (b) { return b.id === id; })[0]; }
   function srcBox() {
@@ -136,19 +160,35 @@
       $('#custom').oninput = function () { CFG.custom = this.value; count(); };
       return count();
     }
-    var list = BANKS.filter(function (b) { return b.kind === CFG.source; });
-    if (!bankOf(CFG.bank) || bankOf(CFG.bank).kind !== CFG.source) CFG.bank = list[0].id;
-    var b = bankOf(CFG.bank);
+    var VG = CFG.source === 'vg', kind = VG ? 'v' : CFG.source;
+    var list = BANKS.filter(function (b) { return b.kind === kind; });
+    if (!bankOf(CFG.bank) || bankOf(CFG.bank).kind !== kind) CFG.bank = list[0].id;
+    var b = bankOf(CFG.bank), gb = null, ghtml = '';
     if (!CFG.units.length || !CFG.units.every(function (u) { return b.units.some(function (x) { return x.id === u; }); })) CFG.units = [b.units[0].id];
-    box.innerHTML = '<label class="f">' + (CFG.source === 'g' ? 'Grammar set' : CFG.source === 'y' ? 'Level' : 'Book') + '</label><select class="inp" id="bank">' + list.map(function (x) { return '<option value="' + x.id + '"' + (x.id === CFG.bank ? ' selected' : '') + '>' + esc(x.name) + '</option>'; }).join('') + '</select>' +
-      '<label class="f">Units <button class="linkbtn" id="allu" style="text-transform:none;letter-spacing:0;margin-left:8px">select all</button></label><div class="units">' + b.units.map(function (u) { return '<label><input type="checkbox" value="' + esc(u.id) + '"' + (CFG.units.indexOf(u.id) >= 0 ? ' checked' : '') + '> <b>' + esc(u.id === 'all' ? '' : u.id) + '</b> ' + esc(u.t) + '<small>' + (u.w || u.q).length + '</small></label>'; }).join('') + '</div>' +
-      (CFG.source === 'v' ? '<label class="f">Question type</label><div class="seg" id="qtype">' + [['def', 'Definition → word'], ['word', 'Word → meaning'], ['ru', 'Russian → English'], ['mix', 'Mixed']].map(function (s) { return '<button data-v="' + s[0] + '" class="' + (CFG.qtype === s[0] ? 'on' : '') + '">' + s[1] + '</button>'; }).join('') + '</div>' : '') +
-      '<label class="units" style="display:flex;gap:10px;align-items:flex-start;margin-top:14px;max-height:none;cursor:pointer"><input type="checkbox" id="aitog"' + (CFG.ai ? ' checked' : '') + ' style="margin-top:4px"> <span><b>✨ AI writes fresh questions from these units</b><br><span class="mini">New sentences and question types every game (gap-fills, synonyms, collocations, dialogues) with a short explanation after each answer. Untick to use the plain word list.</span></span></label>' +
+    if (VG) {   // one round from the book's words and a grammar set (the set that goes with the book, unless the teacher picks another)
+      if (!bankOf(CFG.gbank) || bankOf(CFG.gbank).kind !== 'g' || CFG.gfor !== b.id) { CFG.gbank = grammarFor(b.id); CFG.gfor = b.id; CFG.gunits = []; CFG.gtouch = false; }
+      gb = bankOf(CFG.gbank);
+      // an IF course has the same units in both: the grammar follows the units ticked above until the teacher ticks grammar units
+      var same = CFG.units.filter(function (u) { return gb.units.some(function (x) { return x.id === u; }); }), follow = !CFG.gtouch && same.length; if (follow) CFG.gunits = same;
+      if (!(CFG.gunits || []).length || !CFG.gunits.every(function (u) { return gb.units.some(function (x) { return x.id === u; }); })) CFG.gunits = gb.units.map(function (u) { return u.id; });
+      ghtml = '<label class="f">Grammar set</label><select class="inp" id="gbank">' + BANKS.filter(function (x) { return x.kind === 'g'; }).map(function (x) { return '<option value="' + x.id + '"' + (x.id === gb.id ? ' selected' : '') + '>' + esc(x.name) + '</option>'; }).join('') + '</select>' +
+        (gb.units.length > 1 ? '<label class="f">Grammar units <button class="linkbtn" id="allg" style="text-transform:none;letter-spacing:0;margin-left:8px">select all</button></label><div class="units" id="gunits">' + gb.units.map(function (u) { return '<label><input type="checkbox" value="' + esc(u.id) + '"' + (CFG.gunits.indexOf(u.id) >= 0 ? ' checked' : '') + '> <b>' + esc(u.id) + '</b> ' + esc(u.t) + '<small>' + u.q.length + '</small></label>'; }).join('') + '</div>' : '') +
+        '<p class="mini" style="margin:6px 0 0">Half of the round is vocabulary from the book, half is grammar.</p>';
+    }
+    box.innerHTML = '<label class="f">' + (CFG.source === 'g' ? 'Grammar set' : CFG.source === 'y' ? 'Level' : 'Book or course') + '</label><select class="inp" id="bank">' + list.map(function (x) { return '<option value="' + x.id + '"' + (x.id === CFG.bank ? ' selected' : '') + '>' + esc(x.name) + '</option>'; }).join('') + '</select>' +
+      '<label class="f">Units <button class="linkbtn" id="allu" style="text-transform:none;letter-spacing:0;margin-left:8px">select all</button></label><div class="units" id="vunits">' + b.units.map(function (u) { return '<label><input type="checkbox" value="' + esc(u.id) + '"' + (CFG.units.indexOf(u.id) >= 0 ? ' checked' : '') + '> <b>' + esc(u.id === 'all' ? '' : u.id) + '</b> ' + esc(u.t) + '<small>' + (u.w || u.q).length + '</small></label>'; }).join('') + '</div>' +
+      (kind === 'v' ? '<label class="f">' + (VG ? 'Vocabulary question type' : 'Question type') + '</label><div class="seg" id="qtype">' + [['def', 'Definition → word'], ['word', 'Word → meaning'], ['ru', 'Russian → English'], ['mix', 'Mixed']].map(function (s) { return '<button data-v="' + s[0] + '" class="' + (CFG.qtype === s[0] ? 'on' : '') + '">' + s[1] + '</button>'; }).join('') + '</div>' : '') +
+      ghtml + '<label class="units" style="display:flex;gap:10px;align-items:flex-start;margin-top:14px;max-height:none;cursor:pointer"><input type="checkbox" id="aitog"' + (CFG.ai ? ' checked' : '') + ' style="margin-top:4px"> <span><b>✨ AI writes fresh questions from these units</b><br><span class="mini">New sentences and question types every game (gap-fills, synonyms, collocations, dialogues) with a short explanation after each answer. Untick to use the plain word list.</span></span></label>' +
       '<label class="f">Number of questions</label><div class="seg" id="cnt">' + ['10', '15', '20', '30', 'all'].map(function (s) { return '<button data-v="' + s + '" class="' + (CFG.count === s ? 'on' : '') + '">' + (s === 'all' ? 'All' : s) + '</button>'; }).join('') + '</div>';
     $('#aitog').onchange = function () { CFG.ai = this.checked; count(); };
     $('#bank').onchange = function () { CFG.bank = this.value; CFG.units = []; srcBox(); };
     $('#allu').onclick = function (e) { e.preventDefault(); var all = CFG.units.length === b.units.length; CFG.units = all ? [b.units[0].id] : b.units.map(function (u) { return u.id; }); srcBox(); };
-    box.querySelectorAll('.units input').forEach(function (c) { c.onchange = function () { CFG.units = Array.prototype.filter.call(box.querySelectorAll('.units input'), function (x) { return x.checked; }).map(function (x) { return x.value; }); count(); }; });
+    if (VG) {
+      $('#gbank').onchange = function () { CFG.gbank = this.value; CFG.gunits = []; CFG.gtouch = false; srcBox(); };
+      if ($('#allg')) $('#allg').onclick = function (e) { e.preventDefault(); var all = CFG.gunits.length === gb.units.length; CFG.gunits = all ? [gb.units[0].id] : gb.units.map(function (u) { return u.id; }); CFG.gtouch = true; srcBox(); };
+      box.querySelectorAll('#gunits input').forEach(function (c) { c.onchange = function () { CFG.gunits = Array.prototype.filter.call(box.querySelectorAll('#gunits input'), function (x) { return x.checked; }).map(function (x) { return x.value; }); CFG.gtouch = true; count(); }; });
+    }
+    box.querySelectorAll('#vunits input').forEach(function (c) { c.onchange = function () { CFG.units = Array.prototype.filter.call(box.querySelectorAll('#vunits input'), function (x) { return x.checked; }).map(function (x) { return x.value; }); if (VG && !CFG.gtouch && CFG.units.length) { var sy = box.querySelector('#vunits').scrollTop; srcBox(); box.querySelector('#vunits').scrollTop = sy; } else count(); }; });
     [['qtype', 'qtype'], ['cnt', 'count']].forEach(function (p) { var el = $('#' + p[0]); if (!el) return; el.querySelectorAll('button').forEach(function (bt) { bt.onclick = function () { el.querySelectorAll('button').forEach(function (x) { x.classList.toggle('on', x === bt); }); CFG[p[1]] = bt.dataset.v; count(); }; }); });
     count();
   }
@@ -174,8 +214,8 @@
   document.addEventListener('click', function (e) { var b = e.target.closest && e.target.closest('[data-addmin]'); if (b) addTime(+b.dataset.addmin); });
   function count() {
     var el = $('#qcount'); drawGroup();
-    if (useAI()) { if (el) el.textContent = '✨ AI will write ' + (CFG.count === 'all' ? 30 : CFG.count) + ' new questions (takes a few seconds)' + (L.mode(CFG.mode).self || L.mode(CFG.mode).team ? ' + ' + L.bigPool(CFG, BANKS).length + ' from the course, shuffled' : ''); }
-    else { var tm = L.mode(CFG.mode).self || L.mode(CFG.mode).team, n = (tm ? L.bigPool(CFG, BANKS) : L.build(CFG, BANKS)).length; if (el) el.textContent = n ? n + ' questions ready' + (tm ? ' — shuffled for each student, every word asked in different ways' : '') : 'No questions yet'; }
+    if (useAI()) { if (el) el.textContent = '✨ AI will write ' + (CFG.count === 'all' ? 30 : CFG.count) + ' new questions (takes a few seconds)' + (L.mode(CFG.mode).self || L.mode(CFG.mode).team ? ' + ' + poolQs().length + ' from the course, shuffled' : ''); }
+    else { var tm = L.mode(CFG.mode).self || L.mode(CFG.mode).team, n = (tm ? poolQs() : buildQs()).length; if (el) el.textContent = n ? n + ' questions ready' + (tm ? ' — shuffled for each student, every word asked in different ways' : '') : 'No questions yet'; }
     var t = $('#title'); if (t && !t.dataset.touched) t.placeholder = defaultTitle();
     if (t) t.oninput = function () { t.dataset.touched = 1; };
   }
@@ -186,7 +226,7 @@
     if (CFG.source === 'gen') return L.genTitle(CFG);
     var b = bankOf(CFG.bank); if (!b) return 'Live game';
     var u = b.units.filter(function (x) { return CFG.units.indexOf(x.id) >= 0; });
-    return b.name.replace(/^Grammar · /, 'Grammar ') + (u.length === 1 && u[0].id !== 'all' ? ' · ' + u[0].id + ' ' + u[0].t : u.length > 1 ? ' · ' + u.length + ' units' : '');
+    return b.name.replace(/^Grammar · /, 'Grammar ') + (u.length === 1 && u[0].id !== 'all' ? ' · ' + u[0].id + ' ' + u[0].t : u.length > 1 ? ' · ' + u.length + ' units' : '') + (CFG.source === 'vg' ? ' + Grammar' : '');
   }
   async function showResult(key) {
     var box = $('#resbox'); box.innerHTML = '<p class="mini">Loading…</p>';
@@ -197,12 +237,13 @@
     } catch (e) { box.innerHTML = '<p class="mini">Could not load these scores.</p>'; }
   }
 
-  function useAI() { return CFG.source === 'gen' || (CFG.ai && (CFG.source === 'v' || CFG.source === 'g')); }
-  function aiRequest() {
-    var n = CFG.count === 'all' ? 30 : +CFG.count;
+  function useAI() { return CFG.source === 'gen' || (CFG.ai && (CFG.source === 'v' || CFG.source === 'g' || CFG.source === 'vg')); }
+  var CFG0 = CFG;
+  function aiRequest(c, n) {
+    var CFG = c || CFG0; n = n || (CFG.count === 'all' ? 30 : +CFG.count);
     if (CFG.source === 'gen') return { level: CFG.level, focus: CFG.focus, topic: CFG.topic, count: n };
     var b = bankOf(CFG.bank), units = b.units.filter(function (u) { return CFG.units.indexOf(u.id) >= 0; });
-    var lv = (b.id.match(/A1|A2|B1|B2|C1/) || [])[0] || { 'v-Movers': 'A1', 'v-Flyers': 'A2', 'v-KET': 'A2', 'v-PET': 'B1', 'v-TeensB1': 'B1', 'v-TeensB2': 'B2', 'v-IELTS': 'C1', 'g-IELTS': 'C1' }[b.id] || 'B1';
+    var lv = ((b.id.match(/A1|A2|B1|B2|C1/i) || [])[0] || '').toUpperCase() || (/c2$/i.test(b.id) ? 'C1' : '') || { 'v-Movers': 'A1', 'v-Flyers': 'A2', 'v-KET': 'A2', 'v-PET': 'B1', 'v-TeensB1': 'B1', 'v-TeensB2': 'B2', 'v-IELTS': 'C1', 'g-IELTS': 'C1' }[b.id] || 'B1';
     if (b.kind === 'g') return { level: lv, focus: 'grammar', topic: units.map(function (u) { return u.id === 'all' ? lv + ' grammar' : u.t; }).join('; ') + (b.id === 'g-IELTS' ? ' (IELTS academic writing context)' : ''), count: n };
     var words = []; units.forEach(function (u) { u.w.forEach(function (w) { words.push(w[0]); }); });
     return { level: lv, focus: 'vocab', topic: units.map(function (u) { return u.t; }).slice(0, 4).join('; '), words: L.shuffle(words).slice(0, 60), count: n };
@@ -211,23 +252,29 @@
   /* ================= running a game ================= */
   async function start() {
     var err = $('#err'); err.textContent = '';
-    if (CFG.source !== 'custom' && CFG.source !== 'gen' && CFG.source !== 'chess' && !CFG.units.length) { err.textContent = 'Choose at least one unit.'; return; }
+    if (CFG.source !== 'custom' && CFG.source !== 'gen' && CFG.source !== 'chess' && (!CFG.units.length || (CFG.source === 'vg' && !(CFG.gunits || []).length))) { err.textContent = 'Choose at least one unit.'; return; }
     var title = ($('#title').value.trim() || defaultTitle());
     L.ls.set('live.cfg', Object.assign({}, CFG, { title: '' }));
     $('#go').disabled = true;
     var qs = null;
     if (useAI()) {
       err.style.color = 'var(--navy)'; err.textContent = '✨ AI is writing your questions…';
-      try { qs = (await L.api('generate', aiRequest())).qs; } catch (e) { qs = null; }
+      try {
+        if (CFG.source === 'vg') {   // two requests at the same time: words from the book, grammar from the set
+          var n = CFG.count === 'all' ? 30 : +CFG.count, h = halves(), two = await Promise.allSettled([L.api('generate', aiRequest(h[0], Math.max(5, Math.ceil(n / 2)))), L.api('generate', aiRequest(h[1], Math.max(5, Math.floor(n / 2))))]);
+          var part = function (i) { return two[i].status === 'fulfilled' ? two[i].value.qs || [] : []; }, all = function (i) { return L.build(Object.assign({}, h[i], { count: 'all' }), BANKS); };
+          qs = part(0).length || part(1).length ? mixed(part(0).length ? part(0) : all(0), part(1).length ? part(1) : all(1), n) : null;
+        } else qs = (await L.api('generate', aiRequest())).qs;
+      } catch (e) { qs = null; }
       err.style.color = '';
       if (!qs || !qs.length) err.textContent = 'AI is busy right now, so this game uses the ready-made questions instead.';
       else err.textContent = '';
     }
     var timed = L.mode(CFG.mode).self || L.mode(CFG.mode).team;
     if (timed) {   // self-paced modes: the AI questions plus the whole pool of the chosen units, so questions rarely repeat
-      var seenQ = {}; qs = (qs || []).concat(L.bigPool(CFG, BANKS)).filter(function (q) { var k = q.p + '|' + q.o[q.a]; if (seenQ[k]) return false; seenQ[k] = 1; return true; }).slice(0, 260);
+      var seenQ = {}; qs = (qs || []).concat(poolQs()).filter(function (q) { var k = q.p + '|' + q.o[q.a]; if (seenQ[k]) return false; seenQ[k] = 1; return true; }).slice(0, 260);
     }
-    if (!qs || !qs.length) qs = CFG.source === 'gen' ? L.general(CFG, BANKS) : L.build(CFG, BANKS);
+    if (!qs || !qs.length) qs = buildQs();
     if (!qs.length) { $('#go').disabled = false; err.textContent = CFG.source === 'custom' ? 'Write at least one question: question | right answer | wrong answer.' : 'No questions found for this choice.'; return; }
     try {
       var r = L.local ? { room: { pin: String(100000 + Math.floor(Math.random() * 899999)), created: Date.now() }, token: null } : await L.api('host', { title: title, mode: CFG.mode });
