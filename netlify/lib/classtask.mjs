@@ -253,6 +253,32 @@ export async function catchUp(onlyClass) {
   }
   return out;
 }
+/** For IF Admin: the latest task of each class, and who has it / who could get it now. */
+export async function taskStatus() {
+  const { blobs } = await S().list({ prefix: 'ctask/last/' }), out = [], classes = await doc('classes');
+  for (const b of blobs) {
+    const cid = b.key.slice('ctask/last/'.length), last = await S().get(b.key, { type: 'json' }); if (!last) continue;
+    const t = await S().get(`ctask/${last.id}`, { type: 'json' }); if (!t) continue;
+    const cls = classes.find(c => c.id === cid), ppl = cls ? await roster(cls) : [];
+    out.push({ classId: cid, id: t.id, kind: t.kind, at: t.at, closeAt: t.closeAt, open: t.open, openNow: isOpen(t), text: String(t.text || (t.items || []).map(i => i.q).join(' | ')).slice(0, 120),
+      got: Object.keys(t.msgs || {}).filter(k => (t.msgs[k].ids || []).length), connected: ppl.filter(x => x.chatId).map(x => x.sid), notConnected: ppl.filter(x => !x.chatId).map(x => x.sid) });
+  }
+  return out.sort((a, b) => String(b.at).localeCompare(String(a.at)));
+}
+/** Send one closed or open task again to students who never got it ({id}), even after the time limit — used by the director. */
+export async function sendLate(classId, force) {
+  const last = await S().get(`ctask/last/${classId}`, { type: 'json' }); if (!last) return [];
+  const t = await S().get(`ctask/${last.id}`, { type: 'json' }); if (!t) return [];
+  const cls = (await doc('classes')).find(c => c.id === classId); if (!cls) return [];
+  if (!isOpen(t)) { if (!force) return []; t.open = true; t.closeAt = 0; t.at = new Date().toISOString(); }
+  t.msgs = t.msgs || {};
+  const todo = (await roster(cls)).filter(x => x.chatId && !(t.msgs[x.sid] && (t.msgs[x.sid].ids || []).length));
+  for (const x of todo) await deliver(t, x, t.label, (t.by || 'your teacher').split(' ')[0]);
+  const fresh = (await S().get(`ctask/${t.id}`, { type: 'json' })) || t;
+  Object.assign(fresh, { open: t.open, closeAt: t.closeAt, at: t.at, students: t.students, msgs: { ...(fresh.msgs || {}), ...Object.fromEntries(todo.map(x => [x.sid, t.msgs[x.sid]])) } });
+  await S().setJSON(`ctask/${t.id}`, fresh); await refresh(t.id).catch(() => {});
+  return todo.map(x => x.sid);
+}
 /** The student's "🎯 Class task" button: the task open now in their class (sent again, so they can answer). */
 export async function studentTask(chatId, ctx, lang) {
   const en = lang === 'en', sid = ctx && ctx.student && ctx.student.id;
