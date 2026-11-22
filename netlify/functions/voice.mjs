@@ -1,5 +1,5 @@
 // Real voices for every listening and "read aloud" button on the site (ElevenLabs text to speech).
-//   GET /api/voice?t=<text>&v=kid|adult   → audio/mpeg
+//   GET /api/voice?t=<text>&v=kid|adult[&l=ru|kk]   → audio/mpeg
 // Each sentence is generated once, then kept in Blobs (store "voice") and served from there for everyone,
 // so the ElevenLabs bill only grows when new text appears. A daily character cap protects the account.
 // Needs the environment variable ELEVENLABS_API_KEY. Optional: ELEVENLABS_VOICE_KIDS, ELEVENLABS_VOICE_ADULT, ELEVENLABS_MODEL.
@@ -18,6 +18,11 @@ const VOICES = {
 };
 const LEGACY = { female: 'af', male: 'am', kid: 'kf', adult: 'am' };
 const MODEL = process.env.ELEVENLABS_MODEL || 'eleven_multilingual_v2';
+/* IF Lingo: Russian and Kazakh. Russian is in Multilingual v2; Kazakh is not, so it uses Eleven v3 (ElevenLabs
+   language list, checked 22 Nov 2026). l = ru | kk. Optional: ELEVENLABS_MODEL_RU, ELEVENLABS_MODEL_KK, and a voice
+   per language and gender (ELEVENLABS_VOICE_RU_FEMALE, …_RU_MALE, …_KK_FEMALE, …_KK_MALE); otherwise the adult voices. */
+const LANG_MODEL = { ru: process.env.ELEVENLABS_MODEL_RU || 'eleven_multilingual_v2', kk: process.env.ELEVENLABS_MODEL_KK || 'eleven_v3' };
+const langVoice = (l, kind) => process.env[`ELEVENLABS_VOICE_${l.toUpperCase()}_${kind[1] === 'm' ? 'MALE' : 'FEMALE'}`] || VOICES['a' + kind[1]];
 const MAX_LEN = 3000, DAILY_CHARS = +process.env.ELEVENLABS_DAILY_CHARS || 40000;
 const SITE = /^https:\/\/([a-z0-9-]+--)?(intellectfirst\.com|www\.intellectfirst\.com|intellect-first-academy\.netlify\.app)(\/|$)/;
 
@@ -33,7 +38,7 @@ const audio = (buf, hit, range) => {
   return new Response(part ? buf.slice(start, end + 1) : buf, { status: part ? 206 : 200, headers: {
   'Accept-Ranges': 'bytes', ...(part ? { 'Content-Range': `bytes ${start}-${end}/${size}` } : {}),
   'Content-Type': 'audio/mpeg', 'Cache-Control': 'public, max-age=31536000, immutable',
-  'Netlify-CDN-Cache-Control': 'public, max-age=31536000, immutable', 'Netlify-Vary': 'query=t|v,header=range', 'X-Voice-Cache': hit ? 'hit' : 'new' } });
+  'Netlify-CDN-Cache-Control': 'public, max-age=31536000, immutable', 'Netlify-Vary': 'query=t|v|l,header=range', 'X-Voice-Cache': hit ? 'hit' : 'new' } });
 };
 const no = (status, error) => Response.json({ error }, { status, headers: { 'Cache-Control': 'no-store' } });
 
@@ -41,12 +46,14 @@ export default async (req) => {
   const url = new URL(req.url);
   if (url.pathname.endsWith('/status')) {
     const last = await V().get('last-error', { type: 'json' }).catch(() => null);
-    return Response.json({ ready: !!process.env.ELEVENLABS_API_KEY, model: MODEL, lastError: last }, { headers: { 'Cache-Control': 'no-store' } });
+    return Response.json({ ready: !!process.env.ELEVENLABS_API_KEY, model: MODEL, models: LANG_MODEL, lastError: last }, { headers: { 'Cache-Control': 'no-store' } });
   }
   const text = String(url.searchParams.get('t') || '').replace(/\s+/g, ' ').trim();
   const v = url.searchParams.get('v') || '', kind = VOICES[v] ? v : LEGACY[v] || 'am';
   if (!text || text.length > MAX_LEN) return no(400, 'text');
-  const voice = VOICES[kind], key = createHash('sha256').update(`${MODEL}|${voice}|${text}`).digest('hex');
+  const l = ['ru', 'kk'].includes(url.searchParams.get('l')) ? url.searchParams.get('l') : '';
+  const model = l ? LANG_MODEL[l] : MODEL, voice = l ? langVoice(l, kind) : VOICES[kind];
+  const key = createHash('sha256').update(`${model}|${voice}|${l ? l + '|' : ''}${text}`).digest('hex');
   const store = V();
   const have = await store.get('a/' + key, { type: 'arrayBuffer' }).catch(() => null);
   const range = req.headers.get('range');
@@ -62,12 +69,15 @@ export default async (req) => {
   const used = +(await store.get('usage/' + day).catch(() => 0) || 0);
   if (used + text.length > DAILY_CHARS) return no(503, 'daily-limit');
 
-  const r = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voice}?output_format=mp3_44100_64`, {
+  // Eleven v3 takes fewer voice settings than v2 (stability only); if it refuses the settings, the call is repeated without them.
+  const v3 = /_v3/.test(model);
+  const call = settings => fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voice}?output_format=mp3_44100_64`, {
     method: 'POST',
     headers: { 'xi-api-key': apiKey, 'Content-Type': 'application/json', Accept: 'audio/mpeg' },
-    body: JSON.stringify({ text, model_id: MODEL, language_code: MODEL.includes('multilingual_v2') ? undefined : 'en',
-      voice_settings: { stability: 0.55, similarity_boost: 0.75, style: kind[0] === 'k' ? 0.35 : 0.15, use_speaker_boost: true } })
+    body: JSON.stringify({ text, model_id: model, language_code: l ? (model.includes('multilingual_v2') ? undefined : l) : (model.includes('multilingual_v2') ? undefined : 'en'), ...(settings ? { voice_settings: settings } : {}) })
   }).catch(() => null);
+  let r = await call(v3 ? { stability: 0.5 } : { stability: 0.55, similarity_boost: 0.75, style: kind[0] === 'k' ? 0.35 : 0.15, use_speaker_boost: true });
+  if (r && !r.ok && v3 && r.status >= 400 && r.status < 500 && r.status !== 401 && r.status !== 429) r = await call(null);
   if (!r || !r.ok) {
     const why = r ? (await r.text().catch(() => '')).slice(0, 300) : 'network';
     console.log('ElevenLabs error', r && r.status, why);
@@ -76,7 +86,7 @@ export default async (req) => {
   }
   const buf = await r.arrayBuffer();
   await Promise.all([
-    store.set('a/' + key, buf, { metadata: { text: text.slice(0, 200), kind, at: new Date().toISOString() } }),
+    store.set('a/' + key, buf, { metadata: { text: text.slice(0, 200), kind, lang: l || 'en', model, at: new Date().toISOString() } }),
     store.set('usage/' + day, String(used + text.length))
   ]);
   return audio(buf, false, range);
