@@ -802,7 +802,7 @@
     if (/^be:/.test(k)) return it.tr === 'business' || (it.tr === 'general' && (it.lv || []).indexOf(lv) >= 0);
     if (k === 'ielts') return /ielts/.test(tags);
     if (k === 'ket') return /ket/.test(tags) || (it.tr === 'general' && (it.lv || []).indexOf('A2') >= 0 && it.s === 'grammar');
-    if (k === 'pet') return /pet/.test(tags) || (it.tr === 'general' && (it.lv || []).indexOf('B1') >= 0 && it.s === 'grammar');
+    if (k === 'pet') return /pet/.test(tags) || (!S.cls && it.tr === 'general' && (it.lv || []).indexOf('B1') >= 0 && it.s === 'grammar');   // a PET class sees only PET material
     if (/^yl:|^maths$/.test(k)) return it.tr === 'kids';
     if (/^book:/.test(k)) { var bk = k.slice(5); if (bk === 'ef-a0') bk = 'ef-a1'; return it.id === bk || (bk === 'teens-b1' && it.id === 'voc-tb1') || (bk === 'teens-b2' && it.id === 'voc-tb2') || (/^teens/.test(bk) && /teens/.test(tags) && it.s !== 'tests' && it.s !== 'vocab') || (bk === 'giu' && /gram|giu/.test(it.id)) || (/^ef-/.test(bk) && it.id === 'voc-' + bk.slice(3)); }
     return false;
@@ -1419,6 +1419,7 @@
       var adv = gl(['if-kart', 'block-quest', 'kids-quest']);
       view().innerHTML = '<div class="page-h"><div><p class="h-eyebrow">' + esc(t(k)) + '</p><h1>' + esc(sc.h) + '</h1><p>' + esc(sc.p) + '</p></div></div>' + (full ? '' : goalBar()) + gamesChip(k) +
         grp('🧠 Mind Lab', 'Daily mind training that uses every skill: words, grammar, memory and logic.', gl(['mind-lab', 'mind-lab-kids'])) +
+        grp('⚔️ Play online', 'See who is online and challenge them: Chess, Connect Four or a Word Duel.', gl(['arena'])) +
         grp('👥 Play together', 'For the class or a group of friends: one screen or everyone on their phones.', gl(['live', 'mafia-live', 'mystery-live', 'spyfall', 'alibi'])) +
         grp('♟️ Board games', 'Learn chess step by step, then play the computer or a friend. Say every move in English.', gl(['chess-lessons', 'chess'])) +
         grp('🏁 Adventure and racing', 'Play alone at your own level.', adv, adv.map(function (x) { return levelRow(x.id, x.id, true, kidsOK); }).join(''));
