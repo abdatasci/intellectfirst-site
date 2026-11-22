@@ -1,5 +1,5 @@
 /* IF Lingo · Kazakh B1 word bank: 32 more words for every unit, studied in the Vocabulary tab.
-   Built so far: units 1 to 6 (192 words). With the 240 lesson words, B1 will have about 1,000 words.
+   Built so far: units 1 to 12 (384 words). With the 240 lesson words, B1 will have about 1,000 words.
    word | part of speech | meaning in English | example | (empty) | how to say it | the example in English */
 IFX.moreWords('kk-b1', {
 u1: `
@@ -199,5 +199,203 @@ u6: `
 қазан | noun | cauldron, large pot | Ет қазанда пісіп жатыр. | | qa-ZAN | The meat is cooking in the pot.
 шәйнек | noun | kettle, teapot | Шәйнек қайнады. | | shay-NEK | The kettle has boiled.
 сорпа | noun | soup, broth | Сорпа өте дәмді. | | sor-PA | The soup is very tasty.
-палау | noun | pilaf | Бүгін біз палау жасаймыз. | | pa-LAU | Today we are making pilaf.`
+палау | noun | pilaf | Бүгін біз палау жасаймыз. | | pa-LAU | Today we are making pilaf.`,
+u7: `
+жалға алушы | noun | tenant | Жалға алушы айдың басында төлейді. | | zhal-GHA a-loo-SHY | The tenant pays at the start of the month.
+риелтор | noun | estate agent | Риелтор бізге үш пәтер көрсетті. | | ri-EL-tor | The estate agent showed us three flats.
+жалға беру | verb | to let, to rent out | Олар пәтерін жалға береді. | | zhal-GHA be-ROO | They let their flat.
+кепіл | noun | deposit | Кепіл төлеу керек. | | ke-PIL | You need to pay a deposit.
+ипотека | noun | mortgage | Олар пәтерді ипотекаға алды. | | i-po-TE-ka | They bought the flat with a mortgage.
+есептегіш | noun | meter | Су есептегіші жуынатын бөлмеде. | | e-sep-te-GISH | The water meter is in the bathroom.
+электр қуаты | noun | electricity | Кеше электр қуаты болмады. | | e-LEKTR qoo-a-TY | There was no electricity yesterday.
+газ | noun | gas | Үйде газ бар. | | gaz | The house has gas.
+су құбыры | noun | water pipe | Ауылда жаңа су құбыры бар. | | soo qoo-by-RY | The village has a new water pipe.
+кондиционер | noun | air conditioner | Жазда біз кондиционер қосамыз. | | kon-di-tsi-o-NER | In summer we switch on the air conditioner.
+жылытқыш | noun | heater | Қыста жылытқыш керек. | | zhy-lyt-QYSH | In winter you need a heater.
+төбе | noun | ceiling, top | Бөлменің төбесі биік. | | to-BE | The room has a high ceiling.
+кіреберіс | noun | entrance | Мен екінші кіреберісте тұрамын. | | ki-re-be-RIS | I live at the second entrance.
+домофон | noun | entry phone | Домофонды басыңыз. | | do-mo-FON | Press the entry phone.
+жертөле | noun | basement | Велосипед жертөледе тұр. | | zher-to-LE | The bicycle is in the basement.
+шатыр | noun | roof | Шатырда қар жатыр. | | sha-TYR | There is snow on the roof.
+гараж | noun | garage | Көлік гаражда тұр. | | ga-RAZH | The car is in the garage.
+қоршау | noun | fence | Үйдің айналасында биік қоршау бар. | | qor-SHAU | There is a high fence around the house.
+сырлау | verb | to paint | Мен қабырғаны сырладым. | | syr-LAU | I painted the wall.
+тұсқағаз | noun | wallpaper | Бөлмеде жаңа тұсқағаз бар. | | toos-qa-GHAZ | There is new wallpaper in the room.
+шүмек | noun | tap | Шүмекті жабыңыз. | | shu-MEK | Turn off the tap.
+розетка | noun | socket | Мұнда розетка қайда? | | ro-ZET-ka | Where is a socket here?
+ажыратқыш | noun | switch | Ажыратқыш есіктің жанында. | | a-zhy-rat-QYSH | The switch is by the door.
+электр шамы | noun | light bulb | Электр шамын ауыстыру керек. | | e-LEKTR sha-MY | The bulb needs changing.
+перде | noun | curtain | Терезеде ақ перде ілулі тұр. | | per-DE | A white curtain hangs at the window.
+көрпе | noun | blanket | Маған жылы көрпе беріңізші. | | kor-PE | Please give me a warm blanket.
+жастық | noun | pillow | Бұл жастық жұмсақ. | | zhas-TYQ | This pillow is soft.
+ақжайма | noun | bed sheet | Ақжайма таза. | | aq-zhay-MA | The sheet is clean.
+ілгіш | noun | hanger, hook | Күртені ілгішке іліңіз. | | il-GISH | Hang the jacket on the hook.
+қараңғы | adjective | dark | Бөлме қараңғы. | | qa-rang-GHY | The room is dark.
+жер үй | noun | detached house | Олар жер үйде тұрады. | | zher uy | They live in a house.
+саяжай | noun | summer house, dacha | Жазда біз саяжайда тұрамыз. | | sa-ya-ZHAY | In summer we live at the dacha.`,
+u8: `
+экология | noun | ecology, the environment | Қалада экология нашар. | | e-ko-LO-gi-ya | The environment in the city is bad.
+ғаламшар | noun | planet | Біз бір ғаламшарда тұрамыз. | | gha-lam-SHAR | We live on one planet.
+үй жануары | noun | pet | Менің үй жануарым — мысық. | | uy zha-noo-a-RY | My pet is a cat.
+мұхит | noun | ocean | Мұхитта пластик көп. | | moo-KHIT | There is a lot of plastic in the ocean.
+шөл | noun | desert | Шөлде су аз. | | shol | There is little water in the desert.
+мұздық | noun | glacier | Мұздықтар еріп жатыр. | | mooz-DYQ | The glaciers are melting.
+жылыну | noun | warming | Жаһандық жылыну — үлкен мәселе. | | zhy-ly-NOO | Global warming is a big problem.
+құрғақшылық | noun | drought | Жазда құрғақшылық болды. | | qoor-ghaq-shy-LYQ | There was a drought in summer.
+су тасқыны | noun | flood | Көктемде су тасқыны болды. | | soo tas-qy-NY | There was a flood in spring.
+жер сілкінісі | noun | earthquake | Түнде жер сілкінісі болды. | | zher sil-ki-ni-SI | There was an earthquake in the night.
+өрт | noun | fire | Орманда өрт шықты. | | ort | A fire broke out in the forest.
+дауыл | noun | storm, hurricane | Дауыл ағаштарды сындырды. | | da-WYL | The storm broke the trees.
+қоқыс үйіндісі | noun | rubbish dump | Қаланың сыртында қоқыс үйіндісі бар. | | qo-QYS u-yin-di-SI | There is a rubbish dump outside the city.
+контейнер | noun | container, bin | Пластикті сары контейнерге тастаңыз. | | kon-TEY-ner | Put plastic in the yellow bin.
+шығарынды | noun | emissions | Зауыт шығарындыны азайтты. | | shy-gha-ryn-DY | The factory reduced its emissions.
+отын | noun | fuel | Отын қымбаттады. | | o-TYN | Fuel has become more expensive.
+мұнай | noun | oil (crude) | Қазақстан мұнай өндіреді. | | moo-NAY | Kazakhstan produces oil.
+көмір | noun | coal | Бұрын үйді көмірмен жылытатын. | | ko-MIR | Houses used to be heated with coal.
+күн энергиясы | noun | solar energy | Үй күн энергиясымен жұмыс істейді. | | kun e-NER-gi-ya-sy | The house runs on solar energy.
+қорық | noun | nature reserve | Біз қорықта болдық. | | qo-RYQ | We were in a nature reserve.
+жойылу | verb | to disappear, to die out | Бұл жануар жойылып кетуі мүмкін. | | zho-yy-LOO | This animal may die out.
+жабайы | adjective | wild | Орманда жабайы жануарлар тұрады. | | zha-ba-YY | Wild animals live in the forest.
+құс | noun | bird | Ағашта құс отыр. | | qoos | A bird is sitting in the tree.
+жәндік | noun | insect | Ара — пайдалы жәндік. | | zhan-DIK | The bee is a useful insect.
+ағаш | noun | tree, wood | Біз ағаш отырғыздық. | | a-GHASH | We planted a tree.
+шөп | noun | grass | Балалар шөптің үстінде отыр. | | shop | The children are sitting on the grass.
+жапырақ | noun | leaf | Күзде жапырақ сары болады. | | zha-py-RAQ | In autumn the leaves turn yellow.
+аялау | verb | to cherish, to take care of | Табиғатты аялаңыз! | | a-ya-LAU | Take care of nature!
+егу | verb | to plant, to sow | Көктемде біз гүл егеміз. | | e-GOO | In spring we plant flowers.
+ластау | verb | to pollute | Көліктер ауаны ластайды. | | las-TAU | Cars pollute the air.
+экологиялық | adjective | ecological, environmental | Бұл — экологиялық мәселе. | | e-ko-lo-gi-ya-LYQ | This is an environmental problem.
+климаттың өзгеруі | noun | climate change | Климаттың өзгеруі бәрімізге әсер етеді. | | kli-mat-TYNG oz-ge-roo-I | Climate change affects us all.`,
+u9: `
+ноутбук | noun | laptop | Мен ноутбукпен жұмыс істеймін. | | no-oot-BOOK | I work on a laptop.
+планшет | noun | tablet | Балалар планшеттен мультфильм көреді. | | plan-SHET | The children watch cartoons on a tablet.
+пернетақта | noun | keyboard | Пернетақтада қазақ әріптері бар. | | per-ne-taq-TA | There are Kazakh letters on the keyboard.
+тінтуір | noun | mouse (computer) | Тінтуір жұмыс істемей тұр. | | tin-too-IR | The mouse is not working.
+принтер | noun | printer | Принтерде қағаз жоқ. | | PRIN-ter | There is no paper in the printer.
+флешка | noun | memory stick | Файлды флешкаға жазыңыз. | | FLESH-ka | Save the file on a memory stick.
+файл | noun | file | Мен сізге файл жібердім. | | fayl | I sent you a file.
+қалта | noun | folder, pocket | Құжат осы қалтада. | | qal-TA | The document is in this folder.
+қолданба | noun | application | Бұл — жаңа қолданба. | | qol-dan-BA | This is a new application.
+вирус | noun | virus | Компьютерде вирус бар. | | VI-roos | There is a virus on the computer.
+браузер | noun | browser | Браузерді ашыңыз. | | BRA-oo-zer | Open the browser.
+іздеу жүйесі | noun | search engine | Іздеу жүйесіне сөзді жазыңыз. | | iz-DEU zhu-ye-SI | Type the word into the search engine.
+аккаунт | noun | account (online) | Менің жаңа аккаунтым бар. | | ak-KA-oont | I have a new account.
+профиль | noun | profile | Профильге сурет қосыңыз. | | PRO-fil | Add a photo to your profile.
+тіркелу | verb | to register, to sign up | Сайтқа тіркелу бір минут алады. | | tir-ke-LOO | Signing up to the website takes a minute.
+логин | noun | login, username | Логин мен құпиясөзді енгізіңіз. | | lo-GIN | Enter your username and password.
+жазылым | noun | subscription | Жазылым мың теңге тұрады. | | zha-zy-LYM | The subscription costs a thousand tenge.
+сервер | noun | server | Сервер жауап бермей тұр. | | SER-ver | The server is not responding.
+робот | noun | robot | Робот пәтерді жинайды. | | RO-bot | A robot cleans the flat.
+сымсыз | adjective | wireless | Менің құлаққабым сымсыз. | | sym-SYZ | My headphones are wireless.
+қайта жүктеу | verb | to restart | Компьютерді қайта жүктеп көріңіз. | | qay-TA zhuk-TEU | Try restarting the computer.
+қосылу | verb | to connect, to join | Мен интернетке қосылдым. | | qo-sy-LOO | I connected to the internet.
+ажырату | verb | to disconnect | Интернетті ажыратып тастады. | | a-zhy-ra-TOO | The internet was cut off.
+баптаулар | noun | settings | Телефонның баптауларын ашыңыз. | | bap-ta-oo-LAR | Open the phone settings.
+хабарландыру | noun | notification, announcement | Маған хабарландыру келді. | | kha-bar-lan-dy-ROO | I got a notification.
+кірістіру | verb | to paste, to insert | Сілтемені хабарламаға кірістіріңіз. | | ki-ris-ti-ROO | Paste the link into the message.
+басып шығару | verb | to print | Екі бетті басып шығарыңыз. | | ba-SYP shy-gha-ROO | Print two pages.
+бейнеқоңырау | noun | video call | Сағат үште бізде бейнеқоңырау бар. | | bey-ne-qo-ngy-RAU | We have a video call at three.
+сандық | adjective | digital | Бұл — сандық камера. | | san-DYQ | This is a digital camera.
+әлеуметтік желі | noun | social network | Ол әлеуметтік желіде көп отырады. | | a-leu-met-TIK zhe-LI | He spends a lot of time on social networks.
+пайдалану | verb | to use | Мен бұл қолданбаны күн сайын пайдаланамын. | | pay-da-la-NOO | I use this application every day.
+жад | noun | memory | Телефонның жады толды. | | zhad | The phone’s memory is full.`,
+u10: `
+телеарна | noun | TV channel | Бұл қай телеарна? | | te-le-ar-NA | Which channel is this?
+тележүргізуші | noun | TV presenter | Тележүргізуші сұрақ қойды. | | te-le-zhur-gi-zoo-SHI | The presenter asked a question.
+репортаж | noun | news report | Мен өрт туралы репортаж көрдім. | | re-por-TAZH | I saw a report about the fire.
+жазылушы | noun | subscriber, follower | Блогтың мың жазылушысы бар. | | zha-zy-loo-SHY | The blog has a thousand followers.
+блог | noun | blog | Ол тамақ туралы блог жүргізеді. | | blog | She writes a food blog.
+блогер | noun | blogger | Бұл блогер өте танымал. | | BLO-ger | This blogger is very popular.
+подкаст | noun | podcast | Мен жолда подкаст тыңдаймын. | | pod-KAST | I listen to podcasts on the way.
+шығарылым | noun | issue, episode | Жаңа шығарылым ертең шығады. | | shy-gha-ry-LYM | The new episode comes out tomorrow.
+эфир | noun | broadcast, air | Бағдарлама эфирде жүріп жатыр. | | e-FIR | The programme is on air.
+тікелей эфир | noun | live broadcast | Қазір тікелей эфир. | | ti-ke-LEY e-FIR | It is a live broadcast now.
+тілші | noun | correspondent, reporter | Тілші Астанада жұмыс істейді. | | til-SHI | The correspondent works in Astana.
+редактор | noun | editor | Редактор мақаланы түзетті. | | re-DAK-tor | The editor corrected the article.
+басылым | noun | publication | Бұл — белгілі басылым. | | ba-sy-LYM | This is a well-known publication.
+жариялау | verb | to publish, to announce | Газет сұхбатты жариялады. | | zha-ri-ya-LAU | The newspaper published the interview.
+факт | noun | fact | Бұл — белгілі факт. | | fakt | This is a well-known fact.
+жалған ақпарат | noun | false information | Бұл жаңалық — жалған ақпарат. | | zhal-GHAN aq-pa-RAT | This news is false information.
+цензура | noun | censorship | Елде цензура жоқ. | | tsen-ZOO-ra | There is no censorship in the country.
+сөз бостандығы | noun | freedom of speech | Сөз бостандығы бәріне маңызды. | | soz bos-tan-dy-GHY | Freedom of speech matters to everyone.
+мәлімдеме | noun | statement | Министр мәлімдеме жасады. | | ma-lim-de-ME | The minister made a statement.
+тыңдаушы | noun | listener | Радионың тыңдаушысы көп. | | tyng-da-oo-SHY | The radio has many listeners.
+оқырман | noun | reader | Оқырмандар газетке хат жазады. | | o-qyr-MAN | Readers write to the newspaper.
+рейтинг | noun | rating | Бағдарламаның рейтингі жоғары. | | REY-ting | The programme has a high rating.
+шолу | noun | review, overview | Мен фильмге шолу оқыдым. | | sho-LOO | I read a review of the film.
+ақпарат | noun | information | Маған толық ақпарат керек. | | aq-pa-RAT | I need full information.
+бұқаралық ақпарат құралдары | noun | mass media | Бұл туралы бұқаралық ақпарат құралдары жазды. | | boo-qa-ra-LYQ aq-pa-RAT qoo-ral-da-RY | The mass media wrote about this.
+баспасөз | noun | the press | Баспасөз бұл оқиға туралы жазды. | | bas-pa-SOZ | The press wrote about this event.
+тарату | verb | to spread, to share | Жалған ақпаратты таратпаңыз. | | ta-ra-TOO | Do not spread false information.
+хабар тарату | verb | to broadcast | Телеарна күні бойы хабар таратады. | | kha-BAR ta-ra-TOO | The channel broadcasts all day.
+түсіру | verb | to film, to shoot | Олар жаңа фильм түсіріп жатыр. | | tu-si-ROO | They are shooting a new film.
+сұрақ қою | verb | to ask a question | Журналист сұрақ қойды. | | soo-RAQ qo-YOO | The journalist asked a question.
+пікір жазу | verb | to write a comment | Мақаланың астына пікір жазыңыз. | | pi-KIR zha-ZOO | Write a comment under the article.
+айдар | noun | section, column | Мен спорт айдарын оқимын. | | ay-DAR | I read the sports section.`,
+u11: `
+мәдениет | noun | culture | Мен Қазақстан мәдениетіне қызығамын. | | ma-de-ni-YET | I am interested in the culture of Kazakhstan.
+галерея | noun | gallery | Галереяда жаңа көрме бар. | | ga-le-RE-ya | There is a new exhibition at the gallery.
+мүсін | noun | sculpture, statue | Паркте мүсін тұр. | | mu-SIN | There is a sculpture in the park.
+мүсінші | noun | sculptor | Мүсінші таспен жұмыс істейді. | | mu-sin-SHI | The sculptor works with stone.
+портрет | noun | portrait | Бұл — әжемнің портреті. | | port-RET | This is a portrait of my grandmother.
+пейзаж | noun | landscape | Маған бұл пейзаж ұнайды. | | pey-ZAZH | I like this landscape.
+бояу | noun | paint | Маған бояу керек. | | bo-YAU | I need paint.
+қылқалам | noun | brush | Суретші қылқаламды алды. | | qyl-qa-LAM | The artist took a brush.
+шымылдық | noun | curtain (theatre) | Шымылдық ашылды. | | shy-myl-DYQ | The curtain opened.
+рөл | noun | role, part | Ол басты рөлді ойнайды. | | rol | He plays the main part.
+пьеса | noun | play | Бұл — Әуезовтің пьесасы. | | PYE-sa | This is a play by Auezov.
+опера | noun | opera | Біз операда болдық. | | O-pe-ra | We were at the opera.
+балет | noun | ballet | Ол балетті жақсы көреді. | | ba-LET | She loves ballet.
+оркестр | noun | orchestra | Оркестр Құрманғазының күйін орындап жатыр. | | or-KESTR | The orchestra is playing a piece by Kurmangazy.
+дирижер | noun | conductor | Дирижер сахнаға шықты. | | di-ri-ZHOR | The conductor came on stage.
+композитор | noun | composer | Бұл — әйгілі композитор. | | kom-po-ZI-tor | This is a famous composer.
+музыкант | noun | musician | Менің ағам — музыкант. | | moo-zy-KANT | My brother is a musician.
+ақын | noun | poet | Абай — ұлы ақын. | | a-QYN | Abai is a great poet.
+өлең | noun | poem, verse | Ол өлең жазады. | | o-LENG | She writes poems.
+тарау | noun | chapter | Мен бірінші тарауды оқыдым. | | ta-RAU | I read the first chapter.
+автор | noun | author | Бұл кітаптың авторы кім? | | AV-tor | Who is the author of this book?
+классика | noun | the classics | Мен классиканы оқығанды ұнатамын. | | KLAS-si-ka | I like reading the classics.
+жауһар | noun | masterpiece, gem | Бұл картина — жауһар. | | zha-oo-HAR | This painting is a masterpiece.
+тұсаукесер | noun | premiere, launch | Фильмнің тұсаукесері жұмада. | | too-sa-oo-ke-SER | The film’s premiere is on Friday.
+фестиваль | noun | festival | Жазда музыка фестивалі болады. | | fes-ti-VAL | There will be a music festival in summer.
+дарынды | adjective | talented | Ол — дарынды суретші. | | da-ryn-DY | She is a talented artist.
+шабыт | noun | inspiration | Табиғат маған шабыт береді. | | sha-BYT | Nature gives me inspiration.
+шығармашылық | noun | creative work | Маған оның шығармашылығы ұнайды. | | shy-ghar-ma-shy-LYQ | I like his work.
+күй | noun | kui (a piece for dombra) | Ол домбырамен күй тартты. | | kuy | He played a kui on the dombra.
+домбыра | noun | dombra | Атам домбыра тартады. | | dom-by-RA | My grandfather plays the dombra.
+әуен | noun | melody, tune | Бұл әуен өте әдемі. | | a-WEN | This melody is very beautiful.
+биші | noun | dancer | Ол — кәсіпқой биші. | | bi-SHI | She is a professional dancer.`,
+u12: `
+ойыншы | noun | player | Командада он бір ойыншы бар. | | o-yyn-SHY | There are eleven players in the team.
+қақпашы | noun | goalkeeper | Қақпашы допты ұстап алды. | | qaq-pa-SHY | The goalkeeper caught the ball.
+төреші | noun | referee, judge | Төреші ойынды тоқтатты. | | to-re-SHI | The referee stopped the game.
+гол | noun | goal | Ол екі гол соқты. | | gol | He scored two goals.
+доп | noun | ball | Допты маған бер! | | dop | Give me the ball!
+спорт алаңы | noun | sports ground | Балалар спорт алаңында ойнап жүр. | | sport a-la-NGY | The children are playing on the sports ground.
+бассейн | noun | swimming pool | Мен бассейнде жүземін. | | bas-SEYN | I swim in the pool.
+мұз айдыны | noun | ice rink | Қыста біз мұз айдынына барамыз. | | mooz ay-dy-NY | In winter we go to the ice rink.
+шаңғы | noun | skis | Мен шаңғы тебемін. | | shang-GHY | I ski.
+коньки | noun | skates | Ол коньки тебеді. | | kon-KI | She skates.
+хоккей | noun | hockey | Менің ұлым хоккей ойнайды. | | khok-KEY | My son plays hockey.
+баскетбол | noun | basketball | Біз баскетбол ойнаймыз. | | bas-ket-BOL | We play basketball.
+волейбол | noun | volleyball | Жағажайда волейбол ойнайды. | | vo-ley-BOL | People play volleyball on the beach.
+теннис | noun | tennis | Ол теннис ойнайды. | | TEN-nis | She plays tennis.
+бокс | noun | boxing | Ол бокспен айналысады. | | boks | He does boxing.
+күрес | noun | wrestling, struggle | Қазақстанда күресті жақсы көреді. | | ku-RES | Wrestling is loved in Kazakhstan.
+гимнастика | noun | gymnastics | Қызым гимнастикамен айналысады. | | gim-NAS-ti-ka | My daughter does gymnastics.
+гол соғу | verb | to score a goal | Ол бірінші минутта гол соқты. | | gol so-GHOO | He scored in the first minute.
+тең ойын | noun | draw | Матч тең ойынмен аяқталды. | | teng o-YYN | The match ended in a draw.
+рекорд | noun | record | Бұл — жаңа әлемдік рекорд. | | re-KORD | This is a new world record.
+медаль | noun | medal | Ол алтын медаль алды. | | me-DAL | She won a gold medal.
+кубок | noun | cup (trophy) | Команда кубокты жеңіп алды. | | KOO-bok | The team won the cup.
+чемпион | noun | champion | Ол — әлем чемпионы. | | chem-pi-ON | He is the world champion.
+олимпиада | noun | the Olympics | Ол олимпиадаға қатысты. | | o-lim-pi-A-da | She took part in the Olympics.
+финал | noun | final | Финал жексенбіде болады. | | fi-NAL | The final is on Sunday.
+турнир | noun | tournament | Турнир үш күнге созылады. | | toor-NIR | The tournament lasts three days.
+құрама | noun | national team | Қазақстан құрамасы жеңді. | | qoo-ra-MA | The Kazakhstan national team won.
+бой жазу | verb | to warm up | Алдымен бой жазу керек. | | boy zha-ZOO | First you need to warm up.
+жарақат | noun | injury | Ойыншы аяғынан жарақат алды. | | zha-ra-QAT | The player injured his leg.
+жүлде | noun | prize | Ол бірінші жүлдені алды. | | zhul-DE | She took the first prize.
+қарсылас | noun | opponent | Біздің қарсыласымыз мықты. | | qar-sy-LAS | Our opponent is strong.
+ұпай | noun | point | Команда үш ұпай алды. | | oo-PAY | The team got three points.`
 });
