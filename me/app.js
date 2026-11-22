@@ -232,7 +232,10 @@
     }
     view.querySelectorAll('input[name=trk]').forEach(function (r) { r.onchange = syncWho; }); if ($('#bd')) $('#bd').addEventListener('change', syncWho); syncWho();
     if ($('#cl')) fetch('/api/school/classes').then(function (r) { return r.json(); }).then(function (d) {
-      $('#cl').innerHTML = '<option value="">Choose…</option>' + (d.classes || []).filter(function (c) { return c.kind !== 'alumni'; }).map(function (c) { return '<option value="' + esc(c.label) + '">' + esc(c.label) + (c.schedule ? ' · ' + esc(c.schedule) : '') + '</option>'; }).join('') + '<option value="New student">New student (no class yet)</option>';
+      var cls = (d.classes || []).filter(function (c) { return c.kind !== 'alumni'; }), ind = function (c) { return c.kind === 'individual' || /\(individual/i.test(c.label) || /^c-ind/.test(c.id || ''); };
+      var opt = function (c) { return '<option value="' + esc(c.label) + '">' + esc(c.label) + (c.schedule ? ' · ' + esc(c.schedule) : '') + '</option>'; };
+      $('#cl').innerHTML = '<option value="">Choose…</option><optgroup label="Groups">' + cls.filter(function (c) { return !ind(c); }).map(opt).join('') + '</optgroup><optgroup label="Individual lessons at IF Academy">' + cls.filter(ind).map(opt).join('') + '</optgroup><optgroup label="Other">' +
+        '<option value="__pv">Other (individual) · private lessons with Abdoulie</option><option value="New student">New student (no class yet)</option></optgroup>';
     }).catch(function () { $('#cl').innerHTML = '<option value="New student">New student (no class yet)</option>'; });
     $('#f').onsubmit = async function (ev) {
       ev.preventDefault(); var f = ev.target, b = $('button', f);
@@ -243,6 +246,7 @@
       if (trk === 'outside' || trk === 'tutor' || trk === 'parent' || trk === 'staff') cc = '';
       var study = isStaff ? [] : studyValue(), notSure = !!document.querySelector('#study input[value=placement]:checked');
       var lv = (study.filter(function (k) { return /^(ge|be):|^yl:/.test(k); })[0] || '').replace(/^ge:|^be:/, '').replace(/^yl:(\w)/, function (_, c) { return c.toUpperCase(); }) || (notSure ? 'Not sure' : ''), cl = $('#cl') ? $('#cl').value : '';
+      if (cl === '__pv') trk = 'private';   // "Other (individual)" in the class list: Abdoulie's own private students
       if (trk === 'alumni') cl = 'IF Alumni'; else if (trk === 'private') cl = 'Individual (Abdoulie Manneh)'; else if (trk === 'outside' || trk === 'tutor' || trk === 'parent' || trk === 'staff') cl = '';
       if (!isStaff && trk !== 'tutor' && trk !== 'staff' && !study.length && !notSure) return err(f, trk === 'parent' ? 'Please choose what your child should study.' : 'Please choose at least one course or level.');
       if (trk === 'if' && !cl) return err(f, 'Please choose your class, or “New student”.');

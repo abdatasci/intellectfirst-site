@@ -25,6 +25,20 @@ export const SCHOOL = {
 export const DIRECTOR_TID = 't-abdoulie';
 export const isPrivateClass = c => !!c && (c.private === true || /^c-pv-/.test(c.id || ''));
 export const hidePrivate = (classes, p) => p && p.teacherId === DIRECTOR_TID ? classes : classes.filter(c => !isPrivateClass(c));
+/** Individual lessons (IF individual students and the director's private students outside IF Academy). */
+export const isIndividualClass = c => !!c && (isPrivateClass(c) || c.kind === 'individual' || /^c-ind/.test(c.id || '') || /\(individual/i.test(c.label || ''));
+/** The classes a staff member can send to from the bot: groups first; individual students under "👤 Other (individual)".
+    Returns { ids, rows } — ids holds every class (groups, then individuals) so the button index stays valid in both lists. */
+export function classPicker(classes, pre, showInd, cancel) {
+  const ok = classes.filter(c => c.label && !c.left && !/left|closed|error/i.test(c.status || '')).sort((a, b) => a.label.localeCompare(b.label));
+  const groups = ok.filter(c => !isIndividualClass(c)), ind = ok.filter(isIndividualClass), all = [...groups, ...ind];
+  const onlyInd = !groups.length, list = showInd || onlyInd ? ind : groups, off = showInd || onlyInd ? groups.length : 0, rows = [];
+  for (let i = 0; i < list.length; i += 2) rows.push(list.slice(i, i + 2).map((c, j) => ({ text: (isPrivateClass(c) ? '⭐ ' : '') + c.label.replace(/\s*\(individual( IELTS)?\)/i, m => m.includes('IELTS') ? ' (IELTS)' : '').slice(0, 40), callback_data: `${pre}:c:${off + i + j}` })));
+  if (!showInd && !onlyInd && ind.length) rows.push([{ text: `👤 Other (individual) · ${ind.length}`, callback_data: `${pre}:ind` }]);
+  if (showInd && !onlyInd) rows.push([{ text: '← Groups', callback_data: `${pre}:grp` }]);
+  if (cancel) rows.push(cancel);
+  return { ids: all.map(c => c.id), rows, empty: !all.length };
+}
 export const inClass = (c, s) => !!c && !!s && (Array.isArray(c.studentIds) && c.studentIds.length ? c.studentIds.includes(s.id) : (s.classes || []).includes(c.label));
 export async function doc(name) {
   if (name === 'students') return loadStudents();
