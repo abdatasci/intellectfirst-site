@@ -40,11 +40,16 @@ async function lessonWatch(classes, links) {
     const p = await getProfile(uid).catch(() => null);   // website accounts, and teachers connected by phone ('tid:')
     if (p && (p.role === 'admin' || p.role === 'teacher')) staff.push({ uid, chatId: l.chatId, role: p.role, teacherId: p.teacherId || '', manager: !!p.manager });
   }
+  // a teacher's lessons can also go to other staff (teacher record 'notify': staff teacher ids or account uids), e.g. the
+  // manager for a teacher without the bot: they get the same messages with the teacher's name, and can clock in and take the register
+  const tOf = id => teachers.find(x => x.id === id) || {}, first = id => String(tOf(id).name || 'the teacher').split(' ')[0];
+  const extra = l => { const N = tOf(l.teacherId).notify || []; return staff.filter(x => !(x.teacherId && x.teacherId === l.teacherId) && (N.includes(x.uid) || (x.teacherId && N.includes(x.teacherId)))); };
   let n = 0, dirty = false;
   const entry = l => L[l.key] || (L[l.key] = { classId: l.classId, label: l.label, date: l.date, start: l.start, end: l.end, teacherId: l.teacherId });
   for (const l of soon) {
     const e = entry(l); if (e.checkIn || e.cancelled || e.pinged) continue;
     for (const s of staff.filter(x => x.teacherId && x.teacherId === l.teacherId)) { try { await tgSend(s.chatId, `🕑 ${l.label} starts at ${l.start}${l.room ? ' (' + l.room + ')' : ''}.\nPress ✅ Clock in when you start (from 5 minutes before), then take the register here or on the website.`, { reply_markup: { inline_keyboard: lessonButtons(l, e) } }); n++; } catch (x) {} }
+    for (const s of extra(l)) { try { await tgSend(s.chatId, `🕑 ${first(l.teacherId)}’s lesson: ${l.label} starts at ${l.start}${l.room ? ' (' + l.room + ')' : ''}.\nYou can ✅ Clock in for ${first(l.teacherId)} when it starts (from 5 minutes before), then take the register here or on the website.`, { reply_markup: { inline_keyboard: lessonButtons(l, e) } }); n++; } catch (x) {} }
     e.pinged = true; dirty = true;
   }
   for (const l of late) {
@@ -52,11 +57,13 @@ async function lessonWatch(classes, links) {
     const t = (teachers.find(x => x.id === l.teacherId) || {}).name || 'The teacher';
     for (const s of staff.filter(x => x.role === 'admin' || x.manager)) { try { await tgSend(s.chatId, `⚠️ ${t} has not checked in for ${l.label} (started ${l.start}${l.room ? ', ' + l.room : ''}).\nIf the lesson is running, you can clock in for them here. Today's lessons: intellectfirst.com/me/#/admin/lessons`, { reply_markup: { inline_keyboard: [[{ text: '✅ Clock in for ' + t.split(' ')[0], callback_data: 'ci:' + l.key }]] } }); n++; } catch (x) {} }
     for (const s of staff.filter(x => x.teacherId && x.teacherId === l.teacherId)) { try { await tgSend(s.chatId, `⚠️ You have not clocked in for ${l.label} (started ${l.start}). Press the button now:`, { reply_markup: { inline_keyboard: lessonButtons(l, e) } }); } catch (x) {} }
+    for (const s of extra(l).filter(x => !(x.role === 'admin' || x.manager))) { try { await tgSend(s.chatId, `⚠️ ${first(l.teacherId)} has not clocked in for ${l.label} (started ${l.start}). If the lesson is running, clock in for them:`, { reply_markup: { inline_keyboard: lessonButtons(l, e) } }); } catch (x) {} }
     e.alerted = true; dirty = true;
   }
   for (const l of ended) {   // after the lesson: a button to take the register, once
     const e = entry(l); if (!e.checkIn || e.takenAt || e.cancelled || e.regPinged) continue;
     for (const s of staff.filter(x => x.teacherId && x.teacherId === l.teacherId)) { try { await tgSend(s.chatId, `📋 ${l.label} (${l.start}) has finished. Please take the register:`, { reply_markup: { inline_keyboard: lessonButtons(l, e) } }); n++; } catch (x) {} }
+    for (const s of extra(l)) { try { await tgSend(s.chatId, `📋 ${first(l.teacherId)}’s lesson ${l.label} (${l.start}) has finished. Please take the register:`, { reply_markup: { inline_keyboard: lessonButtons(l, e) } }); n++; } catch (x) {} }
     e.regPinged = true; dirty = true;
   }
   if (dirty) { const fresh = await loadLog(month); for (const [k, v] of Object.entries(L)) fresh[k] = { ...v, ...(fresh[k] || {}), pinged: v.pinged || fresh[k]?.pinged, alerted: v.alerted || fresh[k]?.alerted, regPinged: v.regPinged || fresh[k]?.regPinged }; await store.setJSON('lessonlog/' + month, fresh); }
