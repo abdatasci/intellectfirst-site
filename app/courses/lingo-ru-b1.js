@@ -1,10 +1,10 @@
 /* IF Lingo · Russian B1: an original IF Academy course for people who speak English and have finished Russian A2.
    Word lines: word | part of speech | meaning in English | example | (empty) | how to say it | the example in English.
-   Plan: 24 units and a level test (project doc claude/if-lingo.md). Built so far: units 1 to 16. */
+   Plan: 24 units and a level test (project doc claude/if-lingo.md). All 24 units are here; the listening lessons, level test and word bank are in their own files when built. */
 IFX.course({
   id: 'ru-b1', track: 'lang', lang: 'ru-RU', level: 'B1', next: 'B2', icon: '🇷🇺',
   title: 'Russian B1', sub: 'Independent Russian',
-  blurb: 'Talk about relationships, study, work, health, travel, housing, nature, technology, the news, culture, sport and money in longer sentences. The first 16 of 24 units, explained in English.',
+  blurb: 'Talk about relationships, study, work, health, travel, housing, nature, technology, the news, culture, sport and money in longer sentences. 24 units, explained in English.',
   units: []
 });
 (function () {
@@ -360,6 +360,183 @@ IFX.course({
         k.mc('Несмотря на погод___, мы поехали.', ['у', 'а', 'е'], 0),
         k.ord('Хотя я устал я пошёл на урок')]],
       r: ['Mistakes are my best teachers', 'Том учит русский язык два года. Сначала он боялся говорить, так как делал много ошибок. Он знал много слов, однако в разговоре всё забывал.\n\nЕго преподаватель сказал: «Произношение и грамматика придут. Главное — общение». Том начал разговаривать с соседями, продавцами, таксистами. Несмотря на акцент, все его понимали.\n\nОднажды он хотел перевести английское выражение и сказал что-то смешное. Его собеседник долго смеялся, а потом объяснил значение слова. Том запомнил это слово навсегда.\n\nСейчас Том говорит почти свободно. Хотя он не носитель языка, он может шутить по-русски. Он говорит: «Ошибки — мои лучшие учителя».\n\n(таксист = taxi driver · смешное = funny · навсегда = for ever · шутить = to joke)', [
-        k.mc('Why was Tom afraid to speak at first?', ['He made many mistakes.', 'He knew no words.', 'He had no teacher.'], 0), k.mc('What did his teacher say was the main thing?', ['communication', 'grammar', 'pronunciation'], 0), k.tf('People could not understand Tom because of his accent.', false), k.mc('How does Tom speak now?', ['almost fluently', 'very slowly', 'only in English'], 0)]] }
+        k.mc('Why was Tom afraid to speak at first?', ['He made many mistakes.', 'He knew no words.', 'He had no teacher.'], 0), k.mc('What did his teacher say was the main thing?', ['communication', 'grammar', 'pronunciation'], 0), k.tf('People could not understand Tom because of his accent.', false), k.mc('How does Tom speak now?', ['almost fluently', 'very slowly', 'only in English'], 0)]] },
+
+    { id: 'u17', t: 'Правила и законы. Rules and laws', topic: 'Law',
+      v: ['What you may and must do', `
+закон | noun | law | Это новый закон. | | za-KON | This is a new law.
+правило | noun | rule | В школе есть правила. | | PRA-vee-la | There are rules at school.
+право | noun | right | У каждого есть право на отдых. | | PRA-va | Everyone has the right to rest.
+штраф | noun | fine | Он заплатил штраф. | | shtraf | He paid a fine.
+нарушить | verb | to break (a rule) | Водитель нарушил правила. | | na-ROO-sheet | The driver broke the rules.
+разрешение | noun | permission | Нужно разрешение директора. | | raz-ree-SHE-nee-ye | You need the director’s permission.
+запрещено | word | forbidden | Здесь запрещено курить. | | za-pree-shchee-NO | Smoking is forbidden here.
+разрешено | word | allowed | Здесь разрешено фотографировать. | | raz-ree-shee-NO | Taking photos is allowed here.
+обязан | adjective | obliged, must | Водитель обязан остановиться. | | a-BYA-zan | The driver must stop.
+полиция | noun | police | Полиция приехала быстро. | | pa-LEE-tsee-ya | The police came quickly.`],
+      g: ['Allowed, forbidden, obliged', '<table><tr><th>Word</th><th>Meaning</th><th>Example</th></tr><tr><td><b>разрешено</b> + verb</td><td>it is allowed</td><td>Здесь <b>разрешено</b> фотографировать.</td></tr><tr><td><b>запрещено</b> + verb</td><td>it is forbidden</td><td>Здесь <b>запрещено</b> курить.</td></tr><tr><td><b>обязан, обязана, обязаны</b> + verb</td><td>is obliged to, must</td><td>Водитель <b>обязан</b> остановиться.</td></tr></table><p><b>нельзя</b> has two meanings. The verb pair (A2, Unit 7) shows which:</p><ul><li><b>нельзя</b> + the action verb = <b>not allowed</b>: Сюда нельзя <b>входить</b>: идёт экзамен.</li><li><b>нельзя</b> + the result verb = <b>impossible</b>: Сюда нельзя <b>войти</b>: дверь закрыта.</li></ul><p><b>обязан</b> agrees with the person, like the short forms in Unit 15: он обязан, она обязан<b>а</b>, мы обязан<b>ы</b>.</p>', [
+        k.mc('Здесь ___ курить. (forbidden)', ['запрещено', 'разрешено', 'обязан'], 0),
+        k.mc('Водитель ___ остановиться.', ['обязан', 'запрещено', 'нельзя'], 0),
+        k.mc('Сюда нельзя ___: идёт экзамен. (not allowed)', ['входить', 'войти', 'вошёл'], 0),
+        k.mc('Дверь закрыта, сюда нельзя ___. (impossible)', ['войти', 'входить', 'входит'], 0),
+        k.mc('Она ___ платить налоги.', ['обязана', 'обязан', 'обязаны'], 0),
+        k.ord('Здесь запрещено ездить на самокате')]],
+      r: ['New rules for scooters', 'В нашем городе стало много электросамокатов. Это удобно, но опасно: в прошлом году было много аварий. Поэтому весной появились новые правила.\n\nТеперь ездить на самокате разрешено только с шестнадцати лет. На тротуаре скорость должна быть не больше десяти километров в час. Ездить вдвоём запрещено. Вечером водитель обязан включать свет.\n\nПятнадцатилетний Алихан не знал о новом законе. В субботу он ехал с другом на одном самокате, и их остановила полиция. Полицейский объяснил правила и сказал, что за нарушение есть штраф — двадцать тысяч тенге. В первый раз Алихан получил только предупреждение.\n\n«У меня есть права, но есть и обязанности», — понял он. Теперь он ходит пешком и ждёт дня рождения.\n\n(электросамокат = electric scooter · опасно = dangerous · авария = accident · скорость = speed · вдвоём = two together · предупреждение = warning)', [
+        k.mc('From what age may you ride a scooter?', ['sixteen', 'fifteen', 'eighteen'], 0), k.mc('What is the top speed on the pavement?', ['10 kilometres an hour', '20 kilometres an hour', '5 kilometres an hour'], 0), k.mc('Why did the police stop Alikhan?', ['Two people were on one scooter.', 'He had no light.', 'He was riding too fast.'], 0), k.tf('Alikhan paid a fine of 20,000 tenge.', false)]] },
+
+    { id: 'u18', t: 'Наука. Science', topic: 'Science',
+      v: ['Research and discovery', `
+наука | noun | science | Она любит науку. | | na-OO-ka | She loves science.
+учёный | noun | scientist | Он известный учёный. | | oo-CHO-ny | He is a well-known scientist.
+открытие | noun | discovery | Это важное открытие. | | at-KRY-tee-ye | This is an important discovery.
+исследование | noun | research, study | Исследование шло два года. | | ees-SLYE-da-va-nee-ye | The research took two years.
+эксперимент | noun | experiment | Мы провели эксперимент. | | eks-pee-ree-MYENT | We carried out an experiment.
+изобретение | noun | invention | Телефон — великое изобретение. | | ee-za-bree-TYE-nee-ye | The telephone is a great invention.
+изобрести | verb | to invent | Кто изобрёл радио? | | ee-za-brees-TEE | Who invented the radio?
+доказать | verb | to prove | Учёные доказали эту теорию. | | da-ka-ZAT | Scientists proved this theory.
+лаборатория | noun | laboratory | Она работает в лаборатории. | | la-ba-ra-TO-ree-ya | She works in a laboratory.
+результат | noun | result | Результат будет завтра. | | ree-zool-TAT | The result will come tomorrow.`],
+      g: ['Was built, was discovered: the passive in the past', '<p>In Unit 15 you met short forms for a state: <b>закрыт, сломан</b>. With <b>был, была, было, были</b> the same kind of word tells what <b>was done</b>.</p><table><tr><th>он</th><th>она</th><th>оно</th><th>они</th></tr><tr><td><b>был</b> построен</td><td><b>была</b> построен<b>а</b></td><td><b>было</b> построен<b>о</b></td><td><b>были</b> построен<b>ы</b></td></tr></table><ul><li>Этот дом <b>был построен</b> в 1950 году. = This house was built in 1950.</li><li>Школа <b>была открыта</b> в сентябре. = The school was opened in September.</li><li>Письмо <b>было написано</b> вчера. = The letter was written yesterday.</li><li>Результаты <b>были получены</b> через месяц. = The results were received a month later.</li></ul><p><b>By whom?</b> Use the ending from “work as” (врач<b>ом</b>, медсестр<b>ой</b>): Ошибка была найдена <b>учеником</b>. = The mistake was found by a pupil.</p>', [
+        k.mc('Этот дом ___ построен в 1950 году.', ['был', 'была', 'было'], 0),
+        k.mc('Школа ___ открыта в сентябре.', ['была', 'был', 'были'], 0),
+        k.mc('Письмо ___ написано вчера.', ['было', 'был', 'была'], 0),
+        k.mc('Результаты ___ получены через месяц.', ['были', 'было', 'была'], 0),
+        k.mc('Ошибка была найдена ___.', ['учеником', 'ученик', 'ученику'], 0),
+        k.ord('Этот дом был построен давно')]],
+      r: ['Do plants like music?', 'Каждую весну в нашей школе проходит научная выставка. В этом году девятиклассница Жанна решила проверить одну идею: правда ли, что растения растут быстрее под музыку?\n\nЭксперимент был простым. Двадцать одинаковых растений были посажены в один день. Десять стояли в комнате, где три часа в день играла классическая музыка. Другие десять — в тихой комнате. Свет, вода и температура были одинаковыми.\n\nЧерез шесть недель результаты были получены. Разницы почти не было: «музыкальные» растения были выше только на два миллиметра.\n\nЖанна расстроилась: открытия не получилось. Но учитель сказал: «Ты ничего не доказала, но ты честно показала это. В науке такой результат тоже важен. Так работают настоящие учёные».\n\nЖанна получила второе место.\n\n(проходит = takes place · одинаковый = the same · посажены = planted · разница = difference · настоящий = real)', [
+        k.mc('What did Zhanna want to test?', ['whether plants grow faster with music', 'whether plants need water', 'whether music helps pupils'], 0), k.mc('How many plants did she use?', ['twenty', 'ten', 'six'], 0), k.tf('There was a big difference between the two groups.', false), k.mc('What place did Zhanna get?', ['second', 'first', 'third'], 0)]] },
+
+    { id: 'u19', t: 'История. History', topic: 'History',
+      v: ['The past of a country', `
+век | noun | century | Мы живём в двадцать первом веке. | | vyek | We live in the twenty-first century.
+война | noun | war | Война закончилась в 1945 году. | | vay-NA | The war ended in 1945.
+независимость | noun | independence | Страна получила независимость. | | nee-za-VEE-see-mast | The country gained independence.
+государство | noun | state | Казахстан — молодое государство. | | ga-soo-DARST-va | Kazakhstan is a young state.
+народ | noun | people, nation | Народ помнит свою историю. | | na-ROT | The people remember their history.
+основать | verb | to found | Город основали в 1879 году. | | as-na-VAT | The city was founded in 1879.
+кочевник | noun | nomad | В степи жили кочевники. | | ka-CHEV-neek | Nomads lived in the steppe.
+степь | noun | steppe | Вокруг города степь. | | styep | There is steppe around the city.
+наследие | noun | heritage | Это наше культурное наследие. | | nas-LYE-dee-ye | This is our cultural heritage.
+историк | noun | historian | Историки изучают прошлое. | | ees-TO-reek | Historians study the past.`],
+      g: ['In 1991, in the 15th century, a hundred years ago', '<table><tr><th>To say…</th><th>Use…</th><th>Example</th></tr><tr><td>in a year</td><td><b>в</b> … <b>году</b></td><td><b>в</b> 1991 <b>году</b> (в тысяча девятьсот девяносто первом году)</td></tr><tr><td>in a century</td><td><b>в</b> … <b>веке</b></td><td><b>в</b> пятнадцатом <b>веке</b></td></tr><tr><td>ago</td><td>… <b>назад</b></td><td>сто лет <b>назад</b></td></tr><tr><td>since, from</td><td><b>с</b> … <b>года</b></td><td><b>с</b> 1997 <b>года</b></td></tr><tr><td>before, after</td><td><b>до</b>, <b>после</b> + the “of” ending</td><td><b>до</b> войн<b>ы</b>, <b>после</b> войн<b>ы</b></td></tr></table><ul><li>Only the <b>last</b> word of the year changes: в тысяча девятьсот девяносто <b>первом</b> году.</li><li>A full date: шестнадцат<b>ого</b> декабр<b>я</b> 1991 год<b>а</b>.</li><li><b>назад</b> comes after the time: два года назад, сто лет назад.</li></ul>', [
+        k.mc('Казахстан стал независимым ___ 1991 году.', ['в', 'на', 'с'], 0),
+        k.mc('Это было в пятнадцатом ___.', ['веке', 'век', 'века'], 0),
+        k.mc('Сто лет ___ здесь была степь.', ['назад', 'после', 'до'], 0),
+        k.mc('После войн___ люди вернулись домой.', ['ы', 'а', 'у'], 0),
+        k.mc('Я живу здесь с 2020 ___.', ['года', 'году', 'год'], 0),
+        k.ord('Это было сто лет назад')]],
+      r: ['The Great Steppe', 'История Казахстана — это история Великой степи. Тысячи лет здесь жили кочевники. Они не строили больших городов, но создали богатую культуру: музыку, поэзию, традиции гостеприимства.\n\nВ пятнадцатом веке, в 1465 году, ханы Керей и Жанибек основали Казахское ханство. Историки считают это событие началом казахского государства.\n\nВ двадцатом веке страна была частью Советского Союза. Это было трудное время: голод, война, но также новые школы, заводы и города.\n\nШестнадцатого декабря 1991 года Казахстан получил независимость. В 1997 году столица переехала из Алматы на север, в город, который сейчас называется Астана.\n\nСегодня народ Казахстана бережёт наследие предков и строит современную страну.\n\n(Великая степь = the Great Steppe · поэзия = poetry · ханство = khanate · часть = part · голод = famine · бережёт = looks after)', [
+        k.mc('Who lived in the steppe for thousands of years?', ['nomads', 'farmers', 'sailors'], 0), k.mc('When was the Kazakh Khanate founded?', ['in 1465', 'in 1991', 'in 1997'], 0), k.mc('When did Kazakhstan gain independence?', ['on 16 December 1991', 'on 1 January 1997', 'in 1945'], 0), k.tf('In 1997 the capital moved to Almaty.', false)]] },
+
+    { id: 'u20', t: 'К цели. Reaching your goal', topic: 'Ambitions',
+      v: ['Trying and succeeding', `
+стремиться | verb | to strive | Она стремится к знаниям. | | stree-MEET-sa | She strives for knowledge.
+добиться | verb | to achieve, to get | Он добился успеха. | | da-BEET-sa | He achieved success.
+усилие | noun | effort | Это требует усилий. | | oo-SEE-lee-ye | This takes effort.
+препятствие | noun | obstacle | Это не препятствие. | | pree-PYATST-vee-ye | This is not an obstacle.
+сдаваться | verb | to give up | Никогда не сдавайся! | | zda-VAT-sa | Never give up!
+уверенность | noun | confidence | Ему нужна уверенность. | | oo-VYE-reen-nast | He needs confidence.
+талант | noun | talent | У неё большой талант. | | ta-LANT | She has great talent.
+упорство | noun | persistence | Упорство важнее таланта. | | oo-PORST-va | Persistence is more important than talent.
+удаться | verb | to succeed, to work out | Мне удалось найти работу. | | oo-DAT-sa | I managed to find a job.
+достижение | noun | achievement | Это большое достижение. | | das-tee-ZHE-nee-ye | This is a great achievement.`],
+      g: ['I managed to, I was able to', '<table><tr><th>Pattern</th><th>Meaning</th><th>Example</th></tr><tr><td><b>мне удалось</b> + verb</td><td>I managed to (it worked out)</td><td><b>Мне удалось</b> сдать экзамен.</td></tr><tr><td><b>я смог, смогла</b> + verb</td><td>I was able to</td><td>Она не <b>смогла</b> прийти.</td></tr><tr><td><b>у меня получилось</b></td><td>it worked for me</td><td>У меня не <b>получилось</b>.</td></tr><tr><td><b>добиться</b> + the “of” ending</td><td>to achieve</td><td>Он <b>добился</b> успех<b>а</b>.</td></tr></table><ul><li>With <b>удалось</b> the person is in the “to” form: <b>мне, тебе, ему, ей, нам, вам, им</b>. The word <b>удалось</b> never changes.</li><li><b>смочь</b> changes with the person: смог, смогл<b>а</b>, смогл<b>и</b>.</li></ul>', [
+        k.mc('Мне ___ сдать экзамен.', ['удалось', 'удался', 'удалась'], 0),
+        k.mc('Она не ___ прийти.', ['смогла', 'смог', 'смогли'], 0),
+        k.mc('___ удалось найти работу. (he)', ['Ему', 'Он', 'Его'], 0),
+        k.mc('У меня не ___.', ['получилось', 'получился', 'получилась'], 0),
+        k.mc('Он добился успех___.', ['а', 'у', 'ом'], 0),
+        k.ord('Мне удалось сдать экзамен')]],
+      r: ['Two points short', 'Аружан с детства мечтала стать врачом. После школы она сдавала экзамены в медицинский университет, но ей не хватило двух баллов. Поступить не удалось.\n\nМногие на её месте сдались бы. Родители предлагали выбрать другую профессию. Но Аружан решила попробовать ещё раз.\n\nЦелый год она работала санитаркой в больнице, а по вечерам готовилась к экзаменам. Было трудно: после смены не было сил. Зато она увидела настоящую работу врачей и поняла, что её цель — не просто мечта.\n\nЧерез год ей удалось набрать на двадцать баллов больше. Сейчас Аружан учится на третьем курсе.\n\nОна говорит: «Талант важен, но упорство важнее. Препятствие — это не конец пути. Каждое усилие — шаг к цели».\n\n(не хватило = was short of · балл = point · санитарка = hospital assistant · смена = shift · сил = strength · набрать = to score · шаг = step)', [
+        k.mc('How many points short was Aruzhan the first time?', ['two', 'twenty', 'ten'], 0), k.tf('Her parents suggested a different profession.', true), k.mc('What did she do for the next year?', ['worked in a hospital and studied', 'travelled abroad', 'stayed at home'], 0), k.mc('What does she say is more important than talent?', ['persistence', 'money', 'luck'], 0)]] },
+
+    { id: 'u21', t: 'Общество. People helping people', topic: 'Society',
+      v: ['Society and help', `
+общество | noun | society | Мы живём в обществе. | | OP-shcheest-va | We live in a society.
+волонтёр | noun | volunteer | Она работает волонтёром. | | va-lan-TYOR | She works as a volunteer.
+благотворительность | noun | charity | Он занимается благотворительностью. | | bla-ga-tva-REE-teel-nast | He does charity work.
+помощь | noun | help | Спасибо за помощь! | | PO-mashch | Thank you for your help!
+бедный | adjective | poor | Это бедная семья. | | BYED-ny | This is a poor family.
+богатый | adjective | rich | Он богатый человек. | | ba-GA-ty | He is a rich man.
+нуждаться | verb | to be in need of | Они нуждаются в помощи. | | noozh-DAT-sa | They are in need of help.
+пожертвование | noun | donation | Спасибо за ваше пожертвование. | | pa-ZHERT-va-va-nee-ye | Thank you for your donation.
+бездомный | adjective | homeless | Волонтёры помогают бездомным. | | beez-DOM-ny | Volunteers help homeless people.
+заботиться | verb | to care for | Она заботится о бабушке. | | za-BO-teet-sa | She cares for her grandmother.`],
+      g: ['I need a doctor: нужен, нужна, нужно, нужны', '<p>In A2 you learned <b>мне нужно</b> + a verb. To need a <b>thing or a person</b>, the word agrees with what is needed.</p><table><tr><th>What is needed</th><th>Form</th><th>Example</th></tr><tr><td>он</td><td><b>нужен</b></td><td>Мне <b>нужен</b> врач.</td></tr><tr><td>она</td><td><b>нужна</b></td><td>Людям <b>нужна</b> помощь.</td></tr><tr><td>оно</td><td><b>нужно</b></td><td>Ему <b>нужно</b> время.</td></tr><tr><td>они</td><td><b>нужны</b></td><td>Нам <b>нужны</b> волонтёры.</td></tr></table><ul><li>The person who needs it is in the “to” form: <b>мне, тебе, ему, ей, нам, вам, им</b>, друзь<b>ям</b>, люд<b>ям</b>.</li><li>Past: Мне <b>был нужен</b> врач. Future: Нам <b>будут нужны</b> волонтёры.</li></ul>', [
+        k.mc('Мне ___ врач.', ['нужен', 'нужна', 'нужны'], 0),
+        k.mc('Людям ___ помощь.', ['нужна', 'нужен', 'нужно'], 0),
+        k.mc('Нам ___ волонтёры.', ['нужны', 'нужна', 'нужен'], 0),
+        k.mc('Ему ___ время.', ['нужно', 'нужен', 'нужны'], 0),
+        k.mc('___ нужна помощь. (she)', ['Ей', 'Она', 'Её'], 0),
+        k.ord('Пожилым людям нужна помощь')]],
+      r: ['Saturday volunteers', 'Каждую субботу в девять утра у городского рынка собираются двадцать человек. Это волонтёры благотворительной организации «Добрые руки». Среди них студенты, пенсионеры, даже один директор банка.\n\nСначала они покупают продукты на пожертвования жителей города. Потом делят их на пакеты: хлеб, молоко, крупа, овощи. К обеду пакеты получают шестьдесят пожилых людей, которым трудно выходить из дома.\n\n«Многие думают, что бедным нужны только деньги, — говорит Сауле, которая руководит группой. — Но одиноким людям нужно ещё и внимание. Мы всегда остаёмся на чай и разговор».\n\nОрганизации всегда нужны новые люди. Не обязательно быть богатым, чтобы заботиться о других. Нужно только два часа в неделю.\n\n(собираются = gather · среди = among · делят = divide · крупа = grains · внимание = attention · остаёмся = stay)', [
+        k.mc('When do the volunteers meet?', ['on Saturdays at nine', 'on Sundays at noon', 'every evening'], 0), k.mc('Where does the money for food come from?', ['donations from people in the city', 'the bank', 'the market'], 0), k.mc('How many elderly people get a bag?', ['sixty', 'twenty', 'nine'], 0), k.tf('Saule thinks lonely people need only money.', false)]] },
+
+    { id: 'u22', t: 'Город или село? City or village?', topic: 'Lifestyles',
+      v: ['Two ways of life', `
+ферма | noun | farm | У дяди большая ферма. | | FYER-ma | My uncle has a big farm.
+урожай | noun | harvest | В этом году хороший урожай. | | oo-ra-ZHAY | There is a good harvest this year.
+поле | noun | field | В поле растёт пшеница. | | PO-lye | Wheat grows in the field.
+скот | noun | livestock | Они держат скот. | | skot | They keep livestock.
+тишина | noun | silence, quiet | Я люблю тишину. | | tee-shy-NA | I love the quiet.
+городской | adjective | city, urban | Это городской парк. | | ga-rat-SKOY | This is the city park.
+сельский | adjective | rural, village | Он сельский учитель. | | SYEL-skee | He is a village teacher.
+преимущество | noun | advantage | Это большое преимущество. | | pree-ee-MOO-shcheest-va | This is a big advantage.
+недостаток | noun | disadvantage | У города есть недостатки. | | nee-das-TA-tak | The city has disadvantages.
+темп | noun | pace | Здесь быстрый темп жизни. | | temp | The pace of life is fast here.`],
+      g: ['As … as, not as … as, more, less', '<table><tr><th>Pattern</th><th>Meaning</th><th>Example</th></tr><tr><td><b>такой же</b> … <b>как</b></td><td>as … as</td><td>Мой дом <b>такой же</b> большой, <b>как</b> твой.</td></tr><tr><td><b>не такой</b> … <b>как</b></td><td>not as … as</td><td>Село <b>не такое</b> шумное, <b>как</b> город.</td></tr><tr><td><b>более</b> + adjective</td><td>more</td><td>Жизнь в городе <b>более</b> дорогая.</td></tr><tr><td><b>менее</b> + adjective</td><td>less</td><td>Здесь <b>менее</b> шумно.</td></tr></table><ul><li><b>такой</b> agrees with the noun: так<b>ой</b> (он), так<b>ая</b> (она), так<b>ое</b> (оно), так<b>ие</b> (они).</li><li><b>более</b> and <b>менее</b> never change, and the adjective keeps its usual form. They are common with long adjectives: более современный, менее удобный.</li><li>After <b>такой же</b> use <b>как</b>. After <b>-ее</b> forms use <b>чем</b>: тише, <b>чем</b> в городе.</li></ul>', [
+        k.mc('Село не такое шумное, ___ город.', ['как', 'чем', 'что'], 0),
+        k.mc('Мой дом такой ___ большой, как твой.', ['же', 'бы', 'ли'], 0),
+        k.mc('Жизнь в городе ___ дорогая. (more)', ['более', 'много', 'очень'], 0),
+        k.mc('В селе тише, ___ в городе.', ['чем', 'как', 'что'], 0),
+        k.mc('Эта улица ___ же длинная, как та.', ['такая', 'такой', 'такие'], 0),
+        k.ord('Село не такое шумное как город')]],
+      r: ['Two brothers', 'Братья Ерлан и Нурлан выросли в маленьком селе. После школы Ерлан уехал в Алматы, а Нурлан остался дома.\n\nЕрлан работает в городской компании. У него высокая зарплата, рядом кино, театры, магазины. Но у городской жизни есть недостатки: два часа в день он стоит в пробках, а аренда квартиры очень дорогая. «Темп жизни здесь слишком быстрый», — говорит он.\n\nУ Нурлана ферма: поле, скот, большой дом. Его доходы не такие высокие, как у брата, и они зависят от урожая. Зато вокруг тишина и чистый воздух, а дети играют на улице.\n\nКаждое лето Ерлан приезжает в село. «Главное преимущество сельской жизни — здесь есть время», — думает он. А Нурлан иногда мечтает о городе.\n\n(выросли = grew up · остался = stayed · зависят от = depend on)', [
+        k.mc('Where does Erlan live now?', ['in Almaty', 'in the village', 'in Astana'], 0), k.mc('What are the disadvantages of his life?', ['traffic jams and expensive rent', 'a low salary', 'no shops'], 0), k.mc('What does Nurlan’s income depend on?', ['the harvest', 'his brother', 'the bank'], 0), k.tf('Nurlan earns more than his brother.', false)]] },
+
+    { id: 'u23', t: 'Неожиданная встреча. An unexpected meeting', topic: 'Stories',
+      v: ['Words for a good story', `
+как только | phrase | as soon as | Как только я пришёл, пошёл дождь. | | kak TOL-ka | As soon as I arrived, it started to rain.
+внезапно | adverb | suddenly | Внезапно погас свет. | | vnee-ZAP-na | Suddenly the light went out.
+тем временем | phrase | meanwhile | Тем временем поезд уехал. | | tyem VRYE-mee-nyem | Meanwhile the train left.
+оказаться | verb | to turn out | Оказалось, что он мой сосед. | | a-ka-ZAT-sa | It turned out that he was my neighbour.
+выяснить | verb | to find out | Мы выяснили правду. | | VY-yas-neet | We found out the truth.
+совпадение | noun | coincidence | Это просто совпадение. | | saf-pa-DYE-nee-ye | It is just a coincidence.
+незнакомец | noun | stranger | Ко мне подошёл незнакомец. | | nee-zna-KO-meets | A stranger came up to me.
+тайна | noun | secret, mystery | Это наша тайна. | | TAY-na | This is our secret.
+чудо | noun | miracle | Это настоящее чудо! | | CHOO-da | This is a real miracle!
+судьба | noun | fate | Наверное, это судьба. | | sood-BA | It is probably fate.`],
+      g: ['While, when, as soon as', '<p>The verb pair shows how two actions fit together.</p><table><tr><th>Word</th><th>Verbs</th><th>Example</th></tr><tr><td><b>пока</b> = while</td><td>action verb: something was going on</td><td><b>Пока</b> я <b>ждал</b> поезд, я <b>читал</b> книгу.</td></tr><tr><td><b>когда</b> = when</td><td>result verb: one thing happened, then another</td><td><b>Когда</b> я <b>пришёл</b> домой, все уже спали.</td></tr><tr><td><b>как только</b> = as soon as</td><td>result verb in both parts</td><td><b>Как только</b> поезд <b>остановился</b>, я <b>вышел</b>.</td></tr></table><p>A long action that is broken by a short one:</p><ul><li>Пока я <b>шёл</b> домой, <b>начался</b> дождь. = While I was walking home, it started to rain.</li></ul><p><b>тем временем</b> (meanwhile) starts a new sentence about something happening at the same time.</p>', [
+        k.mc('___ я ждал поезд, я читал книгу.', ['Пока', 'Как только', 'Поэтому'], 0),
+        k.mc('___ поезд остановился, я вышел.', ['Как только', 'Пока', 'Хотя'], 0),
+        k.mc('Пока я ___ домой, начался дождь.', ['шёл', 'пришёл', 'пойду'], 0),
+        k.mc('Когда я ___ домой, все уже спали.', ['пришёл', 'шёл', 'иду'], 0),
+        k.mc('“meanwhile” = …', ['тем временем', 'как только', 'внезапно'], 0),
+        k.ord('Пока я ждал поезд я читал книгу')]],
+      r: ['The stranger on the train', 'Прошлой зимой я ехал на поезде из Астаны в Костанай. В купе со мной был незнакомец — пожилой мужчина с добрыми глазами. Пока поезд шёл через степь, мы пили чай и разговаривали.\n\nОн рассказал, что сорок лет назад учился в Костанае и с тех пор не был там. «Я хочу найти старого друга, — сказал он. — Мы вместе жили в общежитии. Потом я уехал, и мы потеряли связь».\n\n— Как его зовут? — спросил я.\n\n— Серик Ахметов.\n\nЯ не поверил. Это имя моего отца! Оказалось, что это не совпадение: мой отец учился в том же институте.\n\nКак только поезд приехал, я позвонил домой. Через час два старых друга обнимали друг друга на вокзале.\n\nОтец говорит, что это судьба. А я думаю, что это просто чудо.\n\n(купе = compartment · с тех пор = since then · не поверил = did not believe · обнимали друг друга = hugged each other)', [
+        k.mc('Where was the writer travelling to?', ['Kostanay', 'Astana', 'Almaty'], 0), k.mc('Who did the old man want to find?', ['an old friend', 'his son', 'his teacher'], 0), k.mc('Who was Serik Akhmetov?', ['the writer’s father', 'the writer’s boss', 'the train conductor'], 0), k.tf('The two friends met at the station.', true)]] },
+
+    { id: 'u24', t: 'Повторение. B1 review', topic: 'Review',
+      v: ['Phrases for longer speech', `
+тем не менее | phrase | nevertheless | Было трудно. Тем не менее я рад. | | tyem nee MYE-nee-ye | It was hard. Nevertheless I am glad.
+кроме того | phrase | besides, in addition | Кроме того, это дёшево. | | KRO-mye ta-VO | Besides, it is cheap.
+по сравнению с | phrase | compared with | По сравнению с Астаной здесь тепло. | | pa srav-NYE-nee-yoo s | Compared with Astana it is warm here.
+с одной стороны | phrase | on the one hand | С одной стороны, это удобно. | | s ad-NOY sta-ra-NY | On the one hand, it is convenient.
+с другой стороны | phrase | on the other hand | С другой стороны, это дорого. | | s droo-GOY sta-ra-NY | On the other hand, it is expensive.
+в результате | phrase | as a result | В результате мы опоздали. | | v ree-zool-TA-tye | As a result we were late.
+в отличие от | phrase | unlike | В отличие от брата, я люблю город. | | v at-LEE-chee-ye at | Unlike my brother, I like the city.
+таким образом | phrase | so, in this way | Таким образом, мы решили проблему. | | ta-KEEM O-bra-zam | In this way we solved the problem.
+на самом деле | phrase | in fact, really | На самом деле это просто. | | na SA-mam DYE-lye | In fact it is simple.
+в основном | phrase | mainly | В основном я читаю новости. | | v as-nav-NOM | I mainly read the news.`],
+      g: ['What you can do now', '<p>The main patterns of Russian B1:</p><table><tr><th>Unit</th><th>Pattern</th><th>Example</th></tr><tr><td>1</td><td>который</td><td>друг, <b>который</b> живёт в Астане</td></tr><tr><td>3, 10</td><td>чтобы; что, ли</td><td>Я хочу, <b>чтобы</b> ты пришёл. Он спросил, приду <b>ли</b> я.</td></tr><tr><td>4, 17</td><td>orders and rules</td><td><b>Не курите!</b> Здесь <b>запрещено</b> курить.</td></tr><tr><td>5, 12</td><td>verbs of motion</td><td><b>при</b>ехал, <b>у</b>шла; иду / хожу</td></tr><tr><td>6, 14</td><td>endings for many</td><td>много овощ<b>ей</b>; к друзь<b>ям</b></td></tr><tr><td>8</td><td>only imagined</td><td><b>Если бы</b> я знал, я <b>бы</b> сказал.</td></tr><tr><td>9, 15, 18</td><td>passive</td><td>используется; закрыт; <b>был построен</b></td></tr><tr><td>11</td><td>someone, nobody</td><td><b>кто-то</b>, <b>что-нибудь</b>, <b>никто не</b></td></tr><tr><td>16, 23</td><td>joining ideas</td><td><b>хотя</b>, <b>однако</b>, <b>пока</b>, <b>как только</b></td></tr><tr><td>20, 21</td><td>managing and needing</td><td>мне <b>удалось</b>; мне <b>нужен</b> врач</td></tr></table>', [
+        k.mc('Это девушка, ___ работает в банке.', ['которая', 'который', 'которые'], 0),
+        k.mc('Я хочу, чтобы ты ___.', ['пришёл', 'прийти', 'придёшь'], 0),
+        k.mc('Если бы у меня были деньги, я ___ купил дом.', ['бы', 'буду', 'был'], 0),
+        k.mc('Он спросил, приду ___ я.', ['ли', 'что', 'если'], 0),
+        k.mc('Школа ___ построена в 1980 году.', ['была', 'был', 'было'], 0),
+        k.mc('Нам ___ волонтёры.', ['нужны', 'нужен', 'нужна'], 0),
+        k.ord('Хотя было трудно я сдал экзамен')]],
+      r: ['A letter after B1', 'Дорогой Марат!\n\nСегодня я закончил уровень B1. Два года назад я не мог сказать по-русски ни слова, а теперь пишу тебе это письмо.\n\nС одной стороны, было трудно. Русская грамматика, на самом деле, не такая простая, как английская. С другой стороны, каждый урок давал мне что-то новое.\n\nПо сравнению с прошлым годом я говорю намного свободнее. Кроме того, я начал читать новости и даже понимаю шутки. В результате у меня появились русскоязычные друзья.\n\nТем не менее мне нужно ещё много учиться. В основном я хочу улучшить произношение.\n\nТаким образом, мой следующий шаг — уровень B2. Если бы не твоя помощь, я бы не смог это сделать. Спасибо!\n\nТвой Том\n\n(уровень = level · ни слова = not a word · намного = much · шутка = joke · русскоязычный = Russian-speaking · улучшить = to improve)', [
+        k.mc('How long has Tom been learning Russian?', ['two years', 'one year', 'five years'], 0), k.tf('Tom thinks Russian grammar is as simple as English grammar.', false), k.mc('What does Tom mainly want to improve?', ['his pronunciation', 'his reading', 'his spelling'], 0), k.mc('What is his next step?', ['level B2', 'level A2', 'a job in Russia'], 0)]] }
   ]);
 })();

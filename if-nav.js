@@ -61,6 +61,7 @@
     setInterval(function () { if (!document.body.contains(bar)) document.body.appendChild(bar); }, 800);
     bar.querySelector('.back').addEventListener('click', function (e) {
       e.preventDefault();
+      if (typeof window.IF_BACK === 'function' && window.IF_BACK()) return;   // IF App leaves a game itself
       var fromSite = false; try { fromSite = document.referrer && new URL(document.referrer).origin === location.origin; } catch (err) {}
       if ((fromSite || /^#\//.test(location.hash)) && history.length > 1) history.back(); else location.href = '/';
     });

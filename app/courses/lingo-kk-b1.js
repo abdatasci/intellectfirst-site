@@ -1,10 +1,10 @@
 /* IF Lingo · Kazakh B1: an original IF Academy course for people who speak English and have finished Kazakh A2.
    Word lines: word | part of speech | meaning in English | example | (empty) | how to say it | the example in English.
-   Plan: 24 units and a level test (project doc claude/if-lingo.md). Built so far: units 1 to 16. */
+   Plan: 24 units and a level test (project doc claude/if-lingo.md). All 24 units are here; the listening lessons, level test and word bank are in their own files when built. */
 IFX.course({
   id: 'kk-b1', track: 'lang', lang: 'kk-KZ', level: 'B1', next: 'B2', icon: '🇰🇿',
   title: 'Kazakh B1', sub: 'Independent Kazakh',
-  blurb: 'Talk about relationships, study, work, health, travel, housing, nature, technology, the news, culture, sport and money in longer sentences. The first 16 of 24 units, explained in English.',
+  blurb: 'Talk about relationships, study, work, health, travel, housing, nature, technology, the news, culture, sport and money in longer sentences. 24 units, explained in English.',
   units: []
 });
 (function () {
@@ -360,6 +360,183 @@ IFX.course({
         k.tf('“-са да” means “although” or “even if”.', true),
         k.ord('Шаршасам да мен сабаққа бардым')]],
       r: ['Mistakes are my best teachers', 'Том қазақ тілін екі жыл үйреніп жүр. Алдымен ол сөйлеуден қорқатын, өйткені көп қателесетін. Ол көп сөз білетін, дегенмен әңгімелескенде бәрін ұмытып қалатын.\n\nОқытушысы: «Айтылым мен грамматика келеді. Ең бастысы — сөйлесу», — деді. Том көршілерімен, сатушылармен, такси жүргізушілерімен сөйлесе бастады. Акценті болса да, бәрі оны түсінетін.\n\nБір күні ол ағылшын сөз тіркесін аударғысы келіп, күлкілі бірдеңе айтып қалды. Сұхбаттасы ұзақ күлді, содан кейін сөздің мағынасын түсіндірді. Том ол сөзді мәңгі есте сақтады.\n\nҚазір Том еркін дерлік сөйлейді. Қазақ тілі оның ана тілі болмаса да, ол қазақша әзілдей алады. Ол: «Қателер — менің ең жақсы мұғалімдерім», — дейді.\n\n(күлкілі = funny · ұзақ = for a long time · мәңгі = for ever · әзілдеу = to joke)', [
-        k.mc('Why was Tom afraid to speak at first?', ['He made many mistakes.', 'He knew no words.', 'He had no teacher.'], 0), k.mc('What did his teacher say was the main thing?', ['talking with people', 'grammar', 'pronunciation'], 0), k.tf('People could not understand Tom because of his accent.', false), k.mc('How does Tom speak now?', ['almost fluently', 'very slowly', 'only in English'], 0)]] }
+        k.mc('Why was Tom afraid to speak at first?', ['He made many mistakes.', 'He knew no words.', 'He had no teacher.'], 0), k.mc('What did his teacher say was the main thing?', ['talking with people', 'grammar', 'pronunciation'], 0), k.tf('People could not understand Tom because of his accent.', false), k.mc('How does Tom speak now?', ['almost fluently', 'very slowly', 'only in English'], 0)]] },
+
+    { id: 'u17', t: 'Ереже мен заң. Rules and laws', topic: 'Law',
+      v: ['What you may and must do', `
+заң | noun | law | Бұл жаңа заң. | | zang | This is a new law.
+ереже | noun | rule | Мектепте ереже бар. | | e-re-ZHE | There are rules at school.
+құқық | noun | right | Әр адамның демалуға құқығы бар. | | qoo-QYQ | Everyone has the right to rest.
+айыппұл | noun | fine | Ол айыппұл төледі. | | a-yyp-POOL | He paid a fine.
+бұзу | verb | to break | Жүргізуші ережені бұзды. | | boo-ZOO | The driver broke the rule.
+рұқсат | noun | permission | Директордың рұқсаты керек. | | rooq-SAT | You need the director’s permission.
+тыйым | noun | ban | Мұнда темекі шегуге тыйым салынады. | | ty-YYM | Smoking is forbidden here.
+міндетті | adjective | obliged, compulsory | Жүргізуші тоқтауға міндетті. | | min-det-TI | The driver must stop.
+сот | noun | court | Сот шешім шығарды. | | sot | The court gave its decision.
+полиция | noun | police | Полиция тез келді. | | po-LI-tsi-ya | The police came quickly.`],
+      g: ['Allowed, forbidden, obliged', '<p>All three patterns use the <b>-уға, -уге</b> form of the verb.</p><table><tr><th>Pattern</th><th>Meaning</th><th>Example</th></tr><tr><td>-уға <b>рұқсат етіледі</b></td><td>it is allowed</td><td>Мұнда суретке түсіруге <b>рұқсат етіледі</b>.</td></tr><tr><td>-уға <b>тыйым салынады</b></td><td>it is forbidden</td><td>Мұнда темекі шегуге <b>тыйым салынады</b>.</td></tr><tr><td>-уға <b>міндетті</b></td><td>is obliged to, must</td><td>Жүргізуші тоқтауға <b>міндетті</b>.</td></tr></table><p>You already know the everyday way: <b>-уға болады</b> (you may) and <b>-уға болмайды</b> (you must not). The patterns above are for signs, rules and laws.</p><p>With a person: Сіз мұнда отыруға <b>міндетті емессіз</b>. = You do not have to sit here.</p>', [
+        k.mc('Мұнда темекі шегуге тыйым ___.', ['салынады', 'етіледі', 'болады'], 0),
+        k.mc('Мұнда суретке түсіруге рұқсат ___.', ['етіледі', 'салынады', 'болмайды'], 0),
+        k.mc('Жүргізуші тоқта___ міндетті.', ['уға', 'уды', 'удан'], 0),
+        k.mc('“it is forbidden” = …', ['тыйым салынады', 'рұқсат етіледі', 'міндетті'], 0),
+        k.tf('“рұқсат етіледі” means “is allowed”.', true),
+        k.ord('Мұнда темекі шегуге тыйым салынады')]],
+      r: ['New rules for scooters', 'Біздің қалада электр самокат көбейді. Бұл ыңғайлы, бірақ қауіпті: былтыр жол апаты көп болды. Сондықтан көктемде жаңа ереже шықты.\n\nҚазір самокатпен жүруге тек он алты жастан бастап рұқсат етіледі. Тротуарда жылдамдық сағатына он километрден аспауы керек. Екі адамның бірге мінуіне тыйым салынады. Кешке жүргізуші жарық қосуға міндетті.\n\nОн бес жастағы Әлихан жаңа заңды білмеген. Сенбіде ол досымен бір самокатқа мініп келе жатқанда, оларды полиция тоқтатты. Полицей ережені түсіндіріп, заңды бұзғаны үшін айыппұл бар екенін айтты — жиырма мың теңге. Бірінші рет болғандықтан, Әлихан тек ескерту алды.\n\n«Менің құқығым бар, бірақ міндетім де бар», — деп түсінді ол. Қазір ол жаяу жүреді және туған күнін күтіп жүр.\n\n(көбейді = increased · қауіпті = dangerous · жол апаты = road accident · жылдамдық = speed · аспауы керек = must not be more than · ескерту = warning)', [
+        k.mc('From what age may you ride a scooter?', ['sixteen', 'fifteen', 'eighteen'], 0), k.mc('What is the top speed on the pavement?', ['10 kilometres an hour', '20 kilometres an hour', '5 kilometres an hour'], 0), k.mc('Why did the police stop Alikhan?', ['Two people were on one scooter.', 'He had no light.', 'He was riding too fast.'], 0), k.tf('Alikhan paid a fine of 20,000 tenge.', false)]] },
+
+    { id: 'u18', t: 'Ғылым әлемі. Science', topic: 'Science',
+      v: ['Research and discovery', `
+жаңалық ашу | verb | to make a discovery | Ғалым жаңалық ашты. | | zha-nga-LYQ a-SHOO | The scientist made a discovery.
+өнертабыс | noun | invention | Телефон — ұлы өнертабыс. | | o-ner-ta-BYS | The telephone is a great invention.
+ойлап табу | verb | to invent | Радионы кім ойлап тапты? | | oy-LAP ta-BOO | Who invented the radio?
+эксперимент | noun | experiment | Біз эксперимент жасадық. | | eks-pe-ri-MENT | We carried out an experiment.
+дәлелдеу | verb | to prove | Ғалымдар бұл теорияны дәлелдеді. | | da-lel-DEU | Scientists proved this theory.
+зертхана | noun | laboratory | Ол зертханада жұмыс істейді. | | zert-kha-NA | She works in a laboratory.
+нәтиже | noun | result | Нәтиже ертең болады. | | na-ti-ZHE | The result will come tomorrow.
+зерттеуші | noun | researcher | Ол — жас зерттеуші. | | zert-te-oo-SHI | She is a young researcher.
+ғарыш | noun | space | Адам ғарышқа ұшты. | | gha-RYSH | Man flew into space.
+ғылыми | adjective | scientific | Бұл ғылыми жұмыс. | | ghy-ly-MI | This is scientific work.`],
+      g: ['Was built, was opened: the passive in the past', '<p>In Unit 6 you made the passive: <b>қосылады</b> (is added). For the past, use the same form with the past ending <b>-ды, -ді</b>.</p><table><tr><th>Verb</th><th>Passive, past</th><th>Meaning</th></tr><tr><td>салу</td><td>сал<b>ынды</b></td><td>was built</td></tr><tr><td>ашу</td><td>аш<b>ылды</b></td><td>was opened, was discovered</td></tr><tr><td>жазу</td><td>жаз<b>ылды</b></td><td>was written</td></tr><tr><td>жасау</td><td>жаса<b>лды</b></td><td>was made</td></tr><tr><td>алу</td><td>ал<b>ынды</b></td><td>was taken, was received</td></tr></table><ul><li>Бұл үй 1950 жылы <b>салынды</b>. = This house was built in 1950.</li><li>Мектеп қыркүйекте <b>ашылды</b>. = The school was opened in September.</li><li>Нәтиже бір айдан кейін <b>алынды</b>. = The result was received a month later.</li></ul><p>Not: <b>ашылмады</b> = was not opened, was not discovered.</p>', [
+        k.mc('Бұл үй 1950 жылы сал___.', ['ынды', 'ылды', 'інді'], 0),
+        k.mc('Мектеп қыркүйекте аш___.', ['ылды', 'ілді', 'ынды'], 0),
+        k.mc('Хат кеше жаз___.', ['ылды', 'ілді', 'лды'], 0),
+        k.mc('Нәтиже бір айдан кейін ал___.', ['ынды', 'ылды', 'інді'], 0),
+        k.tf('“жасалды” means “was made”.', true),
+        k.ord('Бұл үй 1950 жылы салынды')]],
+      r: ['Do plants like music?', 'Әр көктемде біздің мектепте ғылыми көрме өтеді. Биыл тоғызыншы сынып оқушысы Жанна бір идеяны тексеруге шешім қабылдады: өсімдік музыкамен тезірек өсе ме?\n\nЭксперимент қарапайым болды. Бірдей жиырма өсімдік бір күнде отырғызылды. Он өсімдік күніне үш сағат классикалық музыка ойнайтын бөлмеде тұрды. Қалған он өсімдік тыныш бөлмеде тұрды. Жарық, су және температура бірдей болды.\n\nАлты аптадан кейін нәтиже алынды. Айырмашылық жоқтың қасы: «музыкалық» өсімдіктер тек екі миллиметрге биік болды.\n\nЖанна ренжіді: жаңалық ашылмады. Бірақ мұғалімі: «Сен ештеңе дәлелдеген жоқсың, бірақ мұны адал көрсеттің. Ғылымда мұндай нәтиже де маңызды. Нағыз зерттеушілер осылай жұмыс істейді», — деді.\n\nЖанна екінші орын алды.\n\n(өтеді = takes place · бірдей = the same · отырғызылды = were planted · қалған = the remaining · айырмашылық = difference · жоқтың қасы = almost none · нағыз = real)', [
+        k.mc('What did Zhanna want to test?', ['whether plants grow faster with music', 'whether plants need water', 'whether music helps pupils'], 0), k.mc('How many plants did she use?', ['twenty', 'ten', 'six'], 0), k.tf('There was a big difference between the two groups.', false), k.mc('What place did Zhanna get?', ['second', 'first', 'third'], 0)]] },
+
+    { id: 'u19', t: 'Тарих. History', topic: 'History',
+      v: ['The past of a country', `
+ғасыр | noun | century | Біз жиырма бірінші ғасырда өмір сүреміз. | | gha-SYR | We live in the twenty-first century.
+соғыс | noun | war | Соғыс 1945 жылы аяқталды. | | so-GHYS | The war ended in 1945.
+тәуелсіздік | noun | independence | Ел тәуелсіздік алды. | | ta-wel-siz-DIK | The country gained independence.
+мемлекет | noun | state | Қазақстан — жас мемлекет. | | mem-le-KET | Kazakhstan is a young state.
+хан | noun | khan | Абылай — әйгілі хан. | | khan | Abylai is a famous khan.
+негізін қалау | verb | to found | Қаланың негізін 1879 жылы қалады. | | ne-gi-ZIN qa-LAU | The city was founded in 1879.
+көшпенді | noun | nomad | Далада көшпенділер тұрған. | | kosh-pen-DI | Nomads lived in the steppe.
+дала | noun | steppe | Қаланың айналасы — дала. | | da-LA | There is steppe around the city.
+мұра | noun | heritage | Бұл — біздің мәдени мұрамыз. | | moo-RA | This is our cultural heritage.
+тарихшы | noun | historian | Тарихшылар өткенді зерттейді. | | ta-rikh-SHY | Historians study the past.`],
+      g: ['In 1991, in the 15th century, a hundred years ago', '<table><tr><th>To say…</th><th>Use…</th><th>Example</th></tr><tr><td>in a year</td><td>… <b>жылы</b></td><td>1991 <b>жылы</b> (мың тоғыз жүз тоқсан бірінші жылы)</td></tr><tr><td>in a century</td><td>… <b>ғасырда</b></td><td>он бесінші <b>ғасырда</b></td></tr><tr><td>ago</td><td>… <b>бұрын</b></td><td>жүз жыл <b>бұрын</b></td></tr><tr><td>since, from</td><td>… <b>жылдан бастап</b></td><td>1997 <b>жылдан бастап</b></td></tr><tr><td>until</td><td>… <b>жылға дейін</b></td><td>1991 <b>жылға дейін</b></td></tr></table><ul><li>The year is said as an ordinal number (A2, Unit 16): тоқсан <b>бірінші</b> жылы.</li><li>A full date: 1991 жылы он алтыншы желтоқсанда. The year comes first.</li><li>20th = <b>жиырмасыншы</b>; 21st = <b>жиырма бірінші</b>.</li></ul>', [
+        k.mc('Қазақстан 1991 ___ тәуелсіздік алды.', ['жылы', 'жыл', 'жылға'], 0),
+        k.mc('Бұл он бесінші ғасыр___ болды.', ['да', 'ға', 'дан'], 0),
+        k.mc('Жүз жыл ___ мұнда дала болған.', ['бұрын', 'кейін', 'дейін'], 0),
+        k.mc('Мен мұнда 2020 жыл___ бастап тұрамын.', ['дан', 'ға', 'да'], 0),
+        k.tf('“жүз жыл бұрын” means “a hundred years ago”.', true),
+        k.ord('Бұл жүз жыл бұрын болды')]],
+      r: ['The Great Steppe', 'Қазақстан тарихы — Ұлы даланың тарихы. Мұнда мыңдаған жыл бойы көшпенділер тұрған. Олар үлкен қалалар салмаған, бірақ бай мәдениет қалдырған: музыка, поэзия, қонақжайлылық дәстүрі.\n\nОн бесінші ғасырда, 1465 жылы, Керей мен Жәнібек хандар Қазақ хандығының негізін қалады. Тарихшылар бұл оқиғаны қазақ мемлекетінің басы деп санайды.\n\nЖиырмасыншы ғасырда ел Кеңес Одағының құрамында болды. Бұл қиын уақыт еді: ашаршылық, соғыс болды, бірақ жаңа мектептер, зауыттар мен қалалар да салынды.\n\n1991 жылы он алтыншы желтоқсанда Қазақстан тәуелсіздік алды. 1997 жылы астана Алматыдан солтүстікке, қазір Астана деп аталатын қалаға көшті.\n\nБүгін Қазақстан халқы ата-баба мұрасын сақтап, заманауи ел құрып жатыр.\n\n(Ұлы дала = the Great Steppe · мәдениет = culture · қалдырған = left · хандық = khanate · Кеңес Одағы = the Soviet Union · құрамында = part of · ашаршылық = famine · солтүстік = north)', [
+        k.mc('Who lived in the steppe for thousands of years?', ['nomads', 'farmers', 'sailors'], 0), k.mc('When was the Kazakh Khanate founded?', ['in 1465', 'in 1991', 'in 1997'], 0), k.mc('When did Kazakhstan gain independence?', ['on 16 December 1991', 'on 1 January 1997', 'in 1945'], 0), k.tf('In 1997 the capital moved to Almaty.', false)]] },
+
+    { id: 'u20', t: 'Мақсатқа жету. Reaching your goal', topic: 'Ambitions',
+      v: ['Trying and succeeding', `
+күш салу | verb | to make an effort | Ол оқуға көп күш салды. | | kush sa-LOO | She put a lot of effort into her studies.
+кедергі | noun | obstacle | Бұл кедергі емес. | | ke-der-GI | This is not an obstacle.
+берілу | verb | to give up | Ешқашан берілме! | | be-ri-LOO | Never give up!
+сенімділік | noun | confidence | Оған сенімділік керек. | | se-nim-di-LIK | He needs confidence.
+дарын | noun | talent | Оның дарыны зор. | | da-RYN | She has great talent.
+табандылық | noun | persistence | Табандылық дарыннан маңызды. | | ta-ban-dy-LYQ | Persistence is more important than talent.
+сәті түсу | verb | to work out, to succeed | Бүгін сәті түсті. | | sa-TI tu-SOO | Today it worked out.
+жетістік | noun | achievement, success | Бұл үлкен жетістік. | | zhe-tis-TIK | This is a great achievement.
+еңбек | noun | work, labour | Еңбек адамды өсіреді. | | eng-BEK | Work makes a person grow.
+арманға жету | verb | to reach your dream | Ол арманына жетті. | | ar-man-GHA zhe-TOO | She reached her dream.`],
+      g: ['I managed to, I could not', '<p>In A2 you learned <b>бара аламын</b> (I can go). In the past it means <b>I managed to</b> or <b>I was able to</b>.</p><table><tr><th>Who</th><th>Could</th><th>Could not</th></tr><tr><td>мен</td><td>тапсыра <b>алдым</b></td><td>тапсыра <b>алмадым</b></td></tr><tr><td>сіз</td><td>тапсыра <b>алдыңыз</b></td><td>тапсыра <b>алмадыңыз</b></td></tr><tr><td>ол</td><td>тапсыра <b>алды</b></td><td>тапсыра <b>алмады</b></td></tr></table><p>The first verb ends in <b>-а</b> (hard words), <b>-е</b> (soft words) or <b>-й</b> (after a vowel): бар<b>а</b>, кел<b>е</b>, оқи (оқы + й).</p><ul><li>Мен емтиханды тапсыр<b>а алдым</b>. = I managed to pass the exam.</li><li>Ол кел<b>е алмады</b>. = He could not come.</li></ul><p>A common phrase: <b>қолымнан келеді</b> = I am able to do it. <b>Қолымнан келмейді</b> = I cannot do it.</p>', [
+        k.mc('Мен емтиханды тапсыр___ алдым.', ['а', 'е', 'й'], 0),
+        k.mc('Ол кеше кел___ алмады.', ['е', 'а', 'й'], 0),
+        k.mc('“I could not come.” = …', ['Мен келе алмадым.', 'Мен келе алдым.', 'Мен келмеймін.'], 0),
+        k.mc('Ол оқуға түсе ___. (managed)', ['алды', 'алмады', 'алады'], 0),
+        k.tf('“қолымнан келеді” means “I am able to do it”.', true),
+        k.ord('Мен емтиханды тапсыра алдым')]],
+      r: ['Two points short', 'Аружан бала кезінен дәрігер болуды армандады. Мектептен кейін ол медицина университетіне емтихан тапсырды, бірақ оған екі балл жетпеді. Оқуға түсе алмады.\n\nОның орнында көп адам берілер еді. Ата-анасы басқа мамандық таңдауды ұсынды. Бірақ Аружан тағы бір рет тырысып көруге шешім қабылдады.\n\nБір жыл бойы ол ауруханада санитар болып жұмыс істеді, ал кешкісін емтиханға дайындалды. Қиын болды: ауысымнан кейін күші қалмайтын. Есесіне ол дәрігерлердің нағыз жұмысын көрді және бұл жай арман емес екенін түсінді.\n\nБір жылдан кейін ол жиырма балл артық жинай алды. Қазір Аружан үшінші курста оқиды.\n\nОл: «Дарын маңызды, бірақ табандылық одан да маңызды. Кедергі — жолдың соңы емес. Әр күш салу — мақсатқа бір қадам», — дейді.\n\n(жетпеді = was short · орнында = in her place · берілер еді = would give up · санитар = hospital assistant · ауысым = shift · күші қалмайтын = had no strength left · артық = more · қадам = step)', [
+        k.mc('How many points short was Aruzhan the first time?', ['two', 'twenty', 'ten'], 0), k.tf('Her parents suggested a different profession.', true), k.mc('What did she do for the next year?', ['worked in a hospital and studied', 'travelled abroad', 'stayed at home'], 0), k.mc('What does she say is more important than talent?', ['persistence', 'money', 'luck'], 0)]] },
+
+    { id: 'u21', t: 'Қоғам. People helping people', topic: 'Society',
+      v: ['Society and help', `
+қоғам | noun | society | Біз қоғамда өмір сүреміз. | | qo-GHAM | We live in a society.
+ерікті | noun | volunteer | Ол ерікті болып жұмыс істейді. | | e-rik-TI | She works as a volunteer.
+қайырымдылық | noun | charity | Ол қайырымдылықпен айналысады. | | qa-yy-rym-dy-LYQ | He does charity work.
+көмек | noun | help | Көмегіңізге рақмет! | | ko-MEK | Thank you for your help!
+кедей | adjective | poor | Бұл кедей отбасы. | | ke-DEY | This is a poor family.
+бай | adjective | rich | Ол бай адам. | | bay | He is a rich man.
+мұқтаж | adjective | in need | Олар көмекке мұқтаж. | | mooq-TAZH | They are in need of help.
+қаражат | noun | funds, money | Қаражат жеткілікті. | | qa-ra-ZHAT | There are enough funds.
+үйсіз | adjective | homeless | Еріктілер үйсіз адамдарға көмектеседі. | | uy-SIZ | Volunteers help homeless people.
+қамқорлық | noun | care | Ол әжесіне қамқорлық жасайды. | | qam-qor-LYQ | She takes care of her grandmother.`],
+      g: ['Doing something for someone: -ып беру', '<p>In Unit 5 you met two verbs together. Here the second verb is <b>беру</b> (to give). It shows that the action is done <b>for another person</b>.</p><table><tr><th>One verb</th><th>With беру</th><th>Meaning</th></tr><tr><td>оқу</td><td>оқы<b>п беру</b></td><td>to read (it) to someone</td></tr><tr><td>жазу</td><td>жаз<b>ып беру</b></td><td>to write (it) for someone</td></tr><tr><td>сатып алу</td><td>сатып ал<b>ып беру</b></td><td>to buy (it) for someone</td></tr><tr><td>көрсету</td><td>көрсет<b>іп беру</b></td><td>to show someone</td></tr></table><p>The person who gets the help takes the “to” ending: <b>маған, сізге, оған, әжеме</b>.</p><ul><li>Маған осы хатты <b>оқып беріңізші</b>. = Please read this letter to me.</li><li>Мен әжеме нан <b>сатып алып бердім</b>. = I bought bread for my grandmother.</li></ul>', [
+        k.mc('Маған осы хатты оқып ___.', ['беріңізші', 'кетіңізші', 'қалыңызшы'], 0),
+        k.mc('Мен әжеме нан сатып алып ___.', ['бердім', 'қалдым', 'шықтым'], 0),
+        k.mc('Ол маған жолды көрсет___ берді.', ['іп', 'ып', 'п'], 0),
+        k.mc('Досым маған мекенжайды жаз___ берді.', ['ып', 'іп', 'п'], 0),
+        k.tf('“-ып беру” shows that the action is done for another person.', true),
+        k.ord('Маған осы хатты оқып беріңізші')]],
+      r: ['Saturday volunteers', 'Әр сенбіде таңғы сағат тоғызда қалалық базардың жанына жиырма адам жиналады. Бұлар — «Мейірімді қолдар» қайырымдылық ұйымының еріктілері. Олардың арасында студенттер, зейнеткерлер, тіпті бір банк директоры бар.\n\nАлдымен олар қала тұрғындары берген қаражатқа азық-түлік сатып алады. Содан кейін оны пакеттерге бөледі: нан, сүт, жарма, көкөніс. Түске дейін пакеттерді үйден шығуы қиын алпыс қарт адамға апарып береді.\n\n«Көп адам кедейлерге тек ақша керек деп ойлайды, — дейді топты басқаратын Сәуле. — Бірақ жалғыз адамдарға көңіл бөлу де керек. Біз әрқашан шай ішіп, әңгімелесіп отырамыз».\n\nҰйымға әрқашан жаңа адамдар керек. Басқаларға қамқорлық жасау үшін бай болу міндетті емес. Аптасына екі сағат қана жеткілікті.\n\n(жиналады = gather · ұйым = organisation · азық-түлік = food · бөледі = divide · жарма = grains · апарып береді = take to · көңіл бөлу = attention · жеткілікті = enough)', [
+        k.mc('When do the volunteers meet?', ['on Saturdays at nine', 'on Sundays at noon', 'every evening'], 0), k.mc('Where does the money for food come from?', ['people in the city', 'the bank', 'the market'], 0), k.mc('How many elderly people get a bag?', ['sixty', 'twenty', 'nine'], 0), k.tf('Saule thinks lonely people need only money.', false)]] },
+
+    { id: 'u22', t: 'Қала ма, ауыл ма? City or village?', topic: 'Lifestyles',
+      v: ['Two ways of life', `
+ферма | noun | farm | Ағамның үлкен фермасы бар. | | FER-ma | My brother has a big farm.
+егін | noun | crop, harvest | Биыл егін жақсы. | | e-GIN | The harvest is good this year.
+егістік | noun | field | Егістікте бидай өседі. | | e-gis-TIK | Wheat grows in the field.
+мал | noun | livestock | Олар мал ұстайды. | | mal | They keep livestock.
+тыныштық | noun | silence, quiet | Мен тыныштықты жақсы көремін. | | ty-nysh-TYQ | I love the quiet.
+қалалық | adjective | city, urban | Бұл қалалық саябақ. | | qa-la-LYQ | This is the city park.
+ауылдық | adjective | rural, village | Ол ауылдық мұғалім. | | a-wyl-DYQ | He is a village teacher.
+артықшылық | noun | advantage | Бұл үлкен артықшылық. | | ar-tyq-shy-LYQ | This is a big advantage.
+кемшілік | noun | disadvantage | Қаланың кемшілігі бар. | | kem-shi-LIK | The city has a disadvantage.
+қарқын | noun | pace | Мұнда өмір қарқыны жылдам. | | qar-QYN | The pace of life is fast here.`],
+      g: ['As … as, like: -дай, -дей and сияқты', '<p>Add <b>-дай, -дей</b> (or <b>-тай, -тей</b> after к, қ, п, с, т, ш) to a noun to say <b>like</b> or <b>as … as</b>.</p><table><tr><th>Noun</th><th>With the ending</th><th>Example</th></tr><tr><td>қала</td><td>қала<b>дай</b></td><td>Ауыл қала<b>дай</b> шулы емес. = The village is not as noisy as the city.</td></tr><tr><td>сен</td><td>сен<b>дей</b></td><td>Мен сен<b>дей</b> тез жүгіре алмаймын. = I cannot run as fast as you.</td></tr><tr><td>тас</td><td>тас<b>тай</b></td><td>Нан тас<b>тай</b> қатты. = The bread is as hard as stone.</td></tr></table><p><b>сияқты</b> is a separate word with the same meaning. It comes after the noun: қала <b>сияқты</b> (like a city), сен <b>сияқты</b> (like you).</p><p>Remember from A2: <b>-рақ, -рек</b> + <b>-дан</b> (bigger than) and <b>-ға қарағанда</b> (compared with).</p>', [
+        k.mc('Ауыл қала___ шулы емес.', ['дай', 'дей', 'тай'], 0),
+        k.mc('Мен сен___ тез жүгіре алмаймын.', ['дей', 'дай', 'тей'], 0),
+        k.mc('Нан тас___ қатты.', ['тай', 'дай', 'дей'], 0),
+        k.mc('“like a city” = …', ['қала сияқты', 'сияқты қала', 'қаладан'], 0),
+        k.tf('“қаладай” means “like a city” or “as … as a city”.', true),
+        k.ord('Ауыл қаладай шулы емес')]],
+      r: ['Two brothers', 'Ағайынды Ерлан мен Нұрлан кішкентай ауылда өсті. Мектептен кейін Ерлан Алматыға кетті, ал Нұрлан үйде қалды.\n\nЕрлан қалалық компанияда жұмыс істейді. Жалақысы жоғары, жанында кино, театр, дүкендер бар. Бірақ қала өмірінің кемшіліктері де бар: ол күніне екі сағат кептелісте тұрады, пәтер жалдау өте қымбат. «Мұнда өмір қарқыны тым жылдам», — дейді ол.\n\nНұрланның фермасы бар: егістік, мал, үлкен үй. Оның кірісі ағасыныкіндей жоғары емес, әрі егінге байланысты. Есесіне айнала тыныштық, ауа таза, балалар көшеде ойнайды.\n\nӘр жазда Ерлан ауылға келеді. «Ауылдық өмірдің басты артықшылығы — мұнда уақыт бар», — деп ойлайды ол. Ал Нұрлан кейде қаланы армандайды.\n\n(ағайынды = brothers · өсті = grew up · қалды = stayed · ағасыныкіндей = as … as his brother’s · әрі = and also · байланысты = depends on)', [
+        k.mc('Where does Erlan live now?', ['in Almaty', 'in the village', 'in Astana'], 0), k.mc('What are the disadvantages of his life?', ['traffic jams and expensive rent', 'a low salary', 'no shops'], 0), k.mc('What does Nurlan’s income depend on?', ['the harvest', 'his brother', 'the bank'], 0), k.tf('Nurlan earns more than his brother.', false)]] },
+
+    { id: 'u23', t: 'Күтпеген кездесу. An unexpected meeting', topic: 'Stories',
+      v: ['Words for a good story', `
+кездейсоқ | adjective | by chance, accidental | Бұл кездейсоқ кездесу болды. | | kez-dey-SOQ | It was a chance meeting.
+сол уақытта | phrase | meanwhile, at that time | Сол уақытта пойыз кетіп қалды. | | sol wa-qyt-TA | Meanwhile the train left.
+анықтау | verb | to find out | Біз шындықты анықтадық. | | a-nyq-TAU | We found out the truth.
+сәйкестік | noun | coincidence, match | Бұл жай ғана сәйкестік. | | say-kes-TIK | It is just a coincidence.
+бейтаныс | adjective | unknown, stranger | Маған бейтаныс адам келді. | | bey-ta-NYS | A stranger came up to me.
+құпия | noun | secret | Бұл — біздің құпиямыз. | | qoo-pi-YA | This is our secret.
+ғажайып | noun | miracle | Бұл нағыз ғажайып! | | gha-zha-YYP | This is a real miracle!
+тағдыр | noun | fate | Бәлкім, бұл тағдыр шығар. | | tagh-DYR | Perhaps it is fate.
+болып шығу | verb | to turn out | Ол менің көршім болып шықты. | | bo-LYP shy-GHOO | He turned out to be my neighbour.
+жұмбақ | noun | riddle, mystery | Бұл мен үшін жұмбақ. | | zhoom-BAQ | This is a mystery to me.`],
+      g: ['While, when, as soon as', '<table><tr><th>Ending</th><th>Meaning</th><th>Example</th></tr><tr><td><b>-ғанда, -генде, -қанда, -кенде</b></td><td>when</td><td>Мен үйге кел<b>генде</b>, бәрі ұйықтап жатты. = When I came home, everyone was asleep.</td></tr><tr><td><b>-ып жатқанда</b></td><td>while</td><td>Пойыз күт<b>іп отырғанда</b>, кітап оқыдым. = While I was waiting for the train, I read a book.</td></tr><tr><td><b>-ысымен, -ісімен</b> (after a consonant)<br><b>-сымен, -сімен</b> (after a vowel)</td><td>as soon as</td><td>Үйге кел<b>ісімен</b>, қоңырау шалдым. = As soon as I got home, I phoned.<br>Пойыз тоқта<b>сымен</b>, мен түстім. = As soon as the train stopped, I got off.</td></tr><tr><td><b>-ған соң, -ген соң</b></td><td>after</td><td>Тамақ іш<b>кен соң</b>, біз серуендедік. = After we ate, we went for a walk.</td></tr></table><p>These endings have no person: the same form is used for I, you and he.</p>', [
+        k.mc('Мен үйге кел___, бәрі ұйықтап жатты. (when)', ['генде', 'ғанда', 'кенде'], 0),
+        k.mc('Пойыз тоқта___, мен түстім. (as soon as)', ['сымен', 'ысымен', 'ісімен'], 0),
+        k.mc('Үйге кел___, анама қоңырау шалдым. (as soon as)', ['ісімен', 'ысымен', 'сымен'], 0),
+        k.mc('Тамақ іш___ соң, біз серуендедік.', ['кен', 'ген', 'қан'], 0),
+        k.tf('“келісімен” means “as soon as (someone) came”.', true),
+        k.ord('Пойыз тоқтасымен мен түстім')]],
+      r: ['The stranger on the train', 'Өткен қыста мен Астанадан Қостанайға пойызбен келе жаттым. Купеде менімен бірге бейтаныс адам болды — көзі мейірімді қарт кісі. Пойыз даламен жүріп келе жатқанда, біз шай ішіп, әңгімелестік.\n\nОл қырық жыл бұрын Қостанайда оқығанын, содан бері онда болмағанын айтты. «Ескі досымды тапқым келеді, — деді ол. — Біз жатақханада бірге тұрдық. Кейін мен кетіп қалдым, байланыс үзілді».\n\n— Оның аты кім? — деп сұрадым.\n\n— Серік Ахметов.\n\nМен сенбедім. Бұл — менің әкемнің аты! Бұл кездейсоқ сәйкестік емес болып шықты: әкем сол институтта оқыған екен.\n\nПойыз келісімен, мен үйге қоңырау шалдым. Бір сағаттан кейін екі ескі дос вокзалда құшақтасып тұрды.\n\nӘкем мұны тағдыр дейді. Ал мен бұл жай ғана ғажайып деп ойлаймын.\n\n(купе = compartment · кісі = person · содан бері = since then · үзілді = was broken · сенбедім = did not believe · құшақтасып = hugging each other)', [
+        k.mc('Where was the writer travelling to?', ['Kostanay', 'Astana', 'Almaty'], 0), k.mc('Who did the old man want to find?', ['an old friend', 'his son', 'his teacher'], 0), k.mc('Who was Serik Akhmetov?', ['the writer’s father', 'the writer’s boss', 'the train conductor'], 0), k.tf('The two friends met at the station.', true)]] },
+
+    { id: 'u24', t: 'Қайталау. B1 review', topic: 'Review',
+      v: ['Phrases for longer speech', `
+соған қарамастан | phrase | nevertheless | Қиын болды. Соған қарамастан мен қуаныштымын. | | so-GHAN qa-ra-mas-TAN | It was hard. Nevertheless I am glad.
+сонымен қатар | phrase | besides, in addition | Сонымен қатар, бұл арзан. | | so-ny-MEN qa-TAR | Besides, it is cheap.
+салыстырғанда | word | compared with | Астанамен салыстырғанда мұнда жылы. | | sa-lys-tyr-ghan-DA | Compared with Astana it is warm here.
+бір жағынан | phrase | on the one hand | Бір жағынан, бұл ыңғайлы. | | bir zha-ghy-NAN | On the one hand, it is convenient.
+екінші жағынан | phrase | on the other hand | Екінші жағынан, бұл қымбат. | | ye-kin-SHI zha-ghy-NAN | On the other hand, it is expensive.
+нәтижесінде | word | as a result | Нәтижесінде біз кешігіп қалдық. | | na-ti-zhe-sin-DE | As a result we were late.
+айырмашылығы | word | unlike, the difference | Ағамнан айырмашылығы, мен қаланы жақсы көремін. | | ay-yr-ma-shy-ly-GHY | Unlike my brother, I like the city.
+осылайша | word | so, in this way | Осылайша, біз мәселені шештік. | | o-sy-lay-SHA | In this way we solved the problem.
+шын мәнінде | phrase | in fact, really | Шын мәнінде, бұл оңай. | | shyn ma-nin-DE | In fact it is easy.
+негізінен | word | mainly | Мен негізінен жаңалық оқимын. | | ne-gi-zi-NEN | I mainly read the news.`],
+      g: ['What you can do now', '<p>The main patterns of Kazakh B1:</p><table><tr><th>Unit</th><th>Pattern</th><th>Example</th></tr><tr><td>1, 12</td><td>-ған, -атын</td><td>мен оқы<b>ған</b> кітап; ойна<b>йтын</b>мын</td></tr><tr><td>2, 23</td><td>time</td><td>кел<b>геннен кейін</b>; кел<b>генде</b>; кел<b>ісімен</b></td></tr><tr><td>3, 10</td><td>reporting</td><td>«Келемін» <b>деп айтты</b>; кет<b>іпті</b></td></tr><tr><td>4, 15</td><td>not doing</td><td>шек<b>пе</b>ңіз; істе<b>мей</b> тұр</td></tr><tr><td>5, 21</td><td>two verbs</td><td>ұшып <b>кетті</b>; оқып <b>беріңізші</b></td></tr><tr><td>6, 18</td><td>passive</td><td>қос<b>ыл</b>ады; сал<b>ын</b>ды</td></tr><tr><td>8, 16</td><td>if only; although</td><td>болса, көмектес<b>ер едім</b>; шарша<b>сам да</b></td></tr><tr><td>9, 14, 17</td><td>the -у form</td><td>оқу<b>ды</b> жақсы көремін; бар<b>уым</b> керек; шегу<b>ге</b> тыйым салынады</td></tr><tr><td>20</td><td>managed to</td><td>тапсыра <b>алдым</b></td></tr></table>', [
+        k.mc('Бұл — мен оқы___ кітап.', ['ған', 'ген', 'атын'], 0),
+        k.mc('Мұнда темекі шек___ңіз.', ['пе', 'ме', 'бе'], 0),
+        k.mc('Егер уақытым болса, көмектес___ едім.', ['ер', 'ар', 'р'], 0),
+        k.mc('Шарша___ да, мен келдім.', ['сам', 'сем', 'са'], 0),
+        k.mc('Менің ерте тұр___ керек.', ['уым', 'уы', 'уыңыз'], 0),
+        k.mc('Естідің бе? Марат Астанаға кет___.', ['іпті', 'ыпты', 'пті'], 0),
+        k.ord('Қиын болса да мен емтиханды тапсыра алдым')]],
+      r: ['A letter after B1', 'Қымбатты Марат!\n\nБүгін мен B1 деңгейін аяқтадым. Екі жыл бұрын мен қазақша бір сөз де айта алмайтынмын, ал қазір саған осы хатты жазып отырмын.\n\nБір жағынан, қиын болды. Қазақ грамматикасы, шын мәнінде, ағылшын грамматикасындай оңай емес. Екінші жағынан, әр сабақ маған жаңа бірдеңе берді.\n\nБылтырғымен салыстырғанда, мен әлдеқайда еркін сөйлеймін. Сонымен қатар, мен жаңалық оқи бастадым, тіпті әзілді де түсінемін. Нәтижесінде менің қазақ тілді достарым пайда болды.\n\nСоған қарамастан, маған әлі көп оқу керек. Негізінен айтылымымды жақсартқым келеді.\n\nОсылайша, менің келесі қадамым — B2 деңгейі. Сенің көмегің болмаса, мен мұны істей алмас едім. Рақмет!\n\nСенің досың Том\n\n(деңгей = level · оңай = easy · әлдеқайда = much · әзіл = joke · қазақ тілді = Kazakh-speaking · жақсарту = to improve · қадам = step)', [
+        k.mc('How long has Tom been learning Kazakh?', ['two years', 'one year', 'five years'], 0), k.tf('Tom thinks Kazakh grammar is as easy as English grammar.', false), k.mc('What does Tom mainly want to improve?', ['his pronunciation', 'his reading', 'his spelling'], 0), k.mc('What is his next step?', ['level B2', 'level A2', 'a job in Astana'], 0)]] }
   ]);
 })();

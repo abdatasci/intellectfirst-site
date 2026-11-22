@@ -4,7 +4,7 @@
 //   store "school" – students, classes, teachers, books (one JSON document each)
 //   store "photos" – profile photos by account id
 import { getStore } from '@netlify/blobs';
-import { DEV_COOKIE, qrLookup, tgAccount, claimQr } from '../lib/tgauth.mjs';
+import { DEV_COOKIE, qrLookup, tgAccount, claimQr, pendingQr } from '../lib/tgauth.mjs';
 import { readFile } from 'node:fs/promises';
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import { join } from 'node:path';
@@ -503,6 +503,11 @@ export default async (req) => {
     if (profile && profile.role === 'guest' && !profile.studentId && profile.phone) {
       const np = await linkByPhone(uid, { ...profile });
       if (np.studentId) { profile = np; await putProfile(uid, profile); }
+    }
+    // a child's QR account follows its entry in IF_QR_ACCOUNTS: the director can change the courses later
+    if (user.device && profile && profile.via === 'qr') {
+      const ck = (req.headers.get('cookie') || '').match(/(?:^|;\s*)if_dev=([\w-]{16,64})/), x = ck && pendingQr(ck[1]);
+      if (x && Array.isArray(x.st) && JSON.stringify(x.st) !== JSON.stringify(profile.study || [])) { profile.study = x.st.slice(0, 8); if (x.lv) profile.level = String(x.lv).slice(0, 40); await putProfile(uid, profile); }
     }
     const out = { user: { id: uid, email: user.email, name: profile?.name || user.name || '' }, profile, access: tier(profile), membership: await membership() };
     if (profile?.studentId) {
