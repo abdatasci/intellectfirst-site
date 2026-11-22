@@ -145,6 +145,15 @@ export async function payroll(month, only = null, now = new Date()) {
     T.items.push({ key: 'x:' + x.id, date: x.date, start: x.start || '', end: x.end || '', label: x.label, min: x.min || 60, full, pay, kind: 'extra', note: x.note || '', how: `${x.min || 60} min` + (x.factor != null && x.factor !== 1 ? ` × ${x.factor}` : '') });
     T.total += pay; T.minutes += x.min || 60; T.lessons++;
   }
+  // deductions decided by the director (e.g. lateness): store "school" → paydeduct [{id, teacherId, date, min, note}] — the pay of
+  // that many minutes at the teacher's rate is taken off; no hours or lessons are counted
+  for (const x of ((await S().get('paydeduct', { type: 'json' })) || [])) {
+    if (x.date < from || x.date > to || (only && x.teacherId !== only)) continue;
+    const r = (rates.teachers || {})[x.teacherId] || rates.default || { amount: 0, per: 60 }, pay = -per(r, x.min || 0);
+    const T = byT[x.teacherId] || (byT[x.teacherId] = { teacherId: x.teacherId, items: [], total: 0, minutes: 0, lessons: 0, late: { n: 0, min: 0 }, unpaidLate: 0 });
+    T.items.push({ key: 'd:' + x.id, date: x.date, start: '', end: '', label: x.label || 'Deduction', min: 0, full: 0, pay, kind: 'deduct', note: x.note || '', how: `${x.min} min at the hourly rate` });
+    T.total += pay;
+  }
   const skip = new Set(rates.skip || []);
   const list = Object.values(byT).map(T => {
     const t = teachers.find(x => x.id === T.teacherId) || {};

@@ -1205,7 +1205,7 @@
   }
   function dm(d) { return +d.slice(8) + ' ' + ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][+d.slice(5, 7) - 1]; }
   function tg(n) { return (Math.round(+n || 0)).toLocaleString('en-US').replace(/,/g, ' ') + ' ₸'; }
-  var PAYK = { unrecorded: ['bad', 'not recorded yet'], extra: ['ok', 'recorded'], taught: ['ok', 'taught'], nobody: ['mute', 'nobody came · ½'], latecancel: ['mute', 'late cancellation'], missed: ['bad', 'missed'] };
+  var PAYK = { unrecorded: ['bad', 'not recorded yet'], extra: ['ok', 'recorded'], taught: ['ok', 'taught'], nobody: ['mute', 'nobody came · ½'], latecancel: ['mute', 'late cancellation'], missed: ['bad', 'missed'], deduct: ['bad', 'deduction'] };
   function payItems(items, admin) {
     return '<table class="t small"><tr><th>Date</th><th>Lesson</th><th>Time</th><th></th><th style="text-align:right">Pay</th>' + (admin ? '<th></th>' : '') + '</tr>' + items.map(function (x) {
       var k = PAYK[x.kind] || ['mute', x.kind];
