@@ -1,5 +1,5 @@
 /* IF Lingo · Kazakh B1 word bank: 32 more words for every unit, studied in the Vocabulary tab.
-   Built so far: units 1 to 18 (576 words). With the 240 lesson words, B1 will have about 1,000 words.
+   768 words. With the 240 lesson words, B1 has 1,008 words; A1 + A2 + B1 = 2,008.
    word | part of speech | meaning in English | example | (empty) | how to say it | the example in English */
 IFX.moreWords('kk-b1', {
 u1: `
@@ -595,5 +595,203 @@ u18: `
 мәлімет | noun | information, data | Маған қосымша мәлімет керек. | | ma-li-MET | I need more information.
 есептеу | verb | to calculate | Шығынды есептеп көрейік. | | e-sep-TEU | Let’s calculate the expenses.
 құбылыс | noun | phenomenon | Бұл — сирек табиғи құбылыс. | | qoo-by-LYS | This is a rare natural phenomenon.
-жылдамдық | noun | speed | Көліктің жылдамдығы жоғары. | | zhyl-dam-DYQ | The car’s speed is high.`
+жылдамдық | noun | speed | Көліктің жылдамдығы жоғары. | | zhyl-dam-DYQ | The car’s speed is high.`,
+u19: `
+өткен | noun | the past | Біз елдің өткенін зерттейміз. | | ot-KEN | We study the country’s past.
+қазіргі | adjective | present, modern | Бұл — қазіргі заман. | | qa-zir-GI | These are modern times.
+дәуір | noun | era, age | Бұл өзгерістер дәуірі болды. | | da-WIR | It was an age of change.
+кезең | noun | period, stage | Бұл — тарихтың қиын кезеңі. | | ke-ZENG | This is a difficult period of history.
+мыңжылдық | noun | millennium | Қала мыңжылдық бойы бар. | | myng-zhyl-DYQ | The city has existed for a millennium.
+патша | noun | tsar, king | Патша сарайда тұрған. | | pat-SHA | The tsar lived in a palace.
+король | noun | king | Король қырық жыл билік етті. | | ko-ROL | The king ruled for forty years.
+император | noun | emperor | Император соғыс жүргізді. | | im-pe-RA-tor | The emperor waged war.
+империя | noun | empire | Империя өте үлкен болған. | | im-PE-ri-ya | The empire was very large.
+билеуші | noun | ruler | Ол дана билеуші болған. | | bi-le-oo-SHI | He was a wise ruler.
+әскер | noun | army | Әскер елді қорғайды. | | as-KER | The army defends the country.
+сарбаз | noun | soldier | Сарбаздар үйге оралды. | | sar-BAZ | The soldiers returned home.
+шайқас | noun | battle | Бұл шайқас 1730 жылы болған. | | shay-QAS | This battle took place in 1730.
+жаулап алу | verb | to conquer | Олар осы жерлерді жаулап алды. | | zha-oo-LAP a-LOO | They conquered these lands.
+бейбітшілік | noun | peace | Бәрі бейбітшілікті қалайды. | | bey-bit-shi-LIK | Everyone wants peace.
+төңкеріс | noun | revolution | Төңкерістен кейін бәрі өзгерді. | | tong-ke-RIS | After the revolution everything changed.
+көтеріліс | noun | uprising | Көтеріліс шілдеде басталды. | | ko-te-ri-LIS | The uprising began in July.
+реформа | noun | reform | Бұл маңызды реформа болды. | | re-FOR-ma | It was an important reform.
+Кеңес Одағы | noun | the Soviet Union | Қазақстан Кеңес Одағының құрамында болды. | | ke-NGES o-da-GHY | Kazakhstan was part of the Soviet Union.
+республика | noun | republic | Қазақстан — республика. | | res-POOB-li-ka | Kazakhstan is a republic.
+президент | noun | president | Президентті халық сайлайды. | | pre-zi-DENT | The president is elected by the people.
+елтаңба | noun | coat of arms | Бұл — Қазақстанның елтаңбасы. | | el-tang-BA | This is the coat of arms of Kazakhstan.
+ту | noun | flag | Қазақстанның туы көк түсті. | | too | The flag of Kazakhstan is blue.
+әнұран | noun | anthem | Бәрі тұрып, әнұран айтты. | | an-oo-RAN | Everyone stood up and sang the anthem.
+аумақ | noun | territory | Елдің аумағы үлкен. | | a-oo-MAQ | The country has a large territory.
+ежелгі | adjective | ancient | Бұл — ежелгі қала. | | e-zhel-GI | This is an ancient city.
+археолог | noun | archaeologist | Археологтар алтын тапты. | | ar-khe-O-log | Archaeologists found gold.
+қазба жұмыстары | noun | excavations | Қазба жұмыстары әр жазда жүреді. | | qaz-BA zhoo-mys-ta-RY | Excavations take place every summer.
+қамал | noun | fortress | Таудың басында қамал тұр. | | qa-MAL | There is a fortress on top of the hill.
+сарай | noun | palace | Сарайда қазір музей бар. | | sa-RAY | There is now a museum in the palace.
+Жібек жолы | noun | the Silk Road | Жібек жолы Қазақстан арқылы өткен. | | zhi-BEK zho-LY | The Silk Road went through Kazakhstan.
+батыр | noun | hero, warrior | Ол — халық батыры. | | ba-TYR | He is a hero of the people.`,
+u20: `
+мотивация | noun | motivation | Маған мотивация керек. | | mo-ti-VA-tsi-ya | I need motivation.
+ынта | noun | eagerness, keenness | Оның оқуға ынтасы зор. | | yn-TA | She is very keen to study.
+талпыну | verb | to strive, to try hard | Ол білімге талпынады. | | tal-py-NOO | She strives for knowledge.
+шыдамдылық | noun | patience | Бұл үшін шыдамдылық керек. | | shy-dam-dy-LYQ | This takes patience.
+жалқаулық | noun | laziness | Жалқаулық оқуға кедергі жасайды. | | zhal-qa-oo-LYQ | Laziness gets in the way of studying.
+қиындық | noun | difficulty | Біз қиындықтан қорықпаймыз. | | qi-yn-DYQ | We are not afraid of difficulty.
+сәтсіздік | noun | failure, bad luck | Бір сәтсіздік — соңы емес. | | sat-siz-DIK | One failure is not the end.
+қателік | noun | mistake, error | Бәрі қателік жасайды. | | qa-te-LIK | Everyone makes mistakes.
+байқап көру | verb | to try, to have a go | Тағы бір рет байқап көр! | | bay-QAP ko-ROO | Have another go!
+күресу | verb | to fight, to struggle | Ол арманы үшін күреседі. | | ku-re-SOO | She fights for her dream.
+еңсеру | verb | to overcome | Ол қорқынышын еңсерді. | | eng-se-ROO | He overcame his fear.
+дамыту | verb | to develop (something) | Есте сақтау қабілетін дамыту керек. | | da-my-TOO | You need to develop your memory.
+қабілет | noun | ability | Баланың музыкаға қабілеті бар. | | qa-bi-LET | The child has an ability for music.
+жеңімпаз | noun | winner | Жеңімпаз жүлде алды. | | zhe-ngim-PAZ | The winner got a prize.
+көшбасшы | noun | leader | Ол — топтың көшбасшысы. | | kosh-bas-SHY | She is the leader of the group.
+үлгі | noun | example, model | Ол — бәріне үлгі. | | ul-GI | He is an example to everyone.
+шабыттандыру | verb | to inspire | Оның оқиғасы адамдарды шабыттандырады. | | sha-byt-tan-dy-ROO | Her story inspires people.
+табанды | adjective | persistent | Ол — табанды оқушы. | | ta-ban-DY | He is a persistent pupil.
+мақсатшыл | adjective | determined, purposeful | Ол — мақсатшыл адам. | | maq-sat-SHYL | She is a determined person.
+батылдық | noun | courage | Бұл үшін батылдық керек. | | ba-tyl-DYQ | This takes courage.
+марапат | noun | award | Ол марапат алды. | | ma-ra-PAT | He received an award.
+мойындау | verb | to admit, to recognise | Ол қатесін мойындады. | | mo-yyn-DAU | He admitted his mistake.
+атақ | noun | fame, title | Оған атақ келді. | | a-TAQ | Fame came to him.
+шың | noun | peak, summit | Ол мансабының шыңына жетті. | | shyng | She reached the peak of her career.
+қадам | noun | step | Бұл — мақсатқа алғашқы қадам. | | qa-DAM | This is the first step towards the goal.
+тәуекел | noun | risk | Бұл — үлкен тәуекел. | | ta-we-KEL | This is a big risk.
+тәуекел ету | verb | to take a risk | Ол тәуекел етіп, бизнес ашты. | | ta-we-KEL e-TOO | He took a risk and opened a business.
+бірте-бірте | adverb | gradually | Мен бірте-бірте үйрендім. | | bir-TE bir-TE | I learned gradually.
+ілгерілеу | verb | to make progress | Мен қазақ тілінде ілгерілеп келемін. | | il-ge-ri-LEU | I am making progress in Kazakh.
+ерік-жігер | noun | willpower | Оның ерік-жігері күшті. | | e-RIK zhi-GER | She has strong willpower.
+өзіне сену | verb | to believe in yourself | Өзіңе сен! | | o-zi-NE se-NOO | Believe in yourself!
+жалғастыру | verb | to continue | Мен оқуымды жалғастырамын. | | zhal-ghas-ty-ROO | I will continue my studies.`,
+u21: `
+қоғамдық | adjective | public, social | Бұл — қоғамдық ұйым. | | qo-gham-DYQ | This is a public organisation.
+әлеуметтік | adjective | social | Бұл — әлеуметтік мәселе. | | a-leu-met-TIK | This is a social problem.
+жұмыссыздық | noun | unemployment | Жұмыссыздық өсті. | | zhoo-mys-syz-DYQ | Unemployment has risen.
+мүмкіндігі шектеулі адам | noun | person with a disability | Автобуста мүмкіндігі шектеулі адамдарға орын бар. | | mum-kin-di-GI shek-te-oo-LI a-DAM | The bus has seats for people with disabilities.
+жетім | noun | orphan | Ол ерте жетім қалды. | | zhe-TIM | He was orphaned early.
+балалар үйі | noun | children’s home | Біз балалар үйіне көмектесеміз. | | ba-la-LAR u-YI | We help a children’s home.
+қарттар үйі | noun | old people’s home | Еріктілер қарттар үйіне барады. | | qart-TAR u-YI | Volunteers go to an old people’s home.
+көпбалалы отбасы | noun | large family | Бұл — көпбалалы отбасы. | | kop-ba-la-LY ot-ba-SY | This is a large family.
+азшылық | noun | minority | Олар азшылықта қалды. | | az-shy-LYQ | They were in the minority.
+көпшілік | noun | majority, the public | Көпшілік келіседі. | | kop-shi-LIK | The majority agrees.
+мигрант | noun | migrant | Қалада мигрант көп. | | mi-GRANT | There are many migrants in the city.
+босқын | noun | refugee | Босқындарға көмек керек. | | bos-QYN | Refugees need help.
+тең құқық | noun | equal rights | Заң тең құқыққа кепілдік береді. | | teng qoo-QYQ | The law guarantees equal rights.
+кемсіту | verb | to discriminate, to belittle | Ешкімді кемсітуге болмайды. | | kem-si-TOO | You must not discriminate against anyone.
+толеранттылық | noun | tolerance | Қоғамда толеранттылық маңызды. | | to-le-rant-ty-LYQ | Tolerance is important in society.
+ынтымақ | noun | solidarity, harmony | Халық ынтымақ көрсетті. | | yn-ty-MAQ | The people showed solidarity.
+акция | noun | campaign, event | Сенбіде акция өтеді. | | AK-tsi-ya | A campaign will take place on Saturday.
+қаражат жинау | verb | to raise funds | Аурухана үшін қаражат жинап жатыр. | | qa-ra-ZHAT zhi-NAU | Funds are being raised for the hospital.
+қор | noun | fund, foundation | Қор балаларға көмектеседі. | | qor | The foundation helps children.
+ұйым | noun | organisation | Бұл — халықаралық ұйым. | | ooy-YM | This is an international organisation.
+қозғалыс | noun | movement | Бұл — жастар қозғалысы. | | qoz-gha-LYS | This is a youth movement.
+өз еркімен | phrase | voluntarily | Олар өз еркімен жұмыс істейді. | | oz er-ki-MEN | They work voluntarily.
+қолдау көрсету | verb | to give support | Достарым маған қолдау көрсетті. | | qol-DAU kor-se-TOO | My friends gave me support.
+садақа беру | verb | to give to charity | Ол әр жұма сайын садақа береді. | | sa-da-QA be-ROO | He gives to charity every Friday.
+жастар | noun | young people | Жастар бұл саябақты жақсы көреді. | | zhas-TAR | Young people love this park.
+жасөспірім | noun | teenager | Жасөспірімдер еріктілерге көмектеседі. | | zhas-os-pi-RIM | Teenagers help the volunteers.
+қария | noun | elderly person | Қарияға орын беріңіз. | | qa-ri-YA | Give your seat to the elderly person.
+азаматтық қоғам | noun | civil society | Азаматтық қоғам дамып келеді. | | a-za-mat-TYQ qo-GHAM | Civil society is developing.
+борыш | noun | duty | Ата-анаға көмектесу — біздің борышымыз. | | bo-RYSH | Helping our parents is our duty.
+мейірімділік | noun | kindness | Мейірімділік әлемді өзгертеді. | | me-yi-rim-di-LIK | Kindness changes the world.
+жанашырлық | noun | compassion | Ол жанашырлық танытты. | | zhan-a-shyr-LYQ | She showed compassion.
+бірлік | noun | unity | Бірлік бар жерде тірлік бар. | | bir-LIK | Where there is unity, there is life.`,
+u22: `
+мегаполис | noun | very big city | Алматы — мегаполис. | | me-ga-PO-lis | Almaty is a very big city.
+аймақ | noun | region | Бұл — ауыл шаруашылығы аймағы. | | ay-MAQ | This is a farming region.
+ауыл тұрғыны | noun | villager | Ауыл тұрғындары ерте тұрады. | | a-WYL toor-ghy-NY | The villagers get up early.
+фермер | noun | farmer | Менің ағам — фермер. | | FER-mer | My brother is a farmer.
+бақша | noun | vegetable garden | Бақшада картоп өседі. | | baq-SHA | Potatoes grow in the vegetable garden.
+жылыжай | noun | greenhouse | Жылыжайда қызанақ өседі. | | zhy-ly-ZHAY | Tomatoes grow in the greenhouse.
+қора | noun | shed, animal pen | Мал қорада тұр. | | qo-RA | The livestock are in the pen.
+құдық | noun | well | Суды құдықтан алады. | | qoo-DYQ | Water is taken from the well.
+сиыр | noun | cow | Әжемнің екі сиыры бар. | | si-YR | My grandmother has two cows.
+жылқы | noun | horse | Далада жылқы жайылып жүр. | | zhyl-QY | Horses are grazing in the steppe.
+қой | noun | sheep | Далада қой жайылып жүр. | | qoy | Sheep are grazing in the steppe.
+ешкі | noun | goat | Ешкі сүт береді. | | esh-KI | A goat gives milk.
+әтеш | noun | cockerel | Таңертең әтеш шақырады. | | a-TESH | The cockerel crows in the morning.
+малшы | noun | herdsman | Малшы малды айдап келеді. | | mal-SHY | The herdsman is driving the livestock.
+трактор | noun | tractor | Егістікте трактор жұмыс істеп жатыр. | | TRAK-tor | A tractor is working in the field.
+пішен | noun | hay | Жазда пішен дайындайды. | | pi-SHEN | Hay is made in summer.
+бидай | noun | wheat | Мұнда бидай өседі. | | bi-DAY | Wheat grows here.
+астық | noun | grain | Қостанай астығымен танымал. | | as-TYQ | Kostanay is known for its grain.
+өсіру | verb | to grow (something) | Олар көкөніс өсіреді. | | o-si-ROO | They grow vegetables.
+егін жинау | verb | to harvest | Күзде егін жинайды. | | e-GIN zhi-NAU | The harvest is gathered in autumn.
+сауу | verb | to milk | Ол таңертең сиыр сауады. | | sa-OO | She milks the cow in the morning.
+азықтандыру | verb | to feed | Балалар тауықтарды азықтандырады. | | a-zyq-tan-dy-ROO | The children feed the hens.
+бағу | verb | to tend, to look after (animals) | Ол қой бағады. | | ba-GHOO | He tends sheep.
+зәулім үй | noun | skyscraper, very tall building | Астанада зәулім үй көп. | | za-oo-LIM uy | There are many very tall buildings in Astana.
+қарбалас уақыт | noun | rush hour | Қарбалас уақытта автобус толы болады. | | qar-ba-LAS wa-QYT | In the rush hour the buses are full.
+қоғамдық көлік | noun | public transport | Мен қоғамдық көлікпен жүремін. | | qo-gham-DYQ ko-LIK | I use public transport.
+шу | noun | noise | Қалада шу көп. | | shoo | There is a lot of noise in the city.
+инфрақұрылым | noun | infrastructure | Ауданның инфрақұрылымы жақсы. | | in-fra-qoo-ry-LYM | The district has good infrastructure.
+кеңістік | noun | space | Далада кеңістік мол. | | ke-ngis-TIK | There is plenty of space in the steppe.
+жергілікті | adjective | local | Бұл — жергілікті базар. | | zher-gi-lik-TI | This is the local market.
+жайлау | noun | summer pasture | Жазда мал жайлауға шығады. | | zhay-LAU | In summer the livestock go to the summer pasture.
+ауыл шаруашылығы | noun | agriculture | Ол ауыл шаруашылығында жұмыс істейді. | | a-WYL sha-roo-a-shy-ly-GHY | He works in agriculture.`,
+u23: `
+күтпеген | adjective | unexpected | Бұл күтпеген қоңырау болды. | | kut-pe-GEN | It was an unexpected call.
+таңғаларлық | adjective | astonishing | Бұл — таңғаларлық оқиға. | | tang-gha-lar-LYQ | This is an astonishing story.
+сыр | noun | secret, confidence | Мен саған сырымды айтамын. | | syr | I will tell you my secret.
+әшкерелеу | verb | to expose, to reveal | Полиция алаяқты әшкереледі. | | ash-ke-re-LEU | The police exposed the swindler.
+шынын айту | verb | to tell the truth | Ол шынын айтты. | | shy-NYN ay-TOO | He told the truth.
+жасыру | verb | to hide | Ол ештеңе жасырмайды. | | zha-sy-ROO | She hides nothing.
+ғайып болу | verb | to vanish | Мысық ғайып болды. | | gha-YYP bo-LOO | The cat vanished.
+пайда болу | verb | to appear | Есік алдында бейтаныс адам пайда болды. | | pay-DA bo-LOO | A stranger appeared at the door.
+кездесіп қалу | verb | to bump into, to meet by chance | Мен оны көшеде кездесіп қалдым. | | kez-de-SIP qa-LOO | I bumped into him in the street.
+соқтығысу | verb | to collide | Екі көлік соқтығысты. | | soq-ty-ghy-SOO | Two cars collided.
+күдік | noun | suspicion, doubt | Менде күдік бар. | | ku-DIK | I have a suspicion.
+сезу | verb | to sense, to feel | Мен бірдеңе болғанын сездім. | | se-ZOO | I sensed that something had happened.
+еске алу | verb | to recall, to think back | Мен балалық шағымды жиі еске аламын. | | es-KE a-LOO | I often think back to my childhood.
+сәт | noun | moment | Сол сәтте телефон шырылдады. | | sat | At that moment the phone rang.
+содан соң | phrase | after that | Содан соң біз үйге қайттық. | | so-DAN song | After that we went home.
+ақыр соңында | phrase | in the end | Ақыр соңында бәрі жақсы аяқталды. | | a-QYR so-ngyn-DA | In the end everything finished well.
+жалғасы | noun | continuation, sequel | Мен оқиғаның жалғасын күтіп жүрмін. | | zhal-gha-SY | I am waiting for the rest of the story.
+толқу | verb | to be nervous, to be moved | Мен толқығаннан сөйлей алмадым. | | tol-QOO | I could not speak for nerves.
+қорқыныш | noun | fear | Ол қорқыныш сезді. | | qor-qy-NYSH | He felt fear.
+үрей | noun | dread, panic | Қалада үрей басталды. | | u-REY | Panic began in the city.
+қуаныш | noun | joy | Ол қуаныштан жылады. | | qoo-a-NYSH | She cried with joy.
+таңданыс | noun | surprise | Ол таңданыспен қарады. | | tang-da-NYS | He looked with surprise.
+көз жасы | noun | tears | Оның көзіне жас келді. | | koz zha-SY | Tears came to her eyes.
+күлкі | noun | laughter | Бөлмеден күлкі естілді. | | kul-KI | Laughter was heard from the room.
+жолы болу | verb | to be lucky | Бүгін менің жолым болды. | | zho-LY bo-LOO | I was lucky today.
+оқыс оқиға | noun | incident | Жолда оқыс оқиға болды. | | o-QYS o-qi-GHA | There was an incident on the road.
+баяндау | verb | to narrate, to tell | Ол болған жайды баяндады. | | ba-yan-DAU | He told what had happened.
+басты кейіпкер | noun | main character | Басты кейіпкер — жас қыз. | | bas-TY ke-yip-KER | The main character is a young girl.
+оқиға желісі | noun | plot | Фильмнің оқиға желісі қызық. | | o-qi-GHA zhe-li-SI | The film has an interesting plot.
+өтірік | noun | a lie | Бұл — өтірік. | | o-ti-RIK | This is a lie.
+ертеде | adverb | long ago | Ертеде бір хан болыпты. | | er-te-DE | Long ago there was a khan.
+бір күні | phrase | one day | Бір күні ол үйге кеш келді. | | bir ku-NI | One day he came home late.`,
+u24: `
+оның үстіне | phrase | besides, what is more | Ол ақылды, оның үстіне мейірімді. | | o-NYNG us-ti-NE | He is clever and, what is more, kind.
+ең алдымен | phrase | first of all | Ең алдымен, бәріңізге рақмет. | | eng al-dy-MEN | First of all, thank you all.
+атап айтқанда | phrase | in particular | Маған спорт, атап айтқанда футбол ұнайды. | | a-TAP ayt-qan-DA | I like sport, in particular football.
+шынын айтқанда | phrase | to be honest | Шынын айтқанда, мен шаршадым. | | shy-NYN ayt-qan-DA | To be honest, I am tired.
+қысқаша айтқанда | phrase | in short | Қысқаша айтқанда, біз кешігіп қалдық. | | qys-qa-SHA ayt-qan-DA | In short, we were late.
+басқаша айтқанда | phrase | in other words | Басқаша айтқанда, бұл мүмкін емес. | | bas-qa-SHA ayt-qan-DA | In other words, it is impossible.
+яғни | word | that is | Біз ертең, яғни сәрсенбіде кездесеміз. | | YAGH-ni | We will meet tomorrow, that is, on Wednesday.
+бірінші кезекте | phrase | in the first place | Бірінші кезекте сөз жаттау керек. | | bi-rin-SHI ke-zek-TE | In the first place you need to learn words.
+қалай болғанда да | phrase | in any case | Қалай болғанда да мен келемін. | | qa-LAY bol-ghan-DA da | In any case I will come.
+менің пікірімше | phrase | in my opinion | Менің пікірімше, бұл — қате. | | me-NING pi-ki-rim-SHE | In my opinion, this is a mistake.
+белгілі болғандай | phrase | as is known | Белгілі болғандай, мұнда қыс суық. | | bel-gi-LI bol-ghan-DAY | As is known, winter is cold here.
+сірә | word | probably, most likely | Сірә, ол кешігеді. | | si-RA | He will probably be late.
+сөзсіз | word | undoubtedly | Бұл, сөзсіз, ең жақсы нұсқа. | | soz-SIZ | This is undoubtedly the best option.
+күмәнсіз | word | without doubt | Ол күмәнсіз келеді. | | ku-man-SIZ | He will come without doubt.
+екіталай | word | unlikely | Оның келуі екіталай. | | ye-ki-ta-LAY | He is unlikely to come.
+арқасында | postposition | thanks to | Сенің арқаңда мен емтихан тапсырдым. | | ar-qa-syn-DA | Thanks to you I passed the exam.
+кесірінен | postposition | because of (something bad) | Жаңбырдың кесірінен біз үйде қалдық. | | ke-si-ri-NEN | Because of the rain we stayed at home.
+байланысты | postposition | in connection with, because of | Мерекеге байланысты банк жабық. | | bay-la-nys-TY | The bank is closed because of the holiday.
+бойы | postposition | during, throughout | Бір жыл бойы мен қазақша оқыдым. | | bo-YY | For a whole year I studied Kazakh.
+кезінде | postposition | during, at the time of | Сабақ кезінде қоңырау шалуға болмайды. | | ke-zin-DE | You must not phone during the lesson.
+әлі күнге дейін | phrase | to this day, still | Мен сол күнді әлі күнге дейін ұмытқан жоқпын. | | a-LI kun-GE de-YIN | To this day I have not forgotten that day.
+содан бері | phrase | since then | Содан бері біз доспыз. | | so-DAN be-RI | We have been friends since then.
+әзірше | adverb | for now, so far | Әзірше бәрі жақсы. | | a-zir-SHE | So far everything is fine.
+оның ішінде | phrase | including | Бәрі келді, оның ішінде Марат та. | | o-NYNG i-shin-DE | Everyone came, including Marat.
+бәрібір | word | all the same, anyway | Ол бәрібір келді. | | ba-ri-BIR | He came all the same.
+қорыта айтқанда | phrase | to sum up | Қорыта айтқанда, жыл жақсы болды. | | qo-ry-TA ayt-qan-DA | To sum up, the year was good.
+сонда да | phrase | even so | Суық болды. Сонда да біз серуендедік. | | son-DA da | It was cold. Even so, we went for a walk.
+алайда | word | however | Ол көп оқыды, алайда емтиханнан өтпеді. | | a-lay-DA | He studied a lot; however, he did not pass the exam.
+себебі | word | because, the reason is | Мен келмедім, себебі ауырып қалдым. | | se-be-BI | I did not come because I fell ill.
+сол себепті | phrase | for that reason | Жаңбыр жауды, сол себепті біз үйде қалдық. | | sol se-bep-TI | It rained; for that reason we stayed at home.
+мәселен | word | for instance | Мәселен, мен күн сайын он сөз жаттаймын. | | ma-se-LEN | For instance, I learn ten words every day.
+жалпы алғанда | phrase | on the whole | Жалпы алғанда, бәрі жақсы. | | zhal-PY al-ghan-DA | On the whole, everything is fine.`
 });

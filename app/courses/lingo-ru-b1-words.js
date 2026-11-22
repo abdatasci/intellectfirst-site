@@ -1,5 +1,5 @@
 /* IF Lingo · Russian B1 word bank: 32 more words for every unit, studied in the Vocabulary tab.
-   Built so far: units 1 to 18 (576 words). With the 240 lesson words, B1 will have about 1,000 words.
+   768 words. With the 240 lesson words, B1 has 1,008 words; A1 + A2 + B1 = 2,008.
    word | part of speech | meaning in English | example | (empty) | how to say it | the example in English */
 IFX.moreWords('ru-b1', {
 u1: `
@@ -595,5 +595,203 @@ u18: `
 создать | verb | to create | Учёные создали новое лекарство. | | saz-DAT | Scientists created a new medicine.
 развитие | noun | development | Наука важна для развития страны. | | raz-VEE-tee-ye | Science is important for the country’s development.
 прогресс | noun | progress | Это большой прогресс. | | pra-GRYES | This is great progress.
-точный | adjective | exact, precise | Нужны точные данные. | | TOCH-ny | Precise data are needed.`
+точный | adjective | exact, precise | Нужны точные данные. | | TOCH-ny | Precise data are needed.`,
+u19: `
+прошлое | noun | the past | Мы изучаем прошлое страны. | | PROSH-la-ye | We study the country’s past.
+настоящее | noun | the present | Нужно жить в настоящем. | | na-sta-YA-shchee-ye | One should live in the present.
+эпоха | noun | era, age | Это была эпоха перемен. | | e-PO-kha | It was an age of change.
+период | noun | period | Это трудный период истории. | | pee-REE-at | This is a difficult period of history.
+тысячелетие | noun | millennium | Город существует тысячелетие. | | ty-see-chee-LYE-tee-ye | The city has existed for a millennium.
+царь | noun | tsar | Царь жил во дворце. | | tsar | The tsar lived in a palace.
+король | noun | king | Король правил сорок лет. | | ka-ROL | The king ruled for forty years.
+император | noun | emperor | Император вёл войну. | | eem-pee-RA-tar | The emperor waged war.
+империя | noun | empire | Империя была огромной. | | eem-PYE-ree-ya | The empire was huge.
+правитель | noun | ruler | Он был мудрым правителем. | | pra-VEE-teel | He was a wise ruler.
+армия | noun | army | Армия защищает страну. | | AR-mee-ya | The army defends the country.
+солдат | noun | soldier | Солдаты вернулись домой. | | sal-DAT | The soldiers returned home.
+битва | noun | battle | Эта битва была в 1730 году. | | BEET-va | This battle took place in 1730.
+завоевать | verb | to conquer | Они завоевали эти земли. | | za-va-ye-VAT | They conquered these lands.
+революция | noun | revolution | После революции всё изменилось. | | ree-va-LYOO-tsee-ya | After the revolution everything changed.
+восстание | noun | uprising | Восстание началось в июле. | | vas-STA-nee-ye | The uprising began in July.
+реформа | noun | reform | Это была важная реформа. | | ree-FOR-ma | It was an important reform.
+Советский Союз | noun | the Soviet Union | Казахстан был частью Советского Союза. | | sa-VYET-skee sa-YOOS | Kazakhstan was part of the Soviet Union.
+республика | noun | republic | Казахстан — республика. | | rees-POOB-lee-ka | Kazakhstan is a republic.
+президент | noun | president | Президента выбирает народ. | | pree-zee-DYENT | The president is elected by the people.
+герб | noun | coat of arms | Это герб Казахстана. | | gyerp | This is the coat of arms of Kazakhstan.
+флаг | noun | flag | Флаг Казахстана голубой. | | flak | The flag of Kazakhstan is light blue.
+гимн | noun | anthem | Все встали и запели гимн. | | geemn | Everyone stood up and sang the anthem.
+территория | noun | territory | У страны большая территория. | | tee-ree-TO-ree-ya | The country has a large territory.
+старинный | adjective | very old, antique | Это старинное здание. | | sta-REEN-ny | This is a very old building.
+археолог | noun | archaeologist | Археологи нашли золото. | | ar-khee-O-lak | Archaeologists found gold.
+раскопки | noun | excavations | Раскопки идут каждое лето. | | ras-KOP-kee | Excavations take place every summer.
+крепость | noun | fortress | На горе стоит крепость. | | KRYE-past | There is a fortress on the hill.
+дворец | noun | palace | Во дворце сейчас музей. | | dva-RYETS | The palace is now a museum.
+Шёлковый путь | noun | the Silk Road | Шёлковый путь шёл через Казахстан. | | SHOL-ka-vy poot | The Silk Road went through Kazakhstan.
+караван | noun | caravan | Караван шёл через пустыню. | | ka-ra-VAN | The caravan crossed the desert.
+торговля | noun | trade | Город рос благодаря торговле. | | tar-GOV-lya | The city grew thanks to trade.`,
+u20: `
+амбиция | noun | ambition | У него большие амбиции. | | am-BEE-tsee-ya | He has big ambitions.
+мотивация | noun | motivation | Мне нужна мотивация. | | ma-tee-VA-tsee-ya | I need motivation.
+желание | noun | wish, desire | У меня есть желание учиться. | | zhe-LA-nee-ye | I have a desire to study.
+старание | noun | effort, diligence | Спасибо за ваше старание. | | sta-RA-nee-ye | Thank you for your effort.
+терпение | noun | patience | Для этого нужно терпение. | | teer-PYE-nee-ye | This takes patience.
+труд | noun | work, labour | Успех — это труд. | | troot | Success is work.
+лень | noun | laziness | Лень мешает учиться. | | lyen | Laziness gets in the way of studying.
+трудность | noun | difficulty | Мы не боимся трудностей. | | TROOD-nast | We are not afraid of difficulties.
+неудача | noun | failure, bad luck | Одна неудача — не конец. | | nee-oo-DA-cha | One failure is not the end.
+провал | noun | flop, complete failure | Первый экзамен был провалом. | | pra-VAL | The first exam was a flop.
+ошибаться | verb | to make mistakes | Все ошибаются. | | a-shy-BAT-sa | Everyone makes mistakes.
+пробовать | verb | to try | Пробуй ещё раз! | | PRO-ba-vat | Try once more!
+бороться | verb | to fight, to struggle | Она борется за свою мечту. | | ba-ROT-sa | She fights for her dream.
+преодолеть | verb | to overcome | Он преодолел страх. | | pree-a-da-LYET | He overcame his fear.
+развивать | verb | to develop | Нужно развивать память. | | raz-vee-VAT | You need to develop your memory.
+способность | noun | ability | У ребёнка способности к музыке. | | spa-SOB-nast | The child has an ability for music.
+победитель | noun | winner | Победитель получил приз. | | pa-bee-DEE-teel | The winner got a prize.
+лидер | noun | leader | Она лидер группы. | | LEE-der | She is the leader of the group.
+пример | noun | example | Он пример для всех. | | pree-MYER | He is an example to everyone.
+вдохновлять | verb | to inspire | Её история вдохновляет людей. | | vdakh-nav-LYAT | Her story inspires people.
+верить | verb | to believe | Я верю в тебя. | | VYE-reet | I believe in you.
+вера | noun | faith, belief | Вера в себя помогает. | | VYE-ra | Belief in yourself helps.
+ожидать | verb | to expect | Я не ожидал такого результата. | | a-zhy-DAT | I did not expect such a result.
+настойчивый | adjective | persistent | Он настойчивый ученик. | | na-STOY-chee-vy | He is a persistent pupil.
+целеустремлённый | adjective | determined, single-minded | Она целеустремлённый человек. | | tse-lee-oo-streem-LYON-ny | She is a determined person.
+смелый | adjective | brave | Это смелое решение. | | SMYE-ly | This is a brave decision.
+решительный | adjective | decisive | Нужен решительный шаг. | | ree-SHY-teel-ny | A decisive step is needed.
+награда | noun | award, reward | Он получил награду. | | na-GRA-da | He received an award.
+признание | noun | recognition | Она получила признание коллег. | | preez-NA-nee-ye | She won the recognition of her colleagues.
+слава | noun | fame, glory | К нему пришла слава. | | SLA-va | Fame came to him.
+путь | noun | way, road | Это долгий путь. | | poot | This is a long road.
+шаг | noun | step | Это первый шаг к цели. | | shak | This is the first step towards the goal.`,
+u21: `
+общественный | adjective | public, social | Это общественная организация. | | ap-SHCHEST-veen-ny | This is a public organisation.
+социальный | adjective | social | Это социальная проблема. | | sa-tsee-AL-ny | This is a social problem.
+безработица | noun | unemployment | Безработица выросла. | | beez-ra-BO-tee-tsa | Unemployment has risen.
+безработный | adjective | unemployed | Он сейчас безработный. | | beez-ra-BOT-ny | He is unemployed now.
+человек с инвалидностью | noun | person with a disability | В автобусе есть места для людей с инвалидностью. | | chee-la-VYEK s een-va-LEED-nast-yoo | The bus has seats for people with disabilities.
+сирота | noun | orphan | Он рано стал сиротой. | | see-ra-TA | He became an orphan early.
+детский дом | noun | children’s home | Мы помогаем детскому дому. | | DYET-skee dom | We help a children’s home.
+приют | noun | shelter | Это приют для животных. | | pree-YOOT | This is an animal shelter.
+дом престарелых | noun | old people’s home | Волонтёры ездят в дом престарелых. | | dom pree-sta-RYE-lykh | Volunteers go to an old people’s home.
+многодетная семья | noun | large family | Это многодетная семья. | | mna-ga-DYET-na-ya seem-YA | This is a large family.
+меньшинство | noun | minority | Они в меньшинстве. | | meen-shynst-VO | They are in the minority.
+большинство | noun | majority | Большинство согласно. | | bal-shynst-VO | The majority agrees.
+мигрант | noun | migrant | В городе много мигрантов. | | mee-GRANT | There are many migrants in the city.
+беженец | noun | refugee | Беженцам нужна помощь. | | BYE-zhe-neets | Refugees need help.
+равноправие | noun | equal rights | Закон гарантирует равноправие. | | rav-na-PRA-vee-ye | The law guarantees equal rights.
+дискриминация | noun | discrimination | Дискриминация запрещена. | | dees-kree-mee-NA-tsee-ya | Discrimination is forbidden.
+толерантность | noun | tolerance | Толерантность важна в обществе. | | ta-lee-RANT-nast | Tolerance is important in society.
+солидарность | noun | solidarity | Люди показали солидарность. | | sa-lee-DAR-nast | People showed solidarity.
+участие | noun | participation | Спасибо за участие. | | oo-CHAS-tee-ye | Thank you for taking part.
+участвовать | verb | to take part | Я участвую в акции. | | oo-CHAST-va-vat | I am taking part in the campaign.
+акция | noun | campaign, event | В субботу будет акция. | | AK-tsee-ya | There will be a campaign on Saturday.
+сбор средств | noun | fundraising | Идёт сбор средств для больницы. | | zbor sryetstf | Funds are being raised for the hospital.
+фонд | noun | fund, foundation | Фонд помогает детям. | | font | The foundation helps children.
+организация | noun | organisation | Это международная организация. | | ar-ga-nee-ZA-tsee-ya | This is an international organisation.
+движение | noun | movement | Это молодёжное движение. | | dvee-ZHE-nee-ye | This is a youth movement.
+добровольно | adverb | voluntarily | Они работают добровольно. | | da-bra-VOL-na | They work voluntarily.
+поддержать | verb | to support (once) | Друзья поддержали меня. | | pad-deer-ZHAT | My friends supported me.
+пожертвовать | verb | to donate | Он пожертвовал деньги фонду. | | pa-ZHERT-va-vat | He donated money to the foundation.
+раздавать | verb | to hand out | Волонтёры раздают еду. | | raz-da-VAT | Volunteers hand out food.
+забота | noun | care | Спасибо за заботу. | | za-BO-ta | Thank you for your care.
+молодёжь | noun | young people | Молодёжь любит этот парк. | | ma-la-DYOSH | Young people love this park.
+подросток | noun | teenager | Подростки помогают в приюте. | | pad-ROS-tak | Teenagers help at the shelter.`,
+u22: `
+мегаполис | noun | very big city | Алматы — мегаполис. | | mee-ga-PO-lees | Almaty is a very big city.
+провинция | noun | the provinces | Он вырос в провинции. | | pra-VEEN-tsee-ya | He grew up in the provinces.
+деревенский | adjective | village, country | Я люблю деревенское молоко. | | dee-ree-VYEN-skee | I love country milk.
+фермер | noun | farmer | Мой дядя — фермер. | | FYER-mer | My uncle is a farmer.
+огород | noun | vegetable garden | В огороде растёт картошка. | | a-ga-ROT | Potatoes grow in the vegetable garden.
+теплица | noun | greenhouse | В теплице растут помидоры. | | teep-LEE-tsa | Tomatoes grow in the greenhouse.
+сарай | noun | shed, barn | Инструменты в сарае. | | sa-RAY | The tools are in the shed.
+колодец | noun | well | Воду берут из колодца. | | ka-LO-deets | Water is taken from the well.
+корова | noun | cow | У бабушки две коровы. | | ka-RO-va | Grandmother has two cows.
+лошадь | noun | horse | Он хорошо ездит на лошади. | | LO-shat | He rides a horse well.
+овца | noun | sheep | В степи пасутся овцы. | | af-TSA | Sheep graze in the steppe.
+коза | noun | goat | Коза даёт молоко. | | ka-ZA | A goat gives milk.
+петух | noun | cockerel | Утром кричит петух. | | pee-TOOKH | The cockerel crows in the morning.
+пастух | noun | herdsman, shepherd | Пастух ведёт скот. | | pas-TOOKH | The herdsman leads the livestock.
+трактор | noun | tractor | В поле работает трактор. | | TRAK-tar | A tractor is working in the field.
+сено | noun | hay | Летом готовят сено. | | SYE-na | Hay is made in summer.
+пшеница | noun | wheat | Здесь растёт пшеница. | | pshe-NEE-tsa | Wheat grows here.
+зерно | noun | grain | Костанай известен зерном. | | zeer-NO | Kostanay is known for grain.
+выращивать | verb | to grow (something) | Они выращивают овощи. | | vy-RA-shchee-vat | They grow vegetables.
+собирать урожай | verb | to harvest | Осенью собирают урожай. | | sa-bee-RAT oo-ra-ZHAY | The harvest is gathered in autumn.
+доить | verb | to milk | Она доит корову утром. | | da-EET | She milks the cow in the morning.
+кормить | verb | to feed | Дети кормят кур. | | kar-MEET | The children feed the hens.
+пасти | verb | to graze, to herd | Он пасёт овец. | | pas-TEE | He herds sheep.
+небоскрёб | noun | skyscraper | В Астане много небоскрёбов. | | nee-ba-SKRYOP | There are many skyscrapers in Astana.
+час пик | noun | rush hour | В час пик автобусы полные. | | chas peek | In the rush hour the buses are full.
+общественный транспорт | noun | public transport | Я езжу на общественном транспорте. | | ap-SHCHEST-veen-ny TRANS-part | I use public transport.
+шум | noun | noise | В городе много шума. | | shoom | There is a lot of noise in the city.
+суета | noun | bustle, fuss | Я устал от городской суеты. | | soo-ye-TA | I am tired of the city bustle.
+инфраструктура | noun | infrastructure | В районе хорошая инфраструктура. | | een-fra-strook-TOO-ra | The district has good infrastructure.
+простор | noun | open space | В степи такой простор! | | pras-TOR | There is such open space in the steppe!
+местный | adjective | local | Это местный рынок. | | MYES-ny | This is the local market.
+приезжий | noun | newcomer, visitor | В городе много приезжих. | | pree-YEZ-zhee | There are many newcomers in the city.`,
+u23: `
+случайно | adverb | by chance | Мы встретились случайно. | | sloo-CHAY-na | We met by chance.
+неожиданный | adjective | unexpected | Это был неожиданный звонок. | | nee-a-ZHY-dan-ny | It was an unexpected call.
+удивительный | adjective | amazing | Это удивительная история. | | oo-dee-VEE-teel-ny | This is an amazing story.
+загадка | noun | riddle, mystery | Это для меня загадка. | | za-GAT-ka | This is a mystery to me.
+загадочный | adjective | mysterious | Он загадочный человек. | | za-GA-dach-ny | He is a mysterious person.
+секрет | noun | secret | Я расскажу тебе секрет. | | seek-RYET | I will tell you a secret.
+раскрыть | verb | to reveal, to solve | Полиция раскрыла тайну. | | ras-KRYT | The police solved the mystery.
+признаться | verb | to admit, to confess | Он признался, что опоздал. | | preez-NAT-sa | He admitted that he was late.
+скрывать | verb | to hide | Она ничего не скрывает. | | skry-VAT | She hides nothing.
+обнаружить | verb | to discover, to find | Я обнаружил старое письмо. | | ab-na-ROO-zheet | I discovered an old letter.
+появиться | verb | to appear | В дверях появился незнакомец. | | pa-ya-VEET-sa | A stranger appeared in the doorway.
+встретиться | verb | to meet (once) | Мы встретились на вокзале. | | FSTRYE-teet-sa | We met at the station.
+столкнуться | verb | to bump into, to come up against | Я столкнулся с ним в дверях. | | stalk-NOOT-sa | I bumped into him in the doorway.
+очевидец | noun | eyewitness | Очевидец всё рассказал. | | a-chee-VEE-deets | An eyewitness told everything.
+подозрение | noun | suspicion | У меня есть подозрение. | | pa-daz-RYE-nee-ye | I have a suspicion.
+догадаться | verb | to guess, to work out | Я сразу догадался. | | da-ga-DAT-sa | I guessed at once.
+вспоминать | verb | to recall, to think back | Я часто вспоминаю детство. | | fspa-mee-NAT | I often think back to my childhood.
+мгновение | noun | instant | Всё случилось за мгновение. | | mgna-VYE-nee-ye | It all happened in an instant.
+момент | noun | moment | В этот момент зазвонил телефон. | | ma-MYENT | At that moment the phone rang.
+после этого | phrase | after that | После этого мы пошли домой. | | POS-lye E-ta-va | After that we went home.
+в итоге | phrase | in the end, as a result | В итоге всё закончилось хорошо. | | v ee-TO-gye | In the end everything finished well.
+продолжение | noun | continuation, sequel | Я жду продолжения истории. | | pra-dal-ZHE-nee-ye | I am waiting for the rest of the story.
+развязка | noun | ending, outcome (of a story) | Развязка была неожиданной. | | raz-VYAS-ka | The ending was unexpected.
+волнение | noun | excitement, nerves | Я не мог говорить от волнения. | | val-NYE-nee-ye | I could not speak for nerves.
+страх | noun | fear | Он почувствовал страх. | | strakh | He felt fear.
+ужас | noun | horror | Какой ужас! | | OO-zhas | How awful!
+радость | noun | joy | Она плакала от радости. | | RA-dast | She cried with joy.
+облегчение | noun | relief | Я почувствовал облегчение. | | ab-leekh-CHE-nee-ye | I felt relief.
+удивление | noun | surprise | Он посмотрел с удивлением. | | oo-deev-LYE-nee-ye | He looked with surprise.
+шок | noun | shock | Мы были в шоке. | | shok | We were in shock.
+слёзы | noun | tears | У неё на глазах слёзы. | | SLYO-zy | She has tears in her eyes.
+повезти | verb | to be lucky | Мне очень повезло. | | pa-vees-TEE | I was very lucky.`,
+u24: `
+к тому же | phrase | besides, what is more | Он умный, к тому же добрый. | | k ta-MOO zhe | He is clever and, what is more, kind.
+прежде всего | phrase | first of all | Прежде всего, спасибо всем. | | PRYEZH-dye fsee-VO | First of all, thank you all.
+в частности | phrase | in particular | Мне нравится спорт, в частности футбол. | | f CHAS-nas-tee | I like sport, in particular football.
+честно говоря | phrase | to be honest | Честно говоря, я устал. | | CHES-na ga-va-RYA | To be honest, I am tired.
+короче говоря | phrase | in short | Короче говоря, мы опоздали. | | ka-RO-che ga-va-RYA | In short, we were late.
+другими словами | phrase | in other words | Другими словами, это невозможно. | | droo-GEE-mee sla-VA-mee | In other words, it is impossible.
+то есть | phrase | that is | Мы встретимся завтра, то есть в среду. | | to yest | We will meet tomorrow, that is, on Wednesday.
+в первую очередь | phrase | in the first place | В первую очередь нужно учить слова. | | f PYER-voo-yoo O-chee-reet | In the first place you need to learn words.
+в любом случае | phrase | in any case | В любом случае я приду. | | v lyoo-BOM SLOO-cha-ye | In any case I will come.
+по моему мнению | phrase | in my opinion | По моему мнению, это ошибка. | | pa ma-ye-MOO MNYE-nee-yoo | In my opinion, this is a mistake.
+с моей точки зрения | phrase | from my point of view | С моей точки зрения, он прав. | | s ma-YEY TOCH-kee ZRYE-nee-ya | From my point of view, he is right.
+как известно | phrase | as is known | Как известно, зима здесь холодная. | | kak eez-VYES-na | As is known, winter is cold here.
+судя по всему | phrase | by the look of it | Судя по всему, будет дождь. | | SOO-dya pa fsee-MOO | By the look of it, it will rain.
+скорее всего | phrase | most likely | Скорее всего, он опоздает. | | ska-RYE-ye fsee-VO | Most likely he will be late.
+возможно | word | possibly, perhaps | Возможно, я приеду летом. | | vaz-MOZH-na | Perhaps I will come in summer.
+безусловно | word | certainly | Безусловно, вы правы. | | bee-zoo-SLOV-na | Certainly, you are right.
+разумеется | word | of course | Разумеется, я помогу. | | ra-zoo-MYE-yet-sa | Of course I will help.
+несомненно | word | undoubtedly | Это, несомненно, лучший вариант. | | nee-sam-NYEN-na | This is undoubtedly the best option.
+наверняка | adverb | for sure | Он наверняка знает. | | na-veer-nee-KA | He knows for sure.
+вряд ли | phrase | hardly, unlikely | Вряд ли он придёт. | | vryat lee | He is unlikely to come.
+несмотря на это | phrase | in spite of this | Было холодно. Несмотря на это, мы гуляли. | | nee-smat-RYA na E-ta | It was cold. In spite of this, we went for a walk.
+благодаря | preposition | thanks to | Благодаря тебе я сдал экзамен. | | bla-ga-da-RYA | Thanks to you I passed the exam.
+из-за | preposition | because of | Из-за дождя мы остались дома. | | EEZ-za | Because of the rain we stayed at home.
+в связи с | phrase | in connection with | В связи с праздником банк закрыт. | | f svya-ZEE s | The bank is closed in connection with the holiday.
+в течение | phrase | during, for | В течение года я учил русский. | | f tee-CHE-nee-ye | For a year I learned Russian.
+во время | phrase | during | Во время урока нельзя звонить. | | va VRYE-mya | You must not phone during the lesson.
+до сих пор | phrase | until now, still | Я до сих пор помню этот день. | | da seekh POR | I still remember that day.
+с тех пор | phrase | since then | С тех пор мы дружим. | | s tyekh POR | We have been friends since then.
+тем более | phrase | all the more | Я приду, тем более что я свободен. | | tyem BO-lee-ye | I will come, all the more because I am free.
+всё-таки | word | all the same, after all | Он всё-таки пришёл. | | FSYO-ta-kee | He came after all.
+подводя итог | phrase | to sum up | Подводя итог, год был хорошим. | | pad-va-DYA ee-TOK | To sum up, the year was good.
+в заключение | phrase | in conclusion | В заключение хочу сказать спасибо. | | v za-klyoo-CHE-nee-ye | In conclusion I want to say thank you.`
 });
