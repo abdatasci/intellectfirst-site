@@ -1241,7 +1241,7 @@ function chessCpu(){
   CH.ai.onerror=()=>{me.think=false;chessDraw()};
   CH.ai.postMessage({fen:CH.g.fen(),level:CHC.level});
 }
-function chessSpeak(t){try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='en-GB';u.rate=.9;speechSynthesis.speak(u)}catch(e){}}
+function chessSpeak(t,queue){try{if(!queue)speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='en-GB';u.rate=.9;speechSynthesis.speak(u)}catch(e){}}
 function chessSay(m){
   const L=CHC.lang||'A',ck=/#/.test(m.san)?'mate':/\+/.test(m.san)?'check':'',P=x=>CHW[x].toLowerCase(),ep=m.flags.includes('e');
   if(L==='A'){
@@ -1292,11 +1292,17 @@ function chessDraw(){
   if(quiz)bar+=`<div class="panel"><div class="lab">${esc(name(cur))} · answer to move</div><div class="chmv" style="font-size:1.15rem;margin-bottom:8px">Which word is it? <b>${CH.q.clues.map(esc).join(' · ')}</b></div><div class="row" style="flex-wrap:wrap;gap:8px">${CH.q.opts.map((o,i)=>`<button class="btn big" data-qa="${i}">${esc(o)}</button>`).join('')}</div><p class="lead" style="margin:8px 0 0;font-size:13px">Correct = a strong move. Wrong = a weak move.</p></div>`;
   if(CH.promo)bar+=`<div class="panel"><div class="lab">Promote the pawn to…</div><div class="row">${['q','r','b','n'].map(t=>`<button class="btn big" data-promo="${t}">${CHG[t]} ${CHW[t]}</button>`).join('')}</div></div>`;
   else if(CH.pend)bar+=`<div class="panel"><div class="lab">Say it in English</div><div class="chmv" style="font-size:${(CHC.lang||'A')==='A'?'2rem':'1.5rem'}">${esc(chessSay(CH.pend))}</div><div class="acts"><button class="act no" id="cno">✕ Not correct · choose again</button><button class="act ok" id="cok">✓ Said it · play the move</button></div></div>`;
+  /* narration: read each new move aloud by itself unless the player turned it off (CHC.narr === false) */
+  if(CHC.narr!==false&&!CH.think){const parts=[];
+    if(CH.qres){const k='q'+hist.length+CH.qres.say;if(CH.spokeQ!==k){CH.spokeQ=k;parts.push((CH.qres.ok?'Correct! A strong move for you: ':'Not quite. The word was '+CH.qres.word+'. A weak move was played: ')+CH.qres.say)}}
+    if(CH.said){const k='c'+hist.length+CH.said;if(CH.spokeC!==k){CH.spokeC=k;parts.push('The computer played. '+CH.said)}}
+    if(parts.length){chessSpeak(parts[0]);for(let i=1;i<parts.length;i++)chessSpeak(parts[i],true)}}
+  const narrBtn=`<button class="btn" id="cnarr" title="Read every move aloud">${CHC.narr===false?'🔇 Narration off':'🔊 Narration on'}</button>`;
   const log=[];for(let i=0;i<hist.length;i+=2)log.push(`<span>${i/2+1}.</span><span>${esc(hist[i].san)}</span><span>${hist[i+1]?esc(hist[i+1].san):''}</span>`);
   app.innerHTML=`<div class="scores">${[0,1].map(i=>`<div class="sc ${i===cur&&!over?'cur':''}"><span><span class="xo-m ${i?'o':'x'}">${i?'♚':'♔'}</span> ${esc(name(i))}</span><span class="chcap">${cap(i?'w':'b')}</span></div>`).join('')}</div>
   <div class="chg"><div><div class="chb">${cells}</div></div><div style="display:flex;flex-direction:column;gap:12px;min-width:0">${status}${bar}
    ${hist.length?`<section class="panel"><div class="lab">Moves${last?' · last: '+esc(chessSay(last)):''}</div><div class="chlog">${log.join('')}</div></section>`:''}
-   <div class="row" style="flex-wrap:wrap"><button class="btn" id="cflip">⇅ Flip board</button><button class="btn" id="cundo" ${hist.length&&!CHC.quiz?'':'disabled'}>↶ Undo</button><button class="btn" id="cnew">New game</button><button class="btn" id="cend">Back to setup</button></div>
+   <div class="row" style="flex-wrap:wrap">${narrBtn}<button class="btn" id="cflip">⇅ Flip board</button><button class="btn" id="cundo" ${hist.length&&!CHC.quiz?'':'disabled'}>↶ Undo</button><button class="btn" id="cnew">New game</button><button class="btn" id="cend">Back to setup</button></div>
    <section class="panel"><div class="lab">Chess words · шахматные слова</div><div class="row" style="flex-wrap:wrap;gap:6px">${((CHC.lang||'A')==='A'?CHV.slice(0,12):CHC.lang==='B'?CHV_B:CHV_C).map(([e,r])=>`<span class="btn" style="cursor:default;padding:5px 10px;font-size:.85rem"><b>${e}</b> · ${r}</span>`).join('')}</div></section></div></div>`;
   app.onclick=e=>{const b=e.target.closest('button');if(!b)return;
     if(b.dataset.qa!=null)return chessAnswer(+b.dataset.qa);
@@ -1305,6 +1311,7 @@ function chessDraw(){
     if(b.dataset.promo){const m=CH.promo.find(x=>x.promotion===b.dataset.promo);return CHC.say?(CH.promo=null,CH.pend=m,chessDraw()):chessDo(m)}
     if(b.id==='cflip'){CH.flip=!CH.flip;return chessDraw()}
     if(b.id==='chear')return chessSpeak(CH.said);
+    if(b.id==='cnarr'){CHC.narr=CHC.narr===false;gs.set('chc',CHC);if(CHC.narr===false){try{speechSynthesis.cancel()}catch(e){}}return chessDraw()}
     if(b.id==='cundo'){if(CH.think||CHC.quiz)return;g.undo();if(CH.cpu&&g.turn()===CH.cpu&&g.history().length)g.undo();CH.said=null;CH.sel=null;CH.pend=null;CH.promo=null;return chessDraw()}
     if(b.id==='cnew')return chessNew(CH.flip);
     if(b.id==='cend')return chessSetup();
