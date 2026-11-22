@@ -1475,9 +1475,14 @@
       (ACT.play = { id: it.id, t: it.t, t0: Date.now() }, '') +
       '<div class="playwrap" id="pw"><iframe src="' + esc(it.href) + '" title="' + esc(it.t) + '" allow="autoplay; fullscreen; microphone" allowfullscreen></iframe>' +
       '<div class="gfx"><button type="button" id="gx" aria-label="Exit game">✕</button><button type="button" id="gf" aria-label="Full screen">⛶</button></div></div>';
-    document.body.classList.add('playing');
+    document.body.classList.add('playing'); PLAYBACK = '#/' + (SEC[it.s] ? it.s : 'more');
     gameFull(view(), window.matchMedia && matchMedia('(max-width:760px), (pointer:coarse) and (max-height:500px)').matches);
   }
+  /* Leaving a game never uses history.back(): a game that changes its own page inside the frame adds steps to the
+     history, and going back then only moves the frame (in the Telegram app this left a black screen). */
+  var PLAYBACK = '#/games';
+  function leaveGame() { var f = view().querySelector('#pw iframe'); if (f) f.remove(); document.body.classList.remove('game-full'); location.replace(location.pathname + location.search + PLAYBACK); }
+  window.IF_BACK = function () { if (!document.body.classList.contains('playing')) return false; leaveGame(); return true; };   // used by the site's floating Back button (if-nav.js)
   /* game mode: the game fills the whole phone screen like a mobile game (✕ to leave, ⛶ for true full screen) */
   function gameFull(root, on) {
     var pw = root.querySelector('#pw'); if (!pw) return;
@@ -1486,7 +1491,7 @@
     var set = function (v) { document.body.classList.toggle('game-full', !!v); if (!v && (document.fullscreenElement || document.webkitFullscreenElement)) { try { (document.exitFullscreen || document.webkitExitFullscreen).call(document); } catch (e) {} } };
     var fs = root.querySelector('[data-gf]'); if (fs) fs.onclick = function (e) { e.preventDefault(); set(true); native(); };
     pw.querySelector('#gf').onclick = function () { if (document.fullscreenElement || document.webkitFullscreenElement) set(false); else { set(true); native(); } };
-    pw.querySelector('#gx').onclick = function () { if (document.body.classList.contains('game-full')) set(false); else history.back(); };
+    pw.querySelector('#gx').onclick = function () { if (document.body.classList.contains('game-full')) set(false); else leaveGame(); };
     set(on);
   }
   function vIelts() {
@@ -1601,7 +1606,7 @@
       var tp = $('.top'); if (tp) document.documentElement.style.setProperty('--toph', tp.offsetHeight + 'px');
       var BB = window.Telegram && Telegram.WebApp && Telegram.WebApp.BackButton;
       if (BB && Telegram.WebApp.initData) {
-        if (!window.__ifBB) { window.__ifBB = 1; BB.onClick(function () { var px = $('#px'); if (px) px.click(); else if (history.length > 1) history.back(); else go('#/'); }); }
+        if (!window.__ifBB) { window.__ifBB = 1; BB.onClick(function () { var px = $('#px'); if (px) px.click(); else if (window.IF_BACK()) return; else if (history.length > 1) history.back(); else go('#/'); }); }
         if (p[0]) BB.show(); else BB.hide();
       }
     } catch (e) {}
