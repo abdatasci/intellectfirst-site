@@ -1,5 +1,5 @@
 /* IF Lingo · Kazakh A2 word bank: 17 more words for every unit, studied in the Vocabulary tab.
-   Built so far: units 1 to 10 (170 words). With the 160 lesson words, A2 will have 500 words; A1 + A2 = 1,000.
+   340 words. With the 160 lesson words, A2 has 500 words; A1 + A2 = 1,000.
    word | part of speech | meaning in English | example | (empty) | how to say it | the example in English */
 IFX.moreWords('kk-a2', {
 u1: `
@@ -181,5 +181,185 @@ u10: `
 жұмысқа орналасу | verb | to get a job | Мен жұмысқа орналастым. | | zhoo-mys-QA or-na-la-SOO | I got a job.
 жұмыстан шығу | verb | to leave a job | Ол жұмыстан шықты. | | zhoo-mys-TAN shy-GHOO | He left his job.
 тапсырма | noun | task | Бұл қиын тапсырма. | | tap-syr-MA | This is a hard task.
-кәсіп | noun | occupation, business | Оның өз кәсібі бар. | | ka-SIP | He has his own business.`
+кәсіп | noun | occupation, business | Оның өз кәсібі бар. | | ka-SIP | He has his own business.`,
+u11: `
+ұсыну | verb | to suggest, to offer | Мен киноға баруды ұсынамын. | | oo-sy-NOO | I suggest going to the cinema.
+қойылым | noun | play, show | Қойылым сағат жетіде басталады. | | qo-yy-LYM | The play begins at seven.
+көрермен | noun | spectator | Залда көрермен көп. | | ko-rer-MEN | There are many spectators in the hall.
+ойын-сауық | noun | entertainment | Қалада ойын-сауық аз. | | o-YYN sa-WYQ | There is little entertainment in the town.
+әуестік | noun | hobby, passion | Менің әуестігім — музыка. | | a-wes-TIK | My passion is music.
+бас тарту | verb | to refuse | Ол барудан бас тартты. | | bas tar-TOO | He refused to go.
+уағдаласу | verb | to arrange, to agree | Біз кездесуге уағдаластық. | | wagh-da-la-SOO | We arranged to meet.
+алдын ала | phrase | in advance | Билетті алдын ала сатып алыңыз. | | al-DYN a-LA | Buy the ticket in advance.
+керемет | adjective | great, wonderful | Керемет! Мен келемін. | | ke-re-MET | Great! I will come.
+идея | noun | idea | Бұл жақсы идея. | | i-DE-ya | This is a good idea.
+көңіл күй | noun | mood | Менің көңіл күйім жақсы. | | ko-NGIL kuy | I am in a good mood.
+табиғатқа шығу | verb | to go out into nature | Сенбіде біз табиғатқа шығамыз. | | ta-bi-ghat-QA shy-GHOO | On Saturday we are going out into nature.
+үстел ойыны | noun | board game | Бізде жаңа үстел ойыны бар. | | us-TEL o-yy-NY | We have a new board game.
+қатысу | verb | to take part | Мен концертке қатысамын. | | qa-ty-SOO | I am taking part in the concert.
+уақыт өткізу | verb | to spend time | Мен отбасыммен уақыт өткіземін. | | wa-QYT ot-ki-ZOO | I spend time with my family.
+қонақ шақыру | verb | to invite guests | Біз жұмада қонақ шақырамыз. | | qo-NAQ sha-qy-ROO | We are inviting guests on Friday.
+сахна | noun | stage | Әнші сахнада тұр. | | sakh-NA | The singer is standing on the stage.`,
+u12: `
+климат | noun | climate | Мұнда климат құрғақ. | | KLI-mat | The climate is dry here.
+күн күркіреу | verb | to thunder | Түнде күн күркіреді. | | kun kur-ki-REU | It thundered in the night.
+кемпірқосақ | noun | rainbow | Жаңбырдан кейін кемпірқосақ шықты. | | kem-pir-qo-SAQ | After the rain a rainbow came out.
+шалшық | noun | puddle | Көшеде үлкен шалшық бар. | | shal-SHYQ | There is a big puddle in the street.
+боран | noun | snowstorm | Бүгін боран. | | bo-RAN | There is a snowstorm today.
+көктайғақ | noun | black ice | Жолда көктайғақ. | | kok-tay-GHAQ | There is black ice on the road.
+аптап | noun | heat | Жазда мұнда аптап ыстық. | | ap-TAP | In summer the heat is strong here.
+ылғалды | adjective | humid, damp | Мұнда ауа ылғалды. | | yl-ghal-DY | The air is humid here.
+жел соғу | verb | (of wind) to blow | Қатты жел соғып тұр. | | zhel so-GHOO | A strong wind is blowing.
+еру | verb | to melt | Көктемде қар ериді. | | e-ROO | In spring the snow melts.
+тоңу | verb | to feel cold, to freeze | Мен қатты тоңдым. | | to-NGOO | I got very cold.
+жаңбырлы | adjective | rainy | Бүгін жаңбырлы күн. | | zhang-byr-LY | Today is a rainy day.
+қарлы | adjective | snowy | Биыл қыс қарлы. | | qar-LY | The winter is snowy this year.
+желді | adjective | windy | Қостанайда күн жиі желді. | | zhel-DI | It is often windy in Kostanay.
+бұршақ | noun | hail | Кеше бұршақ жауды. | | boor-SHAQ | It hailed yesterday.
+жылу | noun | warmth, heat | Үйде жылу бар. | | zhy-LOO | There is heating in the house.
+жауын-шашын | noun | rain and snow (precipitation) | Ертең жауын-шашын болады. | | zha-WYN sha-SHYN | There will be rain or snow tomorrow.`,
+u13: `
+сыпыру | verb | to sweep | Мен еден сыпырамын. | | sy-py-ROO | I sweep the floor.
+сүрту | verb | to wipe | Ол үстелді сүртіп жатыр. | | sur-TOO | She is wiping the table.
+шаң | noun | dust | Сөреде шаң бар. | | shang | There is dust on the shelf.
+шүберек | noun | cloth | Маған шүберек беріңізші. | | shu-be-REK | Give me a cloth, please.
+шелек | noun | bucket | Шелек жуынатын бөлмеде. | | she-LEK | The bucket is in the bathroom.
+сыпырғыш | noun | broom | Сыпырғыш қайда? | | sy-pyr-GHYSH | Where is the broom?
+кір жуғыш машина | noun | washing machine | Бізде жаңа кір жуғыш машина бар. | | kir zhoo-GHYSH ma-SHI-na | We have a new washing machine.
+үтік | noun | iron | Үтік ыстық. | | u-TIK | The iron is hot.
+сабын | noun | soap | Міне, сабын. | | sa-BYN | Here is the soap.
+сүлгі | noun | towel | Бұл таза сүлгі. | | sul-GI | This is a clean towel.
+төсек-орын | noun | bedding | Мен төсек-орынды жинаймын. | | to-SEK o-RYN | I make the bed.
+тазалық | noun | cleanliness | Анам тазалықты жақсы көреді. | | ta-za-LYQ | My mother loves cleanliness.
+лақтыру | verb | to throw away | Мен ескі газеттерді лақтырдым. | | laq-ty-ROO | I threw away the old newspapers.
+суару | verb | to water | Мен гүл суарамын. | | soo-a-ROO | I water the flowers.
+гүл | noun | flower | Терезеде гүл тұр. | | gul | There is a flower on the window.
+жинастыру | verb | to tidy up | Балалар бөлмені жинастырды. | | zhi-nas-ty-ROO | The children tidied up the room.
+кептіру | verb | to dry | Мен киімді балконда кептіремін. | | kep-ti-ROO | I dry the clothes on the balcony.`,
+u14: `
+жоспарлау | verb | to plan | Біз сапарды жоспарлап жатырмыз. | | zhos-par-LAU | We are planning a trip.
+армандау | verb | to dream | Мен теңізді армандаймын. | | ar-man-DAU | I dream of the sea.
+мүмкіндік | noun | opportunity | Бұл жақсы мүмкіндік. | | mum-kin-DIK | This is a good opportunity.
+сәттілік | noun | luck, success | Сізге сәттілік тілеймін! | | sat-ti-LIK | I wish you luck!
+табыс | noun | success, income | Бұл үлкен табыс. | | ta-BYS | This is a great success.
+қол жеткізу | verb | to achieve | Ол мақсатына қол жеткізді. | | qol zhet-ki-ZOO | He achieved his goal.
+уәде беру | verb | to promise | Мен қоңырау шалуға уәде беремін. | | wa-DE be-ROO | I promise to call.
+өзгерту | verb | to change | Мен өмірімді өзгерткім келеді. | | oz-ger-TOO | I want to change my life.
+таңдау | verb | to choose | Мен осы университетті таңдадым. | | tang-DAU | I chose this university.
+шешім | noun | decision | Бұл менің шешімім. | | she-SHIM | This is my decision.
+сенімді | adjective | sure, confident | Мен сенімдімін: ол келеді. | | se-nim-DI | I am sure he will come.
+болашақта | adverb | in the future | Болашақта мен теңіз жағасында тұрғым келеді. | | bo-la-shaq-TA | In the future I want to live by the sea.
+ықтимал | adjective | likely | Жаңбыр жаууы ықтимал. | | yq-ti-MAL | It is likely to rain.
+тырысу | verb | to try, to do your best | Мен жақсы оқуға тырысамын. | | ty-ry-SOO | I try to study well.
+ақша жинау | verb | to save money | Мен көлікке ақша жинап жатырмын. | | aq-SHA zhi-NAU | I am saving money for a car.
+дайындық | noun | preparation | Емтиханға дайындық басталды. | | da-yyn-DYQ | Preparation for the exam has begun.
+ұмтылу | verb | to strive | Ол білімге ұмтылады. | | oom-ty-LOO | She strives for knowledge.`,
+u15: `
+ұялы телефон | noun | mobile phone | Бұл менің ұялы телефоным. | | oo-ya-LY te-le-FON | This is my mobile phone.
+зарядтағыш | noun | charger | Менің зарядтағышым қайда? | | za-ryad-ta-GHYSH | Where is my charger?
+экран | noun | screen | Телефонның экраны үлкен. | | ek-RAN | The phone has a big screen.
+қосымша | noun | app | Бұл пайдалы қосымша. | | qo-sym-SHA | This is a useful app.
+құпиясөз | noun | password | Мен құпиясөзді ұмыттым. | | qoo-pi-ya-SOZ | I forgot the password.
+желі | noun | network | Мұнда желі жоқ. | | zhe-LI | There is no network here.
+батарея | noun | battery | Батарея отырып қалды. | | ba-ta-RE-ya | The battery has gone flat.
+құлаққап | noun | headphones | Мен музыканы құлаққаппен тыңдаймын. | | qoo-laq-QAP | I listen to music with headphones.
+түйме | noun | button | Осы түймені басыңыз. | | tuy-ME | Press this button.
+қосу | verb | to switch on, to add | Телефонды қосыңыз. | | qo-SOO | Switch on the phone.
+теру | verb | to dial | Мен сіздің нөміріңізді тердім. | | te-ROO | I dialled your number.
+дауыстық хабарлама | noun | voice message | Маған дауыстық хабарлама жіберіңіз. | | da-wys-TYQ kha-bar-la-MA | Send me a voice message.
+электрондық пошта | noun | email | Маған электрондық поштамен жазыңыз. | | e-lek-tron-DYQ POSH-ta | Write to me by email.
+сілтеме | noun | link | Мен сізге сілтеме жібердім. | | sil-te-ME | I sent you a link.
+жүктеп алу | verb | to download | Мен қосымшаны жүктеп алдым. | | zhuk-TEP a-LOO | I downloaded the app.
+хабар | noun | news, message | Сізден хабар күтемін. | | kha-BAR | I am waiting for news from you.
+байланысу | verb | to contact | Менімен ертең байланысыңыз. | | bay-la-ny-SOO | Contact me tomorrow.`,
+u16: `
+ашықхат | noun | postcard, card | Мен ашықхат жібердім. | | a-shyq-KHAT | I sent a card.
+шырша | noun | New Year tree | Балалар шыршаны безендіріп жатыр. | | shyr-SHA | The children are decorating the tree.
+отшашу | noun | fireworks | Түн ортасында отшашу болды. | | ot-sha-SHOO | There were fireworks at midnight.
+үйлену тойы | noun | wedding | Сенбіде әпкемнің үйлену тойы. | | uy-le-NOO to-YY | My sister’s wedding is on Saturday.
+мерейтой | noun | jubilee, big birthday | Атамның мерейтойы. | | me-rey-TOY | It is my grandfather’s big birthday.
+тілек | noun | wish | Бұл менің тілегім. | | ti-LEK | This is my wish.
+сыйлау | verb | to give (a present) | Мен анама гүл сыйладым. | | syy-LAU | I gave my mother flowers.
+безендіру | verb | to decorate | Біз үйді безендіреміз. | | be-zen-di-ROO | We decorate the house.
+дастарқан | noun | festive table | Дастарқанда тағам көп. | | das-tar-QAN | There is a lot of food on the table.
+Наурыз мейрамы | noun | Nauryz holiday | Наурыз мейрамы құтты болсын! | | na-oo-RYZ mey-ra-MY | Happy Nauryz!
+Тәуелсіздік күні | noun | Independence Day | Тәуелсіздік күні — желтоқсанда. | | ta-wel-siz-DIK ku-NI | Independence Day is in December.
+үшінші | number | third | Бұл үшінші қабат. | | u-shin-SHI | This is the third floor.
+төртінші | number | fourth | Бұл төртінші сабақ. | | tor-tin-SHI | This is the fourth lesson.
+бесінші | number | fifth | Бүгін бесінші мамыр. | | be-sin-SHI | Today is the fifth of May.
+оныншы | number | tenth | Бұл оныншы сабақ. | | o-nyn-SHY | This is the tenth lesson.
+шашу | noun | sweets thrown at a celebration | Тойда шашу шашады. | | sha-SHOO | At a celebration people throw sweets.
+мейрам | noun | holiday, festival | Бүгін үлкен мейрам. | | mey-RAM | Today is a big holiday.`,
+u17: `
+бақытты | adjective | happy | Бұл бақытты күн. | | ba-qyt-TY | This is a happy day.
+ашулы | adjective | angry | Сен неге ашулысың? | | a-shoo-LY | Why are you angry?
+ренжу | verb | to be upset | Ол ренжіп қалды. | | ren-ZHOO | He got upset.
+риза | adjective | pleased | Мен жұмысқа ризамын. | | ri-ZA | I am pleased with the work.
+сағыну | verb | to miss | Мен үйімді сағындым. | | sa-ghy-NOO | I miss my home.
+күлу | verb | to laugh | Балалар күліп жатыр. | | ku-LOO | The children are laughing.
+жылау | verb | to cry | Бала жылап жатыр. | | zhy-LAU | The child is crying.
+күлімсіреу | verb | to smile | Ол үнемі күлімсірейді. | | ku-lim-si-REU | She always smiles.
+эмоция | noun | emotion | Бұл күшті эмоция. | | e-MO-tsi-ya | This is a strong emotion.
+сияқты | word | like, it seems | Жаңбыр жауатын сияқты. | | si-yaq-TY | It seems it will rain.
+көзқарас | noun | point of view | Бұл менің көзқарасым. | | koz-qa-RAS | This is my point of view.
+дауласу | verb | to argue | Олар жиі дауласады. | | da-oo-la-SOO | They often argue.
+күмәндану | verb | to doubt | Мен күмәнданамын. | | ku-man-da-NOO | I doubt it.
+келіспеу | verb | to disagree | Мен сізбен келіспеймін. | | ke-lis-PEU | I disagree with you.
+қуану | verb | to be glad | Мен сізді көргеніме қуанамын. | | qoo-a-NOO | I am glad to see you.
+алаңдау | verb | to be anxious | Анам мен үшін алаңдайды. | | a-lang-DAU | My mother is anxious about me.
+ұялу | verb | to be shy | Бала ұялып тұр. | | oo-ya-LOO | The child is shy.`,
+u18: `
+химиялық тазалау | noun | dry cleaning | Пальто химиялық тазалауда. | | khi-mi-ya-LYQ ta-za-LAU | The coat is at the dry cleaner’s.
+кір жуатын орын | noun | laundry | Кір жуатын орын бірінші қабатта. | | kir zhoo-a-TYN o-RYN | The laundry is on the first floor.
+шеберхана | noun | workshop | Сағат шеберханада. | | she-ber-kha-NA | The watch is at the workshop.
+пошташы | noun | postman | Пошташы хат әкелді. | | posh-ta-SHY | The postman brought a letter.
+конверт | noun | envelope | Маған конверт керек. | | kon-VERT | I need an envelope.
+марка | noun | stamp | Екі марка беріңізші. | | MAR-ka | Two stamps, please.
+түбіртек | noun | receipt | Міне, сіздің түбіртегіңіз. | | tu-bir-TEK | Here is your receipt.
+чек | noun | receipt (from a shop) | Чекті алыңыз. | | chek | Take the receipt.
+төлем | noun | payment | Төлем картамен бе? | | to-LEM | Is the payment by card?
+қолма-қол ақша | noun | cash | Менде қолма-қол ақша жоқ. | | qol-MA qol aq-SHA | I have no cash.
+банк картасы | noun | bank card | Мен банк картасымен төлеймін. | | bank KAR-ta-sy | I pay by bank card.
+банкомат | noun | cash machine | Мұнда банкомат қайда? | | ban-ko-MAT | Where is a cash machine here?
+аударым | noun | transfer | Мен аударым жасадым. | | a-oo-da-RYM | I made a transfer.
+айырбастау | verb | to exchange | Мен ақша айырбастағым келеді. | | ay-yr-bas-TAU | I want to exchange money.
+жазылу | verb | to sign up, to book | Мен дәрігерге жазылдым. | | zha-zy-LOO | I booked a doctor’s appointment.
+қайтару | verb | to return, to give back | Мен бұл затты қайтарғым келеді. | | qay-ta-ROO | I want to return this item.
+кепілдік | noun | guarantee | Кепілдік — бір жыл. | | ke-pil-DIK | The guarantee is one year.`,
+u19: `
+басталу | verb | to begin | Фильм сағат жетіде басталады. | | bas-ta-LOO | The film begins at seven.
+аяқталу | verb | to end | Сабақ аяқталды. | | a-yaq-ta-LOO | The lesson has ended.
+кейіпкер | noun | character, hero | Кітаптың кейіпкері — бала. | | ke-yip-KER | The hero of the book is a boy.
+әңгіме | noun | story, talk | Мен әңгіме оқыдым. | | ang-gi-ME | I read a story.
+айтып беру | verb | to tell | Өзіңіз туралы айтып беріңізші. | | ay-TYP be-ROO | Please tell me about yourself.
+байқау | verb | to notice | Мен қатені байқадым. | | bay-QAU | I noticed a mistake.
+айқайлау | verb | to shout | Ол «Тоқта!» деп айқайлады. | | ay-qay-LAU | He shouted, “Stop!”
+қашу | verb | to run away | Ит қашып кетті. | | qa-SHOO | The dog ran away.
+құтқару | verb | to save, to rescue | Дәрігер адамды құтқарды. | | qoot-qa-ROO | The doctor saved a person.
+күтпеген жерден | phrase | unexpectedly | Ол күтпеген жерден келді. | | kut-pe-GEN zher-DEN | He came unexpectedly.
+бірден | adverb | at once | Мен бірден түсіндім. | | bir-DEN | I understood at once.
+соңында | adverb | in the end | Соңында біз үйді таптық. | | so-ngyn-DA | In the end we found the house.
+бақытымызға орай | phrase | fortunately | Бақытымызға орай, бәрі аман. | | ba-qy-ty-myz-GHA o-RAY | Fortunately, everyone is safe.
+ертегі | noun | fairy tale | Әжем ертегі айтады. | | er-te-GI | My grandmother tells fairy tales.
+қорқынышты | adjective | frightening | Бұл қорқынышты фильм. | | qor-qy-nysh-TY | This is a frightening film.
+таңғажайып | adjective | amazing | Бұл таңғажайып оқиға. | | tang-gha-zha-YYP | This is an amazing story.
+болған оқиға | noun | true story | Бұл болған оқиға. | | bol-GHAN o-qi-GHA | This is a true story.`,
+u20: `
+біріншіден | word | firstly | Біріншіден, бұл қымбат. | | bi-rin-shi-DEN | Firstly, it is expensive.
+екіншіден | word | secondly | Екіншіден, бұл алыс. | | ye-kin-shi-DEN | Secondly, it is far.
+сондай-ақ | word | also | Мен сондай-ақ ағылшынша сөйлеймін. | | son-DAY aq | I also speak English.
+немесе | word | or | Шай немесе кофе? | | ne-me-SE | Tea or coffee?
+дегенмен | word | however | Суық, дегенмен әдемі. | | de-gen-MEN | It is cold; however, it is beautiful.
+онда | word | then, in that case | Онда ертең кездесейік. | | on-DA | Then let’s meet tomorrow.
+тіпті | word | even | Мұны тіпті балалар біледі. | | tip-TI | Even children know this.
+тек | word | only | Менде тек бір сағат бар. | | tek | I have only one hour.
+жай | word | simply, just | Мен жай сұрадым. | | zhay | I just asked.
+дәл | word | exactly | Дәл солай! | | dal | Exactly so!
+керісінше | word | on the contrary | Жоқ, керісінше! | | ke-ri-sin-SHE | No, on the contrary!
+қысқасы | word | in short | Қысқасы, бәрі жақсы. | | qys-qa-SY | In short, everything is fine.
+ең бастысы | phrase | the main thing | Ең бастысы — денсаулық. | | eng bas-ty-SY | The main thing is health.
+әйтпесе | word | otherwise | Тез жүр, әйтпесе кешігесің. | | ayt-pe-SE | Go quickly, otherwise you will be late.
+демек | word | so, that means | Демек, сен келмейсің бе? | | de-MEK | So you are not coming?
+бірақ | word | but | Мен келдім, бірақ ол жоқ. | | bi-RAQ | I came, but he is not here.
+және | word | and | Нан және сүт беріңізші. | | zha-NE | Bread and milk, please.`
 });

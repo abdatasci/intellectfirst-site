@@ -1,5 +1,5 @@
 /* IF Lingo · Russian A2 word bank: 17 more words for every unit, studied in the Vocabulary tab.
-   Built so far: units 1 to 10 (170 words). With the 160 lesson words, A2 will have 500 words; A1 + A2 = 1,000.
+   340 words. With the 160 lesson words, A2 has 500 words; A1 + A2 = 1,000.
    word | part of speech | meaning in English | example | (empty) | how to say it | the example in English */
 IFX.moreWords('ru-a2', {
 u1: `
@@ -181,5 +181,185 @@ u10: `
 диплом | noun | diploma, degree | У меня есть диплом. | | deep-LOM | I have a degree.
 специальность | noun | field, speciality | Какая у вас специальность? | | spee-tsee-AL-nast | What is your field?
 факультет | noun | faculty | Я учусь на факультете истории. | | fa-kool-TYET | I study at the faculty of history.
-стажировка | noun | internship | У меня стажировка в банке. | | sta-zhy-ROF-ka | I have an internship at a bank.`
+стажировка | noun | internship | У меня стажировка в банке. | | sta-zhy-ROF-ka | I have an internship at a bank.`,
+u11: `
+приглашать | verb | to invite | Я приглашаю вас в гости. | | pree-gla-SHAT | I invite you to my home.
+предложение | noun | suggestion, offer | Это хорошее предложение. | | preed-la-ZHE-nee-ye | This is a good suggestion.
+свидание | noun | date (with someone) | У неё сегодня свидание. | | svee-DA-nee-ye | She has a date today.
+спектакль | noun | play, show | Спектакль начинается в семь. | | speek-TAKL | The play begins at seven.
+выступление | noun | performance | Это было отличное выступление. | | vy-stoop-LYE-nee-ye | It was an excellent performance.
+зритель | noun | spectator | В зале много зрителей. | | ZREE-teel | There are many spectators in the hall.
+развлечение | noun | entertainment | В городе мало развлечений. | | raz-vlee-CHE-nee-ye | There is little entertainment in the town.
+увлечение | noun | hobby, passion | Моё увлечение — музыка. | | oo-vlee-CHE-nee-ye | My passion is music.
+отказаться | verb | to refuse | Он отказался пойти. | | at-ka-ZAT-sa | He refused to go.
+согласиться | verb | to agree | Она согласилась. | | sa-gla-SEET-sa | She agreed.
+договориться | verb | to arrange, to agree | Мы договорились встретиться. | | da-ga-va-REET-sa | We arranged to meet.
+заранее | adverb | in advance | Купите билеты заранее. | | za-RA-nee-ye | Buy the tickets in advance.
+жаль | word | it is a pity | Жаль, что ты не можешь. | | zhal | It is a pity that you cannot.
+отлично | adverb | excellent | Отлично! Я приду. | | at-LEECH-na | Excellent! I will come.
+идея | noun | idea | Это хорошая идея. | | ee-DYE-ya | This is a good idea.
+настроение | noun | mood | У меня хорошее настроение. | | na-stra-YE-nee-ye | I am in a good mood.
+пикник | noun | picnic | В субботу у нас пикник. | | peek-NEEK | We have a picnic on Saturday.`,
+u12: `
+климат | noun | climate | Здесь сухой климат. | | KLEE-mat | The climate is dry here.
+молния | noun | lightning | Я видел молнию. | | MOL-nee-ya | I saw lightning.
+гром | noun | thunder | Дети боятся грома. | | grom | Children are afraid of thunder.
+радуга | noun | rainbow | После дождя была радуга. | | RA-doo-ga | After the rain there was a rainbow.
+лужа | noun | puddle | На улице большие лужи. | | LOO-zha | There are big puddles in the street.
+метель | noun | snowstorm | Сегодня метель. | | mee-TYEL | There is a snowstorm today.
+гололёд | noun | black ice | На дороге гололёд. | | ga-la-LYOT | There is black ice on the road.
+жара | noun | heat | Летом здесь жара. | | zha-RA | In summer it is very hot here.
+прохладно | adverb | cool | Вечером прохладно. | | pra-KHLAD-na | It is cool in the evening.
+влажный | adjective | humid, damp | Здесь влажный воздух. | | VLAZH-ny | The air is humid here.
+сухой | adjective | dry | Сегодня сухой день. | | soo-KHOY | Today is a dry day.
+ясно | adverb | clear | Сегодня ясно. | | YAS-na | It is clear today.
+облачно | adverb | cloudy | Завтра будет облачно. | | OB-lach-na | It will be cloudy tomorrow.
+дуть | verb | to blow | Дует сильный ветер. | | doot | A strong wind is blowing.
+таять | verb | to melt | Весной снег тает. | | TA-yat | In spring the snow melts.
+замёрзнуть | verb | to freeze, to get cold | Я очень замёрз. | | za-MYORZ-noot | I got very cold.
+время года | noun | season | Моё любимое время года — лето. | | VRYE-mya GO-da | My favourite season is summer.`,
+u13: `
+подметать | verb | to sweep | Я подметаю пол. | | pad-mee-TAT | I am sweeping the floor.
+вытирать | verb | to wipe | Она вытирает стол. | | vy-tee-RAT | She is wiping the table.
+пыль | noun | dust | На полке пыль. | | pyl | There is dust on the shelf.
+тряпка | noun | cloth | Дай мне тряпку. | | TRYAP-ka | Give me a cloth.
+ведро | noun | bucket | Ведро в ванной. | | veed-RO | The bucket is in the bathroom.
+веник | noun | broom | Где веник? | | VYE-neek | Where is the broom?
+стиральная машина | noun | washing machine | У нас новая стиральная машина. | | stee-RAL-na-ya ma-SHY-na | We have a new washing machine.
+утюг | noun | iron | Утюг горячий. | | oo-TYOOK | The iron is hot.
+мыло | noun | soap | Вот мыло. | | MY-la | Here is the soap.
+полотенце | noun | towel | Это чистое полотенце. | | pa-la-TYEN-tse | This is a clean towel.
+бельё | noun | laundry, bed linen | Я стираю бельё. | | bee-LYO | I am washing the laundry.
+грязь | noun | dirt, mud | На полу грязь. | | gryas | There is dirt on the floor.
+чистота | noun | cleanliness | Мама любит чистоту. | | chees-ta-TA | Mum loves cleanliness.
+выбросить | verb | to throw away | Я выбросил старые газеты. | | VY-bra-seet | I threw away the old newspapers.
+поливать | verb | to water | Я поливаю цветы. | | pa-lee-VAT | I am watering the flowers.
+цветы | noun | flowers | На окне цветы. | | tsvee-TY | There are flowers on the window.
+сосед | noun | neighbour | Мой сосед — врач. | | sa-SYET | My neighbour is a doctor.`,
+u14: `
+планировать | verb | to plan | Мы планируем поездку. | | pla-NEE-ra-vat | We are planning a trip.
+мечтать | verb | to dream | Я мечтаю о море. | | meech-TAT | I dream about the sea.
+намерение | noun | intention | У меня есть намерение учиться. | | na-MYE-ree-nee-ye | I have the intention to study.
+возможность | noun | opportunity | Это хорошая возможность. | | vaz-MOZH-nast | This is a good opportunity.
+шанс | noun | chance | У тебя есть шанс. | | shans | You have a chance.
+успех | noun | success | Желаю успеха! | | oos-PYEKH | I wish you success!
+достичь | verb | to achieve | Он достиг цели. | | das-TEECH | He achieved his goal.
+обещать | verb | to promise | Я обещаю позвонить. | | a-bee-SHCHAT | I promise to call.
+изменить | verb | to change | Я хочу изменить жизнь. | | eez-mee-NEET | I want to change my life.
+выбрать | verb | to choose | Я выбрал этот университет. | | VY-brat | I chose this university.
+выбор | noun | choice | Это трудный выбор. | | VY-bar | This is a hard choice.
+решение | noun | decision | Это моё решение. | | ree-SHE-nee-ye | This is my decision.
+надежда | noun | hope | У меня есть надежда. | | na-DYEZH-da | I have hope.
+уверен | adjective | sure | Я уверен, что он придёт. | | oo-VYE-reen | I am sure that he will come.
+вероятно | adverb | probably, likely | Вероятно, будет дождь. | | vee-ra-YAT-na | It will probably rain.
+в будущем | phrase | in the future | В будущем я хочу жить у моря. | | v BOO-doo-shchem | In the future I want to live by the sea.
+следующий | adjective | next | Следующий урок в среду. | | SLYE-doo-yoo-shchee | The next lesson is on Wednesday.`,
+u15: `
+мобильный | adjective | mobile | Это мой мобильный телефон. | | ma-BEEL-ny | This is my mobile phone.
+зарядное устройство | noun | charger | Где моё зарядное устройство? | | za-RYAD-na-ye oost-ROYST-va | Where is my charger?
+экран | noun | screen | У телефона большой экран. | | ek-RAN | The phone has a big screen.
+приложение | noun | app | Это полезное приложение. | | pree-la-ZHE-nee-ye | This is a useful app.
+пароль | noun | password | Я забыл пароль. | | pa-ROL | I forgot the password.
+сеть | noun | network | Здесь нет сети. | | syet | There is no network here.
+батарея | noun | battery | Батарея почти села. | | ba-ta-RYE-ya | The battery is almost flat.
+наушники | noun | headphones | Я слушаю музыку в наушниках. | | na-OOSH-nee-kee | I listen to music with headphones.
+кнопка | noun | button | Нажмите эту кнопку. | | KNOP-ka | Press this button.
+включить | verb | to switch on | Включите телефон. | | fklyoo-CHEET | Switch on the phone.
+выключить | verb | to switch off | Выключите звук, пожалуйста. | | VY-klyoo-cheet | Switch off the sound, please.
+набрать | verb | to dial | Я набрал ваш номер. | | na-BRAT | I dialled your number.
+ответить | verb | to answer | Он не ответил на звонок. | | at-VYE-teet | He did not answer the call.
+занято | adverb | engaged, busy | Я звонил, но было занято. | | ZA-nya-ta | I called, but it was engaged.
+электронная почта | noun | email | Напишите мне на электронную почту. | | e-leek-TRON-na-ya POCH-ta | Write to me by email.
+ссылка | noun | link | Я отправил вам ссылку. | | SSYL-ka | I sent you a link.
+скачать | verb | to download | Я скачал приложение. | | ska-CHAT | I downloaded the app.`,
+u16: `
+праздновать | verb | to celebrate | Мы празднуем Новый год дома. | | PRAZ-na-vat | We celebrate New Year at home.
+поздравление | noun | congratulations, greeting | Спасибо за поздравление! | | paz-drav-LYE-nee-ye | Thank you for the greeting!
+открытка | noun | postcard, card | Я отправил открытку. | | at-KRYT-ka | I sent a card.
+свеча | noun | candle | На торте пять свечей. | | svee-CHA | There are five candles on the cake.
+ёлка | noun | New Year tree | Дети украшают ёлку. | | YOL-ka | The children are decorating the tree.
+фейерверк | noun | fireworks | В полночь был фейерверк. | | fey-er-VYERK | There were fireworks at midnight.
+свадьба | noun | wedding | В субботу свадьба моей сестры. | | SVAD-ba | My sister’s wedding is on Saturday.
+юбилей | noun | jubilee, big birthday | У дедушки юбилей. | | yoo-bee-LYEY | It is grandfather’s big birthday.
+годовщина | noun | anniversary | Сегодня годовщина свадьбы. | | ga-daf-SHCHEE-na | Today is the wedding anniversary.
+тост | noun | toast | Я хочу сказать тост. | | tost | I want to make a toast.
+подарить | verb | to give (a present) | Я подарил маме цветы. | | pa-da-REET | I gave mum flowers.
+украшать | verb | to decorate | Мы украшаем дом. | | oo-kra-SHAT | We are decorating the house.
+угощение | noun | treat (food for guests) | На столе много угощений. | | oo-ga-SHCHE-nee-ye | There is a lot of food on the table.
+Рождество | noun | Christmas | Рождество в январе. | | razh-deest-VO | Christmas is in January.
+четвёртый | number | fourth | Это четвёртый этаж. | | cheet-VYOR-ty | This is the fourth floor.
+пятый | number | fifth | Сегодня пятое мая. | | PYA-ty | Today is the fifth of May.
+десятый | number | tenth | Это десятый урок. | | dee-SYA-ty | This is the tenth lesson.`,
+u17: `
+счастливый | adjective | happy | Это счастливый день. | | shchas-LEE-vy | This is a happy day.
+злой | adjective | angry | Почему ты такой злой? | | zloy | Why are you so angry?
+удивлён | adjective | surprised | Я очень удивлён. | | oo-deev-LYON | I am very surprised.
+расстроен | adjective | upset | Он расстроен. | | ras-STRO-yen | He is upset.
+доволен | adjective | pleased | Я доволен работой. | | da-VO-leen | I am pleased with the work.
+гордиться | verb | to be proud | Я горжусь сыном. | | gar-DEET-sa | I am proud of my son.
+скучать | verb | to miss, to be bored | Я скучаю по дому. | | skoo-CHAT | I miss home.
+смеяться | verb | to laugh | Дети смеются. | | smee-YAT-sa | The children are laughing.
+плакать | verb | to cry | Ребёнок плачет. | | PLA-kat | The child is crying.
+улыбаться | verb | to smile | Она всегда улыбается. | | oo-ly-BAT-sa | She always smiles.
+чувство | noun | feeling | Это приятное чувство. | | CHOOST-va | This is a pleasant feeling.
+эмоция | noun | emotion | Это сильная эмоция. | | e-MO-tsee-ya | This is a strong emotion.
+считать | verb | to consider, to think | Я считаю, что он прав. | | shchee-TAT | I think that he is right.
+прав | adjective | right (correct) | Ты прав. | | praf | You are right.
+кажется | word | it seems | Кажется, будет дождь. | | KA-zhet-sa | It seems it will rain.
+спорить | verb | to argue | Они часто спорят. | | SPO-reet | They often argue.
+сомневаться | verb | to doubt | Я сомневаюсь. | | sam-nee-VAT-sa | I doubt it.`,
+u18: `
+химчистка | noun | dry cleaner’s | Пальто в химчистке. | | kheem-CHEEST-ka | The coat is at the dry cleaner’s.
+прачечная | noun | laundry | Прачечная на первом этаже. | | PRA-chech-na-ya | The laundry is on the ground floor.
+мастерская | noun | workshop | Часы в мастерской. | | mas-teer-SKA-ya | The watch is at the workshop.
+почтальон | noun | postman | Почтальон принёс письмо. | | pach-ta-LYON | The postman brought a letter.
+конверт | noun | envelope | Мне нужен конверт. | | kan-VYERT | I need an envelope.
+марка | noun | stamp | Две марки, пожалуйста. | | MAR-ka | Two stamps, please.
+квитанция | noun | receipt (for a service) | Вот ваша квитанция. | | kvee-TAN-tsee-ya | Here is your receipt.
+чек | noun | receipt (from a shop) | Возьмите чек. | | chek | Take the receipt.
+оплата | noun | payment | Оплата картой? | | ap-LA-ta | Payment by card?
+наличные | noun | cash | У меня нет наличных. | | na-LEECH-ny-ye | I have no cash.
+банковская карта | noun | bank card | Я плачу банковской картой. | | BAN-kaf-ska-ya KAR-ta | I pay by bank card.
+банкомат | noun | cash machine | Где здесь банкомат? | | ban-ka-MAT | Where is a cash machine here?
+перевод | noun | transfer, translation | Я сделал перевод. | | pee-ree-VOT | I made a transfer.
+обменять | verb | to exchange | Я хочу обменять деньги. | | ab-mee-NYAT | I want to exchange money.
+записаться | verb | to book, to sign up | Я записался к врачу. | | za-pee-SAT-sa | I booked a doctor’s appointment.
+вернуть | verb | to return, to give back | Я хочу вернуть эту вещь. | | veer-NOOT | I want to return this item.
+гарантия | noun | guarantee | Гарантия — один год. | | ga-RAN-tee-ya | The guarantee is one year.`,
+u19: `
+начало | noun | beginning | Это начало истории. | | na-CHA-la | This is the beginning of the story.
+конец | noun | end | Это конец фильма. | | ka-NYETS | This is the end of the film.
+герой | noun | hero, main character | Герой книги — мальчик. | | gee-ROY | The hero of the book is a boy.
+сюжет | noun | plot | У фильма интересный сюжет. | | syoo-ZHET | The film has an interesting plot.
+рассказ | noun | short story | Я прочитал рассказ. | | ras-SKAS | I read a short story.
+рассказать | verb | to tell | Расскажите о себе. | | ras-ska-ZAT | Tell me about yourself.
+произойти | verb | to take place | Это произошло вчера. | | pra-ee-zay-TEE | It took place yesterday.
+заметить | verb | to notice | Я заметил ошибку. | | za-MYE-teet | I noticed a mistake.
+понять | verb | to understand, to realise | Я всё понял. | | pa-NYAT | I understood everything.
+крикнуть | verb | to shout | Он крикнул: «Стой!» | | KREEK-noot | He shouted, “Stop!”
+убежать | verb | to run away | Собака убежала. | | oo-bee-ZHAT | The dog ran away.
+спасти | verb | to save | Врач спас человека. | | spas-TEE | The doctor saved a person.
+неожиданно | adverb | unexpectedly | Он пришёл неожиданно. | | nee-a-ZHY-dan-na | He came unexpectedly.
+сразу | adverb | at once | Я сразу понял. | | SRA-zoo | I understood at once.
+в конце концов | phrase | in the end | В конце концов мы нашли дом. | | f kan-TSE kan-TSOF | In the end we found the house.
+к счастью | phrase | fortunately | К счастью, все здоровы. | | k SHCHAS-tyoo | Fortunately, everyone is well.
+удача | noun | luck | Желаю удачи! | | oo-DA-cha | Good luck!`,
+u20: `
+во-первых | word | firstly | Во-первых, это дорого. | | va-PYER-vykh | Firstly, it is expensive.
+во-вторых | word | secondly | Во-вторых, это далеко. | | va-FTA-rykh | Secondly, it is far.
+также | word | also | Я также говорю по-английски. | | TAG-zhe | I also speak English.
+тоже | word | too | Я тоже студент. | | TO-zhe | I am a student too.
+или | word | or | Чай или кофе? | | EE-lee | Tea or coffee?
+хотя | word | although | Я пришёл, хотя был болен. | | kha-TYA | I came, although I was ill.
+зато | word | but then, on the other hand | Здесь холодно, зато красиво. | | za-TO | It is cold here, but it is beautiful.
+тогда | word | then | Тогда давай встретимся завтра. | | tag-DA | Then let’s meet tomorrow.
+даже | word | even | Даже дети знают это. | | DA-zhe | Even children know this.
+только | word | only | У меня только один час. | | TOL-ka | I have only one hour.
+просто | word | simply, just | Это просто. | | PROS-ta | It is simple.
+точно | adverb | exactly | Я точно не знаю. | | TOCH-na | I do not know exactly.
+наоборот | word | on the contrary | Нет, наоборот! | | na-a-ba-ROT | No, on the contrary!
+в общем | phrase | on the whole | В общем, всё хорошо. | | v OP-shchem | On the whole, everything is fine.
+главное | noun | the main thing | Главное — здоровье. | | GLAV-na-ye | The main thing is health.
+иначе | word | otherwise | Иди быстро, иначе опоздаешь. | | ee-NA-che | Go quickly, otherwise you will be late.
+значит | word | so, that means | Значит, ты не придёшь? | | ZNA-cheet | So you will not come?`
 });
