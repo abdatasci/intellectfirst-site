@@ -540,6 +540,7 @@
     stage(true);
     cyber(s.mode === 'hack' && (s.phase === 'race' || s.phase === 'end' || s.phase === 'lobby'));
     document.body.classList.toggle('treasure', s.mode === 'gold' && (s.phase === 'race' || s.phase === 'end' || s.phase === 'lobby'));
+    document.body.classList.toggle('heist', s.mode === 'cash' && (s.phase === 'race' || s.phase === 'end' || s.phase === 'lobby'));
     var pp = $('#pinpill'); pp.hidden = s.phase === 'lobby' || s.phase === 'end'; pp.innerHTML = 'PIN <b>' + s.pin + '</b> · ' + s.count + ' players';
     var h = '<div class="stage">';
     if (s.phase === 'lobby') {
@@ -590,7 +591,7 @@
       if (race && s.mode === 'fish') h += lake(s, s.board.slice(0, 10)); else
       if (race && (s.mode === 'race' || s.mode === 'mine' || s.mode === 'gold' || s.mode === 'cash') && L.Race3D) h += '<div class="r3slot" id="r3slot"></div></div>'; else
       h += top.map(function (p, i) { return '<div class="brow' + (i === 0 ? ' first' : '') + '" style="--k:' + ROWC[i % ROWC.length] + '"><span class="fill" style="width:' + (p[1] / max * 100) + '%"></span><span class="r">' + (cy ? ('0' + (i + 1)).slice(-2) : i + 1) + '</span><span class="n">' + (cy ? esc(p[0].toUpperCase().replace(/\s+/g, '_')) + '<small class="ip">' + ip(p[0]) + '</small>' : esc(p[0])) + (p[2] >= 0 && s.teams.length ? ' <small style="color:' + teamColor(p[2]) + '">●</small>' : '') + '</span><span class="s">' + (MM.power ? L.fmtN(p[1]) + cur : p[1]) + '</span></div>'; }).join('') + '</div>';
-      if (MM.power) h += '<div class="feed"><h3>' + (cy ? 'root@if-net:~$ tail -f breach.log' : s.mode === 'gold' ? '📜 Captain’s log' : 'Live feed') + '</h3>' + ((s.feed || []).slice().reverse().map(function (e) { return '<div class="fe ' + esc(e.k) + '">' + (cy ? (e.k === 'hack' || e.k === 'steal' ? '<b>ACCESS GRANTED</b> ' : '<b class="ok">&gt;</b> ') : '') + esc(e.t) + '</div>'; }).join('') || '<p class="mini" style="color:rgba(255,255,255,.6)">' + (s.mode === 'gold' ? 'Steals and swaps appear here…' : s.mode === 'hack' ? 'Hacks appear here…' : s.mode === 'mine' ? 'Gold and diamonds appear here…' : 'Big catches appear here…') + '</p>') + '</div></div>';
+      if (MM.power) h += '<div class="feed"><h3>' + (cy ? 'root@if-net:~$ tail -f breach.log' : s.mode === 'gold' ? '📜 Captain’s log' : s.mode === 'cash' ? '🚨 Police scanner' : 'Live feed') + '</h3>' + ((s.feed || []).slice().reverse().map(function (e) { return '<div class="fe ' + esc(e.k) + '">' + (cy ? (e.k === 'hack' || e.k === 'steal' ? '<b>ACCESS GRANTED</b> ' : '<b class="ok">&gt;</b> ') : '') + esc(e.t) + '</div>'; }).join('') || '<p class="mini" style="color:rgba(255,255,255,.6)">' + (s.mode === 'gold' ? 'Steals and swaps appear here…' : s.mode === 'hack' ? 'Hacks appear here…' : s.mode === 'mine' ? 'Gold and diamonds appear here…' : 'Big catches appear here…') + '</p>') + '</div></div>';
       if (host) h += '<div class="ctrl" style="justify-content:flex-end">' + (race ? ADDT() + '<button class="btn ghost sm" id="endnow">End race now</button>' : '<button class="btn big" id="nextq">' + (s.i + 1 >= s.n ? 'Final results →' : 'Next question →') + '</button><button class="btn ghost sm" id="endnow">End game</button>') + '</div>';
     } else if (s.phase === 'match') {
       h += '<div class="board" style="max-width:1000px"><h2>🤝 ' + esc(s.title) + '</h2><div style="text-align:center;margin-bottom:8px"><span class="pill" style="font-size:22px">⏱ <span id="rtime">' + fmt(s.left) + '</span></span> <span class="pill">First team to ' + s.goal + ' right in a row wins</span></div>';
@@ -612,7 +613,7 @@
     }
     h += '</div>';
     view.innerHTML = h;
-    if (L.Race3D) { var r3 = $('#r3slot'); if (r3) L.Race3D.show(r3, s.board.slice(0, 12).map(function (p, i) { return { id: p[6] || p[0] + '#' + i, name: p[0], score: p[1], color: ROWC[H && H.order && p[6] ? Math.max(0, H.order.indexOf(p[6])) % ROWC.length : i % ROWC.length] }; }), s.mode === 'balloon' ? { kind: 'balloon', per: 2.6, unit: 'm' } : s.mode === 'kart' ? { per: 2.6, unit: 'laps' } : s.mode === 'mine' ? { kind: 'mine', per: .5, unit: '💎' } : s.mode === 'gold' ? { kind: 'treasure', per: .05, unit: '🪙' } : s.mode === 'cash' ? { kind: 'mine', per: .05, unit: '💰', gem: '#5fd068' } : null); else L.Race3D.stop(); }
+    if (L.Race3D) { var r3 = $('#r3slot'); if (r3) L.Race3D.show(r3, s.board.slice(0, 12).map(function (p, i) { return { id: p[6] || p[0] + '#' + i, name: p[0], score: p[1], color: ROWC[H && H.order && p[6] ? Math.max(0, H.order.indexOf(p[6])) % ROWC.length : i % ROWC.length] }; }), s.mode === 'balloon' ? { kind: 'balloon', per: 2.6, unit: 'm' } : s.mode === 'kart' ? { per: 2.6, unit: 'laps' } : s.mode === 'mine' ? { kind: 'mine', per: .5, unit: '💎' } : s.mode === 'gold' ? { kind: 'treasure', per: .05, unit: '🪙' } : s.mode === 'cash' ? { kind: 'heist', per: .05, unit: '💰' } : null); else L.Race3D.stop(); }
     if (!host) return;
     var on = function (id, fn) { var el = $('#' + id); if (el) el.onclick = fn; };
     on('begin', begin); on('cancel', function () { if (!L.local) L.api('state', { pin: H.pin, status: 'ended' }).catch(function () {}); H.phase = 'end'; push(true); closeGame(); });

@@ -5,7 +5,7 @@
   var qsp = new URLSearchParams(location.search);
   var S = { pin: (qsp.get('pin') || '').replace(/\D/g, ''), name: '', pid: null, uid: null, bus: null, st: null, answered: {}, team: -1, race: null };
 
-  function show(h) { view.innerHTML = h; document.body.classList.toggle('treasure', !!(S.st && S.st.mode === 'gold')); }
+  function show(h) { view.innerHTML = h; document.body.classList.toggle('treasure', !!(S.st && S.st.mode === 'gold')); document.body.classList.toggle('heist', !!(S.st && S.st.mode === 'cash')); }
   function flash(ok) { var f = $('#flash'); f.className = 'flash ' + (ok ? 'ok' : 'no'); clearTimeout(flash.t); flash.t = setTimeout(function () { f.className = 'flash'; }, 380); }
   function meChip() { var m = $('#me'), M = L.mode(S.st && S.st.mode); m.hidden = !S.name; m.innerHTML = esc(S.name) + (S.st && S.st.you && S.st.you[S.pid] ? ' · <span class="score-chip">' + (M.power ? L.fmtN(S.st.you[S.pid][0]) + ' ' + M.cur : S.st.you[S.pid][0]) + '</span>' : ''); }
   function toast(text, kind) {
@@ -273,9 +273,9 @@
   }
   /* Cash Climb: coins per answer with upgrades bought in the shop */
   var CASH = {
-    per: { name: 'Coins per answer', lv: [10, 25, 50, 100, 250, 500, 1000, 2500], cost: [0, 60, 250, 800, 2500, 7000, 20000, 60000] },
-    streak: { name: 'Streak bonus', lv: [0, 5, 15, 40, 100, 300], cost: [0, 100, 500, 1500, 5000, 15000] },
-    mult: { name: 'Multiplier', lv: [1, 1.5, 2, 3, 5], cost: [0, 300, 1500, 5000, 15000] }
+    per: { name: 'Bigger money bag', lv: [10, 25, 50, 100, 250, 500, 1000, 2500], cost: [0, 60, 250, 800, 2500, 7000, 20000, 60000] },
+    streak: { name: 'Crew streak bonus', lv: [0, 5, 15, 40, 100, 300], cost: [0, 100, 500, 1500, 5000, 15000] },
+    mult: { name: 'Getaway multiplier', lv: [1, 1.5, 2, 3, 5], cost: [0, 300, 1500, 5000, 15000] }
   };
   function cashState() { return S.cash || (S.cash = { per: 0, streak: 0, mult: 0, bal: 0 }); }
   function cashEarn() {
@@ -283,11 +283,11 @@
     var earn = Math.round((CASH.per.lv[C.per] + CASH.streak.lv[C.streak] * Math.min(streak, 10)) * CASH.mult.lv[C.mult]);
     C.bal = Math.max(C.bal, myScore()) + earn;
     S.bus.pub('p', 'gain', { pid: S.pid, k: 'add', v: earn }); L.sfx('coin');
-    cashShop('+' + L.fmtN(earn) + ' 💰');
+    cashShop('💰 +' + L.fmtN(earn) + ' grabbed!');
   }
   function cashShop(msg) {
     var C = cashState(), bal = Math.max(C.bal, myScore());
-    show('<div class="pw"><h2>' + (msg || '💰 Shop') + '</h2><p style="color:rgba(255,255,255,.75)">You have <b style="color:var(--gold)">' + L.fmtN(bal) + ' coins</b></p><div class="cashshop">' +
+    show('<div class="pw"><h2>' + (msg || '🧰 Crew shop') + '</h2><p style="color:rgba(255,255,255,.75)">You have <b style="color:var(--gold)">' + L.fmtN(bal) + ' coins</b></p><div class="cashshop">' +
       Object.keys(CASH).map(function (k) { var U = CASH[k], lv = C[k], nx = lv + 1 < U.lv.length ? lv + 1 : null; return '<button data-k="' + k + '"' + (nx == null || U.cost[nx] > bal ? ' disabled' : '') + '><div><b>' + U.name + '</b><br><small>Now: ' + (k === 'mult' ? '×' + U.lv[lv] : k === 'streak' ? '+' + U.lv[lv] + ' per streak' : U.lv[lv] + ' per answer') + (nx != null ? ' → ' + (k === 'mult' ? '×' + U.lv[nx] : U.lv[nx]) : '') + '</small></div><span>' + (nx == null ? 'MAX' : L.fmtN(U.cost[nx]) + ' 💰') + '</span></button>'; }).join('') +
       '</div><p style="margin-top:16px"><button class="btn" id="nx">Next question →</button></p></div>');
     view.querySelectorAll('.cashshop button').forEach(function (b) {

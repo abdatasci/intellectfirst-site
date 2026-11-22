@@ -381,3 +381,14 @@ body.treasure .chest{background:radial-gradient(ellipse at 50% 85%,rgba(255,200,
 body.treasure .chest .tchest{width:86%;height:auto;filter:drop-shadow(0 6px 10px rgba(0,0,0,.45))}
 body.treasure .chest.open{background:radial-gradient(ellipse at 50% 40%,#fff3b8,#f2c24a 55%,#b07a1c);color:#3a2010}
 body.treasure .chest .cl{font-family:"Cinzel",Georgia,serif}
+
+/* Bank Heist (Cash Climb): a night raid on the IF National Bank */
+body.heist{background:radial-gradient(ellipse at 50% -10%,#3a0d14 0,#14161c 45%,#07080b 100%) fixed}
+body.heist .board h2,body.heist .pw h2{font-family:"Cinzel",Georgia,serif;font-weight:700;color:#f0f2f6;letter-spacing:.08em;text-transform:uppercase;text-shadow:0 0 18px rgba(255,40,60,.45)}
+body.heist .pill{background:#14161c;border:1px solid #ff3b4a;color:#ff6b74;font-variant-numeric:tabular-nums;box-shadow:0 0 14px rgba(255,40,60,.35)}
+body.heist .r3slot{border:3px solid #6a707c;border-radius:10px;box-shadow:0 0 0 6px #14161c,0 0 0 8px #ff3b4a,0 24px 70px rgba(0,0,0,.7)}
+body.heist .feed{background:#0e1014;border:1px solid rgba(255,59,74,.5);border-radius:8px;box-shadow:0 0 24px rgba(255,40,60,.18)}
+body.heist .feed h3{color:#ff6b74;letter-spacing:.08em}
+body.heist .feed .fe{background:rgba(255,255,255,.04);border-left:4px solid #ff3b4a;box-shadow:none;color:#e8eaf0}
+body.heist .cashshop button{background:linear-gradient(170deg,#1c1f27,#111318);border:1px solid #3a3f4a;color:#e8eaf0}
+body.heist .cashshop button:not([disabled]){border-color:#4fa35a;box-shadow:0 0 12px rgba(79,163,90,.3)}
