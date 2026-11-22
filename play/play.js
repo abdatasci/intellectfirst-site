@@ -5,7 +5,7 @@
   'use strict';
   var Q = new URLSearchParams(location.search), LOCAL = Q.get('local');
   var V = document.getElementById('view'), ME = null, RT = null, LOBBY = null, INBOX = null;
-  var players = {}, G = null, pending = null, tab = 'lobby', speak = false;
+  var players = {}, G = null, P = null, pending = null, tab = 'lobby', speak = false;
   try { speak = localStorage.getItem('arena.speak') === '1'; } catch (e) {}
   var GAMES = {
     chess: { t: 'Chess', i: '♟️', d: 'A full game of chess. Every move is shown in English.' },
@@ -68,6 +68,7 @@
   }
 
   /* ---------- start ---------- */
+  if (window.self !== window.top) document.documentElement.classList.add('framed');   // inside IF App: keep clear of its Close and Full-screen buttons
   function boot() {
     if (LOCAL) { ME = { id: 'u-' + LOCAL.toLowerCase().replace(/\W/g, ''), uid: LOCAL, name: LOCAL, level: 'B1', r: 1000, w: 0, d: 0, l: 0 }; RT = localRT(ME.id); return start(); }
     fetch('/api/arena/token', { method: 'POST', credentials: 'include' }).then(function (r) { return r.json().then(function (d) { return { s: r.status, d: d }; }); }).then(function (x) {
@@ -81,11 +82,11 @@
       '<p class="row" style="margin-top:18px"><a class="btn gold" href="/login/?next=/play/">Sign in</a><a class="btn" href="/app/">Back to IF App</a></p>' + gamesHTML();
   }
   function gamesHTML() { return '<div class="games">' + Object.keys(GAMES).map(function (k) { var g = GAMES[k]; return '<div class="gcard"><b>' + g.i + ' ' + g.t + '</b><span>' + g.d + '</span></div>'; }).join('') + '</div>'; }
-  function myStatus() { return { name: ME.name, lv: ME.level || '', r: ME.r, st: G ? 'busy' : 'free', g: G ? G.game : '' }; }
+  function myStatus() { return { name: ME.name, lv: ME.level || '', r: ME.r, st: G || P ? 'busy' : 'free', g: G ? G.game : P ? 'party' : '' }; }
   function start() {
     var pill = $('#me'); pill.hidden = false; pill.textContent = ME.name + ' · ' + ME.r;
     LOBBY = RT.channel('arena:lobby'); INBOX = RT.channel('arena:u:' + ME.id.replace(/^u-/, ''));
-    LOBBY.onPresence(function (a, id, d) { if (id === ME.id) return; if (a === 'leave' || a === 'absent') delete players[id]; else players[id] = d || {}; if (!G) drawLobby(); });
+    LOBBY.onPresence(function (a, id, d) { if (id === ME.id) return; if (a === 'leave' || a === 'absent') delete players[id]; else players[id] = d || {}; if (!G && !P) drawLobby(); });
     LOBBY.enter(myStatus()).then(function () { return LOBBY.members(); }).then(function (l) { l.forEach(function (m) { if (m.id !== ME.id) players[m.id] = m.data || {}; }); if (!G) drawLobby(); });
     INBOX.sub(onInbox);
     drawLobby();
@@ -93,11 +94,12 @@
 
   /* ---------- lobby ---------- */
   function drawLobby() {
-    if (G) return;
+    if (G || P) return;
     var ids = Object.keys(players).sort(function (a, b) { return (players[a].st === 'busy') - (players[b].st === 'busy') || String(players[a].name).localeCompare(players[b].name); });
     var html = '<h1>IF Arena</h1><p class="lead">Players online now. Choose an opponent, choose a game, and send a challenge.</p>' +
       '<div class="tabs"><button data-tab="lobby" class="' + (tab === 'lobby' ? 'on' : '') + '">🟢 Online (' + ids.length + ')</button><button data-tab="top" class="' + (tab === 'top' ? 'on' : '') + '">🏆 Leaderboard</button><button data-tab="how" class="' + (tab === 'how' ? 'on' : '') + '">How to play</button></div>';
     if (tab === 'lobby') {
+      html += '<button class="party-cta" id="party"><span>🎉</span><span><b>Party game · 2 to 8 players</b><small>Race, Treasure Hunt, Cyber Heist, Fishing Frenzy, Balloon Race, Kart Quest, Block Mine or Bank Heist. Invite several players at once.</small></span><span>→</span></button>';
       html += ids.length ? '<div class="list">' + ids.map(function (id) {
         var p = players[id], busy = p.st === 'busy';
         return '<div class="player">' + av(p.name, id) + '<div class="who"><b>' + esc(p.name || 'Player') + '</b><small><span class="dot' + (busy ? ' busy' : '') + '"></span>' + (busy ? 'Playing ' + esc((GAMES[p.g] || {}).t || '') : 'Free') + (p.lv ? ' · ' + esc(p.lv) : '') + ' · ' + (p.r || 1000) + '</small></div>' +
@@ -108,11 +110,12 @@
     } else if (tab === 'top') {
       html += '<div class="panel" id="lb"><p class="muted">Loading…</p></div>';
     } else {
-      html += '<div class="panel"><ol style="padding-left:20px;display:grid;gap:6px"><li>Everyone who has this page open appears in <b>Online</b>.</li><li>Tap <b>Challenge</b>, choose a game, and wait for your opponent to accept.</li><li>When someone challenges you, a card appears at the bottom: <b>Accept</b> or <b>Not now</b>.</li><li>Wins, draws and losses change your rating (everyone starts at 1000).</li><li>Be a good sport: tap 👏 for a good move, and finish the games you start.</li></ol></div>';
+      html += '<div class="panel"><ol style="padding-left:20px;display:grid;gap:6px"><li>Everyone who has this page open appears in <b>Online</b>.</li><li><b>Party game:</b> invite up to 7 players to one of the IF Live races (Treasure Hunt, Cyber Heist, Kart Quest…). It starts by itself when everyone has joined, and you play on your own phone.</li><li>Tap <b>Challenge</b>, choose a game, and wait for your opponent to accept.</li><li>When someone challenges you, a card appears at the bottom: <b>Accept</b> or <b>Not now</b>.</li><li>Wins, draws and losses change your rating (everyone starts at 1000).</li><li>Be a good sport: tap 👏 for a good move, and finish the games you start.</li></ol></div>';
     }
     V.innerHTML = html;
     $$('[data-tab]').forEach(function (b) { b.onclick = function () { tab = b.dataset.tab; drawLobby(); if (tab === 'top') loadTop(); }; });
     $$('[data-ch]').forEach(function (b) { b.onclick = function () { chooseGame(b.dataset.ch); }; });
+    if ($('#party')) $('#party').onclick = partySetup;
     if (tab === 'top') loadTop();
   }
   function loadTop() {
@@ -151,8 +154,10 @@
   function toast(html) { var t = $('#toast'); if (!html) { t.hidden = true; t.innerHTML = ''; return; } t.innerHTML = html; t.hidden = false; }
   function onInbox(name, d, from) {
     if (!d || !from || from === ME.id) return;
+    if (name === 'party') return partyInvite(d, from);
+    if (name === 'pyes' || name === 'pno' || name === 'pclose') return partyMsg(name, d, from);
     if (name === 'invite') {
-      if (G || pending) return inbox(from).pub('decline', { gid: d.gid, busy: true });
+      if (G || P || pending) return inbox(from).pub('decline', { gid: d.gid, busy: true });
       var p = players[from] || {}, nm = d.name || p.name || 'A player';
       say(nm + ' challenges you to ' + GAMES[d.game].t);
       toast('<b>⚔️ ' + esc(nm) + ' (' + (d.r || 1000) + ') challenges you to ' + GAMES[d.game].i + ' ' + GAMES[d.game].t + '</b>' + (d.extra && d.extra.lv ? '<span class="muted">Level: ' + esc((LEVELS.filter(function (l) { return l[0] === d.extra.lv; })[0] || [0, ''])[1]) + '</span>' : '') +
@@ -168,6 +173,109 @@
     if (name === 'decline') cancelInvite(d.busy ? (pending.name || 'The player') + ' is busy right now.' : (pending.name || 'The player') + ' said not now.');
   }
   var INVITES = {};
+
+
+  /* ---------- party games: the self-paced IF Live modes for 2 to 8 players ----------
+     The challenger's page runs the IF Live host in a hidden frame (/live/host/?arena=…), invites the chosen players with
+     the PIN, and everybody (the challenger too) plays on the IF Live player screen inside this page. */
+  var PMODES = [['race', '🏁', 'Race', 'Answer at your own speed. Most points wins.'], ['gold', '🪙', 'Treasure Hunt', 'Open chests: gold, double… or steal and swap!'], ['hack', '💻', 'Cyber Heist', 'Mine crypto and hack the others’ passwords.'], ['fish', '🎣', 'Fishing Frenzy', 'Catch the heaviest fish.'],
+    ['balloon', '🎈', 'Balloon Race', 'Right answers lift your balloon. Highest wins.'], ['kart', '🏎️', 'Kart Quest', 'Drive your kart to the finish first.'], ['mine', '⛏️', 'Block Mine', 'Mine gems, but watch out for TNT!'], ['cash', '💰', 'Bank Heist', 'Grab cash and buy crew upgrades.']];
+  function pmode(k) { return PMODES.filter(function (m) { return m[0] === k; })[0] || PMODES[0]; }
+  function partySetup() {
+    var free = Object.keys(players).filter(function (id) { return players[id].st !== 'busy'; });
+    if (!free.length) return flash('Nobody is free to invite right now.');
+    var mode = 'gold', lv = ['A1', 'A2', 'B1', 'B2', 'C1'].indexOf(ME.level) >= 0 ? ME.level : 'B1';
+    var s = sheet('<h3>🎉 Party game</h3><div class="pmodes">' + PMODES.map(function (m) { return '<button class="opt' + (m[0] === mode ? ' on' : '') + '" data-m="' + m[0] + '"><span style="font-size:24px">' + m[1] + '</span><span><b>' + m[2] + '</b><small>' + m[3] + '</small></span></button>'; }).join('') + '</div>' +
+      '<div class="row" style="flex-wrap:nowrap"><label style="flex:1">Level<select id="plv">' + ['A1', 'A2', 'B1', 'B2', 'C1'].map(function (l) { return '<option' + (l === lv ? ' selected' : '') + '>' + l + '</option>'; }).join('') + '</select></label><label style="flex:1">Time<select id="pmin"><option value="3">3 minutes</option><option value="5" selected>5 minutes</option><option value="8">8 minutes</option></select></label></div>' +
+      '<b>Invite (up to 7)</b><div class="plist">' + free.map(function (id) { return '<label class="pick"><input type="checkbox" value="' + esc(id) + '">' + av(players[id].name, id) + '<span>' + esc(players[id].name || 'Player') + (players[id].lv ? ' <small class="muted">' + esc(players[id].lv) + '</small>' : '') + '</span></label>'; }).join('') + '</div>' +
+      '<div class="row"><button class="btn gold" id="psend">Send invitations</button><button class="btn" id="pcx">Cancel</button></div>');
+    $$('[data-m]', s).forEach(function (b) { b.onclick = function () { mode = b.dataset.m; $$('[data-m]', s).forEach(function (x) { x.classList.toggle('on', x === b); }); }; });
+    $('#pcx', s).onclick = function () { s.remove(); };
+    $('#psend', s).onclick = function () {
+      var ids = $$('.plist input:checked', s).map(function (i) { return i.value; }).slice(0, 7);
+      if (!ids.length) return flash('Choose at least one player.');
+      var cfg = { mode: mode, level: $('#plv', s).value, mins: +$('#pmin', s).value }; s.remove(); startParty(cfg, ids);
+    };
+  }
+  function startParty(cfg, ids) {
+    P = { host: true, id: rid(), cfg: cfg, inv: {}, pin: null, st: null };
+    ids.forEach(function (id) { P.inv[id] = { name: (players[id] || {}).name || 'Player', a: 'invited' }; });
+    LOBBY.update(myStatus()); drawParty();
+    var f = document.createElement('iframe'); f.className = 'hostframe'; f.setAttribute('aria-hidden', 'true'); f.tabIndex = -1;
+    f.src = '/live/host/?arena=' + encodeURIComponent(JSON.stringify(cfg)) + (LOCAL ? '&bus=local' : '');
+    document.body.appendChild(f); P.hostFrame = f;
+    P.wait = setTimeout(function () { if (P && !P.pin) { flash('Could not start the party game. Please try again.'); closeParty(); } }, 25000);
+  }
+  addEventListener('message', function (e) {
+    if (!P || !P.host || !P.hostFrame || e.source !== P.hostFrame.contentWindow || !e.data || !e.data.arena) return;
+    var d = e.data;
+    if (d.t === 'error') { flash(d.code === 429 || d.code === 'quota' ? 'You have started a lot of party games today. Try again tomorrow.' : 'Could not start the party game.'); return closeParty(); }
+    if (d.t === 'room') {
+      clearTimeout(P.wait); P.pin = d.pin;
+      Object.keys(P.inv).forEach(function (id) { inbox(id).pub('party', { pid: P.id, pin: P.pin, mode: P.cfg.mode, level: P.cfg.level, mins: P.cfg.mins, name: ME.name, n: Object.keys(P.inv).length + 1 }); });
+      P.inviteEnd = setTimeout(function () { if (!P) return; Object.keys(P.inv).forEach(function (id) { if (P.inv[id].a === 'invited') P.inv[id].a = 'no answer'; }); partyMaybeStart(); drawPartyBar(); }, 45000);
+      drawParty();
+    }
+    if (d.t === 'st') { var was = P.st && P.st.phase; P.st = d; drawPartyBar(); if (d.phase === 'lobby') partyMaybeStart(); if (d.phase === 'end' && was !== 'end') say('Time is up!'); }
+  });
+  function joined() { return P && P.st ? P.st.players.length : 0; }
+  function partyMaybeStart() {
+    if (!P || !P.host || !P.st || P.st.phase !== 'lobby' || P.starting) return;
+    var ids = Object.keys(P.inv), yes = ids.filter(function (id) { return P.inv[id].a === 'yes'; }).length, open = ids.filter(function (id) { return P.inv[id].a === 'invited'; }).length;
+    if (!open && !yes) { flash('Nobody accepted the invitation.'); return closeParty(); }
+    if (!open && joined() >= yes + 1 && joined() >= 2) partyGo();
+  }
+  function partyGo() {
+    if (!P || P.starting) return; P.starting = true; var n = 3;
+    var t = setInterval(function () { if (!P) return clearInterval(t); setBar(n ? 'Starting in ' + n + '…' : 'Go!'); if (!n--) { clearInterval(t); P.hostFrame.contentWindow.postMessage({ arena: 1, t: 'begin' }, location.origin); } }, 1000);
+  }
+  function partyInvite(d, from) {
+    if (G || P || pending) return inbox(from).pub('pno', { pid: d.pid, busy: true });
+    var m = pmode(d.mode), nm = d.name || (players[from] || {}).name || 'A player';
+    say(nm + ' invites you to a party game');
+    toast('<b>🎉 ' + esc(nm) + ' invites you to a party game: ' + m[1] + ' ' + m[2] + '</b><span class="muted">' + esc(d.level) + ' · ' + d.mins + ' minutes · up to ' + d.n + ' players</span><div class="row"><button class="btn sm gold" id="pok">Join</button><button class="btn sm" id="pno">Not now</button></div>');
+    var timer = setTimeout(function () { toast(null); }, 45000);
+    $('#pok').onclick = function () { clearTimeout(timer); toast(null); inbox(from).pub('pyes', { pid: d.pid }); P = { host: false, id: d.pid, from: from, fname: nm, pin: d.pin, cfg: { mode: d.mode, level: d.level, mins: d.mins } }; LOBBY.update(myStatus()); drawParty(); };
+    $('#pno').onclick = function () { clearTimeout(timer); toast(null); inbox(from).pub('pno', { pid: d.pid }); };
+  }
+  function partyMsg(name, d, from) {
+    if (!P || d.pid !== P.id) return;
+    if (P.host && P.inv[from] && (name === 'pyes' || name === 'pno')) { P.inv[from].a = name === 'pyes' ? 'yes' : d.busy ? 'busy' : 'not now'; drawPartyBar(); partyMaybeStart(); }
+    if (!P.host && from === P.from && name === 'pclose') { P.over = true; setBar(P.fname + ' has closed the party game.'); if ($('#pleave')) $('#pleave').textContent = 'Back to players'; }
+  }
+  function drawParty() {
+    var m = pmode(P.cfg.mode);
+    V.innerHTML = '<div class="pbar"><div class="ptitle">' + m[1] + ' <b>' + m[2] + '</b> <span class="muted">· ' + esc(P.cfg.level) + ' · ' + P.cfg.mins + ' min</span></div><div id="pstatus" class="muted"></div><div class="pchips" id="pchips"></div>' +
+      '<div class="row">' + (P.host ? '<button class="btn sm gold" id="pstart" hidden>▶ Start now</button>' : '') + '<button class="btn sm" id="pleave">Leave</button></div></div>' +
+      (P.pin ? '<iframe class="playframe" title="Party game" allow="autoplay; fullscreen" src="/live/?pin=' + P.pin + '&arena=1&name=' + encodeURIComponent(ME.name) + (LOCAL ? '&bus=local' : '') + '"></iframe>' : '<div class="empty" style="margin-top:14px">Setting up the game room…</div>');
+    $('#pleave').onclick = function () { closeParty(); };
+    if (P.host) $('#pstart').onclick = function () { $('#pstart').hidden = true; partyGo(); };
+    drawPartyBar();
+  }
+  function setBar(t) { var s = $('#pstatus'); if (s) s.textContent = t; }
+  function drawPartyBar() {
+    if (!P) return;
+    var chips = $('#pchips'), st = P.st, start = $('#pstart');
+    if (P.host) {
+      var inGame = st ? st.players.map(function (p) { return p.name; }) : [];
+      if (chips) chips.innerHTML = '<span class="pchip ok">' + esc(ME.name) + ' (you)</span>' + Object.keys(P.inv).map(function (id) { var x = P.inv[id], on = inGame.indexOf(x.name) >= 0; return '<span class="pchip ' + (on ? 'ok' : x.a === 'yes' ? 'wait' : x.a === 'invited' ? '' : 'off') + '">' + esc(x.name) + ' · ' + (on ? 'ready' : x.a === 'yes' ? 'joining…' : x.a) + '</span>'; }).join('');
+      if (!P.starting && st && st.phase === 'lobby') setBar(joined() >= 2 ? joined() + ' players ready. The game starts when everyone has answered, or press Start now.' : 'Waiting for the players to accept…');
+      if (start) start.hidden = !(st && st.phase === 'lobby' && joined() >= 2 && !P.starting);
+    }
+    if (st && st.phase === 'race') setBar('Playing · ' + Math.ceil(st.left / 1000) + ' s left');
+    if (st && st.phase === 'end' && !P.over) {
+      P.over = true;
+      setBar('Final results: ' + st.players.slice(0, 3).map(function (p, i) { return ['🥇', '🥈', '🥉'][i] + ' ' + p.name; }).join('  '));
+      if ($('#pleave')) $('#pleave').textContent = 'Back to players';
+    }
+    if (!P.host && !P.over) setBar('Hosted by ' + P.fname + '. The game starts when everyone has joined. Good luck!');
+  }
+  function closeParty(quiet) {
+    if (!P) return;
+    if (P.host) { Object.keys(P.inv).forEach(function (id) { inbox(id).pub('pclose', { pid: P.id }); }); clearTimeout(P.wait); clearTimeout(P.inviteEnd); if (P.hostFrame) P.hostFrame.remove(); }
+    P = null; LOBBY.update(myStatus()); toast(null); drawLobby();
+  }
+  addEventListener('pagehide', function () { if (P && P.host) Object.keys(P.inv).forEach(function (id) { inbox(id).pub('pclose', { pid: P.id }); }); });
 
   /* ---------- a game ---------- */
   function begin(o) {

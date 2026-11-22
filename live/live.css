@@ -406,3 +406,11 @@ body.heist .cashshop button:not([disabled]){border-color:#4fa35a;box-shadow:0 0 
 .qboard s{position:absolute;text-decoration:none;font:700 10px/1 var(--sans);color:rgba(20,24,31,.6)}.qboard i.dk s{color:rgba(255,255,255,.75)}
 .qboard s.rk{left:3px;top:3px}.qboard s.fl{right:3px;bottom:2px}
 .qtext .qboard s{font-size:13px}
+
+/* teacher's way from the join / practice page to the host screen */
+.teachbar{display:flex;align-items:center;gap:12px;text-align:left;text-decoration:none;background:#0b1f3a;color:#fff;border:1px solid #c9972e;border-radius:14px;padding:12px 14px;margin:0 0 18px}
+.teachbar .ti{font-size:26px;line-height:1}
+.teachbar b{display:block;font:700 16px/1.25 'Inter Tight',Inter,sans-serif}
+.teachbar small{display:block;font-size:13px;line-height:1.35;color:rgba(255,255,255,.78);margin-top:2px}
+.teachbar .tg{margin-left:auto;font-size:20px;color:#e3bd62}
+#cls{font-weight:600}

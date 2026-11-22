@@ -1,10 +1,10 @@
 /* IF Lingo · Russian A2: an original IF Academy course for people who speak English and have finished Russian A1.
    Word lines: word | part of speech | meaning in English | example | (empty) | how to say it | the example in English.
-   Plan: 20 units and a level test (project doc claude/if-lingo.md). Built so far: units 1 to 13. */
+   Plan: 20 units and a level test (project doc claude/if-lingo.md). All 20 units are here; the listening lessons, word bank and level test are in their own files when built. */
 IFX.course({
   id: 'ru-a2', track: 'lang', lang: 'ru-RU', level: 'A2', next: 'B1', icon: '🇷🇺',
   title: 'Russian A2', sub: 'Everyday Russian',
-  blurb: 'Say where you are from, describe your city and people, order in a restaurant, ask the way, see a doctor and make plans with friends. The first 13 of 20 units, explained in English.',
+  blurb: 'Say where you are from, describe your city and people, order in a restaurant, ask the way, see a doctor and make plans with friends. 20 units, explained in English.',
   units: []
 });
 (function () {
@@ -255,6 +255,140 @@ IFX.course({
         k.mc('Я ___ одежду завтра. (will wash)', ['постираю', 'постирал', 'стирал'], 0),
         k.ord('Завтра я помою посуду')]],
       r: ['Saturday is cleaning day', 'Суббота — день уборки. В нашей семье все помогают.\n\nМама: «Кто что сделает?»\n\nПапа: «Я помою посуду и вынесу мусор».\n\nЯ: «Я уберу мою комнату. Где пылесос?»\n\nСестра: «Я постираю одежду, а потом буду гладить».\n\nЧерез два часа в квартире порядок. Теперь можно отдыхать!\n\n(помогают = help · вынесу = I will take out · через = after)', [
-        k.mc('Who will wash the dishes?', ['the father', 'the mother', 'the sister'], 0), k.tf('The sister asks for the vacuum cleaner.', false), k.mc('Which day is cleaning day?', ['Saturday', 'Sunday', 'Friday'], 0)]] }
+        k.mc('Who will wash the dishes?', ['the father', 'the mother', 'the sister'], 0), k.tf('The sister asks for the vacuum cleaner.', false), k.mc('Which day is cleaning day?', ['Saturday', 'Sunday', 'Friday'], 0)]] },
+
+    { id: 'u14', t: 'Если… Plans and conditions', topic: 'Plans',
+      v: ['Plans and decisions', `
+если | word | if | Если будет дождь, я буду дома. | | YES-lee | If it rains, I will be at home.
+решить | verb | to decide | Я решил учить русский. | | ree-SHYT | I decided to learn Russian.
+цель | noun | goal | Моя цель — стать врачом. | | tsel | My goal is to become a doctor.
+переехать | verb | to move (to a new home) | Мы переехали в Астану. | | pee-ree-YE-khat | We moved to Astana.
+поступить | verb | to enter (a university) | Она поступила в университет. | | pa-stoo-PEET | She entered university.
+наверное | adverb | probably | Наверное, он дома. | | na-VYER-na-ye | He is probably at home.
+обязательно | adverb | definitely | Я обязательно приду. | | a-bee-ZA-teel-na | I will definitely come.
+через | preposition | in (after some time) | Я приду через час. | | CHE-res | I will come in an hour.`],
+      g: ['If…: если + the future', '<p>English says <i>If it <u>rains</u>, we <u>will</u> stay at home</i>. Russian uses the <b>future in both parts</b>.</p><ul><li><b>Если будет</b> дождь, мы <b>будем</b> дома. = If it rains, we will be at home.</li><li><b>Если</b> у меня <b>будет</b> время, я <b>приду</b>. = If I have time, I will come.</li><li><b>Если</b> я <b>поступлю</b>, я <b>перееду</b> в Астану. = If I get in, I will move to Astana.</li></ul><p>Put a comma between the two parts.</p><p><b>через</b> + time = in, after: <b>через час</b> (in an hour), <b>через год</b> (in a year), <b>через пять лет</b> (in five years).</p>', [
+        k.mc('Если ___ хорошая погода, мы пойдём в парк.', ['будет', 'была', 'быть'], 0),
+        k.mc('Если у меня ___ время, я приду.', ['будет', 'было', 'есть'], 0),
+        k.mc('Я приду ___ час. (in an hour)', ['через', 'после', 'на'], 0),
+        k.mc('“If it rains, we will be at home.” = …', ['Если будет дождь, мы будем дома.', 'Если дождь, мы дома были.', 'Если был дождь, мы дома.'], 0),
+        k.ord('Если будет дождь я буду дома')]],
+      r: ['Aigul’s plans', 'Меня зовут Айгуль. У меня большие планы.\n\nВ этом году я закончу школу. Моя цель — поступить в университет в Астане. Если я поступлю, я перееду в Астану. Наверное, я буду жить у тёти.\n\nЧерез шесть лет я стану врачом. Я уже решила: я обязательно буду работать в больнице в моём городе.', [
+        k.mc('What is Aigul’s goal?', ['to enter university', 'to finish work', 'to buy a flat'], 0), k.tf('She will probably live with her aunt.', true), k.mc('What will she be in six years?', ['a doctor', 'a teacher', 'a student'], 0)]] },
+
+    { id: 'u15', t: 'Алло! Phone and messages', topic: 'Communication',
+      v: ['Calls and messages', `
+сообщение | noun | message | Я получил ваше сообщение. | | sa-ap-SHCHE-nee-ye | I got your message.
+позвонить | verb | to call, to phone | Я позвоню вечером. | | paz-va-NEET | I will call in the evening.
+перезвонить | verb | to call back | Я перезвоню через час. | | pee-ree-zva-NEET | I will call back in an hour.
+отправить | verb | to send | Я отправил письмо. | | at-PRA-veet | I sent a letter.
+получить | verb | to receive, to get | Она получила посылку. | | pa-loo-CHEET | She received a parcel.
+звонок | noun | call, ring | Это важный звонок. | | zva-NOK | This is an important call.
+передать | verb | to pass on | Что ему передать? | | pee-ree-DAT | What shall I tell him?
+связь | noun | connection, signal | Здесь плохая связь. | | svyas | The signal is bad here.`],
+      g: ['To whom? маме, другу, мне', '<p>The person who <b>gets</b> the call, the message or the thing takes a new ending.</p><table><tr><th>The word ends in…</th><th>Change</th><th>Examples</th></tr><tr><td>a consonant</td><td>add <b>-у</b></td><td>друг → друг<b>у</b>, брат → брат<b>у</b>, Марат → Марат<b>у</b></td></tr><tr><td>-а</td><td>-а → <b>-е</b></td><td>мама → мам<b>е</b>, сестра → сестр<b>е</b>, Анна → Анн<b>е</b></td></tr></table><p>The small words from Unit 9 are the same form:</p><table><tr><th>я</th><th>ты</th><th>он</th><th>она</th><th>мы</th><th>вы</th><th>они</th></tr><tr><td>мне</td><td>тебе</td><td>ему</td><td>ей</td><td>нам</td><td>вам</td><td>им</td></tr></table><ul><li>Я позвоню мам<b>е</b>. = I will call mum.</li><li>Позвоните <b>мне</b> завтра. = Call me tomorrow.</li></ul>', [
+        k.mc('Я позвоню мам___.', ['е', 'у', 'ы'], 0),
+        k.mc('Она отправила сообщение друг___.', ['у', 'е', 'а'], 0),
+        k.mc('Позвоните ___ завтра. (me)', ['мне', 'я', 'меня'], 0),
+        k.mc('Я дал книгу ___. (to her)', ['ей', 'она', 'её'], 0),
+        k.ord('Я позвоню маме вечером')]],
+      r: ['A phone call', '— Алло! Здравствуйте. Можно Марата?\n\n— Его сейчас нет. Что ему передать?\n\n— Это Джон, его коллега. Передайте ему, пожалуйста: совещание будет в десять.\n\n— Хорошо, я передам. Он вам перезвонит.\n\n— Спасибо. Я ещё отправлю ему сообщение. До свидания!\n\nВечером Марат получил сообщение и позвонил Джону.', [
+        k.mc('Who is calling?', ['John, a colleague', 'Marat’s brother', 'a doctor'], 0), k.tf('Marat answers the phone.', false), k.mc('When is the meeting?', ['at ten', 'at two', 'at nine'], 0)]] },
+
+    { id: 'u16', t: 'Праздники. Holidays and dates', topic: 'Holidays',
+      v: ['Celebrating', `
+Новый год | noun | New Year | Скоро Новый год! | | NO-vy got | New Year is soon!
+поздравлять | verb | to congratulate | Я поздравляю вас! | | paz-drav-LYAT | I congratulate you!
+желать | verb | to wish | Желаю вам здоровья. | | zhe-LAT | I wish you good health.
+счастье | noun | happiness | Желаю счастья! | | SHCHAS-tye | I wish you happiness!
+традиция | noun | tradition | Это старая традиция. | | tra-DEE-tsee-ya | This is an old tradition.
+отмечать | verb | to celebrate | Мы отмечаем день рождения. | | at-mee-CHAT | We are celebrating a birthday.
+второй | number | second | Это второй урок. | | fta-ROY | This is the second lesson.
+третий | number | third | Мы живём на третьем этаже. | | TRYE-tee | We live on the third floor.`],
+      g: ['First, second, third… and dates', '<table><tr><th>1</th><td>первый</td><th>6</th><td>шестой</td></tr><tr><th>2</th><td>второй</td><th>7</th><td>седьмой</td></tr><tr><th>3</th><td>третий</td><th>8</th><td>восьмой</td></tr><tr><th>4</th><td>четвёртый</td><th>9</th><td>девятый</td></tr><tr><th>5</th><td>пятый</td><th>10</th><td>десятый</td></tr></table><p><b>The date today</b> ends in <b>-ое</b>, and the month takes the ending <b>-а, -я</b>:</p><ul><li>Какое сегодня число? — Сегодня перв<b>ое</b> январ<b>я</b>. = Today is the first of January.</li></ul><p><b>On a date</b> ends in <b>-ого</b> (say “-ova”):</p><ul><li>Мой день рождения пят<b>ого</b> ма<b>я</b>. = My birthday is on the fifth of May.</li><li>третий → <b>третьего</b> марта.</li></ul><p>For a holiday: <b>С Новым годом!</b> = Happy New Year! <b>С днём рождения!</b> = Happy birthday!</p>', [
+        k.mc('5 → …', ['пятый', 'пять', 'пятой'], 0),
+        k.mc('Сегодня ___ мая. (the first)', ['первое', 'первый', 'первая'], 0),
+        k.mc('Мой день рождения ___ марта. (on the third)', ['третьего', 'третье', 'третий'], 0),
+        k.mc('“Happy New Year!” = …', ['С Новым годом!', 'Новый год!', 'С днём рождения!'], 0),
+        k.ord('Сегодня первое января')]],
+      r: ['Holidays in Kazakhstan', 'В Казахстане много праздников.\n\nНовый год отмечают первого января. Двадцать второго марта — Наурыз. Это старая традиция: люди готовят наурыз-коже и ходят в гости.\n\nВосьмого марта мужчины поздравляют женщин и дарят цветы.\n\nВ праздник мы говорим: «Поздравляю! Желаю счастья и здоровья!»\n\n(ходят в гости = visit each other · дарят цветы = give flowers)', [
+        k.mc('When is Nauryz?', ['on 22 March', 'on 1 January', 'on 8 March'], 0), k.tf('New Year is celebrated on the first of January.', true), k.mc('What do people wish each other?', ['happiness and health', 'money', 'good weather'], 0)]] },
+
+    { id: 'u17', t: 'По-моему… Feelings and opinions', topic: 'Opinions',
+      v: ['How you feel, what you think', `
+рад | adjective | glad | Я рад вас видеть. | | rat | I am glad to see you.
+грустный | adjective | sad | Это грустный фильм. | | GROOS-ny | This is a sad film.
+волноваться | verb | to worry | Не волнуйтесь! | | val-na-VAT-sa | Do not worry!
+бояться | verb | to be afraid | Я боюсь собак. | | ba-YAT-sa | I am afraid of dogs.
+скучно | adverb | boring, bored | Мне скучно. | | SKOOSH-na | I am bored.
+мнение | noun | opinion | Какое ваше мнение? | | MNYE-nee-ye | What is your opinion?
+по-моему | phrase | in my opinion | По-моему, это хорошая идея. | | pa-MO-ye-moo | In my opinion, this is a good idea.
+нравиться | verb | to be liked, to please | Мне нравится этот город. | | NRA-veet-sa | I like this city.`],
+      g: ['I like it: мне нравится', '<p>Russian says <i>it pleases me</i>. The person is in the form from Unit 15 (<b>мне, тебе, ему, ей, нам, вам, им</b>). The verb agrees with the <b>thing</b>.</p><table><tr><th>One thing</th><th>Many things</th></tr><tr><td>Мне <b>нравится</b> этот фильм.</td><td>Мне <b>нравятся</b> эти фильмы.</td></tr><tr><td>Ей <b>нравится</b> музыка.</td><td>Ей <b>нравятся</b> книги.</td></tr></table><p>Not: Мне <b>не</b> нравится этот фильм.</p><p>To give an opinion:</p><ul><li><b>По-моему,</b> это хороший фильм. = In my opinion, it is a good film.</li><li><b>Я думаю, что</b> это хороший фильм. = I think that it is a good film.</li></ul>', [
+        k.mc('Мне ___ этот фильм.', ['нравится', 'нравятся', 'нравлюсь'], 0),
+        k.mc('Мне ___ эти книги.', ['нравятся', 'нравится', 'нравишься'], 0),
+        k.mc('___ нравится музыка. (she)', ['Ей', 'Она', 'Её'], 0),
+        k.mc('Я думаю, ___ это хороший фильм.', ['что', 'чем', 'если'], 0),
+        k.ord('Мне нравится этот город')]],
+      r: ['After the film', '— Как тебе фильм?\n\n— Мне очень нравится! По-моему, это лучший фильм года. А тебе?\n\n— Мне не очень. Мне было скучно.\n\n— Правда? Почему?\n\n— История грустная, и актёры мне не нравятся.\n\n— А я думаю, что актёры хорошие. Я даже волновалась в конце!\n\n— Ну, у всех своё мнение. Я рад, что тебе нравится.\n\n(лучший = the best · в конце = at the end · у всех своё мнение = everyone has their own opinion)', [
+        k.mc('What are they talking about?', ['a film', 'a book', 'a concert'], 0), k.tf('Both of them like it.', false), k.mc('How did the man feel during the film?', ['bored', 'afraid', 'glad'], 0)]] },
+
+    { id: 'u18', t: 'Услуги. Getting things done', topic: 'Services',
+      v: ['Services in town', `
+парикмахерская | noun | hairdresser’s | Я иду в парикмахерскую. | | pa-reek-MA-kheer-ska-ya | I am going to the hairdresser’s.
+стрижка | noun | haircut | Мне нужна стрижка. | | STREESH-ka | I need a haircut.
+ремонт | noun | repair, repair shop | Телефон в ремонте. | | ree-MONT | The phone is being repaired.
+посылка | noun | parcel | Вам посылка. | | pa-SYL-ka | There is a parcel for you.
+очередь | noun | queue | Здесь большая очередь. | | O-chee-reet | There is a long queue here.
+сломаться | verb | to break down | У меня сломался телефон. | | sla-MAT-sa | My phone has broken.
+починить | verb | to repair, to fix | Я починю ваш телефон. | | pa-chee-NEET | I will fix your phone.
+услуга | noun | service | Сколько стоит эта услуга? | | oos-LOO-ga | How much is this service?`],
+      g: ['Where to? Where? в банк, в банке', '<p>After <b>в</b> and <b>на</b> the ending shows if you are <b>going</b> there or <b>are</b> there.</p><table><tr><th>Куда? (going to)</th><th>Где? (being at)</th></tr><tr><td>Я иду в банк.</td><td>Я в банк<b>е</b>.</td></tr><tr><td>Я иду на почт<b>у</b>.</td><td>Я на почт<b>е</b>.</td></tr><tr><td>Я иду в аптек<b>у</b>.</td><td>Я в аптек<b>е</b>.</td></tr><tr><td>Я иду в парикмахерск<b>ую</b>.</td><td>Я в парикмахерск<b>ой</b>.</td></tr></table><ul><li>Going to: a word in <b>-а</b> changes to <b>-у</b>; other words do not change.</li><li>Being at: the ending is <b>-е</b>.</li><li><b>парикмахерская</b> looks like an adjective, so it changes like one: <b>-ую</b>, <b>-ой</b>.</li></ul>', [
+        k.mc('Я иду на ___.', ['почту', 'почте', 'почта'], 0),
+        k.mc('Я сейчас на ___.', ['почте', 'почту', 'почта'], 0),
+        k.mc('Она идёт в ___.', ['парикмахерскую', 'парикмахерской', 'парикмахерская'], 0),
+        k.mc('Мы сейчас в ___.', ['банке', 'банк', 'банка'], 0),
+        k.ord('Мне нужно починить телефон')]],
+      r: ['A busy day', 'Сегодня у меня много дел.\n\nУтром я иду на почту: мне нужно получить посылку. На почте большая очередь!\n\nПотом я иду в парикмахерскую. Мне нужна стрижка.\n\nВчера у меня сломался телефон. После обеда я иду в ремонт. Мастер говорит: «Я починю ваш телефон завтра».\n\nВечером я дома. Я очень устал!\n\n(много дел = a lot to do · мастер = the repairman)', [
+        k.mc('Why does the writer go to the post office?', ['to get a parcel', 'to send a letter', 'to pay a bill'], 0), k.tf('The phone will be ready today.', false), k.mc('Where does the writer go after the post office?', ['to the hairdresser’s', 'to the bank', 'home'], 0)]] },
+
+    { id: 'u19', t: 'Что случилось? Telling a story', topic: 'Stories',
+      v: ['Story words', `
+вдруг | adverb | suddenly | Вдруг я увидел друга. | | vdrook | Suddenly I saw a friend.
+наконец | adverb | finally | Наконец мы дома! | | na-ka-NYETS | Finally we are home!
+случиться | verb | to happen | Что случилось? | | sloo-CHEET-sa | What happened?
+испугаться | verb | to get frightened | Я очень испугался. | | ees-poo-GAT-sa | I got very frightened.
+потерять | verb | to lose | Я потерял телефон. | | pa-tee-RYAT | I lost my phone.
+вспомнить | verb | to remember, to recall | Я вспомнил его имя. | | FSPOM-neet | I remembered his name.
+странный | adjective | strange | Это странная история. | | STRAN-ny | This is a strange story.
+поэтому | word | so, that is why | Я устал, поэтому я дома. | | pa-E-ta-moo | I am tired, so I am at home.`],
+      g: ['Joining ideas: потому что, поэтому, когда, но', '<table><tr><th>Word</th><th>Meaning</th><th>Example</th></tr><tr><td><b>потому что</b></td><td>because</td><td>Я опоздал, <b>потому что</b> была пробка.</td></tr><tr><td><b>поэтому</b></td><td>so, that is why</td><td>Была пробка, <b>поэтому</b> я опоздал.</td></tr><tr><td><b>когда</b></td><td>when</td><td><b>Когда</b> я пришёл домой, я позвонил маме.</td></tr><tr><td><b>но</b></td><td>but</td><td>Я искал ключи, <b>но</b> не нашёл.</td></tr></table><p><b>потому что</b> comes before the reason. <b>поэтому</b> comes before the result. Put a comma before all four words when they join two parts.</p>', [
+        k.mc('Я опоздал, ___ была пробка.', ['потому что', 'поэтому', 'но'], 0),
+        k.mc('Была пробка, ___ я опоздал.', ['поэтому', 'потому что', 'когда'], 0),
+        k.mc('___ я пришёл домой, я позвонил маме.', ['Когда', 'Поэтому', 'Потому что'], 0),
+        k.mc('Я искал долго, ___ не нашёл.', ['но', 'поэтому', 'когда'], 0),
+        k.ord('Я устал поэтому я дома')]],
+      r: ['The keys', 'Вчера со мной случилась странная история.\n\nЯ пришёл домой вечером и вдруг понял: у меня нет ключей! Я испугался, потому что дома никого не было.\n\nСначала я искал ключи в сумке, но не нашёл. Я подумал: «Я потерял их в автобусе».\n\nПотом я вспомнил: утром я дал ключи сестре! Я позвонил ей, и она пришла через час.\n\nНаконец я был дома.\n\n(искал = looked for · никого не было = there was nobody)', [
+        k.mc('What could the writer not find?', ['his keys', 'his phone', 'his bag'], 0), k.tf('He lost them on the bus.', false), k.mc('Who had them?', ['his sister', 'his mother', 'the bus driver'], 0)]] },
+
+    { id: 'u20', t: 'Повторение. A2 review', topic: 'Review',
+      v: ['Useful small words', `
+например | word | for example | Я люблю фрукты, например яблоки. | | na-pree-MYER | I like fruit, for example apples.
+особенно | adverb | especially | Мне нравится город, особенно летом. | | a-SO-been-na | I like the city, especially in summer.
+почти | adverb | almost | Я почти дома. | | pach-TEE | I am almost home.
+совсем | adverb | quite, completely | Сегодня совсем холодно. | | saf-SYEM | It is quite cold today.
+действительно | adverb | really | Это действительно интересно. | | deyst-VEE-teel-na | This is really interesting.
+кстати | word | by the way | Кстати, как твой брат? | | KSTA-tee | By the way, how is your brother?
+кроме | preposition | except | Я работаю каждый день, кроме воскресенья. | | KRO-mye | I work every day except Sunday.
+вообще | adverb | in general | Вообще, мне здесь нравится. | | va-ap-SHCHE | In general, I like it here.`],
+      g: ['What you can do now', '<p>The main patterns of Russian A2:</p><table><tr><th>Unit</th><th>Pattern</th><th>Example</th></tr><tr><td>1, 2, 5, 6</td><td>the “of” ending</td><td>из Астан<b>ы</b>, нет парк<b>а</b>, литр молок<b>а</b>, книга Анн<b>ы</b></td></tr><tr><td>3</td><td>verbs with -ся</td><td>Я просыпаю<b>сь</b> в шесть.</td></tr><tr><td>7, 13</td><td>verb pairs</td><td>читал / <b>про</b>читал; мою / <b>по</b>мою</td></tr><tr><td>9, 15, 17</td><td>the “to” form</td><td><b>Мне</b> нужно… Позвоните <b>ему</b>. <b>Ей</b> нравится…</td></tr><tr><td>10</td><td>work as</td><td>Я работаю врач<b>ом</b>.</td></tr><tr><td>12</td><td>comparing</td><td>холодн<b>ее</b>, чем…; самый холодный</td></tr><tr><td>14, 19</td><td>joining ideas</td><td>если, потому что, поэтому, когда</td></tr></table>', [
+        k.mc('У меня нет сестр___.', ['ы', 'а', 'у'], 0),
+        k.mc('Он работает водител___.', ['ем', 'ой', 'ом'], 0),
+        k.mc('Сегодня ___, чем вчера. (warmer)', ['теплее', 'тёплый', 'тепло'], 0),
+        k.mc('Я уже ___ письмо. Вот оно.', ['написал', 'писал', 'пишу'], 0),
+        k.mc('___ нравится этот город. (I)', ['Мне', 'Я', 'Меня'], 0),
+        k.ord('Давайте встретимся в семь')]],
+      r: ['A letter to Tom', 'Привет, Том!\n\nЯ уже почти год живу в Костанае. Мне здесь действительно нравится, особенно летом. Зимой совсем холодно — холоднее, чем в Лондоне!\n\nЯ работаю учителем в школе. У меня хорошие коллеги. Например, Марат часто помогает мне с русским. Кстати, я выучил много новых слов!\n\nЕсли у тебя будет отпуск, приезжай в гости. Давай встретимся летом!\n\nДжон\n\n(приезжай в гости = come and visit)', [
+        k.mc('How long has John lived in Kostanay?', ['almost a year', 'five years', 'one month'], 0), k.tf('Winter in Kostanay is warmer than in London.', false), k.mc('What is John’s job?', ['teacher', 'engineer', 'doctor'], 0)]] }
   ]);
 })();

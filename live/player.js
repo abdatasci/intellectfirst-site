@@ -19,6 +19,21 @@
     try { var r = await fetch('/api/school/me', { credentials: 'same-origin' }); if (r.ok) { var d = await r.json(); var n = d.profile && d.profile.name; if (n) return String(n).split(/\s+/).slice(0, 2).join(' '); } } catch (e) {}
     return (L.ls.get('live.name') || '');
   }
+  /* Teachers land here too (the bot's mini app and IF App open this page): show them the way to the host screen. */
+  var STAFF = null;
+  function teachBar() {
+    var put = function () {
+      var j = view.querySelector('.join'); if (!STAFF || !j || j.querySelector('.teachbar')) return;
+      var a = document.createElement('a'); a.className = 'teachbar'; a.href = '/live/host/'; a.target = '_top';
+      a.innerHTML = '<span class="ti">👩‍🏫</span><span><b>Teacher? Start a class game</b><small>Choose your group and its course: the coursebook or General English</small></span><span class="tg">→</span>';
+      j.insertBefore(a, j.firstChild);
+    };
+    if (STAFF != null) return put();
+    try { STAFF = sessionStorage.getItem('live.staff') === '1' ? true : null; } catch (e) {}
+    if (STAFF) put();
+    if (L.local) return;
+    L.api('status').then(function (d) { STAFF = !!d.staff; try { sessionStorage.setItem('live.staff', STAFF ? '1' : '0'); } catch (e) {} put(); }).catch(function () {});
+  }
   async function vJoin(err) {
     var name = S.name || await prefill();
     show('<form class="join" id="f" novalidate><h1>Join the game</h1><p>Enter the PIN on your teacher\'s screen.</p>' +
@@ -26,7 +41,7 @@
       '<input class="field" id="nm" maxlength="24" autocomplete="given-name" placeholder="Your name" value="' + esc(name) + '" aria-label="Your name">' +
       '<button class="btn big" type="submit">Join</button><div class="err" id="err">' + esc(err || '') + '</div>' +
       '<p style="margin-top:26px;color:rgba(255,255,255,.75)">No game PIN?</p><button type="button" class="btn ghost" id="solo" style="margin-top:8px">✨ Practise General English on my own</button></form>');
-    $('#solo').onclick = vPractice;
+    $('#solo').onclick = vPractice; teachBar();
     $(S.pin ? '#nm' : '#pin').focus();
     $('#f').onsubmit = function (e) { e.preventDefault(); join($('#pin').value.replace(/\D/g, ''), $('#nm').value.trim()); };
   }
@@ -440,7 +455,7 @@
     document.body.classList.add('light');
     show('<div class="join" style="max-width:560px;text-align:left"><h1 style="text-align:center;color:var(--navy)">Practise English</h1><p style="text-align:center;color:var(--muted)">Choose your level and a topic. AI writes new questions for you every time.</p><div id="pf"></div>' +
       '<button class="btn navy big" id="pgo" style="margin-top:20px">Start</button><div class="err" id="perr" style="color:var(--bad)"></div><p style="text-align:center;margin-top:16px"><button class="linkbtn" id="pback">📱 Your teacher is running a class game? Join with the PIN</button></p></div>');
-    var box = $('#pf'); box.innerHTML = L.genForm(P); L.genWire(box, P);
+    var box = $('#pf'); box.innerHTML = L.genForm(P); L.genWire(box, P); teachBar();
     $('#pback').onclick = function () { document.body.classList.remove('light'); vJoin(); };
     $('#pgo').onclick = startPractice;
   }
@@ -485,6 +500,7 @@
     $('#change').onclick = vPractice;
   }
   if (/[?&]practice\b/.test(location.search)) { vPractice(); return; }
+  if (qsp.get('arena') && S.pin && qsp.get('name')) { show('<div class="wait"><div class="pulse"></div><h2>Joining the Arena game…</h2></div>'); vJoin().then(function () { join(S.pin, String(qsp.get('name')).slice(0, 24)); }); return; }   // invited from IF Arena
 
   // opened again without the PIN (closed the tab by accident): go back to the last game from the last 3 hours
   if (!S.pin) { var last = String(L.ls.get('live.last') || '').split('|'); if (last[0] && Date.now() - +last[1] < 3 * 3600e3) S.pin = last[0]; }

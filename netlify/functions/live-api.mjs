@@ -9,6 +9,7 @@ import { getStore } from '@netlify/blobs';
 import { tgAccount } from '../lib/tgauth.mjs';
 import { getUser, refreshSession } from '@netlify/identity';
 import { isStaff } from '../lib/codes.mjs';
+import { doc, hidePrivate } from '../lib/bot-core.mjs';
 import { createHmac, randomBytes, randomInt } from 'node:crypto';
 
 import { isMember, FREE, ensureTrial } from '../lib/access.mjs';
@@ -19,6 +20,7 @@ const fail = (s, error) => json({ error }, s);
 const str = (v, n = 80) => (v == null ? '' : String(v)).replace(/\s+/g, ' ').trim().slice(0, n);
 const ROOM_HOURS = 4;
 const PARTY = ['mafia', 'mystery', 'kart'];   // kart: an IF Kart live race (a/if-kart/live.js)
+const ARENA = ['race', 'gold', 'hack', 'fish', 'balloon', 'kart', 'mine', 'cash'];   // self-paced IF Live modes that IF Arena players can host
 
 function tokenRequest(clientId, capability) {
   const key = process.env.ABLY_API_KEY || '';
@@ -37,6 +39,14 @@ async function who(req) {
   return { user, profile };
 }
 const alive = r => r && r.status !== 'ended' && Date.now() - r.created < ROOM_HOURS * 3600e3;
+/** The groups a teacher may start a game for (their own; the director and SMM see every group), each with its coursebook title.
+    One-student "classes" are left out: a live game is for a group, and their labels are students' names. */
+async function myGroups(profile) {
+  const [all, books] = await Promise.all([doc('classes'), doc('books')]);
+  const mine = profile.role === 'admin' || profile.smm ? hidePrivate(all, profile) : all.filter(c => profile.teacherId && c.teacherId === profile.teacherId);
+  return mine.filter(c => !c.left && !/^c-(ind|pv)-/.test(c.id || '') && !/\(individual\)/i.test(c.label || '') && !(c.studentIds && c.studentIds.length === 1 && c.group))
+    .map(c => ({ id: c.id, label: str(c.label, 60), book: str((books.find(b => b.id === c.bookId) || {}).title, 90) }));
+}
 const hostCap = pin => ({ [`live:${pin}:h`]: ['publish', 'subscribe', 'presence'], [`live:${pin}:p`]: ['subscribe', 'presence'] });
 
 export default async (req) => {
@@ -44,7 +54,10 @@ export default async (req) => {
   const body = req.method === 'POST' ? await req.json().catch(() => ({})) : {};
   const ready = !!(process.env.ABLY_API_KEY || '').includes(':');
 
-  if (path === 'status') return json({ ready });
+  if (path === 'status') {                     // staff: true → the join page offers the teacher "Start a class game"
+    let staff = false; try { staff = isStaff((await who(req)).profile?.role); } catch {}
+    return json({ ready, staff });
+  }
 
   // Student (or anyone with the PIN) joins. No account needed; signed-in students are linked.
   if (path === 'join') {
@@ -74,7 +87,7 @@ export default async (req) => {
     catch (e) { console.error('generate', e); return fail(502, 'ai'); }
   }
   // Party games (Mafia, Mystery): any signed-in person can host, students included. Staff have no daily limit.
-  if (path === 'host' && PARTY.includes(body.mode)) {
+  if (path === 'host' && (PARTY.includes(body.mode) || (body.arena && ARENA.includes(body.mode)))) {   // IF Arena: a player hosts a self-paced game for friends
     if (!ready) return fail(503, 'not-configured');
     if (!isStaff(profile?.role)) {
       const k = `quota/party/${user.id}/${new Date().toISOString().slice(0, 10)}`, used = (await L().get(k, { type: 'json' })) || 0;
@@ -84,7 +97,7 @@ export default async (req) => {
     let pin = '';
     for (let i = 0; i < 20 && !pin; i++) { const p = String(randomInt(100000, 999999)); if (!alive(await L().get('r/' + p, { type: 'json' }))) pin = p; }
     if (!pin) return fail(500, 'busy');
-    const room = { pin, title: str(body.title, 120) || 'Mafia Live', mode: body.mode, party: true, host: user.id, hostName: profile?.name || 'Host', created: Date.now(), status: 'lobby' };
+    const room = { pin, title: str(body.title, 120) || 'Mafia Live', mode: body.mode, party: true, arena: !!body.arena, host: user.id, hostName: profile?.name || 'Host', created: Date.now(), status: 'lobby' };
     await L().setJSON('r/' + pin, room);
     return json({ room, token: tokenRequest('host-' + user.id, hostCap(pin)) });
   }
@@ -125,7 +138,8 @@ export default async (req) => {
     const res = (await L().list({ prefix: 'res/' })).blobs.map(b => b.key).sort().slice(-30).reverse();
     const recent = [];
     for (const k of res.slice(0, 15)) { const r = await L().get(k, { type: 'json' }); if (r) recent.push({ key: k.slice(4), title: r.title, mode: r.mode, at: r.at, hostName: r.hostName, players: (r.players || []).length, top: (r.players || []).slice(0, 3).map(p => p.name) }); }
-    return json({ ready, rooms: rooms.sort((a, b) => b.created - a.created), recent });
+    let classes = []; try { classes = await myGroups(profile); } catch (e) { console.error('groups', e); }
+    return json({ ready, rooms: rooms.sort((a, b) => b.created - a.created), recent, classes });
   }
   if (path === 'state') {                      // host keeps the room's phase up to date (for the rooms list)
     const pin = str(body.pin, 8).replace(/\D/g, '');
