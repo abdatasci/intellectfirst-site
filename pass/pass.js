@@ -10,6 +10,7 @@
     minecraft: '<svg viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#16356b"/><path d="M32 12l20 10-20 10-20-10z" fill="#5fd068"/><path d="M12 22v6l20 10v-6z" fill="#3fa94b"/><path d="M52 22v6l-20 10v-6z" fill="#2f8a3b"/><path d="M12 28v18l20 10V38z" fill="#9a6a3c"/><path d="M52 28v18l-20 10V38z" fill="#7a5029"/><path d="M17 36l5 2.5v4L17 40zM25 46l4 2v4l-4-2zM44 34l4-2v4l-4 2zM37 47l5-2.5v4L37 51z" fill="#5d3c1c" opacity=".7"/><path d="M40 9l13 13" stroke="#b9794a" stroke-width="3.4" stroke-linecap="round"/><path d="M34 10c6-4 14-2 19 4-4-1-7-1-10 1-2-3-5-5-9-5z" fill="#cfd6e4"/></svg>',
     race: '<svg viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#16356b"/><path d="M6 46h52" stroke="#e8c36a" stroke-width="3" stroke-dasharray="7 5"/><path d="M12 38c2-8 8-12 16-12h8c7 0 12 3 16 9l2 3v4H12z" fill="#e8513d"/><path d="M26 27h9c4 0 7 2 9 5H22c1-3 2-5 4-5z" fill="#bfe3ff"/><circle cx="22" cy="43" r="6" fill="#14161c"/><circle cx="22" cy="43" r="2.4" fill="#cfd6e4"/><circle cx="44" cy="43" r="6" fill="#14161c"/><circle cx="44" cy="43" r="2.4" fill="#cfd6e4"/><path d="M48 8v14" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/><path d="M48 8h10v8H48z" fill="#fff"/><path d="M48 8h5v4h-5zM53 12h5v4h-5z" fill="#14161c"/></svg>',
     mindlab: '<svg viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#16356b"/><path d="M32 14c-6-5-17-1-16 8-6 3-6 12 0 15 0 8 9 12 16 7z" fill="#ff9fb4"/><path d="M32 14c6-5 17-1 16 8 6 3 6 12 0 15 0 8-9 12-16 7z" fill="#ff7f9c"/><path d="M32 14v30M22 24c3 0 5 2 5 5M42 24c-3 0-5 2-5 5M20 36c3-1 6 0 7 3M44 36c-3-1-6 0-7 3" stroke="#b83a5c" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M50 8l1.6 4 4 1.6-4 1.6L50 19l-1.6-3.8-4-1.6 4-1.6z" fill="#e8c36a"/><rect x="26" y="48" width="12" height="6" rx="3" fill="#e8c36a"/></svg>',
+    chess: '<svg viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#16356b"/><path d="M20 52h26v-5H20zM24 47c-1-10 9-13 8-21-5 3-9 2-10-1 2-7 8-12 15-12 7 2 10 9 8 18-1 6-5 10-5 16z" fill="#fff"/><circle cx="34" cy="20" r="1.8" fill="#16356b"/><rect x="16" y="52" width="34" height="4" rx="2" fill="#e8c36a"/></svg>',
     lessons: '<svg viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#16356b"/><path d="M10 18c8-3 15-2 22 3v30c-7-5-14-6-22-3z" fill="#fff"/><path d="M54 18c-8-3-15-2-22 3v30c7-5 14-6 22-3z" fill="#f1ead8"/><path d="M15 26c4-1 8 0 12 2M15 33c4-1 8 0 12 2M37 28c4-2 8-3 12-2M37 35c4-2 8-3 12-2" stroke="#16356b" stroke-width="2" stroke-linecap="round"/><circle cx="48" cy="14" r="7" fill="#e8c36a"/><path d="M45 14l2.2 2.2 4-4.4" stroke="#16356b" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>'
   };
   var KID = { Starters: 1, Movers: 1, Flyers: 1 };
@@ -27,17 +28,39 @@
         ['Kids Quest race', 'A story with kart races and a word mine.', '/a/kids-quest/?level=' + kq]] },
       minecraft: { t: 'Block world games', s: 'Like Minecraft: walk in a block world and mine the word blocks.', c: [
         ['Block Quest · Word Mine', 'Find the glowing blocks, mine them and collect gems.', bq + '&mode=mine']] },
+      chess: { t: 'Chess in English', s: 'Play the computer or a friend. Answer English questions to move.', c: [
+        ['Chess', 'Every move is said in English. A right answer plays a strong move for you.', '/a/if-english/gameroom/index.html?only=chess#chess']] },
       mindlab: { t: 'IF Mind Lab', s: 'Brain games: words, spelling, listening and memory.', c: [
         kid ? ['IF Mind Lab Kids', 'Brain-training games for young learners.', '/a/mind-lab/?kids=1'] : ['IF Mind Lab', 'Brain-training games with English words.', '/a/mind-lab/']] },
       lessons: { t: 'Words and lessons', s: 'Learn the words of your level.', c: kid ? [
         [lv + ' words', 'Picture words with games.', '/a/if-english/courses/' + lv + '/index.html'],
         [lv + ' tests', 'Practice tests with listening.', '/a/' + lv.toLowerCase() + '-tests/']] : [
-        ['General English ' + cefr, 'Vocabulary, grammar, reading and listening. Unit 1 is open.', '/app/general/#/course/ge-' + cefr.toLowerCase()]] }
+        ['General English ' + cefr, 'Vocabulary, grammar, reading and listening. Unit 1 is open.', '/app/general/#/course/ge-' + cefr.toLowerCase()]].concat(/^(B2|C1)$/.test(cefr) ? [['IF IELTS', 'Lessons for Listening, Reading, Writing and Speaking. Unit 1 is open.', '/app/ielts/']] : []) }
     };
   }
   function left(ms) { var h = Math.ceil(ms / 3600e3); return h > 48 ? Math.ceil(h / 24) + ' days left' : h > 1 ? h + ' hours left' : 'less than 1 hour left'; }
   var view = $('#view'), code = (new URLSearchParams(location.search).get('c') || '').replace(/[^A-Za-z0-9]/g, '').toUpperCase();
   function gone(h, p) { view.innerHTML = '<div class="hero"><h1>' + h + '</h1><p>' + p + '</p></div><div class="note">IF Academy · Al-Farabi 19, Kostanay. Ask us for a new pass, or <a href="/me/#/register">create a free account</a>.</div>'; }
+  /* /try/ : the public page behind the one QR code the director sends to everybody. Age and level in, a personal
+     3-day pass out. One pass per device: a second visit goes back to the same pass (active or finished). */
+  if (window.PASS_START && !code) {
+    var mine = null; try { mine = localStorage.getItem('if.try'); } catch (e) {}
+    if (mine) { location.replace('/pass/?c=' + mine); return; }
+    view.innerHTML = '<div class="hero"><h1>3 days free 🎟</h1><p>No account. Tell us two things and we will choose the games and lessons for you.</p><p style="margin-top:6px;opacity:.85">3 дня бесплатно, без регистрации. Ответьте на два вопроса — мы подберём игры и уроки.</p></div>' +
+      '<div class="panel"><label class="f">First name / Имя <span style="font-weight:400;color:#5d6676">(optional)</span></label><input type="text" id="tn" maxlength="30" autocomplete="given-name">' +
+      '<label class="f">Age / Возраст</label><input type="text" id="ta" inputmode="numeric" maxlength="2" placeholder="For example: 9">' +
+      '<label class="f">English level / Уровень английского</label><select id="tl"><option value="">I don\'t know / Не знаю</option><option value="A1">Beginner (A1) / Начальный</option><option value="A2">Elementary (A2)</option><option value="B1">Intermediate (B1) / Средний</option><option value="B2">Upper-intermediate (B2)</option><option value="C1">Advanced (C1) / Продвинутый</option></select>' +
+      '<p class="err" id="terr"></p><button class="btn gold" id="tgo">Open my games / Открыть игры</button><p style="font-size:13px;color:#5d6676;margin:12px 0 0">For a child, a parent can fill this in. We keep the first name and the age group only. / За ребёнка может заполнить родитель.</p></div>';
+    $('#tgo').onclick = function () {
+      var age = parseInt($('#ta').value, 10); if (!(age >= 4 && age <= 99)) { $('#terr').textContent = 'Please write the age in numbers. / Напишите возраст цифрами.'; return; }
+      $('#tgo').disabled = true;
+      fetch('/api/pass/start', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: $('#tn').value, age: age, level: $('#tl').value }) })
+        .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, s: r.status, d: d }; }); })
+        .then(function (r) { if (!r.ok) { $('#tgo').disabled = false; $('#terr').textContent = r.s === 429 ? 'All free passes for today are taken. Please try again tomorrow. / На сегодня пропуска закончились, попробуйте завтра.' : 'Something went wrong. Please try again.'; return; } try { localStorage.setItem('if.try', r.d.code); } catch (e) {} location.href = '/pass/?c=' + r.d.code; })
+        .catch(function () { $('#tgo').disabled = false; $('#terr').textContent = 'Check the internet connection and try again.'; });
+    };
+    return;
+  }
   if (!code) {   // no QR: type the 8-letter code
     view.innerHTML = '<div class="hero"><h1>Your free pass</h1><p>Scan the QR code from IF Academy, or type your code here.</p></div><div class="panel"><label class="f">Pass code (8 letters and numbers)</label><input type="text" id="pc" maxlength="12" autocomplete="off" autocapitalize="characters" placeholder="ABCD2345" style="font-size:22px;letter-spacing:.2em;text-align:center;text-transform:uppercase"><p class="err" id="perr"></p><button class="btn gold" id="pgo">Open my games</button></div>';
     var goCode = function () { var v = $('#pc').value.replace(/[^A-Za-z0-9]/g, '').toUpperCase(); if (v.length !== 8) { $('#perr').textContent = 'The code has 8 letters and numbers.'; return; } location.href = '/pass/?c=' + v; };

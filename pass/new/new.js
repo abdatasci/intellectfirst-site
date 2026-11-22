@@ -2,7 +2,7 @@
 (function () {
   var $ = function (s) { return document.querySelector(s); }, esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
   var LEVELS = ['Starters', 'Movers', 'Flyers', 'A1', 'A2', 'B1', 'B2', 'C1'];
-  var SHOW = [['roblox', 'Run and climb (like Roblox)'], ['race', 'Race games'], ['minecraft', 'Block world (like Minecraft)'], ['mindlab', 'IF Mind Lab'], ['lessons', 'Words and lessons']];
+  var SHOW = [['roblox', 'Run and climb (like Roblox)'], ['race', 'Race games'], ['minecraft', 'Block world (like Minecraft)'], ['mindlab', 'IF Mind Lab'], ['chess', 'Chess in English'], ['lessons', 'Words and lessons']];
   var view = $('#view');
   async function api(path, body, again) {
     var r = await fetch('/api/pass/' + path, body ? { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), credentials: 'same-origin' } : { credentials: 'same-origin' });
@@ -29,7 +29,7 @@
       '<label class="f">Show</label><div class="chips">' + SHOW.map(function (s) { return '<label><input type="checkbox" value="' + s[0] + '"' + (s[0] === 'lessons' ? '' : ' checked') + '> ' + s[1] + '</label>'; }).join('') + '</div>' +
       '<label class="f">Free for</label><select id="dy"><option value="3" selected>3 days</option><option value="1">1 day</option><option value="7">7 days</option><option value="14">14 days</option></select>' +
       '<p class="err" id="err"></p><button class="btn gold" id="go">Make the QR code</button></div>' +
-      '<div class="panel noprint"><h2 style="margin-top:0">Passes made</h2>' + (list.length ? list.map(function (p) { return '<div class="row"><div><b>' + esc(p.name) + '</b> · ' + esc(p.level) + '<small>' + esc(p.state) + (p.until && p.state === 'active' ? ' until ' + new Date(p.until).toLocaleString() : '') + ' · made ' + new Date(p.created).toLocaleDateString() + '</small></div><div style="display:flex;gap:6px"><button class="btn ghost" data-show="' + esc(p.code) + '">QR</button>' + (p.state === 'active' || p.state === 'not opened yet' ? '<button class="btn ghost" data-end="' + esc(p.code) + '">End</button>' : '') + '</div></div>'; }).join('') : '<p class="sd">No passes yet.</p>') + '</div>';
+      '<div class="panel noprint"><h2 style="margin-top:0">Passes made</h2>' + (list.length ? list.map(function (p) { return '<div class="row"><div><b>' + esc(p.name) + '</b> · ' + esc(p.level) + (p.self ? ' · from the public QR, age ' + esc(p.ageGroup || '?') : '') + '<small>' + esc(p.state) + (p.until && p.state === 'active' ? ' until ' + new Date(p.until).toLocaleString() : '') + ' · made ' + new Date(p.created).toLocaleDateString() + '</small></div><div style="display:flex;gap:6px"><button class="btn ghost" data-show="' + esc(p.code) + '">QR</button>' + (p.state === 'active' || p.state === 'not opened yet' ? '<button class="btn ghost" data-end="' + esc(p.code) + '">End</button>' : '') + '</div></div>'; }).join('') : '<p class="sd">No passes yet.</p>') + '</div>';
     if (made) bindTicket(made);
     $('#go').onclick = async function () {
       var name = $('#nm').value.trim(), show = [].slice.call(document.querySelectorAll('.chips input:checked')).map(function (i) { return i.value; });

@@ -3,6 +3,7 @@
 //   POST /api/pass/new   (staff)  { name, level, show: [...], days }  → { code }
 //   GET  /api/pass/list  (staff)  → { passes: [...] }
 //   POST /api/pass/end   (staff)  { code }
+//   POST /api/pass/start (anyone)  { name, age, level } → { code }   the public "try 3 days" page (/try/)
 //   GET  /api/pass/<CODE>         (anyone with the code) → { first, level, show, until, left } — the clock starts on the first open
 // The full name stays in the store; the public answer carries the first name only.
 import { getStore } from '@netlify/blobs';
@@ -17,7 +18,8 @@ const json = (d, s = 200) => Response.json(d, { status: s, headers: { 'Cache-Con
 const fail = (s, error) => json({ error }, s);
 const str = (v, n = 60) => (v == null ? '' : String(v)).replace(/[<>]/g, '').replace(/\s+/g, ' ').trim().slice(0, n);
 export const LEVELS = ['Starters', 'Movers', 'Flyers', 'A1', 'A2', 'B1', 'B2', 'C1'];
-export const SHOW = ['roblox', 'race', 'minecraft', 'mindlab', 'lessons'];
+export const SHOW = ['roblox', 'race', 'minecraft', 'mindlab', 'chess', 'lessons'];
+const SELF_PER_DAY = 40;   // the public "try 3 days" form: at most this many new passes a day
 const ABC = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';   // no 0/O, 1/I
 const newCode = () => Array.from({ length: 8 }, () => ABC[randomInt(ABC.length)]).join('');
 
@@ -62,6 +64,29 @@ export default async (req) => {
     return fail(405, 'method');
   }
 
+  /* The public "try for 3 days" form (one QR for everybody, /try/). The visitor gives an age and a level; the page
+     gets a personal 3-day pass with games chosen for them. The exact age is not kept, only the age group. */
+  if (path === 'start') {
+    if (req.method !== 'POST') return fail(405, 'method');
+    const age = Math.round(+body.age), given = ['A1', 'A2', 'B1', 'B2', 'C1'].includes(body.level) ? body.level : '';
+    if (!(age >= 4 && age <= 99)) return fail(400, 'age');
+    const day = new Date().toISOString().slice(0, 10), used = +(await P().get(`d/${day}`)) || 0;
+    if (used >= SELF_PER_DAY) return fail(429, 'full');
+    const rank = { '': 0, A1: 0, A2: 1, B1: 2, B2: 3, C1: 4 }[given];
+    let level, show, group;
+    if (age <= 12) {   // children: the Cambridge young-learner levels, by age, one step up for a higher level
+      const base = age <= 7 ? 0 : age <= 9 ? 1 : 2;
+      level = ['Starters', 'Movers', 'Flyers'][Math.min(2, base + (rank >= 2 ? 1 : 0))];
+      show = ['roblox', 'race', 'minecraft', 'mindlab', 'lessons']; group = age <= 7 ? '4-7' : age <= 9 ? '8-9' : '10-12';
+    } else if (age <= 17) { level = given || 'A2'; show = ['race', 'minecraft', 'roblox', 'chess', 'mindlab', 'lessons']; group = '13-17'; }
+    else { level = given || 'A2'; show = ['lessons', 'mindlab', 'chess', 'race']; group = '18+'; }
+    let code = newCode(); while (await P().get(`p/${code}`)) code = newCode();
+    const now = new Date();
+    const p = { code, name: str(body.name, 30) || 'Guest', level, show, days: 3, created: now.toISOString(), by: 'self', self: true, ageGroup: group,
+      started: now.toISOString(), until: new Date(now.getTime() + 3 * 864e5).toISOString() };
+    await P().setJSON(`p/${code}`, p); await P().set(`d/${day}`, String(used + 1));
+    return json({ code });
+  }
   if (req.method !== 'GET') return fail(405, 'method');
   const code = path.replace(/[^A-Za-z0-9]/g, '').toUpperCase().slice(0, 12);
   if (code.length !== 8) return fail(404, 'pass');
