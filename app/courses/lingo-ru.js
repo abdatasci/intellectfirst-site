@@ -4,7 +4,7 @@
 IFX.course({
   id: 'ru-a1', track: 'lang', lang: 'ru-RU', level: 'A1', next: 'A2', icon: '🇷🇺',
   title: 'Russian A1', sub: 'Your first steps in Russian',
-  blurb: 'Say hello, talk about your family, order food, find your way and go shopping: the first 64 words and 8 grammar points, explained in English.',
+  blurb: 'Say hello, talk about your family, order food, find your way and go shopping: the alphabet, 104 words and 13 grammar points so far, explained in English.',
   units: []
 });
 (function () {
@@ -142,4 +142,107 @@ IFX.course({
       r: ['In a phone shop', '— Здравствуйте! Сколько стоит этот телефон?\n\n— Двести тысяч тенге.\n\n— Это дорого! А маленький телефон?\n\n— Сто тысяч. Это новый и хороший телефон.\n\n— Хорошо. У меня есть деньги. Спасибо!\n\n(этот = this · двести тысяч = 200,000 · сто тысяч = 100,000)', [
         k.mc('What does the customer want to buy?', ['a phone', 'a car', 'a house'], 0), k.mc('How much is the small phone?', ['100,000 tenge', '200,000 tenge', '10,000 tenge'], 0), k.tf('The customer has no money.', false)]] }
   ]);
+})();
+
+/* ---- Batch 2 (22 Nov 2026): the alphabet unit and units 9 to 12. The full A1 plan is in the project doc claude/if-lingo.md. ---- */
+(function () {
+  var k = IFX.k;
+  IFX.make('ru-a1', [
+    { id: 'u0', t: 'Алфавит. The alphabet', topic: 'Alphabet',
+      v: ['Words you already know', `
+такси | noun | taxi | Это такси. | | tak-SEE | This is a taxi.
+банк | noun | bank | Где банк? | | bank | Where is the bank?
+парк | noun | park | Это парк. | | park | This is a park.
+метро | noun | metro, underground | Где метро? | | mee-TRO | Where is the metro?
+кафе | noun | café | Это кафе. | | ka-FE | This is a café.
+студент | noun | student | Том студент. | | stoo-DYENT | Tom is a student.
+доктор | noun | doctor | Анна доктор. | | DOK-tar | Anna is a doctor.
+паспорт | noun | passport | Это паспорт. | | PAS-part | This is a passport.`],
+      g: ['33 letters in three groups', '<p>Russian has <b>33 letters</b>. Learn them in three groups.</p><table><tr><th>Group</th><th>Letters and sounds</th></tr><tr><td><b>1. Friends</b><br>look and sound like English</td><td><b>А</b> a · <b>К</b> k · <b>М</b> m · <b>О</b> o · <b>Т</b> t</td></tr><tr><td><b>2. False friends</b><br>look like English, sound different</td><td><b>В</b> = v · <b>Е</b> = ye · <b>Н</b> = n · <b>Р</b> = r · <b>С</b> = s · <b>У</b> = oo · <b>Х</b> = kh</td></tr><tr><td><b>3. New shapes</b></td><td><b>Б</b> b · <b>Г</b> g · <b>Д</b> d · <b>Ж</b> zh · <b>З</b> z · <b>И</b> ee · <b>Й</b> y · <b>Л</b> l · <b>П</b> p · <b>Ф</b> f · <b>Ц</b> ts · <b>Ч</b> ch · <b>Ш</b> sh · <b>Щ</b> shch · <b>Ы</b> a hard “i” · <b>Э</b> e · <b>Ю</b> yoo · <b>Я</b> ya · <b>Ё</b> yo</td></tr></table><p><b>ь</b> and <b>ъ</b> have no sound of their own: <b>ь</b> makes the letter before it soft.</p><p>A letter <b>о</b> without stress sounds like “a”: <b>доктор</b> = DOK-tar.</p>', [
+        k.mc('Which sound is the Russian letter В?', ['b', 'v', 'w'], 1),
+        k.mc('Which sound is Р?', ['p', 'r', 'd'], 1),
+        k.mc('Which sound is Н?', ['h', 'n', 'm'], 1),
+        k.mc('Which sound is С?', ['s', 'k', 'ts'], 0),
+        k.mc('ресторан = …', ['restaurant', 'rest', 'store'], 0),
+        k.tf('The letter ь has no sound of its own.', true)]],
+      r: ['Read the signs', 'ТАКСИ\n\nБАНК\n\nРЕСТОРАН\n\nАПТЕКА\n\nСУПЕРМАРКЕТ\n\nТУАЛЕТ\n\nАЭРОПОРТ\n\n(аптека = pharmacy)', [
+        k.mc('Where do you buy medicine?', ['АПТЕКА', 'БАНК', 'ТАКСИ'], 0), k.mc('РЕСТОРАН is…', ['a restaurant', 'a station', 'a road'], 0), k.mc('Which sign takes you to a plane?', ['АЭРОПОРТ', 'ТУАЛЕТ', 'СУПЕРМАРКЕТ'], 0)]] },
+
+    { id: 'u9', t: 'Который час? Days and time', topic: 'Time',
+      v: ['Days of the week', `
+понедельник | noun | Monday | В понедельник я работаю. | | pa-nee-DYEL-neek | On Monday I work.
+вторник | noun | Tuesday | Во вторник у меня урок. | | FTOR-neek | On Tuesday I have a lesson.
+среда | noun | Wednesday | Сегодня среда. | | sree-DA | Today is Wednesday.
+четверг | noun | Thursday | В четверг я дома. | | cheet-VYERK | On Thursday I am at home.
+пятница | noun | Friday | В пятницу мы в кафе. | | PYAT-nee-tsa | On Friday we are at the café.
+суббота | noun | Saturday | В субботу я дома. | | soo-BO-ta | On Saturday I am at home.
+воскресенье | noun | Sunday | В воскресенье я не работаю. | | vas-kree-SYE-nye | On Sunday I do not work.
+час | noun | hour; o’clock | Сейчас один час. | | chas | It is one o’clock now.`],
+      g: ['What time is it? On Monday', '<p><b>Который час?</b> = What time is it?</p><table><tr><th>Number</th><th>Word</th><th>Example</th></tr><tr><td>1</td><td><b>час</b></td><td>Сейчас час. = It is one o’clock.</td></tr><tr><td>2, 3, 4</td><td><b>часа</b></td><td>Сейчас три часа.</td></tr><tr><td>5 to 12</td><td><b>часов</b></td><td>Сейчас семь часов.</td></tr></table><p>More numbers: <b>шесть</b> 6 · <b>семь</b> 7 · <b>восемь</b> 8 · <b>девять</b> 9 · <b>одиннадцать</b> 11 · <b>двенадцать</b> 12.</p><p><b>On</b> a day = <b>в</b> + the day. Days that end in <b>-а</b> change it to <b>-у</b>: в понедельник, <b>во</b> вторник, в сред<b>у</b>, в четверг, в пятниц<b>у</b>, в суббот<b>у</b>, в воскресенье.</p><p><b>At</b> a time = <b>в</b> + the time: в шесть часов.</p>', [
+        k.mc('Сейчас три …', ['час', 'часа', 'часов'], 1),
+        k.mc('Сейчас семь …', ['час', 'часа', 'часов'], 2),
+        k.mc('on Friday = …', ['в пятница', 'в пятницу', 'на пятницу'], 1),
+        k.tf('“Во вторник” means “on Tuesday”.', true),
+        k.ord('В субботу я дома')]],
+      r: ['Tom’s week', 'В понедельник и во вторник я работаю.\n\nВ среду у меня урок русского языка. Урок в шесть часов.\n\nВ пятницу мы в кафе. В субботу и в воскресенье я дома.\n\n(урок русского языка = a Russian lesson · мы = we)', [
+        k.mc('When is Tom’s Russian lesson?', ['on Wednesday', 'on Friday', 'on Sunday'], 0), k.tf('Tom works on Sunday.', false), k.mc('What time is the lesson?', ['six o’clock', 'three o’clock', 'seven o’clock'], 0)]] },
+
+    { id: 'u10', t: 'Какая сегодня погода? Weather', topic: 'Weather',
+      v: ['Weather and seasons', `
+погода | noun | weather | Сегодня хорошая погода. | | pa-GO-da | The weather is good today.
+холодно | adverb | (it is) cold | Зимой холодно. | | KHO-lad-na | It is cold in winter.
+тепло | adverb | (it is) warm | Весной тепло. | | teep-LO | It is warm in spring.
+жарко | adverb | (it is) hot | Летом жарко. | | ZHAR-ka | It is hot in summer.
+дождь | noun | rain | Сегодня дождь. | | dozht | It is raining today.
+снег | noun | snow | Зимой снег. | | snyek | There is snow in winter.
+зима | noun | winter | Зима в Костанае холодная. | | zee-MA | Winter in Kostanay is cold.
+лето | noun | summer | Я люблю лето. | | LYE-ta | I love summer.`],
+      g: ['It is cold: one word', '<p>English needs three words: <i>It is cold.</i> Russian needs one: <b>Холодно.</b></p><ul><li><b>Сегодня жарко.</b> = It is hot today.</li><li><b>Здесь тепло.</b> = It is warm here.</li><li><b>Мне холодно.</b> = I am cold.</li></ul><p><b>In</b> a season: the word changes its ending, with no word for “in”.</p><table><tr><th>Season</th><th>In …</th></tr><tr><td>зима (winter)</td><td><b>зимой</b></td></tr><tr><td>весна (spring)</td><td><b>весной</b></td></tr><tr><td>лето (summer)</td><td><b>летом</b></td></tr><tr><td>осень (autumn)</td><td><b>осенью</b></td></tr></table>', [
+        k.mc('How do you say “It is hot today”?', ['Сегодня жарко.', 'Сегодня есть жарко.', 'Сегодня жаркий.'], 0),
+        k.mc('in winter = …', ['зима', 'зимой', 'в зима'], 1),
+        k.mc('in summer = …', ['летом', 'лето', 'в лето'], 0),
+        k.tf('“Мне холодно” means “I am cold”.', true),
+        k.ord('Сегодня очень холодно')]],
+      r: ['The weather in Kostanay', 'Я живу в Костанае. Зимой здесь очень холодно и снег. Весной тепло. Летом жарко. Осенью дождь.\n\nСегодня хорошая погода: тепло. Я люблю лето!\n\n(я живу = I live · очень = very · осенью = in autumn)', [
+        k.mc('What is winter like in Kostanay?', ['very cold', 'warm', 'hot'], 0), k.tf('It rains in autumn.', true), k.mc('Which season does the writer love?', ['summer', 'winter', 'autumn'], 0)]] },
+
+    { id: 'u11', t: 'Мой день. My day', topic: 'Daily routine',
+      v: ['From morning to night', `
+утро | noun | morning | Утром я пью кофе. | | OOT-ra | In the morning I drink coffee.
+день | noun | day; afternoon | Днём я работаю. | | dyen | In the afternoon I work.
+вечер | noun | evening | Вечером я дома. | | VYE-cheer | In the evening I am at home.
+завтракать | verb | to have breakfast | Я завтракаю в семь часов. | | ZAF-tra-kat | I have breakfast at seven o’clock.
+обедать | verb | to have lunch | Мы обедаем в кафе. | | a-BYE-dat | We have lunch at a café.
+ужинать | verb | to have dinner | Вечером я ужинаю дома. | | OO-zhee-nat | In the evening I have dinner at home.
+спать | verb | to sleep | Ночью я сплю. | | spat | At night I sleep.
+потом | adverb | then, after that | Я обедаю, потом работаю. | | pa-TOM | I have lunch, then I work.`],
+      g: ['We, you, they: -ем, -ете, -ют', '<p>You know <b>я работаю, ты работаешь</b>. Here is the whole verb.</p><table><tr><th>Who</th><th>завтракать</th></tr><tr><td>я (I)</td><td>завтрака<b>ю</b></td></tr><tr><td>ты (you, a friend)</td><td>завтрака<b>ешь</b></td></tr><tr><td>он, она (he, she)</td><td>завтрака<b>ет</b></td></tr><tr><td>мы (we)</td><td>завтрака<b>ем</b></td></tr><tr><td>вы (you, polite or many)</td><td>завтрака<b>ете</b></td></tr><tr><td>они (they)</td><td>завтрака<b>ют</b></td></tr></table><p>Parts of the day, with no word for “in”: <b>утром</b> in the morning · <b>днём</b> in the afternoon · <b>вечером</b> in the evening · <b>ночью</b> at night.</p>', [
+        k.mc('Мы обеда___ в кафе.', ['ю', 'ем', 'ют'], 1),
+        k.mc('Они ужина___ дома.', ['ет', 'ем', 'ют'], 2),
+        k.mc('Вы завтрака___ дома?', ['ете', 'ешь', 'ю'], 0),
+        k.mc('in the evening = …', ['вечер', 'вечером', 'в вечер'], 1),
+        k.ord('Утром я завтракаю дома')]],
+      r: ['Anna’s day', 'Утром Анна завтракает дома: чай и хлеб. В девять часов она на работе.\n\nДнём Анна и Том обедают в кафе. Потом они работают.\n\nВечером Анна ужинает дома. Ночью она спит.\n\n(на работе = at work · она = she)', [
+        k.mc('Where does Anna have breakfast?', ['at home', 'at a café', 'at work'], 0), k.tf('Anna and Tom have lunch at a café.', true), k.mc('What does Anna do at night?', ['She sleeps.', 'She works.', 'She has dinner.'], 0)]] },
+
+    { id: 'u12', t: 'Моя квартира. My home', topic: 'Home',
+      v: ['Rooms and furniture', `
+квартира | noun | flat, apartment | У меня большая квартира. | | kvar-TEE-ra | I have a big flat.
+комната | noun | room | Это моя комната. | | KOM-na-ta | This is my room.
+кухня | noun | kitchen | Мама на кухне. | | KOOKH-nya | Mum is in the kitchen.
+ванная | noun | bathroom | Ванная здесь. | | VAN-na-ya | The bathroom is here.
+стол | noun | table | Книга на столе. | | stol | The book is on the table.
+стул | noun | chair | Это новый стул. | | stool | This is a new chair.
+окно | noun | window | В комнате большое окно. | | ak-NO | There is a big window in the room.
+кровать | noun | bed | Кровать в комнате. | | kra-VAT | The bed is in the room.`],
+      g: ['In and on: в, на + -е', '<p>To say where a thing is, use <b>в</b> (in) or <b>на</b> (on) and change the end of the noun to <b>-е</b>.</p><table><tr><th>Noun</th><th>Where?</th><th>Meaning</th></tr><tr><td>комната</td><td><b>в</b> комнат<b>е</b></td><td>in the room</td></tr><tr><td>квартира</td><td><b>в</b> квартир<b>е</b></td><td>in the flat</td></tr><tr><td>стол</td><td><b>на</b> стол<b>е</b></td><td>on the table</td></tr><tr><td>кухня</td><td><b>на</b> кухн<b>е</b></td><td>in the kitchen</td></tr></table><p>Russian says <b>на кухне</b> (“on the kitchen”) and <b>на работе</b> (“on work”). Learn these two as they are.</p><p><b>Где книга?</b> — <b>На столе.</b> = Where is the book? On the table.</p>', [
+        k.mc('Книга ___ столе.', ['в', 'на', 'у'], 1),
+        k.mc('Мы ___ комнате.', ['в', 'на', 'у'], 0),
+        k.mc('комната → in the room = в …', ['комната', 'комнату', 'комнате'], 2),
+        k.tf('Russian says “на кухне” for “in the kitchen”.', true),
+        k.ord('Книга на столе')]],
+      r: ['Tom’s flat', 'У меня есть квартира. Она маленькая, но хорошая.\n\nВ квартире одна комната и кухня. В комнате кровать, стол и стул. На столе книга и телефон.\n\nВ комнате большое окно.\n\n(она = it · но = but · одна = one · книга = book)', [
+        k.mc('How many rooms are there in the flat?', ['one', 'two', 'three'], 0), k.tf('There is a book on the table.', true), k.mc('What is big?', ['the window', 'the flat', 'the table'], 0)]] }
+  ]);
+  IFX.order('ru-a1', ['u0', 'u1', 'u2', 'u3', 'u4', 'u5', 'u6', 'u7', 'u8', 'u9', 'u10', 'u11', 'u12']);
 })();

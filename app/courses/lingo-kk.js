@@ -4,7 +4,7 @@
 IFX.course({
   id: 'kk-a1', track: 'lang', lang: 'kk-KZ', level: 'A1', next: 'A2', icon: '🇰🇿',
   title: 'Kazakh A1', sub: 'Your first steps in Kazakh',
-  blurb: 'Say hello, talk about your family, order food, find your way and go shopping: the first 64 words and 8 grammar points, explained in English.',
+  blurb: 'Say hello, talk about your family, order food, find your way and go shopping: the alphabet, 104 words and 13 grammar points so far, explained in English.',
   units: []
 });
 (function () {
@@ -138,4 +138,107 @@ IFX.course({
       r: ['In a phone shop', '— Сәлеметсіз бе! Мына телефон қанша тұрады?\n\n— Екі жүз мың теңге.\n\n— Бұл қымбат! Ал кішкентай телефон ше?\n\n— Жүз мың. Бұл жаңа және жақсы телефон.\n\n— Жақсы. Менде ақша бар. Рақмет!\n\n(мына = this · екі жүз мың = 200,000 · жүз мың = 100,000 · ше? = and what about…?)', [
         k.mc('What does the customer want to buy?', ['a phone', 'a car', 'a house'], 0), k.mc('How much is the small phone?', ['100,000 tenge', '200,000 tenge', '10,000 tenge'], 0), k.tf('The customer has no money.', false)]] }
   ]);
+})();
+
+/* ---- Batch 2 (22 Nov 2026): the alphabet unit and units 9 to 12. The full A1 plan is in the project doc claude/if-lingo.md. ---- */
+(function () {
+  var k = IFX.k;
+  IFX.make('kk-a1', [
+    { id: 'u0', t: 'Әліпби. The alphabet', topic: 'Alphabet',
+      v: ['Words you already know', `
+такси | noun | taxi | Бұл такси. | | tak-SEE | This is a taxi.
+банк | noun | bank | Банк қайда? | | bank | Where is the bank?
+парк | noun | park | Бұл парк. | | park | This is a park.
+кафе | noun | café | Кафе осында. | | ka-FE | The café is here.
+студент | noun | student | Том студент. | | stoo-DENT | Tom is a student.
+паспорт | noun | passport | Бұл паспорт. | | PAS-port | This is a passport.
+футбол | noun | football | Мен футболды жақсы көремін. | | foot-BOL | I love football.
+компьютер | noun | computer | Бұл жаңа компьютер. | | kom-PYOO-ter | This is a new computer.`],
+      g: ['42 letters: the Russian 33 and nine more', '<p>Kazakh is written with <b>42 letters</b>: the 33 letters of the Russian alphabet and <b>nine</b> more.</p><table><tr><th>Letter</th><th>Sound</th><th>Example</th></tr><tr><td><b>Ә ә</b></td><td>a, as in “cat”</td><td>әке (father)</td></tr><tr><td><b>Ғ ғ</b></td><td>a soft g, deep in the throat</td><td>аға (older brother)</td></tr><tr><td><b>Қ қ</b></td><td>a deep k, far back in the mouth</td><td>қала (city)</td></tr><tr><td><b>Ң ң</b></td><td>ng, as in “sing”</td><td>жаңа (new)</td></tr><tr><td><b>Ө ө</b></td><td>like “ur” in “burn”</td><td>көше (street)</td></tr><tr><td><b>Ұ ұ</b></td><td>a short oo, as in “put”</td><td>ұл (son)</td></tr><tr><td><b>Ү ү</b></td><td>oo said with the lips forward</td><td>үй (house)</td></tr><tr><td><b>Һ һ</b></td><td>h</td><td>қаһарман (hero)</td></tr><tr><td><b>І і</b></td><td>a short i, as in “bit”</td><td>бір (one)</td></tr></table><p>The other letters, in three groups:</p><ul><li><b>Friends</b> (as in English): А · Е · К · М · О · Т</li><li><b>False friends</b>: В = v · Н = n · Р = r · С = s · У = oo or w · Х = kh</li><li><b>New shapes</b>: Б b · Г g · Д d · Ж zh · З z · И ee · Й y · Л l · П p · Ф f · Ш sh · Ы a short hard “i”</li></ul><p>The stress is usually on the <b>last</b> part of the word: са-ЛЕМ, рақ-МЕТ.</p>', [
+        k.mc('Which sound is Қ?', ['a deep k, far back in the mouth', 'sh', 'ch'], 0),
+        k.mc('Which sound is Ң?', ['ng, as in “sing”', 'n', 'g'], 0),
+        k.mc('Which sound is Ә?', ['a, as in “cat”', 'o', 'ya'], 0),
+        k.mc('Which sound is Ш?', ['sh', 's', 'w'], 0),
+        k.mc('Which sound is Р?', ['p', 'r', 'd'], 1),
+        k.tf('Kazakh uses nine letters that Russian does not have.', true)]],
+      r: ['Read the signs', 'ТАКСИ\n\nБАНК\n\nМЕЙРАМХАНА\n\nДӘРІХАНА\n\nДҮКЕН\n\nӘУЕЖАЙ\n\nӘЖЕТХАНА\n\n(мейрамхана = restaurant · дәріхана = pharmacy · дүкен = shop · әуежай = airport · әжетхана = toilet)', [
+        k.mc('Where do you buy medicine?', ['ДӘРІХАНА', 'БАНК', 'ТАКСИ'], 0), k.mc('ДҮКЕН is…', ['a shop', 'a station', 'a road'], 0), k.mc('Which sign takes you to a plane?', ['ӘУЕЖАЙ', 'ӘЖЕТХАНА', 'МЕЙРАМХАНА'], 0)]] },
+
+    { id: 'u9', t: 'Сағат неше? Days and time', topic: 'Time',
+      v: ['Days of the week', `
+дүйсенбі | noun | Monday | Дүйсенбіде мен жұмыс істеймін. | | dooy-sen-BI | On Monday I work.
+сейсенбі | noun | Tuesday | Сейсенбіде сабақ бар. | | sey-sen-BI | There is a lesson on Tuesday.
+сәрсенбі | noun | Wednesday | Бүгін сәрсенбі. | | sar-sen-BI | Today is Wednesday.
+бейсенбі | noun | Thursday | Бейсенбіде мен үйдемін. | | bey-sen-BI | On Thursday I am at home.
+жұма | noun | Friday | Жұмада біз кафедеміз. | | zhoo-MA | On Friday we are at the café.
+сенбі | noun | Saturday | Сенбіде мен жұмыс істемеймін. | | sen-BI | On Saturday I do not work.
+жексенбі | noun | Sunday | Жексенбіде мен үйдемін. | | zhek-sen-BI | On Sunday I am at home.
+сағат | noun | hour; o’clock; clock | Қазір сағат екі. | | sa-GHAT | It is two o’clock now.`],
+      g: ['What time is it? On Monday', '<p><b>Сағат неше?</b> = What time is it?</p><ul><li><b>Қазір сағат бір.</b> = It is one o’clock now.</li><li><b>Қазір сағат үш.</b> = It is three o’clock now.</li></ul><p>The number comes <b>after</b> the word <b>сағат</b>.</p><p>More numbers: <b>алты</b> 6 · <b>жеті</b> 7 · <b>сегіз</b> 8 · <b>тоғыз</b> 9 · <b>он бір</b> 11 · <b>он екі</b> 12.</p><p><b>On</b> a day and <b>at</b> a time: add <b>-да</b> or <b>-де</b>, the ending you know from “in, at”.</p><table><tr><th>Word</th><th>With the ending</th><th>Meaning</th></tr><tr><td>дүйсенбі</td><td>дүйсенбі<b>де</b></td><td>on Monday</td></tr><tr><td>жұма</td><td>жұма<b>да</b></td><td>on Friday</td></tr><tr><td>сағат алты</td><td>сағат алты<b>да</b></td><td>at six o’clock</td></tr><tr><td>сағат жеті</td><td>сағат жеті<b>де</b></td><td>at seven o’clock</td></tr></table>', [
+        k.mc('Қазір сағат үш. = …', ['It is three o’clock now.', 'It is Wednesday.', 'I have three hours.'], 0),
+        k.mc('on Friday = …', ['жұмада', 'жұмаде', 'жұма'], 0),
+        k.mc('on Monday = …', ['дүйсенбіда', 'дүйсенбіде', 'дүйсенбі'], 1),
+        k.tf('“Сағат неше?” means “What time is it?”', true),
+        k.ord('Қазір сағат екі')]],
+      r: ['Aigul’s week', 'Дүйсенбіде және сейсенбіде мен жұмыс істеймін.\n\nСәрсенбіде менде ағылшын тілі сабағы бар. Сабақ сағат алтыда.\n\nЖұмада біз кафедеміз. Сенбіде және жексенбіде мен үйдемін.\n\n(және = and · ағылшын тілі сабағы = an English lesson · біз = we)', [
+        k.mc('When is Aigul’s English lesson?', ['on Wednesday', 'on Friday', 'on Sunday'], 0), k.tf('Aigul works on Sunday.', false), k.mc('What time is the lesson?', ['six o’clock', 'three o’clock', 'seven o’clock'], 0)]] },
+
+    { id: 'u10', t: 'Ауа райы қандай? Weather', topic: 'Weather',
+      v: ['Weather and seasons', `
+ауа райы | noun | weather | Бүгін ауа райы жақсы. | | a-OO-a ra-YY | The weather is good today.
+суық | adjective | cold | Қыста суық. | | soo-YQ | It is cold in winter.
+жылы | adjective | warm | Көктемде жылы. | | zhy-LY | It is warm in spring.
+ыстық | adjective | hot | Жазда ыстық. | | ys-TYQ | It is hot in summer.
+жаңбыр | noun | rain | Бүгін жаңбыр жауып тұр. | | zhang-BYR | It is raining today.
+қар | noun | snow | Қыста қар жауады. | | qar | It snows in winter.
+қыс | noun | winter | Қостанайда қыс суық. | | qys | Winter in Kostanay is cold.
+жаз | noun | summer | Мен жазды жақсы көремін. | | zhaz | I love summer.`],
+      g: ['It is cold. In winter', '<p>Kazakh has no word for “it is”. Say the day or the place, then the adjective.</p><ul><li><b>Бүгін суық.</b> = It is cold today.</li><li><b>Осында жылы.</b> = It is warm here.</li><li><b>өте</b> = very: <b>өте суық</b> = very cold.</li></ul><p><b>In</b> a season: add <b>-да, -де, -та</b> or <b>-те</b>.</p><table><tr><th>Season</th><th>In …</th></tr><tr><td>қыс (winter)</td><td>қыс<b>та</b></td></tr><tr><td>көктем (spring)</td><td>көктем<b>де</b></td></tr><tr><td>жаз (summer)</td><td>жаз<b>да</b></td></tr><tr><td>күз (autumn)</td><td>күз<b>де</b></td></tr></table><p>After <b>к, қ, п, с, т, ш</b> the ending starts with <b>т</b>: қыс → қыста.</p>', [
+        k.mc('How do you say “It is hot today”?', ['Бүгін ыстық.', 'Бүгін ыстық бар.', 'Бүгін ыстықта.'], 0),
+        k.mc('in winter = …', ['қыс', 'қыста', 'қысда'], 1),
+        k.mc('in summer = …', ['жазда', 'жазта', 'жаз'], 0),
+        k.tf('“өте суық” means “very cold”.', true),
+        k.ord('Бүгін өте суық')]],
+      r: ['The weather in Kostanay', 'Мен Қостанайда тұрамын. Қыста осында өте суық, қар жауады. Көктемде жылы. Жазда ыстық. Күзде жаңбыр жауады.\n\nБүгін ауа райы жақсы: жылы. Мен жазды жақсы көремін!\n\n(жауады = falls · күзде = in autumn)', [
+        k.mc('What is winter like in Kostanay?', ['very cold', 'warm', 'hot'], 0), k.tf('It rains in autumn.', true), k.mc('Which season does the writer love?', ['summer', 'winter', 'autumn'], 0)]] },
+
+    { id: 'u11', t: 'Менің күнім. My day', topic: 'Daily routine',
+      v: ['From morning to night', `
+таңертең | adverb | in the morning | Таңертең мен кофе ішемін. | | tang-er-TENG | In the morning I drink coffee.
+күндіз | adverb | in the daytime | Күндіз мен жұмыс істеймін. | | koon-DIZ | In the daytime I work.
+кешке | adverb | in the evening | Кешке мен үйдемін. | | kesh-KE | In the evening I am at home.
+түнде | adverb | at night | Түнде мен ұйықтаймын. | | toon-DE | At night I sleep.
+таңғы ас | noun | breakfast | Мен таңғы асты сағат жетіде ішемін. | | tang-GHY as | I have breakfast at seven o’clock.
+түскі ас | noun | lunch | Біз түскі асты кафеде ішеміз. | | toos-KI as | We have lunch at a café.
+кешкі ас | noun | dinner | Кешкі асты үйде ішемін. | | kesh-KI as | I have dinner at home.
+ұйықтау | verb | to sleep | Мен түнде ұйықтаймын. | | oo-yyq-TAU | I sleep at night.`],
+      g: ['We and they in the present', '<p>You know <b>мен тұрамын, сіз тұрасыз, ол тұрады</b>. Here are <b>we</b> and <b>they</b>.</p><table><tr><th>Who</th><th>ішу (to drink, to have a meal)</th><th>ұйықтау (to sleep)</th></tr><tr><td>мен (I)</td><td>іше<b>мін</b></td><td>ұйықтай<b>мын</b></td></tr><tr><td>сіз (you, polite)</td><td>іше<b>сіз</b></td><td>ұйықтай<b>сыз</b></td></tr><tr><td>ол (he, she)</td><td>іше<b>ді</b></td><td>ұйықтай<b>ды</b></td></tr><tr><td>біз (we)</td><td>іше<b>міз</b></td><td>ұйықтай<b>мыз</b></td></tr><tr><td>олар (they)</td><td>іше<b>ді</b></td><td>ұйықтай<b>ды</b></td></tr></table><p><b>They</b> uses the same ending as <b>he, she</b>.</p><p>Words with <b>ә, е, і, ө, ү</b> take the soft endings (-мін, -міз, -ді); words with <b>а, о, ұ, ы</b> take the hard ones (-мын, -мыз, -ды).</p>', [
+        k.mc('Біз кафеде түскі ас іше___.', ['мін', 'міз', 'ді'], 1),
+        k.mc('Олар үйде ұйықтай___.', ['ды', 'мыз', 'мын'], 0),
+        k.mc('Мен кофе іше___.', ['мін', 'міз', 'сіз'], 0),
+        k.mc('in the evening = …', ['кешке', 'түнде', 'таңертең'], 0),
+        k.ord('Таңертең мен кофе ішемін')]],
+      r: ['Aigul’s day', 'Таңертең Айгүл үйде таңғы ас ішеді: шай және нан. Сағат тоғызда ол жұмыста.\n\nКүндіз Айгүл мен Том кафеде түскі ас ішеді. Содан кейін олар жұмыс істейді.\n\nКешке Айгүл үйде кешкі ас ішеді. Түнде ол ұйықтайды.\n\n(жұмыста = at work · Айгүл мен Том = Aigul and Tom · содан кейін = after that)', [
+        k.mc('Where does Aigul have breakfast?', ['at home', 'at a café', 'at work'], 0), k.tf('Aigul and Tom have lunch at a café.', true), k.mc('What does Aigul do at night?', ['She sleeps.', 'She works.', 'She has dinner.'], 0)]] },
+
+    { id: 'u12', t: 'Менің пәтерім. My home', topic: 'Home',
+      v: ['Rooms and furniture', `
+пәтер | noun | flat, apartment | Менде үлкен пәтер бар. | | pa-TER | I have a big flat.
+бөлме | noun | room | Бұл менің бөлмем. | | bol-ME | This is my room.
+ас үй | noun | kitchen | Анам ас үйде. | | as ooy | My mother is in the kitchen.
+үстел | noun | table | Телефон үстелде. | | oos-TEL | The phone is on the table.
+орындық | noun | chair | Бұл жаңа орындық. | | o-ryn-DYQ | This is a new chair.
+терезе | noun | window | Бөлмеде үлкен терезе бар. | | te-re-ZE | There is a big window in the room.
+төсек | noun | bed | Төсек бөлмеде. | | to-SEK | The bed is in the room.
+кітап | noun | book | Бұл жақсы кітап. | | ki-TAP | This is a good book.`],
+      g: ['Where is it? There is, there is not', '<p>The ending <b>-да, -де, -та, -те</b> means <b>in, on</b> and <b>at</b>.</p><table><tr><th>Noun</th><th>Where?</th><th>Meaning</th></tr><tr><td>бөлме</td><td>бөлме<b>де</b></td><td>in the room</td></tr><tr><td>үстел</td><td>үстел<b>де</b></td><td>on the table</td></tr><tr><td>орындық</td><td>орындық<b>та</b></td><td>on the chair</td></tr><tr><td>төсек</td><td>төсек<b>те</b></td><td>on the bed</td></tr></table><ul><li><b>Бөлмеде терезе бар.</b> = There is a window in the room.</li><li><b>Бөлмеде үстел жоқ.</b> = There is no table in the room.</li><li><b>Кітап қайда?</b> — <b>Үстелде.</b> = Where is the book? On the table.</li></ul>', [
+        k.mc('Кітап үстел___.', ['да', 'де', 'те'], 1),
+        k.mc('Телефон орындық___.', ['та', 'да', 'де'], 0),
+        k.mc('“There is a window in the room.” = …', ['Бөлмеде терезе бар.', 'Бөлмеде терезе жоқ.', 'Терезе бөлме.'], 0),
+        k.tf('“Кітап қайда?” means “Where is the book?”', true),
+        k.ord('Кітап үстелде')]],
+      r: ['Tom’s flat', 'Менде пәтер бар. Ол кішкентай, бірақ жақсы.\n\nПәтерде бір бөлме және ас үй бар. Бөлмеде төсек, үстел және орындық бар. Үстелде кітап пен телефон бар.\n\nБөлмеде үлкен терезе бар.\n\n(ол = it · бірақ = but · кітап пен телефон = a book and a phone)', [
+        k.mc('How many rooms are there in the flat?', ['one', 'two', 'three'], 0), k.tf('There is a book on the table.', true), k.mc('What is big?', ['the window', 'the flat', 'the table'], 0)]] }
+  ]);
+  IFX.order('kk-a1', ['u0', 'u1', 'u2', 'u3', 'u4', 'u5', 'u6', 'u7', 'u8', 'u9', 'u10', 'u11', 'u12']);
 })();
