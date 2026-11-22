@@ -347,7 +347,25 @@ async function fixedPay() {
   await saveRates(r);
   return ['fixed monthly pay: manager set'];
 }
-const MIGRATIONS = [['timetable-2026-11-14', () => applyTimetable(TT_2026_11_14)], ['timetable-2026-11-14-pending', () => applyPending(PENDING_2026_11_14), true], ['private-2026-11-15', () => grantPrivate(PRIVATE_2026_11_15)], ['schedule-2026-11-15', schedule20261115], ['ontime-2026-11-15', onTime20261115], ['teacher-phones-2026-11-15', teacherPhones], ['cover-2026-11-16', cover20261116], ['smm-2026-11-16', smm20261116], ['aitach-record-2026-11-16', () => recordLessons(AITACH_REC)], ['alina-record-2026-11-17', () => recordByTime(ALINA_REC)], ['olya-record-2026-11-17', () => recordByStudent(OLYA_REC, OLYA_FP)], ['fixed-pay-2026-11-17', fixedPay]];
+/* 22 Nov 2026: the manager's Starters lessons (60 min, 3 000 per lesson), added to her monthly pay on top of the fixed
+   manager amount. Only dates and times here, never names: this repository is public. */
+const MANAGER_STARTERS = { teacher: 't-anelya', rate: { amount: 3000, per: 60 },
+  lessons: ['2026-11-03', '2026-11-05', '2026-11-10', '2026-11-12'] };
+async function managerStarters() {
+  const { loadRates, saveRates } = await import('./payroll.mjs');
+  const r = await loadRates(), M = MANAGER_STARTERS;
+  r.teachers = { ...(r.teachers || {}), [M.teacher]: M.rate };
+  r.skip = (r.skip || []).filter(x => x !== M.teacher);
+  await saveRates(r);
+  const W = S(), X = (await W.get('payextra', { type: 'json' })) || [], lines = ['rate: 3 000 per 60-minute lesson'];
+  for (const d of M.lessons) {
+    const id = 'st-' + d.replace(/-/g, '') + '-' + M.teacher;
+    if (!X.some(x => x.id === id)) { X.push({ id, teacherId: M.teacher, date: d, start: '16:00', end: '17:00', label: 'Starters', min: 60, note: 'Starters lesson (recorded by the director)' }); lines.push(d + ': Starters, 60 min'); }
+  }
+  await W.setJSON('payextra', X);
+  return lines;
+}
+const MIGRATIONS = [['timetable-2026-11-14', () => applyTimetable(TT_2026_11_14)], ['timetable-2026-11-14-pending', () => applyPending(PENDING_2026_11_14), true], ['private-2026-11-15', () => grantPrivate(PRIVATE_2026_11_15)], ['schedule-2026-11-15', schedule20261115], ['ontime-2026-11-15', onTime20261115], ['teacher-phones-2026-11-15', teacherPhones], ['cover-2026-11-16', cover20261116], ['smm-2026-11-16', smm20261116], ['aitach-record-2026-11-16', () => recordLessons(AITACH_REC)], ['alina-record-2026-11-17', () => recordByTime(ALINA_REC)], ['olya-record-2026-11-17', () => recordByStudent(OLYA_REC, OLYA_FP)], ['fixed-pay-2026-11-17', fixedPay], ['manager-starters-2026-11-22', managerStarters]];
 let running = null;
 /** Run any migration that has not run yet. Safe to call on every request (cached per instance). */
 let checkedAt = 0;
