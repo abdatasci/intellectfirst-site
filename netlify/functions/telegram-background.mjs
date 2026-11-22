@@ -285,6 +285,7 @@ export default async (req) => {
     await syncCommands(chatId, isStaff(me));
     if (isStaff(me) && await ensureStaffKb(chatId, me) && /^\/start\b|^\/help\b|^❓|^💳|^📎|^📝 Homework/i.test(text)) return new Response('ok');
     if (!isStaff(me) && links[uid] && await ensureStudentKb(chatId, lang) && /^\/start\b|^\/help\b|^❓/i.test(text)) return new Response('ok');
+    if (isStaff(me) && /^🧪 Send test|^\/sendtest\b/i.test(text)) { await startHomework(chatId, me, 'test'); return new Response('ok'); }   // the button was falling through to the AI chat
     if (isStaff(me) && /^📝 Send homework|^\/sendhw\b|^\/sethw\b/i.test(text)) { await startHomework(chatId, me); return new Response('ok'); }
     // Apps opened from the reply keyboard get no sign-in data from Telegram, so these buttons answer with buttons
     // under the message (which do), and the bot's Menu button (next to the text box) opens My account directly.
