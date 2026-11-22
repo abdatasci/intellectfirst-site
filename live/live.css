@@ -367,3 +367,17 @@ body.cyber .btn.ghost{border-color:rgba(0,255,156,.6);color:var(--neon);font-fam
 .drv .dbar i{display:block;height:100%;width:100%;background:#e8c36a}
 .drv canvas{flex:1;width:100%;min-height:300px;border-radius:18px;touch-action:none;border:1px solid rgba(232,195,106,.4)}
 .drv .dhint{text-align:center;font-size:13px;color:rgba(255,255,255,.65);font-weight:600}
+
+/* Treasure Hunt: an adventure at sunset (big screen and phones) */
+body.treasure{background:radial-gradient(ellipse at 50% -10%,#6a2f4a 0,#2a1736 40%,#0d0a18 100%) fixed;--tgold:#f2c96a;--wood:#3a2212}
+body.treasure .board h2,body.treasure .pw h2{font-family:"Cinzel Decorative","Cinzel",Georgia,serif;font-weight:900;color:var(--tgold);letter-spacing:.03em;text-shadow:0 2px 0 #5a3412,0 0 22px rgba(255,180,80,.35)}
+body.treasure .pill{background:linear-gradient(#4a2c16,#2a170b);border:1px solid #c9a24a;color:var(--tgold);font-family:"Cinzel",Georgia,serif}
+body.treasure .r3slot{border:3px solid #b8873a;border-radius:14px;box-shadow:0 0 0 6px var(--wood),0 0 0 8px #c9a24a,0 24px 70px rgba(0,0,0,.65)}
+body.treasure .feed{background:linear-gradient(175deg,#f6e7c4,#e4c78f 70%,#d4b074);border:2px solid #8a5a2a;border-radius:8px;box-shadow:inset 0 0 30px rgba(120,70,20,.35),0 14px 40px rgba(0,0,0,.5);color:#3a2414}
+body.treasure .feed h3{font-family:"Cinzel Decorative","Cinzel",Georgia,serif;color:#6a3a12;letter-spacing:.06em;text-transform:none;font-size:17px;border-bottom:1px solid rgba(106,58,18,.35);padding-bottom:6px}
+body.treasure .feed .fe{background:rgba(255,250,235,.45);color:#3a2414;border-left:4px solid #a8741a;box-shadow:none;font-weight:600}
+body.treasure .feed .mini{color:#6a4a2a!important}
+body.treasure .chest{background:radial-gradient(ellipse at 50% 85%,rgba(255,200,90,.28),transparent 60%),linear-gradient(170deg,#1e3550,#0d1b2c);box-shadow:inset 0 0 0 2px rgba(201,162,74,.65),0 8px 0 #050c18;color:var(--tgold)}
+body.treasure .chest .tchest{width:86%;height:auto;filter:drop-shadow(0 6px 10px rgba(0,0,0,.45))}
+body.treasure .chest.open{background:radial-gradient(ellipse at 50% 40%,#fff3b8,#f2c24a 55%,#b07a1c);color:#3a2010}
+body.treasure .chest .cl{font-family:"Cinzel",Georgia,serif}

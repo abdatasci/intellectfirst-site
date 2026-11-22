@@ -5,7 +5,7 @@
   var qsp = new URLSearchParams(location.search);
   var S = { pin: (qsp.get('pin') || '').replace(/\D/g, ''), name: '', pid: null, uid: null, bus: null, st: null, answered: {}, team: -1, race: null };
 
-  function show(h) { view.innerHTML = h; }
+  function show(h) { view.innerHTML = h; document.body.classList.toggle('treasure', !!(S.st && S.st.mode === 'gold')); }
   function flash(ok) { var f = $('#flash'); f.className = 'flash ' + (ok ? 'ok' : 'no'); clearTimeout(flash.t); flash.t = setTimeout(function () { f.className = 'flash'; }, 380); }
   function meChip() { var m = $('#me'), M = L.mode(S.st && S.st.mode); m.hidden = !S.name; m.innerHTML = esc(S.name) + (S.st && S.st.you && S.st.you[S.pid] ? ' · <span class="score-chip">' + (M.power ? L.fmtN(S.st.you[S.pid][0]) + ' ' + M.cur : S.st.you[S.pid][0]) + '</span>' : ''); }
   function toast(text, kind) {
@@ -311,8 +311,10 @@
     if (r < .9) { var pc = pick([.1, .25]); return { k: 'steal', v: pc, l: 'Take ' + pc * 100 + '%', ic: '🦝' }; }
     return { k: 'swap', l: 'Swap!', ic: '🔄' };
   }
+  // Treasure Hunt: a wooden chest with gold bands (drawn here, not an emoji)
+  var CHEST_SVG = '<svg class="tchest" viewBox="0 0 120 100" aria-hidden="true"><defs><linearGradient id="tw" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9a5a2a"/><stop offset="1" stop-color="#4a2810"/></linearGradient><linearGradient id="tl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b06c34"/><stop offset="1" stop-color="#6a3a18"/></linearGradient><linearGradient id="tg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe08a"/><stop offset="1" stop-color="#c98e24"/></linearGradient></defs><ellipse cx="60" cy="94" rx="50" ry="6" fill="rgba(0,0,0,.35)"/><path d="M10 44 Q60 2 110 44 Z" fill="url(#tl)"/><rect x="10" y="44" width="100" height="48" rx="5" fill="url(#tw)"/><rect x="10" y="56" width="100" height="7" fill="url(#tg)"/><rect x="24" y="22" width="9" height="70" fill="url(#tg)"/><rect x="87" y="22" width="9" height="70" fill="url(#tg)"/><rect x="50" y="50" width="20" height="22" rx="3" fill="url(#tg)"/><circle cx="60" cy="61" r="3.5" fill="#3a2010"/><rect x="58.5" y="61" width="3" height="7" fill="#3a2010"/></svg>';
   function chests(m) {
-    var opts = [outcome(m), outcome(m), outcome(m)], icon = m === 'hack' ? '🗄️' : '🎁';
+    var opts = [outcome(m), outcome(m), outcome(m)], icon = m === 'hack' ? '🗄️' : CHEST_SVG;
     show('<div class="pw"><h2>' + (m === 'hack' ? 'Pick a server' : 'Choose a chest!') + '</h2><div class="chests">' + opts.map(function (o, i) { return '<button class="chest" data-i="' + i + '"><span class="ci">' + icon + '</span><span class="cl"></span></button>'; }).join('') + '</div><p class="mini" style="color:rgba(255,255,255,.6)">' + L.fmtN(myScore()) + ' ' + L.mode(m).cur + ' now</p></div>');
     view.querySelectorAll('.chest').forEach(function (b) {
       b.onclick = function () {
