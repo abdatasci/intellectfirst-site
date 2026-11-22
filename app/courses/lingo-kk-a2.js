@@ -1,10 +1,10 @@
 /* IF Lingo · Kazakh A2: an original IF Academy course for people who speak English and have finished Kazakh A1.
    Word lines: word | part of speech | meaning in English | example | (empty) | how to say it | the example in English.
-   Plan: 20 units and a level test (project doc claude/if-lingo.md). Built so far: units 1 to 6. */
+   Plan: 20 units and a level test (project doc claude/if-lingo.md). Built so far: units 1 to 13. */
 IFX.course({
   id: 'kk-a2', track: 'lang', lang: 'kk-KZ', level: 'A2', next: 'B1', icon: '🇰🇿',
   title: 'Kazakh A2', sub: 'Everyday Kazakh',
-  blurb: 'Say where you are from, describe your city and people, order in a restaurant and shop at the market. The first 6 of 20 units, explained in English.',
+  blurb: 'Say where you are from, describe your city and people, order in a restaurant, ask the way, see a doctor and make plans with friends. The first 13 of 20 units, explained in English.',
   units: []
 });
 (function () {
@@ -122,6 +122,139 @@ IFX.course({
         k.mc('mother’s bag = ананың …', ['сөмкесі', 'сөмке', 'сөмкем'], 0),
         k.ord('Бұл Айгүлдің кітабы')]],
       r: ['A family photo', 'Бұл менің отбасымның суреті.\n\nБұл менің әкем. Ол ұзын бойлы, оның сақалы бар. Ол өте мейірімді.\n\nБұл менің анам. Ол аласа бойлы және көңілді. Ал бұл анамның сіңлісі, менің тәтем. Ол ақылды.\n\nБұл менің атам. Ол қарт адам. Атамның көлігі өте ескі!\n\n(сіңлісі = her younger sister)', [
-        k.mc('Who has a beard?', ['the father', 'the grandfather', 'the brother'], 0), k.tf('The aunt is the mother’s sister.', true), k.mc('What is very old?', ['the grandfather’s car', 'the photo', 'the house'], 0)]] }
+        k.mc('Who has a beard?', ['the father', 'the grandfather', 'the brother'], 0), k.tf('The aunt is the mother’s sister.', true), k.mc('What is very old?', ['the grandfather’s car', 'the photo', 'the house'], 0)]] },
+
+    { id: 'u7', t: 'Сіз … болғансыз ба? Have you ever…?', topic: 'Experiences',
+      v: ['Trips and experiences', `
+сапар | noun | trip | Бұл қызықты сапар болды. | | sa-PAR | It was an interesting trip.
+әсер | noun | impression | Қала маған жақсы әсер етті. | | a-SER | The city made a good impression on me.
+бір рет | phrase | once | Мен Алматыда бір рет болғанмын. | | bir ret | I have been to Almaty once.
+бала кезімде | phrase | in my childhood | Бала кезімде мен ауылда тұрдым. | | ba-LA ke-zim-DE | In my childhood I lived in a village.
+жаттау | verb | to learn by heart | Мен он сөз жаттадым. | | zhat-TAU | I learned ten words by heart.
+бітіру | verb | to finish | Мен жұмысты бітірдім. | | bi-ti-ROO | I finished the work.
+тамаша | adjective | wonderful | Бұл тамаша қала. | | ta-ma-SHA | This is a wonderful city.
+ұлттық тағам | noun | national dish | Бешбармақ — ұлттық тағам. | | oolt-TYQ ta-GHAM | Beshbarmak is a national dish.`],
+      g: ['I have been, I have seen: -ған, -ген, -қан, -кен', '<p>For something you have done <b>at some time in your life</b>, add an ending to the verb, then the person ending.</p><table><tr><th>The verb stem</th><th>Ending</th><th>Examples</th></tr><tr><td>hard, ends in a vowel or a voiced sound</td><td><b>-ған</b></td><td>бол → бол<b>ған</b>, бар → бар<b>ған</b>, оқы → оқы<b>ған</b></td></tr><tr><td>soft, ends in a vowel or a voiced sound</td><td><b>-ген</b></td><td>көр → көр<b>ген</b>, же → же<b>ген</b></td></tr><tr><td>ends in к, қ, п, с, т, ш</td><td><b>-қан, -кен</b></td><td>айт → айт<b>қан</b>, іш → іш<b>кен</b></td></tr></table><ul><li>Мен Алматыда болған<b>мын</b>. = I have been to Almaty.</li><li>Сіз бешбармақ жеген<b>сіз</b> бе? = Have you eaten beshbarmak?</li><li>Ол бұл фильмді көрген. = He has seen this film.</li><li>Not: Мен Алматыда болған <b>емеспін</b>. = I have not been to Almaty.</li></ul>', [
+        k.mc('Мен Алматыда бол___мын.', ['ған', 'ген', 'кен'], 0),
+        k.mc('Сіз бешбармақ же___сіз бе?', ['ген', 'ған', 'қан'], 0),
+        k.mc('Ол бұл фильмді көр___.', ['ген', 'ған', 'қан'], 0),
+        k.mc('Мен қымыз іш___мін.', ['кен', 'ген', 'ған'], 0),
+        k.ord('Мен Алматыда болғанмын')]],
+      r: ['A trip to Almaty', 'Былтыр мен Алматыға бардым. Бұл тамаша сапар болды. Мен бұрын Алматыда болған емеспін.\n\nМен тауды көрдім және ұлттық тағам — бешбармақ жедім. Өте дәмді!\n\nМен бірнеше қазақ сөзін жаттадым. Қала маған жақсы әсер етті.\n\nАл сіз Алматыда болғансыз ба?', [
+        k.mc('Where did the writer go?', ['Almaty', 'Astana', 'Moscow'], 0), k.tf('The writer had been to Almaty before.', false), k.mc('What did the writer eat?', ['beshbarmak', 'fish', 'cake'], 0)]] },
+
+    { id: 'u8', t: 'Қалай баруға болады? Asking the way', topic: 'Directions',
+      v: ['Finding your way', `
+қиылыс | noun | crossroads | Қиылысқа дейін барыңыз. | | qi-y-LYS | Go as far as the crossroads.
+бағдаршам | noun | traffic light | Бағдаршамнан бұрылыңыз. | | bagh-dar-SHAM | Turn at the traffic light.
+бұрылу | verb | to turn | Оңға бұрылу керек. | | boo-ry-LOO | You need to turn right.
+өту | verb | to cross, to go past | Көшеден өтіңіз. | | o-TOO | Cross the street.
+өткел | noun | crossing | Міне, өткел. | | ot-KEL | Here is the crossing.
+адасу | verb | to get lost | Мен адасып қалдым. | | a-da-SOO | I am lost.
+көрсету | verb | to show | Картадан көрсетіңізші. | | kor-se-TOO | Please show me on the map.
+артында | postposition | behind | Музей банктің артында. | | ar-tyn-DA | The museum is behind the bank.`],
+      g: ['Telling someone the way: -ыңыз, -іңіз, -ңыз, -ңіз', '<p>To tell someone politely what to do, add an ending to the verb stem.</p><table><tr><th>The verb stem ends in…</th><th>Ending</th><th>Examples</th></tr><tr><td>a consonant, hard word</td><td><b>-ыңыз</b></td><td>бар → бар<b>ыңыз</b> (go), бұрыл → бұрыл<b>ыңыз</b> (turn)</td></tr><tr><td>a consonant, soft word</td><td><b>-іңіз</b></td><td>өт → өт<b>іңіз</b> (cross), көрсет → көрсет<b>іңіз</b> (show)</td></tr><tr><td>a vowel</td><td><b>-ңыз, -ңіз</b></td><td>қара → қара<b>ңыз</b> (look), сөйле → сөйле<b>ңіз</b> (speak)</td></tr></table><p>Add <b>-шы, -ші</b> to make it softer, like “please”: айтыңыз<b>шы</b>, көрсетіңіз<b>ші</b>.</p><p>The useful question: <b>Музейге қалай баруға болады?</b> = How can I get to the museum? Useful words: <b>оңға</b> (to the right), <b>солға</b> (to the left).</p>', [
+        k.mc('Тура бар___.', ['ыңыз', 'іңіз', 'ңыз'], 0),
+        k.mc('Көшеден өт___.', ['іңіз', 'ыңыз', 'ңіз'], 0),
+        k.mc('Мына жерге қара___.', ['ңыз', 'ыңыз', 'іңіз'], 0),
+        k.mc('“Please show me.” = …', ['Көрсетіңізші.', 'Көрсеттіңіз.', 'Көрсетемін.'], 0),
+        k.ord('Бағдаршамға дейін тура барыңыз')]],
+      r: ['Lost in the city', '— Кешіріңіз, мен адасып қалдым. Музейге қалай баруға болады?\n\n— Бағдаршамға дейін тура барыңыз. Содан кейін солға бұрылыңыз. Өткелден өтіңіз. Музей банктің артында.\n\n— Алыс па?\n\n— Жоқ, жақын. Жаяу бес минут.\n\n— Картадан көрсетіңізші.\n\n— Міне, қараңыз.\n\n— Көп рақмет!', [
+        k.mc('Where does the tourist want to go?', ['to the museum', 'to the bank', 'to the park'], 0), k.tf('The museum is far away.', false), k.mc('Where is the museum?', ['behind the bank', 'opposite the park', 'at the crossroads'], 0)]] },
+
+    { id: 'u9', t: 'Дәрігерде. At the doctor’s', topic: 'Health',
+      v: ['Feeling ill', `
+суық тию | verb | to catch a cold | Маған суық тиді. | | soo-YQ ti-YOO | I have caught a cold.
+жөтел | noun | cough | Менде жөтел бар. | | zho-TEL | I have a cough.
+тұмау | noun | a cold, runny nose | Балада тұмау бар. | | too-MAU | The child has a cold.
+рецепт | noun | prescription | Міне, сіздің рецептіңіз. | | re-TSEPT | Here is your prescription.
+таблетка | noun | tablet | Таңертең бір таблетка ішіңіз. | | tab-LET-ka | Take one tablet in the morning.
+сезіну | verb | to feel | Өзіңізді қалай сезінесіз? | | se-zi-NOO | How do you feel?
+кеңес | noun | advice | Кеңесіңізге рақмет. | | ke-NGES | Thank you for your advice.
+болмайды | word | must not, not allowed | Мұнда темекі шегуге болмайды. | | bol-may-DY | You must not smoke here.`],
+      g: ['Advice: керек, болады, болмайды', '<p>The person takes the “to” ending: <b>маған</b> (to me), <b>сізге</b> (to you), <b>оған</b> (to him, to her).</p><table><tr><th>Meaning</th><th>Pattern</th><th>Example</th></tr><tr><td>need to</td><td>verb with <b>-у</b> + <b>керек</b></td><td>Сізге демал<b>у керек</b>. = You need to rest.</td></tr><tr><td>may, can</td><td>verb with <b>-уға, -уге</b> + <b>болады</b></td><td>Мұнда отыр<b>уға болады</b>. = You may sit here.</td></tr><tr><td>must not</td><td>verb with <b>-уға, -уге</b> + <b>болмайды</b></td><td>Сізге жұмыс істе<b>уге болмайды</b>. = You must not work.</td></tr></table><p>The verb with <b>-у</b> is the form you find in the dictionary: демалу, ішу, ұйықтау.</p>', [
+        k.mc('___ демалу керек. (you, polite)', ['Сізге', 'Сіз', 'Сіздің'], 0),
+        k.mc('Маған дәрі ішу ___.', ['керек', 'бар', 'жоқ'], 0),
+        k.mc('Сізге жұмыс істеуге ___. (must not)', ['болмайды', 'болады', 'керек'], 0),
+        k.mc('“I need to sleep.” = …', ['Маған ұйықтау керек.', 'Мен ұйықтау керек.', 'Маған ұйықтауға болмайды.'], 0),
+        k.ord('Сізге көп су ішу керек')]],
+      r: ['A visit to the doctor', '— Сәлеметсіз бе. Өзіңізді қалай сезінесіз?\n\n— Жаман. Менде жөтел мен тұмау бар. Басым ауырады.\n\n— Температура бар ма?\n\n— Иә, отыз сегіз.\n\n— Сізге суық тиген. Сізге демалу және көп шай ішу керек. Үш күн жұмыс істеуге болмайды. Міне, рецепт: таңертең және кешке бір таблетка.\n\n— Кеңесіңізге рақмет!', [
+        k.mc('What is wrong with the patient?', ['a cough and a cold', 'a bad leg', 'a toothache'], 0), k.tf('The patient can go to work tomorrow.', false), k.mc('When should the patient take a tablet?', ['in the morning and in the evening', 'only at night', 'every hour'], 0)]] },
+
+    { id: 'u10', t: 'Жұмыс және оқу. Work and study', topic: 'Work',
+      v: ['At work', `
+әріптес | noun | colleague | Бұл менің әріптесім. | | a-rip-TES | This is my colleague.
+бастық | noun | boss | Менің бастығым кеңседе. | | bas-TYQ | My boss is in the office.
+тәжірибе | noun | experience | Менің тәжірибем бар. | | ta-zhi-ri-BE | I have experience.
+жалақы | noun | salary | Жалақы жақсы. | | zha-la-QY | The salary is good.
+компания | noun | company | Бұл үлкен компания. | | kom-PA-ni-ya | This is a big company.
+қызметкер | noun | employee | Ол жаңа қызметкер. | | qyz-met-KER | He is a new employee.
+түйіндеме | noun | CV | Түйіндемеңізді жіберіңіз. | | tu-yin-de-ME | Send your CV.
+сұхбат | noun | interview | Ертең менде сұхбат бар. | | sookh-BAT | I have an interview tomorrow.`],
+      g: ['Work as… and want to become…', '<p><b>болып</b> (from <b>болу</b>, to be) + <b>жұмыс істеу</b> = to work as.</p><ul><li>Мен инженер <b>болып</b> жұмыс істеймін. = I work as an engineer.</li><li>Ол мұғалім <b>болып</b> жұмыс істейді. = She works as a teacher.</li></ul><p>To say what someone <b>wants to become</b>, use the pattern from Unit 4 with <b>болу</b>:</p><table><tr><th>Who</th><th>Pattern</th><th>Example</th></tr><tr><td>менің</td><td>бол<b>ғым</b> келеді</td><td>Менің дәрігер болғым келеді.</td></tr><tr><td>сіздің</td><td>бол<b>ғыңыз</b> келеді</td><td>Сіздің кім болғыңыз келеді?</td></tr><tr><td>оның</td><td>бол<b>ғысы</b> келеді</td><td>Оның инженер болғысы келеді.</td></tr></table>', [
+        k.mc('Мен мұғалім ___ жұмыс істеймін.', ['болып', 'болды', 'болу'], 0),
+        k.mc('Менің инженер ___ келеді.', ['болғым', 'болғысы', 'болып'], 0),
+        k.mc('Оның дәрігер ___ келеді.', ['болғысы', 'болғым', 'болып'], 0),
+        k.mc('“I work as a doctor.” = …', ['Мен дәрігер болып жұмыс істеймін.', 'Мен дәрігер жұмыс істеймін.', 'Менің дәрігер болғым келеді.'], 0),
+        k.ord('Мен инженер болып жұмыс істеймін')]],
+      r: ['Marat and his sister', 'Менің атым Марат. Мен үлкен компанияда инженер болып жұмыс істеймін.\n\nМенің бастығым жақсы, әріптестерім көңілді. Дүйсенбіде бізде жиналыс болады. Мен бос емеспін: сағат тоғыздан алтыға дейін жұмыс істеймін.\n\nМенің қарындасым университетте оқиды. Оның дәрігер болғысы келеді. Оның тәжірибесі әлі жоқ, бірақ ол көп оқиды.\n\n(әлі = yet · бірақ = but)', [
+        k.mc('What is Marat’s job?', ['engineer', 'doctor', 'teacher'], 0), k.tf('There is a meeting on Monday.', true), k.mc('What does his sister want to become?', ['a doctor', 'an engineer', 'a boss'], 0)]] },
+
+    { id: 'u11', t: 'Барайық! Invitations', topic: 'Free time',
+      v: ['Inviting and answering', `
+шақырту | noun | invitation | Шақыртуыңызға рақмет! | | sha-qyr-TOO | Thank you for your invitation!
+көрме | noun | exhibition | Музейде жаңа көрме бар. | | kor-ME | There is a new exhibition at the museum.
+той | noun | celebration, party | Сенбіде бізде той болады. | | toy | We have a celebration on Saturday.
+келісу | verb | to agree | Мен келісемін. | | ke-li-SOO | I agree.
+өкінішке орай | phrase | unfortunately | Өкінішке орай, мен бос емеспін. | | o-ki-nish-KE o-RAY | Unfortunately, I am busy.
+қуана-қуана | adverb | with pleasure | Қуана-қуана барамын! | | qoo-a-NA qoo-a-NA | I will go with pleasure!
+бос | adjective | free (not busy) | Сіз сенбіде боссыз ба? | | bos | Are you free on Saturday?
+ұсыныс | noun | suggestion | Бұл жақсы ұсыныс. | | oo-sy-NYS | This is a good suggestion.`],
+      g: ['Let’s… and I can', '<p><b>Let’s…</b> Add an ending to the verb stem.</p><table><tr><th>The verb stem</th><th>Ending</th><th>Examples</th></tr><tr><td>a consonant, hard word</td><td><b>-айық</b></td><td>бар → бар<b>айық</b> (let’s go)</td></tr><tr><td>a consonant, soft word</td><td><b>-ейік</b></td><td>кездес → кездес<b>ейік</b> (let’s meet), көр → көр<b>ейік</b></td></tr><tr><td>a vowel</td><td><b>-йық, -йік</b></td><td>ойна → ойна<b>йық</b> (let’s play), сөйле → сөйле<b>йік</b></td></tr></table><p><b>Can:</b> the verb with <b>-а, -е, -й</b> + <b>алу</b> with the person ending.</p><ul><li>Мен бар<b>а аламын</b>. = I can go.</li><li>Мен бар<b>а алмаймын</b>. = I cannot go.</li><li>Сіз кел<b>е аласыз</b> ба? = Can you come?</li></ul>', [
+        k.mc('Киноға бар___!', ['айық', 'ейік', 'йық'], 0),
+        k.mc('Сағат жетіде кездес___.', ['ейік', 'айық', 'йік'], 0),
+        k.mc('Футбол ойна___!', ['йық', 'айық', 'ейік'], 0),
+        k.mc('“I cannot go.” = …', ['Мен бара алмаймын.', 'Мен бара аламын.', 'Мен барайық.'], 0),
+        k.ord('Сенбіде көрмеге барайық')]],
+      r: ['Plans for Saturday', '— Сәлем, Айгүл! Сен сенбіде боссың ба?\n\n— Иә, боспын.\n\n— Көрмеге барайық!\n\n— Қуана-қуана! Сағат нешеде?\n\n— Сағат үште. Содан кейін Маратта той болады. Барасың ба?\n\n— Шақыртуыңа рақмет, бірақ, өкінішке орай, кешке бара алмаймын. Мен бос емеспін.\n\n— Өкінішті. Онда сағат үште музейдің жанында кездесейік.\n\n— Келісемін!\n\n(өкінішті = that is a pity · онда = then)', [
+        k.mc('Where are they going on Saturday at three?', ['to an exhibition', 'to the cinema', 'to a celebration'], 0), k.tf('Aigul is going to Marat’s celebration.', false), k.mc('Where will they meet?', ['near the museum', 'at Marat’s home', 'at the café'], 0)]] },
+
+    { id: 'u12', t: 'Ең суық ай. Weather and comparing', topic: 'Weather',
+      v: ['The forecast', `
+болжам | noun | forecast | Ертеңгі болжам қандай? | | bol-ZHAM | What is the forecast for tomorrow?
+найзағай | noun | thunderstorm, lightning | Жазда найзағай жиі болады. | | nay-za-GHAY | In summer there is often a thunderstorm.
+аяз | noun | frost | Бүгін аяз. | | a-YAZ | There is a frost today.
+қатты | adjective | strong, hard | Бүгін қатты жел. | | qat-TY | There is a strong wind today.
+шуақты | adjective | sunny | Бүгін күн шуақты. | | shoo-aq-TY | It is sunny today.
+бұлтты | adjective | cloudy | Бүгін күн бұлтты. | | boolt-TY | It is cloudy today.
+ең | word | the most | Бұл ең үлкен қала. | | eng | This is the biggest city.
+қарағанда | word | compared with, than | Алматы Қостанайға қарағанда жылырақ. | | qa-ra-ghan-DA | Almaty is warmer than Kostanay.`],
+      g: ['The coldest, and compared with', '<p><b>ең</b> + adjective = the most. The adjective does not change.</p><ul><li><b>ең</b> үлкен = the biggest</li><li><b>ең</b> суық = the coldest</li><li>Қаңтар — <b>ең</b> суық ай. = January is the coldest month.</li></ul><p>In Unit 2 you compared with <b>-дан</b>. A second way: the “to” ending (<b>-ға, -ге, -қа, -ке</b>) + <b>қарағанда</b>.</p><ul><li>Алматы Қостанай<b>ға қарағанда</b> жылырақ. = Almaty is warmer than Kostanay.</li><li>Бүгін кеше<b>ге қарағанда</b> суығырақ. = Today is colder than yesterday.</li></ul><p>Look: <b>суық</b> → <b>суығырақ</b>. Before the ending, <b>қ</b> becomes <b>ғ</b>.</p><p>For tomorrow’s weather use <b>болады</b> (will be): Ертең суық <b>болады</b>.</p>', [
+        k.mc('Қаңтар — ___ суық ай.', ['ең', 'өте', 'көп'], 0),
+        k.mc('Алматы Қостанай___ қарағанда жылырақ.', ['ға', 'да', 'дан'], 0),
+        k.mc('Ертең суық ___.', ['болады', 'болды', 'бар'], 0),
+        k.tf('“ең үлкен” means “the biggest”.', true),
+        k.ord('Қаңтар ең суық ай')]],
+      r: ['The weather forecast', 'Ауа райы болжамы.\n\nБүгін Қостанайда күн бұлтты, он бес градус суық. Ертең суығырақ болады: жиырма бес градус суық және қатты жел. Бұл қатты аяз!\n\nАлматы Қостанайға қарағанда жылырақ: екі градус жылы, күн шуақты.\n\nҚаңтар — Қазақстандағы ең суық ай. Жазда жақсырақ: жылы, кейде найзағай болады.', [
+        k.mc('What will the temperature be in Kostanay tomorrow?', ['minus 25', 'minus 15', 'plus 2'], 0), k.tf('Almaty is warmer than Kostanay.', true), k.mc('Which is the coldest month?', ['January', 'July', 'March'], 0)]] },
+
+    { id: 'u13', t: 'Үй шаруасы. Jobs at home', topic: 'Home',
+      v: ['Cleaning day', `
+ыдыс | noun | dishes | Мен ыдыс жуамын. | | y-DYS | I wash the dishes.
+жуу | verb | to wash | Ол көлік жуып жатыр. | | zhoo-OO | He is washing the car.
+кір жуу | verb | to wash clothes | Анам кір жуып жатыр. | | kir zhoo-OO | Mum is washing the clothes.
+шаңсорғыш | noun | vacuum cleaner | Шаңсорғыш қайда? | | shang-sor-GHYSH | Where is the vacuum cleaner?
+қоқыс | noun | rubbish | Қоқысты шығарыңызшы. | | qo-QYS | Please take out the rubbish.
+үтіктеу | verb | to iron | Мен көйлек үтіктеймін. | | u-tik-TEU | I iron a shirt.
+тәртіп | noun | order, tidiness | Бөлмеде тәртіп. | | tar-TIP | The room is tidy.
+көмектесу | verb | to help | Мен анама көмектесемін. | | ko-mek-te-SOO | I help my mother.`],
+      g: ['First this, then that: joining actions with -п', '<p>In Unit 3 you used the <b>-п</b> form with жатыр. The same form joins two actions done by one person: <i>do this, and then that</i>. Only the last verb takes the person ending.</p><table><tr><th>Two sentences</th><th>One sentence</th></tr><tr><td>Мен ыдыс жуамын. Мен демаламын.</td><td>Мен ыдыс жу<b>ып</b>, демаламын.</td></tr><tr><td>Ол бөлмені жинайды. Ол кетеді.</td><td>Ол бөлмені жина<b>п</b>, кетеді.</td></tr><tr><td>Біз шай ішеміз. Біз жұмысқа барамыз.</td><td>Біз шай іш<b>іп</b>, жұмысқа барамыз.</td></tr></table><p>Remember: <b>-п</b> after a vowel, <b>-ып</b> in hard words, <b>-іп</b> in soft words.</p>', [
+        k.mc('Мен ыдыс жу___, қоқыс шығарамын.', ['ып', 'іп', 'п'], 0),
+        k.mc('Ол бөлмені жина___, демалады.', ['п', 'ып', 'іп'], 0),
+        k.mc('Біз шай іш___, жұмысқа барамыз.', ['іп', 'ып', 'п'], 0),
+        k.tf('In “Мен ыдыс жуып, демаламын” only the last verb has the person ending.', true),
+        k.ord('Мен ыдыс жуып демаламын')]],
+      r: ['Saturday is cleaning day', 'Сенбі — үй жинайтын күн. Біздің отбасымызда бәрі көмектеседі.\n\nАнам: «Кім не істейді?»\n\nӘкем: «Мен ыдыс жуып, қоқыс шығарамын».\n\nМен: «Мен бөлмемді жинаймын. Шаңсорғыш қайда?»\n\nӘпкем: «Мен кір жуып, содан кейін үтіктеймін».\n\nЕкі сағаттан кейін пәтерде тәртіп. Енді демалуға болады!\n\n(үй жинайтын күн = the day for cleaning the house · бәрі = everyone · енді = now)', [
+        k.mc('Who will wash the dishes?', ['the father', 'the mother', 'the sister'], 0), k.tf('The sister asks for the vacuum cleaner.', false), k.mc('Which day is cleaning day?', ['Saturday', 'Sunday', 'Friday'], 0)]] }
   ]);
 })();
