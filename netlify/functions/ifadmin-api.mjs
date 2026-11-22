@@ -257,6 +257,8 @@ export default async (req) => {
     // class tasks still open: send them to students who connected to the bot after the task was sent ({classId?})
     if (path === 'ctask/status' && method === 'GET') { const { taskStatus } = await import('../lib/classtask.mjs'); return json(await taskStatus()); }
     if (path === 'ctask/sendlate' && method === 'POST') { const b = await req.json().catch(() => ({})), { sendLate } = await import('../lib/classtask.mjs'); return json({ ok: true, sent: await sendLate(String(b.classId || ''), !!b.force) }); }
+    const pm = path.match(/^payroll\/(\d{4}-\d{2})\/(t-[\w-]+)$/);   // one teacher's month (totals and deductions) — sync key only
+    if (pm && method === 'GET') { const { payroll } = await import('../lib/payroll.mjs'), P = await payroll(pm[1], pm[2]), T = (P.teachers || []).find(x => x.teacherId === pm[2]) || {}; return json({ total: T.total, hours: T.hours, lessons: T.lessons, late: T.late, rule: T.rule, deduct: (T.items || []).filter(x => x.kind === 'deduct') }); }
     if (path === 'studentkb' && method === 'POST') { const b = await req.json().catch(() => ({})), { pushStudentKb } = await import('../lib/classtask.mjs'); return json({ ok: true, sent: await pushStudentKb(b.classId || null) }); }
     if (path === 'ctask/catchup' && method === 'POST') {
       const b = await req.json().catch(() => ({})), { catchUp } = await import('../lib/classtask.mjs');

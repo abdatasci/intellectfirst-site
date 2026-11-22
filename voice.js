@@ -42,9 +42,17 @@
   try { player.setAttribute('playsinline', ''); } catch (e) {}
   var fire = function (u, type) { try { u.dispatchEvent(new Event(type)); } catch (e) { try { var f = u['on' + type]; if (f) f.call(u, { type: type }); } catch (e2) {} } };
   var english = function (u) { var l = (u.lang || document.documentElement.lang || 'en').toLowerCase(); return /^en/.test(l) && !/[Ѐ-ӿ؀-ۿ一-鿿]/.test(u.text || ''); };
-  var real = function (u) { var t = String(u && u.text || '').trim(); return !off && t && t.length <= 3000 && english(u) && Date.now() - failedAt > 60000; };
+  /* IF Lingo (Russian and Kazakh courses): on that app, Russian and Kazakh text gets a real voice too.
+     lingoLang gives 'ru' or 'kk' for such text, '' for everything else (other pages keep the browser voice for Cyrillic). */
+  var lingoLang = function (text, hint) {
+    if (window.IFX_APP !== 'lang' || !/[\u0400-\u04FF]/.test(text || '')) return '';
+    if (/[әғқңөұүһіӘҒҚҢӨҰҮҺІ]/.test(text)) return 'kk';
+    var h = String(hint || '').toLowerCase(); if (/^kk/.test(h)) return 'kk'; if (/^ru/.test(h)) return 'ru';
+    return /#\/(lesson|course|words|set)\/kk-/.test(location.hash) ? 'kk' : 'ru';
+  };
+  var real = function (u) { var t = String(u && u.text || '').trim(); return !off && t && t.length <= 3000 && (english(u) || !!lingoLang(t, u.lang)) && Date.now() - failedAt > 60000; };
 
-  var srcOf = function (text, g) { return '/api/voice?v=' + (kid() ? 'k' : 'a') + (g === 'male' ? 'm' : 'f') + '&t=' + encodeURIComponent(String(text).replace(/\s+/g, ' ').trim()); };
+  var srcOf = function (text, g, hint) { var lg = lingoLang(text, hint); return '/api/voice?v=' + (kid() && !lg ? 'k' : 'a') + (g === 'male' ? 'm' : 'f') + (lg ? '&l=' + lg : '') + '&t=' + encodeURIComponent(String(text).replace(/\s+/g, ' ').trim()); };
   var gOf = function (u) { return u.ifVoice === 'female' || u.ifVoice === 'male' ? u.ifVoice : pref(); };
   // Every line is downloaded whole before it is played and kept for this visit, and the next line is fetched while the
   // current one is speaking. So there is no wait between the lines of a dialogue or the sentences of a text.
@@ -72,12 +80,12 @@
     if (!real(u)) { native.speak(u); return next(); }
     current = u;
     var r = +u.rate || 1;
-    load(srcOf(u.text, gOf(u))).then(function (url) {
+    load(srcOf(u.text, gOf(u), u.lang)).then(function (url) {
       if (current !== u) return;
       player.src = url; player.playbackRate = u.ifRate ? Math.max(.6, Math.min(2.2, +u.ifRate)) : r < 0.8 ? 0.85 : r > 1.3 ? 1.2 : 1;   // ifRate: an exact speed (the fast-speech game)
       try { player.preservesPitch = true; } catch (e) {}
       var p = player.play(); if (p && p.catch) p.catch(function (e) { if (current === u && e && e.name !== 'AbortError') fail(u, {}); });
-      var n = queue[0]; if (n && real(n)) load(srcOf(n.text, gOf(n))).catch(function () {});   // the next line, ready before it is needed
+      var n = queue[0]; if (n && real(n)) load(srcOf(n.text, gOf(n), n.lang)).catch(function () {});   // the next line, ready before it is needed
     }, function (e) { if (current === u) fail(u, e || {}); });
   }
   // A line could not be fetched (after one retry) or played. No key or the daily limit reached: the browser voice for the

@@ -12,7 +12,7 @@
     /** Add more units to a course (full courses are written in parts). */
     ruNotes: function (cid, map) { var c = BY[cid]; if (c) c.units.forEach(function (u) { if (map[u.id]) u.lessons.forEach(function (l) { if (l.type === 'grammar') l.ru = map[u.id]; }); }); },
     /* The word bank: more words for a unit's Vocabulary set (not for its lesson). "word | part of speech | meaning | example | Russian" */
-    moreWords: function (cid, map) { var c = BY[cid]; if (c) c.units.forEach(function (u) { if (map[u.id]) u.xw = (u.xw || []).concat(String(map[u.id]).trim().split('\n').map(function (l) { var p = l.split('|').map(function (x) { return x.trim(); }); return { w: p[0], p: p[1], d: p[2], e: p[3], ru: p[4] || '' }; }).filter(function (w) { return w.w && w.d; })); }); },
+    moreWords: function (cid, map) { var c = BY[cid]; if (c) c.units.forEach(function (u) { if (map[u.id]) u.xw = (u.xw || []).concat(String(map[u.id]).trim().split('\n').map(function (l) { var p = l.split('|').map(function (x) { return x.trim(); }); var w = { w: p[0], p: p[1], d: p[2], e: p[3], ru: p[4] || '' }; if (p[5]) w.c = p[5]; if (p[6]) w.ce = p[6]; return w; }).filter(function (w) { return w.w && w.d; })); }); },   // 6th and 7th fields (IF Lingo): how to say it, the example in English
     /* Put a course's units in a set order (ids not listed stay at the end, in their old order). Progress is kept: it is stored by unit id. */
     order: function (cid, ids) { var c = BY[cid]; if (c) c.units.sort(function (a, b) { var i = ids.indexOf(a.id), j = ids.indexOf(b.id); return (i < 0 ? 999 : i) - (j < 0 ? 999 : j); }); },
     units: function (cid, list) { var c = BY[cid]; if (c) list.forEach(function (u) { if (!c.units.some(function (x) { return x.id === u.id; })) c.units.push(u); }); },
@@ -206,14 +206,22 @@
     try { speechSynthesis.cancel(); } catch (e) {}
     lines.forEach(function (x, i) {
       try {
-        var u = new SpeechSynthesisUtterance(x.t); u.lang = 'en-GB'; u.rate = .95; u.ifVoice = x.g === 'm' ? 'male' : 'female';
+        var u = new SpeechSynthesisUtterance(x.t); u.lang = langOf(x.t); u.rate = .95; u.ifVoice = x.g === 'm' ? 'male' : 'female';
         u.onstart = function () { onLine && onLine(x); };
         if (i === lines.length - 1) u.onend = function () { onLine && onLine(null); onDone && onDone(); };
         speechSynthesis.speak(u);
       } catch (e) {}
     });
   }
-  function say(text) { try { var u = new SpeechSynthesisUtterance(text); u.lang = 'en-GB'; u.rate = .92; var v = speechSynthesis.getVoices().filter(function (x) { return /^en-(GB|US)/.test(x.lang); }); if (v.length) u.voice = v.find(function (x) { return /Google|Natural|Daniel|Samantha/.test(x.name); }) || v[0]; speechSynthesis.cancel(); speechSynthesis.speak(u); } catch (e) {} }
+  /* IF Lingo (Russian and Kazakh courses): the voice follows the language of the text. English stays en-GB; Cyrillic text
+     is read in the language of the open course (course.lang), or in Kazakh when it has Kazakh-only letters, else Russian. */
+  function langOf(text) {
+    if (!/[\u0400-\u04FF]/.test(text || '')) return 'en-GB';
+    if (/[әғқңөұүһіӘҒҚҢӨҰҮҺІ]/.test(text)) return 'kk-KZ';
+    var m = /^#\/(?:lesson|course|words|set)\/([^/]+)/.exec(location.hash), c = m && BY[m[1]];
+    return (c && c.lang) || 'ru-RU';
+  }
+  function say(text) { try { var u = new SpeechSynthesisUtterance(text), lg = langOf(text); u.lang = lg; u.rate = lg === 'en-GB' ? .92 : .85; var v = speechSynthesis.getVoices().filter(function (x) { return lg === 'en-GB' ? /^en-(GB|US)/.test(x.lang) : x.lang.replace('_', '-').toLowerCase().indexOf(lg.slice(0, 2)) === 0; }); if (v.length) u.voice = v.find(function (x) { return /Google|Natural|Daniel|Samantha/.test(x.name); }) || v[0]; speechSynthesis.cancel(); speechSynthesis.speak(u); } catch (e) {} }
   var AC; function beep(ok) { try { AC = AC || new (window.AudioContext || window.webkitAudioContext)(); var o = AC.createOscillator(), g = AC.createGain(); o.connect(g); g.connect(AC.destination); var n = AC.currentTime; if (ok) { o.frequency.setValueAtTime(660, n); o.frequency.setValueAtTime(880, n + .09); } else { o.type = 'square'; o.frequency.setValueAtTime(220, n); o.frequency.setValueAtTime(180, n + .1); } g.gain.setValueAtTime(.08, n); g.gain.exponentialRampToValueAtTime(.001, n + .28); o.start(n); o.stop(n + .3); } catch (e) {} }
   function photo(id, alt) {
     if (!id) return '';
@@ -246,12 +254,14 @@
   var APPS = {
     ge: { name: 'IF General English', icon: '🌍', path: '/app/general/', track: 'general', d: 'Two tracks for every level: AI-Generated General English and English Files', nav: [['home', '🏠'], ['courses', '📘'], ['vocab', '🔤'], ['grammar', '🧠'], ['tests', '📝']] },
     be: { name: 'IF Business English', icon: '💼', path: '/app/business/', track: 'business', d: 'Meetings, presentations, emails, interviews and negotiations', nav: [['home', '🏠'], ['courses', '📘']] },
-    ielts: { name: 'IF IELTS', icon: '🎓', path: '/app/ielts/', track: 'exam', d: 'Listening, Reading, Writing and Speaking: lessons, then practice', nav: [['home', '🏠'], ['courses', '📘']] }
+    ielts: { name: 'IF IELTS', icon: '🎓', path: '/app/ielts/', track: 'exam', d: 'Listening, Reading, Writing and Speaking: lessons, then practice', nav: [['home', '🏠'], ['courses', '📘']] },
+    /* IF Lingo (22 Nov 2026): other languages, for people who already speak English. Russian and Kazakh from zero. */
+    lang: { name: 'IF Lingo', icon: '🗣️', path: '/app/lingo/', track: 'lang', d: 'Russian and Kazakh from zero, explained in English', nav: [['home', '🏠'], ['courses', '📘'], ['vocab', '🔤']] }
   };
   if (APP && APPS[APP]) NAV = APPS[APP].nav; else APP = '';
   var appCourses = function () { return COURSES.filter(function (c) { return !c.daily && c.track === APPS[APP].track && !/^(ket|pet)/.test(c.id); }); };
-  var appItem = function (x) { return APP === 'ge' ? x.tr === 'general' : APP === 'ielts' ? (x.tags || []).indexOf('ielts') >= 0 : x.tr === 'business'; };
-  function appsStrip() { return '<div class="sec"><h2>IF Academy apps</h2></div><div class="grid apps3">' + ['ge', 'be', 'ielts'].map(function (k) { var a = APPS[k]; return '<a class="card" href="' + a.path + '"><span class="ic">' + a.icon + '</span><h3>' + esc(a.name) + '</h3><p>' + esc(a.d) + '</p></a>'; }).join('') + '</div>'; }
+  var appItem = function (x) { return APP === 'lang' ? false : APP === 'ge' ? x.tr === 'general' : APP === 'ielts' ? (x.tags || []).indexOf('ielts') >= 0 : x.tr === 'business'; };
+  function appsStrip() { return '<div class="sec"><h2>IF Academy apps</h2></div><div class="grid apps3">' + ['ge', 'be', 'ielts', 'lang'].map(function (k) { var a = APPS[k]; return '<a class="card" href="' + a.path + '"><span class="ic">' + a.icon + '</span><h3>' + esc(a.name) + '</h3><p>' + esc(a.d) + '</p></a>'; }).join('') + '</div>'; }
   function unitCard(c, u, ui) {
     var n = u.lessons.length, d = u.lessons.filter(function (l) { return isDone(c.id, u.id, l.id); }).length, open = unlocked(ui, c.id), nx = u.lessons.filter(function (l) { return !isDone(c.id, u.id, l.id); })[0] || u.lessons[0];
     return '<a class="card" href="' + (open ? '#/lesson/' + c.id + '/' + u.id + '/' + nx.id : '#/course/' + c.id) + '"><span class="ic">' + (open ? c.icon : '🔒') + '</span><h3>' + esc(u.title) + '</h3><p>' + esc(c.title) + '</p><div class="bar" style="height:10px;margin-top:6px"><i style="width:' + Math.round(d / n * 100) + '%"></i></div><div class="meta"><span class="tag ' + tagFor(c.track) + '">' + esc(c.level) + '</span><span class="tag">' + d + ' / ' + n + ' lessons</span></div></a>';
@@ -273,7 +283,12 @@
   function vAppHome() {
     setNav('home');
     var list = appCourses().filter(function (c) { return !ownLocked(c); }), h = '';
-    if (APP === 'ge') {
+    if (APP === 'lang') {
+      var LG = [['ru-RU', '🇷🇺 Russian', 'Русский язык'], ['kk-KZ', '🇰🇿 Kazakh', 'Қазақ тілі']];
+      h = appHero('IF Lingo', 'Russian and Kazakh from zero. Every word has its sound, its meaning in English and an example; grammar is explained in English.', list) +
+        LG.map(function (g) { var cs = list.filter(function (c) { return c.lang === g[0]; }); return cs.length ? '<div class="sec"><h2>' + g[1] + '</h2><p class="sec-d">' + g[2] + '</p></div><div class="grid">' + cs.map(courseCard).join('') + '</div>' : ''; }).join('') +
+        '<p class="note" style="margin-top:18px">🔊 The voice is your device\'s own Russian or Kazakh voice. If a word is silent, add that language in your phone\'s text-to-speech settings. Read the pronunciation line under each word.</p>';
+    } else if (APP === 'ge') {
       var myLv = (S.cls || []).filter(function (k) { return /^ge:/.test(k); }).map(function (k) { return 'ge-' + k.slice(3).toLowerCase(); }), ai = list.filter(function (c) { return /^ge-/.test(c.id); }).sort(function (a, b) { return (myLv.indexOf(b.id) >= 0) - (myLv.indexOf(a.id) >= 0); }), bookOfMine = mine().filter(function (k) { return /^book:/.test(k); }).map(function (k) { return k.slice(5); });
       var ef = list.filter(function (c) { return c.ef || c.book; }).sort(function (a, b) { return (bookOfMine.indexOf(b.id) >= 0) - (bookOfMine.indexOf(a.id) >= 0); });
       var rest = list.filter(function (c) { return ai.indexOf(c) < 0 && ef.indexOf(c) < 0; });
@@ -710,7 +725,7 @@
       (w.e ? '<div class="e">“' + esc(w.e) + '” <button class="say sm" id="sye" aria-label="Listen to the sentence">🔊</button></div>' : '') +
       (w.c ? '<div class="patt"><b>' + esc(w.c) + '</b>' + (w.ce ? '<span>' + esc(w.ce) + '</span>' : '') + '</div>' : '') +
       (ruTxt ? (ruLevel() || !w.ru ? ruChip(ruTxt) : '<span class="ru">🇷🇺 ' + esc(w.ru) + '</span>') : '') +
-      (L.teach || w.pic ? '' : sayBox(sayTarget(w.w))) + '</div>' +
+      (L.teach || w.pic || L.c.lang ? '' : sayBox(sayTarget(w.w))) + '</div>' +
       '<div class="dots">' + L.l.words.map(function (_, k) { return '<i class="' + (k === L.card ? 'on' : '') + '"></i>'; }).join('') + '</div>' +
       '<div style="display:flex;gap:10px;justify-content:center"><button class="btn ghost" id="pv"' + (L.card ? '' : ' disabled') + '>‹</button><button class="btn" id="nx">' + (L.card < L.l.words.length - 1 ? t('next') + ' ›' : 'Practise →') + '</button></div></div>';
     bindTop(); bindRu(); if ($('.say-it')) bindSay(sayTarget(w.w), $('.learn-card .w')); say(w.w);
@@ -1107,7 +1122,7 @@
       var cast = names.slice(0, 3), botOf = function (n) { var k = cast.indexOf(n); if (k >= 0) return k; var same = cast.filter(function (c) { return sp[c] === sp[n]; })[0]; return same ? cast.indexOf(same) : 0; };
       var lines = L.l.script, V = L.v = { i: 0, on: false, cc: true, done: false, tok: 0 };
       var skyline = '<svg class="vsky" viewBox="0 0 800 200" preserveAspectRatio="none" aria-hidden="true">' + [[0, 120, 60], [55, 70, 40], [100, 100, 70], [175, 40, 35], [215, 90, 60], [280, 60, 45], [330, 20, 30], [365, 80, 70], [440, 50, 40], [485, 110, 55], [545, 30, 45], [595, 85, 60], [660, 55, 40], [705, 100, 95]].map(function (b) { var w = '', x0 = b[0], top = b[1], wd = b[2]; for (var yy = top + 10; yy < 190; yy += 14) for (var xx = x0 + 6; xx < x0 + wd - 6; xx += 10) if ((xx * 7 + yy * 3) % 5 < 2) w += '<rect x="' + xx + '" y="' + yy + '" width="3" height="5" class="w' + ((xx + yy) % 3) + '"/>'; return '<rect x="' + x0 + '" y="' + top + '" width="' + wd + '" height="' + (200 - top) + '" class="b"/>' + w; }).join('') + '</svg>';
-      v.innerHTML = '<div class="player">' + pTop() + '<article class="listen-v"><div class="lv-head"><span class="lv-ep">🎬 IF ENGLISH · LISTENING</span><h3>' + esc(L.l.title) + '</h3><p>' + esc(L.l.intro || '') + '</p></div>' +
+      v.innerHTML = '<div class="player">' + pTop() + '<article class="listen-v"><div class="lv-head"><span class="lv-ep">🎬 ' + (L.c.lang ? 'IF LINGO' : 'IF ENGLISH') + ' · LISTENING</span><h3>' + esc(L.l.title) + '</h3><p>' + esc(L.l.intro || '') + '</p></div>' +
         '<div class="vplayer" id="vp"><div class="vscene"><div class="vbg"></div>' + skyline + '<div class="vring"></div><div class="vgrid"></div>' +
           (window.IFBots ? '<div class="ifbots vbots">' + cast.map(function (n) { return IFBots.html(sp[n], n, cast.length === 1); }).join('') + '</div>' : '') +
           '<div class="vcap" id="vcap"></div><button class="vbig" id="vbig" aria-label="Play">▶</button><div class="vlive"><i></i>REC</div></div>' +
@@ -1164,7 +1179,7 @@
       on = true; var my = ++tok; btn.textContent = '⏹ Stop'; try { speechSynthesis.cancel(); } catch (e) {}
       spans.slice(from).forEach(function (el, k) {
         try {
-          var u = new SpeechSynthesisUtterance(el.textContent.trim()); u.lang = 'en-GB'; u.rate = .95;
+          var u = new SpeechSynthesisUtterance(el.textContent.trim()); u.lang = langOf(el.textContent); u.rate = .95;
           u.onstart = function () { if (my !== tok) return; clear(); el.classList.add('on'); try { var r = el.getBoundingClientRect(); if (r.top < 90 || r.bottom > innerHeight - 110) el.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch (e) {} };
           if (from + k === spans.length - 1) u.onend = function () { if (my === tok) stop(); };
           speechSynthesis.speak(u);

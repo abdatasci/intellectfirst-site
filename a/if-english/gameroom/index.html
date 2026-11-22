@@ -1303,7 +1303,7 @@ function chlTip(i){
 }
 function chessSetup(){
   CH=null;
-  app.innerHTML=`<div><h2>Chess</h2><p class="lead">A real chess board for two players. Say each move in English before you play it. / Скажите ход по-английски, прежде чем сделать его.</p></div>
+  app.innerHTML=`<div><h2>Chess</h2><p class="lead">A real chess board for two players. Say each move in English before you play it. / Скажите ход по-английски, прежде чем сделать его. <a href="/play/" style="font-weight:700;white-space:nowrap">⚔️ Play someone online →</a></p></div>
   <section class="panel"><div class="lab">Players</div><div class="teamin">${CHC.names.map((t,i)=>`<label class="tin"><span class="xo-m ${i?'o':'x'}">${i?'♚':'♔'}</span><input id="cn${i}" value="${esc(t)}" maxlength="24"></label>`).join('')}</div>
   <div class="row"><span class="sublab w">Opponent</span>${[['human','Another player'],['cpu','Computer']].map(([k,l])=>`<button class="btn ${CHC.opp===k?'on':''}" data-copp="${k}">${l}</button>`).join('')}</div>
   ${CHC.opp==='cpu'?`<div class="row"><span class="sublab w">Level</span>${[['easy','Easy'],['medium','Medium'],['hard','Hard']].map(([k,l])=>`<button class="btn ${CHC.level===k?'on':''}" data-clv="${k}">${l}</button>`).join('')}</div><div class="row"><span class="sublab w">You play</span>${[['w','White'],['b','Black']].map(([k,l])=>`<button class="btn ${CHC.side===k?'on':''}" data-cside="${k}">${l}</button>`).join('')}</div>`:''}
