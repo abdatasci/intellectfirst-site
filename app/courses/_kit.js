@@ -1,5 +1,5 @@
 /* Course-writing kit: lets the course files add full units compactly.
-   IFX.make(courseId, [ { id, t: title, topic, photo?, v: [vocab title, "word | part of speech | meaning | example | Russian" lines],
+   IFX.make(courseId, [ { id, t: title, topic, photo?, v: [vocab title, "word | part of speech | meaning | example | Russian | pronunciation | example in English" lines],
                           g: [grammar title, rule html, exercises], r: [reading title, text, exercises] } ])
    The unit check is built from the unit's own words and grammar. Exercise helpers: IFX.k.mc / gap / ord / tf. */
 (function () {
@@ -12,7 +12,7 @@
   function words(s) {
     return String(s).trim().split('\n').map(function (l) {
       var p = l.split('|').map(function (x) { return x.trim(); });
-      var w = { w: p[0], p: p[1], d: p[2], e: p[3] }; if (p[4]) w.ru = p[4]; return w;
+      var w = { w: p[0], p: p[1], d: p[2], e: p[3] }; if (p[4]) w.ru = p[4]; if (p[5]) w.c = p[5]; if (p[6]) w.ce = p[6]; return w;   // 6th and 7th fields (IF Lingo): how to say it, and the example in English
     }).filter(function (w) { return w.w && w.d; });
   }
   function check(W, G) {
