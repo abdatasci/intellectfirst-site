@@ -4,7 +4,7 @@
 IFX.course({
   id: 'kk-a1', track: 'lang', lang: 'kk-KZ', level: 'A1', next: 'A2', icon: '🇰🇿',
   title: 'Kazakh A1', sub: 'Your first steps in Kazakh',
-  blurb: 'Say hello, talk about your family, order food, find your way and go shopping: the alphabet, 400 words, 20 grammar points, listening in every unit and a level test, explained in English.',
+  blurb: 'Say hello, talk about your family, order food, find your way and go shopping: the alphabet, 500 words, 20 grammar points, listening in every unit and a level test, explained in English.',
   units: []
 });
 (function () {
