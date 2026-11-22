@@ -98,12 +98,12 @@ async function resultsText(ctx, uid, lang) {
 
 /* The bot's "Menu" (command list). Students get the general list; teachers get their own list in their chat.
    Updated automatically when the list changes (CMDV), so nobody has to press "Connect bot" again. */
-const CMDV = '2026-11-22a';
+const CMDV = '2026-11-22t';
 const CMDS = {
   en: [['app', 'Open IF English'], ['account', 'My account: results, attendance, payments'], ['task', 'Class task (in the lesson)'], ['next', 'Next lessons'], ['cancel', "Can't come: cancel a lesson"], ['homework', 'Homework & tests'], ['results', 'My test results'], ['pay', 'Tuition status'], ['prices', 'Prices and packages'], ['help', 'What I can do'], ['stop', 'Disconnect this chat']],
   ru: [['app', 'Открыть IF English'], ['account', 'Мой аккаунт: результаты, посещаемость, оплаты'], ['task', 'Задание на уроке'], ['next', 'Ближайшие занятия'], ['cancel', 'Не смогу прийти: отменить занятие'], ['homework', 'Домашние задания и тесты'], ['results', 'Мои результаты'], ['pay', 'Статус оплаты'], ['prices', 'Цены и пакеты'], ['help', 'Что я умею'], ['stop', 'Отключить чат']]
 };
-const STAFF_CMDS = [['app', 'Open IF English (Teach mode too)'], ['account', 'My account: classes, registers, admin'], ['today', "Today's lessons: clock in, register"], ['register', 'Take or correct a register'], ['cover', 'Ask a colleague to cover a lesson'], ['task', 'Class task: quiz, poll, writing or speaking'], ['sendhw', 'Send homework or a test to a class'], ['next', 'Next lessons'], ['help', 'Help for teachers'], ['stop', 'Disconnect this chat']];
+const STAFF_CMDS = [['app', 'Open IF English (Teach mode too)'], ['account', 'My account: classes, registers, admin'], ['today', "Today's lessons: clock in, register"], ['register', 'Take or correct a register'], ['cover', 'Ask a colleague to cover a lesson'], ['task', 'Class task: quiz, poll, writing or speaking'], ['sendhw', 'Send homework or a test to a class'], ['sendtest', 'Send a test (online now, or a date)'], ['next', 'Next lessons'], ['help', 'Help for teachers'], ['stop', 'Disconnect this chat']];
 const asCmds = l => l.map(([command, description]) => ({ command, description }));
 async function syncCommands(chatId, staff) {
   try {

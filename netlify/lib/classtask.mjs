@@ -10,13 +10,13 @@
 // teacher's choices while setting it up. Answers are separate records so a whole class can answer at the same moment.
 import Anthropic from '@anthropic-ai/sdk';
 import { getStore } from '@netlify/blobs';
-import { doc, getLinks, tg, tgSend, tgSecret, uidsByStudent, inClass, local, MODEL } from './bot-core.mjs';
+import { doc, getLinks, tg, tgSend, tgSecret, uidsByStudent, inClass, local, MODEL, hidePrivate, classPicker, isPrivateClass, getProfile } from './bot-core.mjs';
 
 const S = () => getStore({ name: 'school', consistency: 'strong' });
 const FLOW = chatId => `bot/ctflow/${chatId}`;
 const CANCEL = [{ text: '✖ Cancel', callback_data: 'ct:x' }];
 const KIND = { quiz: '❓ Quiz', ai: '✨ AI quiz', poll: '📊 Poll', text: '✍️ Written answer', voice: '🎙 Speaking' };
-const MENU = /^(🕑|📅|❓|📊|💳|📎|📝|🎯|📚|👤)|^\//;   // menu buttons and commands are never taken as answers
+const MENU = /^(🕑|📅|❓|📊|💳|📎|📝|🎯|📚|👤|🧪)|^\//;   // menu buttons and commands are never taken as answers
 const answer = (q, text, alert) => tg('answerCallbackQuery', { callback_query_id: q.id, text, show_alert: !!alert }).catch(() => {});
 const edit = (q, text, markup) => q.message && tg('editMessageText', { chat_id: q.message.chat.id, message_id: q.message.message_id, text, reply_markup: markup || { inline_keyboard: [] } }).catch(() => {});
 const hm = d => { const l = local(d); return String(l.getUTCHours()).padStart(2, '0') + ':' + String(l.getUTCMinutes()).padStart(2, '0'); };
@@ -24,7 +24,7 @@ const cut = (s, n) => { s = String(s || ''); return s.length > n ? s.slice(0, n 
 
 async function myClasses(p) {
   const classes = await doc('classes');
-  if (p.role === 'admin' || p.manager) return classes;
+  if (p.role === 'admin' || p.manager) return hidePrivate(classes, p);   // the director's private students: only he sees them
   return classes.filter(c => p.teacherId && c.teacherId === p.teacherId);
 }
 async function getFlow(chatId) { const s = await S().get(FLOW(chatId), { type: 'json' }); return s && s.exp > Date.now() ? s : null; }
@@ -43,12 +43,10 @@ async function ensurePollUpdates() {
 
 /* ---------------- teacher: set up a task ---------------- */
 export async function startTask(chatId, p) {
-  const classes = (await myClasses(p)).filter(c => c.label).sort((a, b) => a.label.localeCompare(b.label)).slice(0, 30);
-  if (!classes.length) return tgSend(chatId, 'You have no classes on the timetable yet. Ask the manager to set you as the teacher in Admin → Classes.');
-  await putFlow(chatId, { step: 'class', ids: classes.map(c => c.id) });
-  const rows = []; for (let i = 0; i < classes.length; i += 2) rows.push(classes.slice(i, i + 2).map((c, j) => ({ text: c.label, callback_data: 'ct:c:' + (i + j) })));
-  rows.push(CANCEL);
-  return tgSend(chatId, '🎯 Class task: students answer on their phones and you see the answers here, live.\nWhich class?', { reply_markup: { inline_keyboard: rows } });
+  const P = classPicker(await myClasses(p), 'ct', false, CANCEL);
+  if (P.empty) return tgSend(chatId, 'You have no classes on the timetable yet. Ask the manager to set you as the teacher in Admin → Classes.');
+  await putFlow(chatId, { step: 'class', ids: P.ids });
+  return tgSend(chatId, '🎯 Class task: students answer on their phones and you see the answers here, live.\nWhich class?', { reply_markup: { inline_keyboard: P.rows } });
 }
 
 const HOW = {
@@ -104,6 +102,13 @@ export async function ctCallback(q, p) {
   if (data === 'ct:x') { await S().delete(FLOW(chatId)); await answer(q, 'Cancelled'); await edit(q, '✖ Cancelled. Nothing was sent.'); return true; }
   const st = await getFlow(chatId);
   if (!st) { await answer(q, 'Expired. Press 🎯 Class task again.', true); return true; }
+  if (data === 'ct:ind' || data === 'ct:grp') {
+    const fl = await getFlow(chatId); if (!fl) { await answer(q, 'Expired. Press 🎯 Class task again.', true); return true; }
+    const P = classPicker(await myClasses(p), 'ct', data === 'ct:ind', CANCEL);
+    await putFlow(chatId, { ...fl, ids: P.ids }); await answer(q, '');
+    await edit(q, '🎯 Class task: students answer on their phones and you see the answers here, live.\n' + (data === 'ct:ind' ? '👤 Which student?' : 'Which class?'), { inline_keyboard: P.rows });
+    return true;
+  }
   if (data.startsWith('ct:c:')) {
     const cid = st.ids[+data.slice(5)], cls = (await doc('classes')).find(c => c.id === cid);
     if (!cls) { await answer(q, 'Class not found.', true); return true; }
@@ -172,10 +177,15 @@ export async function ctMessage(chatId, p, m) {
 async function roster(cls) {
   const students = (await doc('students')).filter(s => inClass(cls, s) && !/withdrawn|finished|frozen/i.test(s.status || ''));
   const links = await getLinks(), bySid = await uidsByStudent(links);
-  return students.map(s => {
+  const out = students.map(s => {
     const uid = s.uid || bySid[s.id] || (links['sid:' + s.id] ? 'sid:' + s.id : null), l = uid && links[uid];
     return { sid: s.id, name: `${s.first || ''} ${s.last || ''}`.trim() || s.id, chatId: l ? l.chatId : null, lang: l?.lang || 'ru' };
-  }).sort((a, b) => a.name.localeCompare(b.name));
+  });
+  if (isPrivateClass(cls) && !cls.paused) for (const uid of cls.uids || []) {   // private students: accounts, no student record
+    const l = links[uid], pr = await getProfile(uid).catch(() => null);
+    out.push({ sid: 'pv:' + uid, name: (pr && pr.name) || cls.label.replace(/\s*\(.*\)$/, ''), chatId: l ? l.chatId : null, lang: l?.lang || 'ru' });
+  }
+  return out.sort((a, b) => a.name.localeCompare(b.name));
 }
 
 async function sendTask(st, p, teacherChat) {

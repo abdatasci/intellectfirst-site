@@ -90,7 +90,7 @@
     // Free full access, counted from 20.11.2026 (director, 21.11.2026): IF Academy (class) students six months, to 20 May 2027;
     // the director's individual students three months, to 20 February 2027. A student with both kinds of lesson gets the longer one.
     // This is the notice only: nothing ends access on those dates yet (see claude/access-rules.md).
-    if (p && (p.role === 'student' || (p.role === 'guest' && (p.track === 'if' || p.track === 'private') && !p.declined))) {
+    if (p && !p.forever && (p.role === 'student' || (p.role === 'guest' && (p.track === 'if' || p.track === 'private') && !p.declined))) {
       var cl = (ME && ME.classes) || [], ind = function (c) { return /^c-ind-/.test(c.id || '') || /individual|1[- ]?(to|on)[- ]?1/i.test(c.label || ''); };
       var solo = cl.length ? cl.every(ind) : p.track === 'private';
       var F = solo ? ['2027-02-21', '20 February 2027', 'As an individual student'] : ['2027-05-21', '20 May 2027', 'As an IF Academy student'];

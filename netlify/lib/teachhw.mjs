@@ -4,7 +4,7 @@
 // It is saved in the same homework list as the website (My classes), so students see it on the website, in the
 // bot's "📝 Homework & tests" and get the usual reminders; the class is told straight away.
 import { getStore } from '@netlify/blobs';
-import { doc, tg, tgSend, loadChanges, upcomingLessons, local } from './bot-core.mjs';
+import { doc, tg, tgSend, loadChanges, upcomingLessons, local, hidePrivate, classPicker } from './bot-core.mjs';
 import { addHomework, clean as cleanHw, loadHomework, forClasses } from './homework.mjs';
 import { tellClass } from './hwsend.mjs';
 import { CENTRES, testsOf } from './testcentres.mjs';
@@ -19,20 +19,18 @@ const CANCEL = [{ text: '✖ Cancel', callback_data: 'hw:x' }];
 
 async function myClasses(p) {
   const classes = await doc('classes');
-  if (p.role === 'admin' || p.manager) return classes;
+  if (p.role === 'admin' || p.manager) return hidePrivate(classes, p);   // the director's private students: only he sees them
   return classes.filter(c => p.teacherId && c.teacherId === p.teacherId);
 }
 async function getState(chatId) { const s = await S().get(KEY(chatId), { type: 'json' }); return s && s.exp > Date.now() ? s : null; }
 const putState = (chatId, st) => S().setJSON(KEY(chatId), { ...st, exp: Date.now() + 30 * 60e3 });
 
-/** "📝 Send homework": step 1, pick the class. */
-export async function startHomework(chatId, p) {
-  const classes = (await myClasses(p)).filter(c => c.label).sort((a, b) => a.label.localeCompare(b.label)).slice(0, 30);
-  if (!classes.length) return tgSend(chatId, 'You have no classes on the timetable yet. Ask the manager to set you as the teacher in Admin → Classes.');
-  await putState(chatId, { step: 'class', ids: classes.map(c => c.id) });
-  const rows = []; for (let i = 0; i < classes.length; i += 2) rows.push(classes.slice(i, i + 2).map((c, j) => ({ text: c.label, callback_data: 'hw:c:' + (i + j) })));
-  rows.push(CANCEL);
-  return tgSend(chatId, '📝 Send homework or a test date to a class.\nWhich class?', { reply_markup: { inline_keyboard: rows } });
+/** "📝 Send homework" / "🧪 Send test": step 1, pick the class (groups; individual students under 👤 Other). */
+export async function startHomework(chatId, p, mode) {
+  const P = classPicker(await myClasses(p), 'hw', false, CANCEL);
+  if (P.empty) return tgSend(chatId, 'You have no classes on the timetable yet. Ask the manager to set you as the teacher in Admin → Classes.');
+  await putState(chatId, { step: 'class', ids: P.ids, mode: mode || '' });
+  return tgSend(chatId, mode === 'test' ? '🧪 Send a test.\nWhich class?' : '📝 Send homework or a test date to a class.\nWhich class?', { reply_markup: { inline_keyboard: P.rows } });
 }
 
 function preview(st) {
@@ -46,13 +44,20 @@ export async function hwCallback(q, p) {
   const data = String(q.data || ''), chatId = q.message?.chat?.id;
   const st = await getState(chatId);
   if (data === 'hw:x') { await S().delete(KEY(chatId)); await answer(q, 'Cancelled'); await edit(q, '✖ Cancelled. Nothing was sent.'); return true; }
-  if (!st) { await answer(q, 'Expired. Press 📝 Send homework again.', true); return true; }
+  if (!st) { await answer(q, 'Expired. Press 📝 Send homework (or 🧪 Send test) again.', true); return true; }
+  if (data === 'hw:ind' || data === 'hw:grp') {   // switch the class list: groups / individual students
+    const P = classPicker(await myClasses(p), 'hw', data === 'hw:ind', CANCEL);
+    await putState(chatId, { ...st, ids: P.ids }); await answer(q, '');
+    await edit(q, (st.mode === 'test' ? '🧪 Send a test.\n' : '📝 Send homework or a test date to a class.\n') + (data === 'hw:ind' ? '👤 Which student?' : 'Which class?'), { inline_keyboard: P.rows });
+    return true;
+  }
   if (data.startsWith('hw:c:')) {
     const cid = st.ids[+data.slice(5)], cls = (await doc('classes')).find(c => c.id === cid);
     if (!cls) { await answer(q, 'Class not found.', true); return true; }
-    await putState(chatId, { step: 'kind', classId: cid, label: cls.label });
+    await putState(chatId, { step: 'kind', classId: cid, label: cls.label, mode: st.mode || '' });
     await answer(q, '');
-    await edit(q, `Class: ${cls.label}\nHomework or a test?`, { inline_keyboard: [[{ text: '📝 Homework', callback_data: 'hw:k:hw' }, { text: '🧪 Test date', callback_data: 'hw:k:test' }], [{ text: '🖥 Online test — students do it now', callback_data: 'hw:k:online' }], CANCEL] });
+    if (st.mode === 'test') await edit(q, `Class: ${cls.label}\n🧪 Which kind of test?`, { inline_keyboard: [[{ text: '🖥 Online test — students do it now', callback_data: 'hw:k:online' }], [{ text: '📅 Announce a test date', callback_data: 'hw:k:test' }], CANCEL] });
+    else await edit(q, `Class: ${cls.label}\nHomework or a test?`, { inline_keyboard: [[{ text: '📝 Homework', callback_data: 'hw:k:hw' }, { text: '🧪 Test date', callback_data: 'hw:k:test' }], [{ text: '🖥 Online test — students do it now', callback_data: 'hw:k:online' }], CANCEL] });
     return true;
   }
   if (data === 'hw:k:online') {   // an online test: pick the test centre, then (optionally) which test
@@ -128,7 +133,7 @@ export async function hwCallback(q, p) {
 export async function hwMessage(chatId, p, m) {
   const st = await getState(chatId); if (!st) return false;
   const text = String(m.text || m.caption || '').trim();
-  if (m.text && /^(🕑|📅|❓|📊|💳|📎|🎯|📚|👤|📝 Send homework)/.test(text)) { await S().delete(KEY(chatId)); return false; }   // a menu button: leave the flow
+  if (m.text && /^(🕑|📅|❓|📊|💳|📎|🎯|📚|👤|🧪|🏫|📋|🔁|📆|📝 Send homework)/.test(text)) { await S().delete(KEY(chatId)); return false; }   // a menu button: leave the flow
   if (/^\/cancel\b|^✖/i.test(text)) { await S().delete(KEY(chatId)); await tgSend(chatId, '✖ Cancelled. Nothing was sent.'); return true; }
   if (st.step === 'date') {
     const x = text.match(/^(\d{1,2})[./-](\d{1,2})(?:[./-](\d{2,4}))?(?:\s+(\d{1,2})[:.](\d{2}))?$/);

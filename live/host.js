@@ -30,7 +30,7 @@
     if (!ROOMS.ready) h += '<div class="note"><b>Live games need one setting before the first game.</b> Create a free account at ably.com, copy the API key from your app\'s <i>API Keys</i> tab (it looks like <code>xVLyHw.A-pwh7w:…</code>) and add it in Netlify → Project configuration → Environment variables as <code>ABLY_API_KEY</code>. Then redeploy the site.</div>';
     if (resume) h += '<div class="note">Your game <b>' + esc(resume.title) + '</b> (PIN ' + resume.pin + ') is still open. <button class="linkbtn" id="resume">Resume it</button> · <button class="linkbtn" id="drop">Close it</button></div>';
     h += '<div class="grid2"><div class="panel"><h2>Start a live game</h2><p class="sub">Students join on their phones with the QR code or the PIN. You run the game from this screen; project it in class.</p>' +
-      (GROUPS.length ? '<label class="f">Which group is playing?</label><select class="inp" id="cls"><option value="">Choose a group…</option>' + GROUPS.map(function (c) { return '<option value="' + esc(c.id) + '"' + (c.id === CFG.cls ? ' selected' : '') + '>' + esc(c.label) + (c.book ? ' · ' + esc(c.book) : '') + '</option>'; }).join('') + '<option value="-">Another group or a mixed class</option></select><div id="clsbox"></div>' : '') +
+      (GROUPS.length ? '<label class="f">Which group is playing?</label><select class="inp" id="cls"><option value="">Choose a group…</option>' + GROUPS.map(function (c) { return '<option value="' + esc(c.id) + '"' + (c.id === CFG.cls ? ' selected' : '') + '>' + esc(c.label) + (c.cover ? ' (cover)' : '') + (c.book ? ' · ' + esc(c.book) : '') + '</option>'; }).join('') + '<option value="-">Another group or a mixed class</option></select><div id="clsbox"></div>' : '') +
       '<label class="f">Questions from</label><div class="seg" id="src">' + [['gen', 'General English ✨'], ['v', 'Book vocabulary'], ['vg', 'Vocabulary + Grammar'], ['g', 'Grammar'], ['y', 'Young Learners 🧸'], ['chess', 'Chess ♟️'], ['custom', 'My own questions']].map(function (s) { return '<button data-v="' + s[0] + '" class="' + (CFG.source === s[0] ? 'on' : '') + '">' + s[1] + '</button>'; }).join('') + '</div>' +
       '<div id="srcbox"></div>' +
       '<label class="f">Game mode</label><div class="modes" id="mode">' + Object.keys(L.MODES).map(function (k) { var m = L.MODES[k]; return '<button data-v="' + k + '" class="' + (CFG.mode === k ? 'on' : '') + '"><span class="mi">' + m.icon + '</span><b>' + esc(m.name) + '</b><small>' + esc(m.tag) + '</small></button>'; }).join('') + '</div>' +
@@ -66,7 +66,7 @@
   }
   /* ---- the group that is playing, and its course: the group's coursebook, or General English at the group's level ---- */
   function groupOf(id) { return GROUPS.filter(function (c) { return c.id === id; })[0]; }
-  var BOOK_BANK = { 'ef-a1': 'v-A1', 'ef-a2': 'v-A2', 'ef-b1': 'v-B1', 'ef-b2': 'v-B2', 'ef-c1': 'v-C1', 'teens-b1': 'v-TeensB1', 'teens-b2': 'v-TeensB2' };
+  var BOOK_BANK = { 'ef-a0': 'v-A0', 'ef-b1p': 'v-B1p', 'ef-c2': 'v-C2', 'ef-a1': 'v-A1', 'ef-a2': 'v-A2', 'ef-b1': 'v-B1', 'ef-b2': 'v-B2', 'ef-c1': 'v-C1', 'teens-b1': 'v-TeensB1', 'teens-b2': 'v-TeensB2' };
   var BOOK_LEVEL = { 'ef-a0': 'A1', 'ef-a1': 'A1', 'ef-a2': 'A2', 'ef-b1': 'B1', 'ef-b1p': 'B1', 'ef-b2': 'B2', 'ef-c1': 'C1', 'ef-c2': 'C1', 'teens-b1': 'B1', 'teens-b2': 'B2' };
   /** {bank, level, kids} for a group: bank is the question bank of its coursebook ('' when IF Live has none for that book). */
   function planFor(c) {
@@ -117,7 +117,7 @@
   /** The grammar set that goes with a book: the IF course's own grammar, or the grammar of the book's level. */
   function grammarFor(id) {
     var own = id.replace(/^v-/, 'g-'); if (bankOf(own)) return own;
-    var lv = { 'v-A1': 'ge-a1', 'v-Movers': 'ge-a1', 'v-A2': 'A2', 'v-Flyers': 'A2', 'v-KET': 'A2', 'v-B1': 'B1', 'v-PET': 'B1', 'v-TeensB1': 'B1', 'v-B2': 'B2', 'v-TeensB2': 'B2', 'v-C1': 'C1', 'v-IELTS': 'IELTS' }[id];
+    var lv = { 'v-A0': 'ge-a1', 'v-B1p': 'B1', 'v-C2': 'C1', 'v-A1': 'ge-a1', 'v-Movers': 'ge-a1', 'v-A2': 'A2', 'v-Flyers': 'A2', 'v-KET': 'A2', 'v-B1': 'B1', 'v-PET': 'B1', 'v-TeensB1': 'B1', 'v-B2': 'B2', 'v-TeensB2': 'B2', 'v-C1': 'C1', 'v-IELTS': 'IELTS' }[id];
     return bankOf('g-' + lv) ? 'g-' + lv : BANKS.filter(function (x) { return x.kind === 'g'; })[0].id;
   }
   /** A combined round is two ordinary choices: the book's words and the grammar set. */
@@ -243,7 +243,7 @@
     var CFG = c || CFG0; n = n || (CFG.count === 'all' ? 30 : +CFG.count);
     if (CFG.source === 'gen') return { level: CFG.level, focus: CFG.focus, topic: CFG.topic, count: n };
     var b = bankOf(CFG.bank), units = b.units.filter(function (u) { return CFG.units.indexOf(u.id) >= 0; });
-    var lv = ((b.id.match(/A1|A2|B1|B2|C1/i) || [])[0] || '').toUpperCase() || (/c2$/i.test(b.id) ? 'C1' : '') || { 'v-Movers': 'A1', 'v-Flyers': 'A2', 'v-KET': 'A2', 'v-PET': 'B1', 'v-TeensB1': 'B1', 'v-TeensB2': 'B2', 'v-IELTS': 'C1', 'g-IELTS': 'C1' }[b.id] || 'B1';
+    var lv = ((b.id.match(/A1|A2|B1|B2|C1/i) || [])[0] || '').toUpperCase() || (/c2$/i.test(b.id) ? 'C1' : '') || { 'v-A0': 'A1', 'v-Movers': 'A1', 'v-Flyers': 'A2', 'v-KET': 'A2', 'v-PET': 'B1', 'v-TeensB1': 'B1', 'v-TeensB2': 'B2', 'v-IELTS': 'C1', 'g-IELTS': 'C1' }[b.id] || 'B1';
     if (b.kind === 'g') return { level: lv, focus: 'grammar', topic: units.map(function (u) { return u.id === 'all' ? lv + ' grammar' : u.t; }).join('; ') + (b.id === 'g-IELTS' ? ' (IELTS academic writing context)' : ''), count: n };
     var words = []; units.forEach(function (u) { u.w.forEach(function (w) { words.push(w[0]); }); });
     return { level: lv, focus: 'vocab', topic: units.map(function (u) { return u.t; }).slice(0, 4).join('; '), words: L.shuffle(words).slice(0, 60), count: n };

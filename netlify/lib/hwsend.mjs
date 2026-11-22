@@ -3,7 +3,7 @@ import { testLink } from './testcentres.mjs';
 // or WhatsApp for students not on Telegram. Used by the website (My classes) and by teachers in the Telegram bot.
 import { getStore } from '@netlify/blobs';
 import { hwText } from './homework.mjs';
-import { doc, getLinks, tg, tgSend, tgToken, addNote, uidsByStudent, inClass } from './bot-core.mjs';
+import { doc, getLinks, tg, tgSend, tgToken, addNote, uidsByStudent, inClass, isPrivateClass, getProfile } from './bot-core.mjs';
 import { waReady, waSend, waNumber } from './whatsapp.mjs';
 
 const S = () => getStore({ name: 'school', consistency: 'strong' });
@@ -30,6 +30,21 @@ export async function tellClass(c, item, attach, opts = {}) {   // opts.since: r
       }
       else if (!opts.since && wa && !prefs[s.id]?.off) for (const num of [...new Set([s.phone, s.parentPhone].map(waNumber).filter(Boolean))]) { await waSend(num, 'IF Academy\n' + hwText(kind, item, lang, true)); n++; }
     } catch (e) { console.error('homework notify', s.id, e.message); }
+  }
+  // the director's private students (accounts in a private class, no student record): website note + Telegram
+  if (isPrivateClass(c) && !c.paused && !opts.sids) for (const uid of c.uids || []) {
+    const l = links[uid], lang = l?.lang || 'ru', kind = item.kind === 'test' ? 'testNew' : 'hwNew';
+    if (opts.since && !(l && l.at && l.at > opts.since)) continue;
+    const pr = await getProfile(uid).catch(() => null), st = { id: 'pv:' + uid, uid, first: (pr && pr.name) || '', last: '' };
+    try {
+      if (!opts.since) await addNote(uid, { kind, text: hwText(kind, item, l ? lang : 'en', true), ...(item.url ? { url: testLink(item, st).replace('https://intellectfirst.com', '') } : {}) });
+      if (l && tgToken()) {
+        await tgSend(l.chatId, hwText(kind, item, lang), item.url ? { reply_markup: { inline_keyboard: [[{ text: { en: '🖥 Open the test', ru: '🖥 Открыть тест', kk: '🖥 Тестті ашу' }[lang] || '🖥 Open the test', web_app: { url: testLink(item, st, true) } }]] } } : {});
+        n++; sentTo.push(st.first || 'private student');
+        if (attach?.photo) await tg('sendPhoto', { chat_id: l.chatId, photo: attach.photo }).catch(() => {});
+        else if (attach?.document) await tg('sendDocument', { chat_id: l.chatId, document: attach.document }).catch(() => {});
+      }
+    } catch (e) { console.error('homework notify private', e.message); }
   }
   if (opts.names) return { n, sentTo };
   return n;

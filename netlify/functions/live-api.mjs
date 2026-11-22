@@ -9,7 +9,7 @@ import { getStore } from '@netlify/blobs';
 import { tgAccount } from '../lib/tgauth.mjs';
 import { getUser, refreshSession } from '@netlify/identity';
 import { isStaff } from '../lib/codes.mjs';
-import { doc, hidePrivate } from '../lib/bot-core.mjs';
+import { doc, hidePrivate, loadChanges } from '../lib/bot-core.mjs';
 import { createHmac, randomBytes, randomInt } from 'node:crypto';
 
 import { isMember, FREE, ensureTrial } from '../lib/access.mjs';
@@ -43,9 +43,17 @@ const alive = r => r && r.status !== 'ended' && Date.now() - r.created < ROOM_HO
     One-student "classes" are left out: a live game is for a group, and their labels are students' names. */
 async function myGroups(profile) {
   const [all, books] = await Promise.all([doc('classes'), doc('books')]);
-  const mine = profile.role === 'admin' || profile.smm ? hidePrivate(all, profile) : all.filter(c => profile.teacherId && c.teacherId === profile.teacherId);
+  const everything = profile.role === 'admin' || profile.smm;
+  const mine = everything ? hidePrivate(all, profile) : all.filter(c => profile.teacherId && c.teacherId === profile.teacherId);
+  // groups this teacher covers a lesson for (yesterday to two weeks ahead), marked cover: true
+  if (!everything && profile.teacherId) {
+    const day = d => new Date(Date.now() + d * 864e5).toISOString().slice(0, 10), from = day(-1), to = day(14);
+    const CH = await loadChanges().catch(() => ({ cover: {} }));
+    const ids = new Set(Object.entries(CH.cover || {}).filter(([k, v]) => v && v.teacherId === profile.teacherId && k.split('|')[1] >= from && k.split('|')[1] <= to).map(([k]) => k.split('|')[0]));
+    for (const c of all) if (ids.has(c.id) && !mine.includes(c)) mine.push({ ...c, cover: true });
+  }
   return mine.filter(c => !c.left && !/^c-(ind|pv)-/.test(c.id || '') && !/\(individual\)/i.test(c.label || '') && !(c.studentIds && c.studentIds.length === 1 && c.group))
-    .map(c => ({ id: c.id, label: str(c.label, 60), book: str((books.find(b => b.id === c.bookId) || {}).title, 90) }));
+    .map(c => ({ id: c.id, label: str(c.label, 60), book: str((books.find(b => b.id === c.bookId) || {}).title, 90), ...(c.cover ? { cover: true } : {}) }));
 }
 const hostCap = pin => ({ [`live:${pin}:h`]: ['publish', 'subscribe', 'presence'], [`live:${pin}:p`]: ['subscribe', 'presence'] });
 
