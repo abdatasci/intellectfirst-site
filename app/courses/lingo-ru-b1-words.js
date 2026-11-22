@@ -1,5 +1,5 @@
 /* IF Lingo · Russian B1 word bank: 32 more words for every unit, studied in the Vocabulary tab.
-   Built so far: units 1 to 12 (384 words). With the 240 lesson words, B1 will have about 1,000 words.
+   Built so far: units 1 to 18 (576 words). With the 240 lesson words, B1 will have about 1,000 words.
    word | part of speech | meaning in English | example | (empty) | how to say it | the example in English */
 IFX.moreWords('ru-b1', {
 u1: `
@@ -397,5 +397,203 @@ u12: `
 тайм | noun | half (of a match) | Второй тайм был лучше. | | taym | The second half was better.
 тренироваться | verb | to train | Мы тренируемся каждый день. | | tree-nee-ra-VAT-sa | We train every day.
 разминка | noun | warm-up | Сначала сделайте разминку. | | raz-MEEN-ka | Do a warm-up first.
-травма | noun | injury | У игрока травма ноги. | | TRAV-ma | The player has a leg injury.`
+травма | noun | injury | У игрока травма ноги. | | TRAV-ma | The player has a leg injury.`,
+u13: `
+бюджет | noun | budget | У нас небольшой бюджет. | | byood-ZHET | We have a small budget.
+банковский счёт | noun | bank account | Я открыл банковский счёт. | | BAN-kaf-skee shchot | I opened a bank account.
+вклад | noun | deposit, savings account | У меня вклад в банке. | | fklat | I have a deposit at the bank.
+процент | noun | per cent, interest | Банк даёт десять процентов. | | pra-TSENT | The bank gives ten per cent.
+мелочь | noun | small change | У вас есть мелочь? | | MYE-lach | Do you have any small change?
+купюра | noun | banknote | Это купюра в пять тысяч тенге. | | koo-PYOO-ra | This is a five-thousand-tenge note.
+монета | noun | coin | Я нашёл старую монету. | | ma-NYE-ta | I found an old coin.
+валюта | noun | currency | Какая валюта в Казахстане? | | va-LYOO-ta | What is the currency in Kazakhstan?
+курс | noun | exchange rate, course | Какой сегодня курс доллара? | | koors | What is the dollar rate today?
+обмен | noun | exchange | Где здесь обмен валюты? | | ab-MYEN | Where is the currency exchange here?
+покупка | noun | purchase | Это хорошая покупка. | | pa-KOOP-ka | This is a good purchase.
+продажа | noun | sale (selling) | Дом выставлен на продажу. | | pra-DA-zha | The house is up for sale.
+распродажа | noun | sale (reduced prices) | В магазине распродажа. | | ras-pra-DA-zha | There is a sale at the shop.
+ценник | noun | price tag | На ценнике другая цена. | | TSEN-neek | The price tag shows a different price.
+бесплатный | adjective | free (no cost) | Вход бесплатный. | | bees-PLAT-ny | Entry is free.
+платный | adjective | paid, not free | Это платная парковка. | | PLAT-ny | This is paid parking.
+заплатить | verb | to pay | Я заплатил за обед. | | za-pla-TEET | I paid for lunch.
+оплатить | verb | to pay (a bill) | Нужно оплатить счёт до пятницы. | | a-pla-TEET | The bill must be paid by Friday.
+одолжить | verb | to lend | Одолжи мне тысячу тенге. | | a-dal-ZHYT | Lend me a thousand tenge.
+занять | verb | to borrow | Я занял деньги у брата. | | za-NYAT | I borrowed money from my brother.
+сбережения | noun | savings | У них есть сбережения. | | zbee-ree-ZHE-nee-ya | They have savings.
+богатство | noun | wealth | Здоровье — главное богатство. | | ba-GATST-va | Health is the greatest wealth.
+бедность | noun | poverty | Бедность — серьёзная проблема. | | BYED-nast | Poverty is a serious problem.
+инфляция | noun | inflation | Инфляция выросла. | | een-FLYA-tsee-ya | Inflation has risen.
+кризис | noun | crisis | Во время кризиса цены росли. | | KREE-zees | During the crisis prices rose.
+экономика | noun | economy, economics | Экономика страны растёт. | | e-ka-NO-mee-ka | The country’s economy is growing.
+заработок | noun | earnings | Это мой первый заработок. | | ZA-ra-ba-tak | These are my first earnings.
+рассрочка | noun | payment by instalments | Мы купили диван в рассрочку. | | ras-SROCH-ka | We bought the sofa in instalments.
+аванс | noun | advance payment | Аванс платят пятнадцатого числа. | | a-VANS | The advance is paid on the fifteenth.
+пособие | noun | benefit, allowance | Она получает пособие на ребёнка. | | pa-SO-bee-ye | She receives child benefit.
+подорожать | verb | to go up in price | Хлеб подорожал. | | pa-da-ra-ZHAT | Bread has gone up in price.
+подешеветь | verb | to go down in price | Телефоны подешевели. | | pa-dee-she-VYET | Phones have gone down in price.`,
+u14: `
+ритуал | noun | ritual | Это древний ритуал. | | ree-too-AL | This is an ancient ritual.
+церемония | noun | ceremony | Церемония начнётся в полдень. | | tse-ree-MO-nee-ya | The ceremony will begin at noon.
+свадебный | adjective | wedding | Это свадебное платье. | | SVA-deeb-ny | This is a wedding dress.
+юрта | noun | yurt | Кочевники жили в юртах. | | YOOR-ta | Nomads lived in yurts.
+кочевой | adjective | nomadic | Это кочевой народ. | | ka-chee-VOY | This is a nomadic people.
+домбра | noun | dombra | Дедушка играет на домбре. | | dam-BRA | Grandfather plays the dombra.
+национальный костюм | noun | national dress | Девочка в национальном костюме. | | na-tsee-a-NAL-ny kas-TYOOM | The girl is in national dress.
+орнамент | noun | ornament, pattern | На ковре казахский орнамент. | | ar-NA-meent | The carpet has a Kazakh pattern.
+колыбель | noun | cradle | Ребёнок спит в колыбели. | | ka-ly-BYEL | The baby is sleeping in the cradle.
+новорождённый | noun | newborn baby | В семье новорождённый. | | na-va-razh-DYON-ny | There is a newborn in the family.
+старейшина | noun | elder | Старейшина сказал первое слово. | | sta-REY-shee-na | The elder spoke first.
+благословение | noun | blessing | Родители дали благословение. | | bla-ga-sla-VYE-nee-ye | The parents gave their blessing.
+застолье | noun | festive meal | Застолье шло до ночи. | | za-STOL-ye | The festive meal went on until night.
+почёт | noun | honour, respect | Гостя встретили с почётом. | | pa-CHOT | The guest was met with honour.
+почётный гость | noun | guest of honour | Вы наш почётный гость. | | pa-CHOT-ny gost | You are our guest of honour.
+уважаемый | adjective | respected, dear (in address) | Уважаемые гости, добро пожаловать! | | oo-va-ZHA-ye-my | Dear guests, welcome!
+хозяйка | noun | hostess, landlady | Хозяйка принесла чай. | | kha-ZYAY-ka | The hostess brought tea.
+принимать гостей | verb | to receive guests | Мы любим принимать гостей. | | pree-nee-MAT gas-TYEY | We love receiving guests.
+накрыть на стол | verb | to lay the table | Помоги мне накрыть на стол. | | na-KRYT na stol | Help me lay the table.
+скатерть | noun | tablecloth | На столе белая скатерть. | | SKA-teert | There is a white cloth on the table.
+пословица | noun | proverb | Это казахская пословица. | | pa-SLO-vee-tsa | This is a Kazakh proverb.
+легенда | noun | legend | Об этом озере есть легенда. | | lee-GYEN-da | There is a legend about this lake.
+суеверие | noun | superstition | Это старое суеверие. | | soo-ye-VYE-ree-ye | This is an old superstition.
+примета | noun | omen, sign | Есть такая примета. | | pree-MYE-ta | There is such an omen.
+символ | noun | symbol | Орёл — символ свободы. | | SEEM-val | The eagle is a symbol of freedom.
+пожать руку | verb | to shake hands | Он пожал мне руку. | | pa-ZHAT ROO-koo | He shook my hand.
+вежливость | noun | politeness | Вежливость ничего не стоит. | | VYEZH-lee-vast | Politeness costs nothing.
+поздравить | verb | to congratulate (once) | Я поздравил друга с праздником. | | paz-DRA-veet | I wished my friend a happy holiday.
+дарить | verb | to give (presents) | На Новый год дарят подарки. | | da-REET | People give presents at New Year.
+родина | noun | homeland | Казахстан — моя родина. | | RO-dee-na | Kazakhstan is my homeland.
+гордость | noun | pride | Он гордость нашей школы. | | GOR-dast | He is the pride of our school.
+род | noun | clan, family line | Он знает историю своего рода. | | rot | He knows the history of his family line.`,
+u15: `
+сервис | noun | service | В гостинице хороший сервис. | | SER-vees | The hotel has good service.
+служба поддержки | noun | customer support | Позвоните в службу поддержки. | | SLOOZH-ba pad-DYERSH-kee | Call customer support.
+оператор | noun | operator | Оператор ответит через минуту. | | a-pee-RA-tar | An operator will answer in a minute.
+администратор | noun | receptionist, administrator | Спросите у администратора. | | ad-mee-nee-STRA-tar | Ask at reception.
+заявка | noun | request, application | Я оставил заявку на сайте. | | za-YAF-ka | I left a request on the website.
+претензия | noun | formal complaint, claim | У меня претензия к качеству. | | pree-TYEN-zee-ya | I have a complaint about the quality.
+отзыв | noun | review, feedback | Оставьте отзыв о товаре. | | OT-zyf | Leave a review of the product.
+недоволен | adjective | displeased | Клиент недоволен. | | nee-da-VO-leen | The customer is displeased.
+разочарован | adjective | disappointed | Я разочарован обслуживанием. | | ra-za-cha-RO-van | I am disappointed with the service.
+вежливо | adverb | politely | Он вежливо ответил. | | VYEZH-lee-va | He answered politely.
+грубо | adverb | rudely | Продавец говорил грубо. | | GROO-ba | The shop assistant spoke rudely.
+грубый | adjective | rude | Это был грубый ответ. | | GROO-by | That was a rude answer.
+ожидание | noun | waiting | Время ожидания — десять минут. | | a-zhy-DA-nee-ye | The waiting time is ten minutes.
+поломка | noun | breakdown | Причина поломки неизвестна. | | pa-LOM-ka | The cause of the breakdown is unknown.
+дефект | noun | defect | У телефона заводской дефект. | | dee-FYEKT | The phone has a factory defect.
+неисправность | noun | fault | Мастер нашёл неисправность. | | nee-ees-PRAV-nast | The repairman found the fault.
+заменить | verb | to replace | Нам заменили телефон. | | za-mee-NEET | They replaced our phone.
+замена | noun | replacement | Замена бесплатная. | | za-MYE-na | The replacement is free.
+мастер | noun | repairman, master | Мастер придёт завтра. | | MAS-ter | The repairman will come tomorrow.
+срок | noun | period, deadline | Срок ремонта — три дня. | | srok | The repair time is three days.
+компенсация | noun | compensation | Мне выплатили компенсацию. | | kam-peen-SA-tsee-ya | I was paid compensation.
+бонус | noun | bonus, extra | Магазин дал мне бонус. | | BO-noos | The shop gave me a bonus.
+упаковка | noun | packaging | Упаковка была открыта. | | oo-pa-KOF-ka | The packaging was open.
+доставка | noun | delivery | Доставка занимает два дня. | | da-STAF-ka | Delivery takes two days.
+курьер | noun | courier | Курьер привёз заказ. | | koor-YER | The courier brought the order.
+подтвердить | verb | to confirm | Подтвердите ваш заказ. | | pat-tveer-DEET | Confirm your order.
+подтверждение | noun | confirmation | Я получил подтверждение. | | pat-tveer-ZHDYE-nee-ye | I received confirmation.
+обещание | noun | promise | Они выполнили обещание. | | a-bee-SHCHA-nee-ye | They kept their promise.
+разобраться | verb | to sort out, to look into | Мы разберёмся в этой ситуации. | | ra-za-BRAT-sa | We will look into this situation.
+обратиться | verb | to turn to, to contact | Обратитесь к администратору. | | ab-ra-TEET-sa | Contact the receptionist.
+причина | noun | reason, cause | В чём причина задержки? | | pree-CHEE-na | What is the reason for the delay?
+недоразумение | noun | misunderstanding | Это просто недоразумение. | | nee-da-ra-zoo-MYE-nee-ye | This is simply a misunderstanding.`,
+u16: `
+речь | noun | speech | У него красивая речь. | | ryech | He speaks beautifully.
+фраза | noun | phrase | Запомните эту фразу. | | FRA-za | Remember this phrase.
+текст | noun | text | Прочитайте текст. | | tyekst | Read the text.
+звук | noun | sound | Это трудный звук. | | zvook | This is a difficult sound.
+ударение | noun | stress (in a word) | Где здесь ударение? | | oo-da-RYE-nee-ye | Where is the stress here?
+интонация | noun | intonation | В вопросе другая интонация. | | een-ta-NA-tsee-ya | A question has a different intonation.
+словарный запас | noun | vocabulary | У неё большой словарный запас. | | sla-VAR-ny za-PAS | She has a large vocabulary.
+диалект | noun | dialect | В этом селе свой диалект. | | dee-a-LYEKT | This village has its own dialect.
+жест | noun | gesture | Он показал жестом. | | zhest | He showed with a gesture.
+молчать | verb | to be silent | Почему ты молчишь? | | mal-CHAT | Why are you silent?
+шептать | verb | to whisper | Дети шепчут на уроке. | | shep-TAT | The children whisper in class.
+кричать | verb | to shout | Не кричи, пожалуйста. | | kree-CHAT | Do not shout, please.
+перебивать | verb | to interrupt | Не перебивайте меня. | | pee-ree-bee-VAT | Do not interrupt me.
+объяснить | verb | to explain | Объясните, пожалуйста, это слово. | | ab-yas-NEET | Please explain this word.
+уточнить | verb | to check, to clarify | Я хочу уточнить время. | | oo-tach-NEET | I want to check the time.
+переспросить | verb | to ask again | Я не понял и переспросил. | | pee-ree-spra-SEET | I did not understand and asked again.
+выразить | verb | to express | Мне трудно выразить мысль. | | VY-ra-zeet | It is hard for me to express the thought.
+описать | verb | to describe | Опишите ваш город. | | a-pee-SAT | Describe your city.
+обсудить | verb | to discuss (and finish) | Давайте обсудим план. | | ap-soo-DEET | Let’s discuss the plan.
+убедить | verb | to convince | Он убедил меня. | | oo-bee-DEET | He convinced me.
+согласие | noun | agreement, consent | Нужно согласие родителей. | | sa-GLA-see-ye | The parents’ consent is needed.
+обращение | noun | form of address | «Вы» — вежливое обращение. | | ab-ra-SHCHE-nee-ye | “Вы” is a polite form of address.
+приветствие | noun | greeting | Это обычное приветствие. | | pree-VYETST-vee-ye | This is a usual greeting.
+прощание | noun | farewell | Прощание было грустным. | | pra-SHCHA-nee-ye | The farewell was sad.
+беседа | noun | talk, conversation | У нас была долгая беседа. | | bee-SYE-da | We had a long talk.
+диалог | noun | dialogue | Прочитайте диалог. | | dee-a-LOK | Read the dialogue.
+переводчик | noun | translator, interpreter | Она работает переводчиком. | | pee-ree-VOT-cheek | She works as an interpreter.
+устный | adjective | oral, spoken | Завтра устный экзамен. | | OOS-ny | Tomorrow there is an oral exam.
+письменный | adjective | written | Это письменное задание. | | PEES-meen-ny | This is a written task.
+иностранный | adjective | foreign | Я учу иностранный язык. | | ee-na-STRAN-ny | I am learning a foreign language.
+шутка | noun | joke | Это была шутка. | | SHOOT-ka | It was a joke.
+комплимент | noun | compliment | Спасибо за комплимент. | | kam-plee-MYENT | Thank you for the compliment.`,
+u17: `
+конституция | noun | constitution | Это написано в конституции. | | kan-stee-TOO-tsee-ya | It is written in the constitution.
+гражданство | noun | citizenship | У него казахстанское гражданство. | | grazh-DANST-va | He has Kazakhstani citizenship.
+удостоверение | noun | identity card | Покажите удостоверение. | | oo-da-sta-vee-RYE-nee-ye | Show your identity card.
+свидетель | noun | witness | Свидетель видел машину. | | svee-DYE-teel | The witness saw the car.
+преступление | noun | crime | Это серьёзное преступление. | | pree-stoop-LYE-nee-ye | This is a serious crime.
+преступник | noun | criminal | Преступника нашли. | | pree-STOOP-neek | The criminal was found.
+вор | noun | thief | Вор украл телефон. | | vor | A thief stole the phone.
+кража | noun | theft | В магазине была кража. | | KRA-zha | There was a theft at the shop.
+украсть | verb | to steal | У меня украли сумку. | | oo-KRAST | My bag was stolen.
+жертва | noun | victim | Жертве помогли врачи. | | ZHERT-va | Doctors helped the victim.
+адвокат | noun | lawyer, barrister | Мне нужен адвокат. | | ad-va-KAT | I need a lawyer.
+приговор | noun | verdict, sentence | Суд объявил приговор. | | pree-ga-VOR | The court announced the verdict.
+тюрьма | noun | prison | Он был в тюрьме два года. | | tyoor-MA | He was in prison for two years.
+наказание | noun | punishment | Наказание было строгим. | | na-ka-ZA-nee-ye | The punishment was severe.
+виновный | adjective | guilty | Суд назвал его виновным. | | vee-NOV-ny | The court found him guilty.
+невиновный | adjective | innocent | Он оказался невиновным. | | nee-vee-NOV-ny | He turned out to be innocent.
+арестовать | verb | to arrest | Полиция арестовала двух человек. | | a-rees-ta-VAT | The police arrested two people.
+расследование | noun | investigation | Расследование идёт месяц. | | ras-SLYE-da-va-nee-ye | The investigation has lasted a month.
+доказательство | noun | evidence, proof | У полиции нет доказательств. | | da-ka-ZA-teel-stva | The police have no evidence.
+обвинить | verb | to accuse | Его обвинили в краже. | | ab-vee-NEET | He was accused of theft.
+защита | noun | defence, protection | Каждый имеет право на защиту. | | za-SHCHEE-ta | Everyone has the right to a defence.
+права человека | noun | human rights | Права человека защищает закон. | | pra-VA chee-la-VYE-ka | Human rights are protected by law.
+справедливость | noun | justice, fairness | Люди хотят справедливости. | | spra-veed-LEE-vast | People want justice.
+справедливый | adjective | fair, just | Это справедливое решение. | | spra-veed-LEE-vy | This is a fair decision.
+равенство | noun | equality | Закон говорит о равенстве всех. | | RA-veen-stva | The law speaks of equality for all.
+свобода | noun | freedom | Свобода — большая ценность. | | sva-BO-da | Freedom is a great value.
+запрет | noun | ban | В парке запрет на машины. | | za-PRYET | There is a ban on cars in the park.
+нарушение | noun | violation, offence | За нарушение есть штраф. | | na-roo-SHE-nee-ye | There is a fine for the offence.
+охранник | noun | security guard | У входа стоит охранник. | | a-KHRAN-neek | A security guard stands at the entrance.
+водительские права | noun | driving licence | У меня есть водительские права. | | va-DEE-teel-skee-ye pra-VA | I have a driving licence.
+правительство | noun | government | Правительство приняло новый закон. | | pra-VEE-teel-stva | The government passed a new law.
+выборы | noun | elections | Выборы будут весной. | | VY-ba-ry | The elections will be in spring.`,
+u18: `
+теория | noun | theory | Это интересная теория. | | tee-O-ree-ya | This is an interesting theory.
+гипотеза | noun | hypothesis | Гипотезу нужно проверить. | | gee-PO-tee-za | The hypothesis needs to be tested.
+метод | noun | method | Это новый метод лечения. | | MYE-tat | This is a new method of treatment.
+вывод | noun | conclusion | Какой вывод можно сделать? | | VY-vat | What conclusion can be drawn?
+формула | noun | formula | Запишите формулу. | | FOR-moo-la | Write down the formula.
+наблюдение | noun | observation | Это интересное наблюдение. | | na-blyoo-DYE-nee-ye | This is an interesting observation.
+наблюдать | verb | to observe | Учёные наблюдают за птицами. | | na-blyoo-DAT | Scientists observe the birds.
+измерить | verb | to measure | Измерьте температуру воды. | | eez-MYE-reet | Measure the temperature of the water.
+сравнить | verb | to compare | Сравните два результата. | | srav-NEET | Compare the two results.
+микроскоп | noun | microscope | Посмотрите в микроскоп. | | meek-ra-SKOP | Look through the microscope.
+телескоп | noun | telescope | В телескоп видны звёзды. | | tee-lee-SKOP | Stars can be seen through the telescope.
+космос | noun | space | Человек полетел в космос. | | KOS-mas | Man flew into space.
+спутник | noun | satellite | Спутник летит вокруг Земли. | | SPOOT-neek | The satellite flies around the Earth.
+звезда | noun | star | На небе яркая звезда. | | zvyez-DA | There is a bright star in the sky.
+вселенная | noun | the universe | Вселенная очень большая. | | fsee-LYEN-na-ya | The universe is very big.
+атом | noun | atom | Всё состоит из атомов. | | A-tam | Everything is made of atoms.
+клетка | noun | cell | Это живая клетка. | | KLYET-ka | This is a living cell.
+ген | noun | gene | Учёные изучают этот ген. | | gyen | Scientists are studying this gene.
+вещество | noun | substance | Это опасное вещество. | | vee-shchest-VO | This is a dangerous substance.
+химия | noun | chemistry | Мой любимый предмет — химия. | | KHEE-mee-ya | My favourite subject is chemistry.
+физика | noun | physics | Физика объясняет мир. | | FEE-zee-ka | Physics explains the world.
+биология | noun | biology | На биологии мы изучаем растения. | | bee-a-LO-gee-ya | In biology we study plants.
+математика | noun | mathematics | Математика нужна всем. | | ma-tee-MA-tee-ka | Everyone needs mathematics.
+астрономия | noun | astronomy | Он увлекается астрономией. | | as-tra-NO-mee-ya | He is keen on astronomy.
+медицина | noun | medicine (the science) | Медицина быстро развивается. | | mee-dee-TSY-na | Medicine is developing quickly.
+техника | noun | technology, equipment | В лаборатории новая техника. | | TYEKH-nee-ka | The laboratory has new equipment.
+изобретатель | noun | inventor | Он известный изобретатель. | | ee-za-bree-TA-teel | He is a well-known inventor.
+исследователь | noun | researcher | Она молодой исследователь. | | ees-SLYE-da-va-teel | She is a young researcher.
+создать | verb | to create | Учёные создали новое лекарство. | | saz-DAT | Scientists created a new medicine.
+развитие | noun | development | Наука важна для развития страны. | | raz-VEE-tee-ye | Science is important for the country’s development.
+прогресс | noun | progress | Это большой прогресс. | | pra-GRYES | This is great progress.
+точный | adjective | exact, precise | Нужны точные данные. | | TOCH-ny | Precise data are needed.`
 });

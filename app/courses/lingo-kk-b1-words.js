@@ -1,5 +1,5 @@
 /* IF Lingo · Kazakh B1 word bank: 32 more words for every unit, studied in the Vocabulary tab.
-   Built so far: units 1 to 12 (384 words). With the 240 lesson words, B1 will have about 1,000 words.
+   Built so far: units 1 to 18 (576 words). With the 240 lesson words, B1 will have about 1,000 words.
    word | part of speech | meaning in English | example | (empty) | how to say it | the example in English */
 IFX.moreWords('kk-b1', {
 u1: `
@@ -397,5 +397,203 @@ u12: `
 жарақат | noun | injury | Ойыншы аяғынан жарақат алды. | | zha-ra-QAT | The player injured his leg.
 жүлде | noun | prize | Ол бірінші жүлдені алды. | | zhul-DE | She took the first prize.
 қарсылас | noun | opponent | Біздің қарсыласымыз мықты. | | qar-sy-LAS | Our opponent is strong.
-ұпай | noun | point | Команда үш ұпай алды. | | oo-PAY | The team got three points.`
+ұпай | noun | point | Команда үш ұпай алды. | | oo-PAY | The team got three points.`,
+u13: `
+бюджет | noun | budget | Біздің бюджетіміз шағын. | | byood-ZHET | We have a small budget.
+банк шоты | noun | bank account | Мен банк шотын аштым. | | bank sho-TY | I opened a bank account.
+салым | noun | deposit, savings account | Менің банкте салымым бар. | | sa-LYM | I have a deposit at the bank.
+пайыз | noun | per cent, interest | Банк он пайыз береді. | | pa-YYZ | The bank gives ten per cent.
+ұсақ ақша | noun | small change | Сізде ұсақ ақша бар ма? | | oo-SAQ aq-SHA | Do you have any small change?
+қағаз ақша | noun | banknote | Бұл — бес мың теңгелік қағаз ақша. | | qa-GHAZ aq-SHA | This is a five-thousand-tenge note.
+тиын | noun | coin, tiyn | Мен ескі тиын тауып алдым. | | ti-YN | I found an old coin.
+бағам | noun | exchange rate | Бүгін доллардың бағамы қандай? | | ba-GHAM | What is the dollar rate today?
+айырбас | noun | exchange | Мұнда валюта айырбасы қайда? | | ay-yr-BAS | Where is the currency exchange here?
+сатылым | noun | sale (selling) | Үй сатылымға шығарылды. | | sa-ty-LYM | The house was put up for sale.
+несие картасы | noun | credit card | Мен несие картасымен төледім. | | ne-si-YE KAR-ta-sy | I paid by credit card.
+ақылы | adjective | paid, not free | Бұл — ақылы тұрақ. | | a-qy-LY | This is paid parking.
+қарызға беру | verb | to lend | Маған мың теңге қарызға берші. | | qa-ryz-GHA be-ROO | Lend me a thousand tenge, please.
+қарызға алу | verb | to borrow | Мен ағамнан ақша қарызға алдым. | | qa-ryz-GHA a-LOO | I borrowed money from my brother.
+байлық | noun | wealth | Денсаулық — басты байлық. | | bay-LYQ | Health is the greatest wealth.
+кедейлік | noun | poverty | Кедейлік — күрделі мәселе. | | ke-dey-LIK | Poverty is a serious problem.
+инфляция | noun | inflation | Инфляция өсті. | | in-FLYA-tsi-ya | Inflation has risen.
+дағдарыс | noun | crisis | Дағдарыс кезінде баға өсті. | | dagh-da-RYS | During the crisis prices rose.
+экономика | noun | economy, economics | Елдің экономикасы өсіп келеді. | | e-ko-NO-mi-ka | The country’s economy is growing.
+бөліп төлеу | verb | to pay in instalments | Біз диванды бөліп төлеуге алдық. | | bo-LIP to-LEU | We bought the sofa in instalments.
+аванс | noun | advance payment | Аванс айдың он бесінде төленеді. | | a-VANS | The advance is paid on the fifteenth.
+жәрдемақы | noun | benefit, allowance | Ол балаға жәрдемақы алады. | | zhar-dem-a-QY | She receives child benefit.
+қымбаттау | verb | to go up in price | Нан қымбаттады. | | qym-bat-TAU | Bread has gone up in price.
+арзандау | verb | to go down in price | Телефондар арзандады. | | ar-zan-DAU | Phones have gone down in price.
+саудаласу | verb | to bargain | Базарда саудаласуға болады. | | sa-oo-da-la-SOO | You can bargain at the market.
+ақша аудару | verb | to transfer money | Мен анама ақша аудардым. | | aq-SHA a-oo-da-ROO | I transferred money to my mother.
+шот | noun | account, bill | Шотты жұмаға дейін төлеу керек. | | shot | The bill must be paid by Friday.
+кассир | noun | cashier | Кассир чек берді. | | kas-SIR | The cashier gave a receipt.
+қаржы | noun | finance, funds | Ол қаржы саласында жұмыс істейді. | | qar-ZHY | He works in finance.
+үнемшіл | adjective | thrifty | Менің әжем өте үнемшіл. | | u-nem-SHIL | My grandmother is very thrifty.
+ысырап | noun | waste (of money, food) | Бұл — ақшаны ысырап ету. | | y-sy-RAP | This is a waste of money.
+қалта ақша | noun | pocket money | Балаға қалта ақша бердім. | | qal-TA aq-SHA | I gave the child pocket money.`,
+u14: `
+салт | noun | custom | Бұл — ескі салт. | | salt | This is an old custom.
+киіз үй | noun | yurt | Көшпенділер киіз үйде тұрған. | | ki-YIZ uy | Nomads lived in yurts.
+көшпелі | adjective | nomadic | Бұл — көшпелі халық. | | kosh-pe-LI | This is a nomadic people.
+ұлттық киім | noun | national dress | Қыз ұлттық киім киген. | | oolt-TYQ ki-YIM | The girl is wearing national dress.
+ою-өрнек | noun | ornament, pattern | Кілемде қазақ ою-өрнегі бар. | | o-YOO or-NEK | The carpet has a Kazakh pattern.
+бесік | noun | cradle | Нәресте бесікте ұйықтап жатыр. | | be-SIK | The baby is sleeping in the cradle.
+нәресте | noun | newborn baby | Отбасында нәресте дүниеге келді. | | na-res-TE | A baby was born in the family.
+шілдехана | noun | celebration of a birth | Олар шілдехана жасады. | | shil-de-kha-NA | They held a celebration for the birth.
+тұсау кесу | noun | first-steps ceremony | Бүгін баланың тұсау кесуі. | | too-SAU ke-SOO | Today is the child’s first-steps ceremony.
+құда | noun | in-law (parent of a son- or daughter-in-law) | Бізге құдалар келді. | | qoo-DA | Our in-laws came to visit us.
+келін | noun | daughter-in-law, bride | Келін шай құйды. | | ke-LIN | The daughter-in-law poured the tea.
+беташар | noun | ceremony of unveiling the bride | Тойда беташар болды. | | bet-a-SHAR | The bride-unveiling ceremony took place at the wedding.
+жасау | noun | dowry | Қыздың жасауы дайын. | | zha-SAU | The girl’s dowry is ready.
+төр | noun | place of honour | Қонақты төрге отырғызды. | | tor | The guest was seated in the place of honour.
+сыйлы қонақ | noun | guest of honour | Сіз — біздің сыйлы қонағымызсыз. | | syy-LY qo-NAQ | You are our guest of honour.
+құрметті | adjective | respected, dear (in address) | Құрметті қонақтар, қош келдіңіздер! | | qoor-met-TI | Dear guests, welcome!
+дастарқан жаю | verb | to lay the table | Анам дастарқан жайды. | | das-tar-QAN zha-YOO | My mother laid the table.
+дәм тату | verb | to taste food (as a guest) | Үйге кіріп, дәм татыңыз. | | dam ta-TOO | Come in and have something to eat.
+мақал | noun | proverb | Бұл — қазақ мақалы. | | ma-QAL | This is a Kazakh proverb.
+аңыз | noun | legend | Бұл көл туралы аңыз бар. | | a-NGYZ | There is a legend about this lake.
+ырым | noun | superstition, omen | Бұл — ескі ырым. | | y-RYM | This is an old superstition.
+нышан | noun | symbol, sign | Қыран — еркіндіктің нышаны. | | ny-SHAN | The eagle is a symbol of freedom.
+қол алысу | verb | to shake hands | Біз қол алыстық. | | qol a-ly-SOO | We shook hands.
+әдептілік | noun | good manners, politeness | Әдептілік — жақсы қасиет. | | a-dep-ti-LIK | Good manners are a fine quality.
+сәлем беру | verb | to greet | Үлкендерге сәлем беріңіз. | | sa-LEM be-ROO | Greet your elders.
+туған жер | noun | homeland, birthplace | Қостанай — менің туған жерім. | | too-GHAN zher | Kostanay is my birthplace.
+мақтаныш | noun | pride | Ол — мектебіміздің мақтанышы. | | maq-ta-NYSH | He is the pride of our school.
+ру | noun | clan | Ол өз руының тарихын біледі. | | roo | He knows the history of his clan.
+жеті ата | noun | seven generations of ancestors | Әр қазақ жеті атасын білуі керек. | | zhe-TI a-TA | Every Kazakh should know seven generations of ancestors.
+шежіре | noun | family tree, genealogy | Атам шежірені жақсы біледі. | | she-zhi-RE | My grandfather knows the family tree well.
+айтыс | noun | contest of improvising poets | Кеше айтыс болды. | | ay-TYS | There was a poets’ contest yesterday.
+сүйінші | noun | gift for bringing good news | Сүйінші! Ұлың келді! | | su-yin-SHI | Good news! Your son has come!`,
+u15: `
+сервис | noun | service | Қонақүйде сервис жақсы. | | SER-vis | The hotel has good service.
+қолдау қызметі | noun | customer support | Қолдау қызметіне қоңырау шалыңыз. | | qol-DAU qyz-me-TI | Call customer support.
+оператор | noun | operator | Оператор бір минуттан кейін жауап береді. | | o-pe-RA-tor | An operator will answer in a minute.
+әкімші | noun | receptionist, administrator | Әкімшіден сұраңыз. | | a-kim-SHI | Ask at reception.
+өтініш | noun | request, application | Мен сайтта өтініш қалдырдым. | | o-ti-NISH | I left a request on the website.
+наразылық | noun | complaint, dissatisfaction | Менің сапаға наразылығым бар. | | na-ra-zy-LYQ | I have a complaint about the quality.
+кері байланыс | noun | feedback | Кері байланыс қалдырыңыз. | | ke-RI bay-la-NYS | Leave your feedback.
+риза емес | adjective | displeased | Клиент риза емес. | | ri-ZA e-MES | The customer is displeased.
+көңілі қалу | verb | to be disappointed | Қызмет көрсетуден көңілім қалды. | | ko-ngi-LI qa-LOO | I was disappointed with the service.
+дөрекі | adjective | rude | Бұл дөрекі жауап болды. | | do-re-KI | That was a rude answer.
+күту уақыты | noun | waiting time | Күту уақыты — он минут. | | ku-TOO wa-qy-TY | The waiting time is ten minutes.
+істен шығу | verb | to break down | Кір жуғыш машина істен шықты. | | is-TEN shy-GHOO | The washing machine has broken down.
+ақаулық | noun | fault | Шебер ақаулықты тапты. | | a-qa-oo-LYQ | The repairman found the fault.
+ауыстыру | verb | to replace, to change | Бізге телефонды ауыстырып берді. | | a-wys-ty-ROO | They replaced our phone.
+мерзім | noun | period, deadline | Жөндеу мерзімі — үш күн. | | mer-ZIM | The repair time is three days.
+өтемақы | noun | compensation | Маған өтемақы төледі. | | o-tem-a-QY | I was paid compensation.
+бонус | noun | bonus, extra | Дүкен маған бонус берді. | | BO-noos | The shop gave me a bonus.
+қаптама | noun | packaging | Қаптама ашық болды. | | qap-ta-MA | The packaging was open.
+жеткізу қызметі | noun | delivery service | Жеткізу қызметі екі күн алады. | | zhet-ki-ZOO qyz-me-TI | The delivery service takes two days.
+курьер | noun | courier | Курьер тапсырысты әкелді. | | koor-YER | The courier brought the order.
+растау | verb | to confirm | Тапсырысыңызды растаңыз. | | ras-TAU | Confirm your order.
+растама | noun | confirmation | Мен растама алдым. | | ras-ta-MA | I received confirmation.
+уәде | noun | promise | Олар уәдесін орындады. | | wa-DE | They kept their promise.
+жүгіну | verb | to turn to, to contact | Әкімшіге жүгініңіз. | | zhu-gi-NOO | Contact the receptionist.
+себеп | noun | reason, cause | Кідірістің себебі неде? | | se-BEP | What is the reason for the delay?
+түсінбеушілік | noun | misunderstanding | Бұл — жай түсінбеушілік. | | tu-sin-be-oo-shi-LIK | This is simply a misunderstanding.
+дау | noun | dispute | Олардың арасында дау шықты. | | dau | A dispute arose between them.
+кінә | noun | fault, blame | Бұл — менің кінәм. | | ki-NA | This is my fault.
+айыптау | verb | to blame, to accuse | Мені айыптамаңыз. | | a-yyp-TAU | Do not blame me.
+кешірім сұрау | verb | to apologise | Ол кешірім сұрады. | | ke-shi-RIM soo-RAU | He apologised.
+сапасыз | adjective | poor-quality | Бұл — сапасыз тауар. | | sa-pa-SYZ | These are poor-quality goods.
+тұтынушы | noun | consumer, customer | Тұтынушының құқығы бар. | | too-ty-noo-SHY | The consumer has rights.`,
+u16: `
+сөйлеу мәнері | noun | manner of speaking | Оның сөйлеу мәнері әдемі. | | soy-LEU ma-ne-RI | He has a pleasant way of speaking.
+сөйлем | noun | sentence | Осы сөйлемді оқыңыз. | | soy-LEM | Read this sentence.
+мәтін | noun | text | Мәтінді оқыңыз. | | ma-TIN | Read the text.
+дыбыс | noun | sound | Бұл — қиын дыбыс. | | dy-BYS | This is a difficult sound.
+екпін | noun | stress (in a word) | Мұнда екпін қайда түседі? | | ek-PIN | Where does the stress fall here?
+дауыс ырғағы | noun | intonation | Сұрақтың дауыс ырғағы басқа. | | da-WYS yr-gha-GHY | A question has a different intonation.
+сөздік қор | noun | vocabulary | Оның сөздік қоры бай. | | soz-DIK qor | She has a rich vocabulary.
+диалект | noun | dialect | Бұл ауылдың өз диалектісі бар. | | di-a-LEKT | This village has its own dialect.
+ым | noun | gesture, sign | Ол ыммен көрсетті. | | ym | He showed with a gesture.
+үндемеу | verb | to be silent | Сен неге үндемейсің? | | un-de-MEU | Why are you silent?
+сыбырлау | verb | to whisper | Балалар сабақта сыбырлайды. | | sy-byr-LAU | The children whisper in class.
+сөзін бөлу | verb | to interrupt | Менің сөзімді бөлмеңіз. | | so-ZIN bo-LOO | Do not interrupt me.
+нақтылау | verb | to check, to clarify | Мен уақытты нақтылағым келеді. | | naq-ty-LAU | I want to check the time.
+қайта сұрау | verb | to ask again | Мен түсінбей, қайта сұрадым. | | qay-TA soo-RAU | I did not understand and asked again.
+білдіру | verb | to express | Мен алғысымды білдіремін. | | bil-di-ROO | I express my thanks.
+сипаттау | verb | to describe | Қалаңызды сипаттаңыз. | | si-pat-TAU | Describe your city.
+сендіру | verb | to convince | Ол мені сендірді. | | sen-di-ROO | He convinced me.
+сәлемдесу | verb | to exchange greetings | Біз сәлемдестік. | | sa-lem-de-SOO | We greeted each other.
+диалог | noun | dialogue | Диалогты оқыңыз. | | di-a-LOG | Read the dialogue.
+аудармашы | noun | translator, interpreter | Ол аудармашы болып жұмыс істейді. | | a-oo-dar-ma-SHY | She works as an interpreter.
+ауызша | adjective | oral, spoken | Ертең ауызша емтихан болады. | | a-wyz-SHA | Tomorrow there is an oral exam.
+жазбаша | adjective | written | Бұл — жазбаша тапсырма. | | zhaz-ba-SHA | This is a written task.
+шет тілі | noun | foreign language | Мен шет тілін үйреніп жүрмін. | | shet ti-LI | I am learning a foreign language.
+екі тілді | adjective | bilingual | Ол — екі тілді бала. | | ye-KI til-DI | She is a bilingual child.
+әзіл | noun | joke | Бұл әзіл болды. | | a-ZIL | It was a joke.
+әзілдеу | verb | to joke | Ол әзілдегенді жақсы көреді. | | a-zil-DEU | He loves joking.
+мақтау | verb | to praise | Мұғалім оқушыны мақтады. | | maq-TAU | The teacher praised the pupil.
+тіл табысу | verb | to get on, to find a common language | Біз тез тіл табыстық. | | til ta-by-SOO | We got on quickly.
+ауызекі тіл | noun | spoken language | Бұл сөз ауызекі тілде қолданылады. | | a-wyz-e-KI til | This word is used in spoken language.
+әдеби тіл | noun | literary language | Газет әдеби тілде жазылады. | | a-de-BI til | A newspaper is written in literary language.
+мемлекеттік тіл | noun | state language | Қазақ тілі — мемлекеттік тіл. | | mem-le-ket-TIK til | Kazakh is the state language.
+мән | noun | sense, meaning | Бұл сөздің мәні терең. | | man | This word has a deep meaning.`,
+u17: `
+конституция | noun | constitution | Бұл конституцияда жазылған. | | kon-sti-TOO-tsi-ya | It is written in the constitution.
+азаматтық | noun | citizenship | Оның Қазақстан азаматтығы бар. | | a-za-mat-TYQ | He has Kazakhstani citizenship.
+жеке куәлік | noun | identity card | Жеке куәлігіңізді көрсетіңіз. | | zhe-KE koo-a-LIK | Show your identity card.
+куәгер | noun | witness | Куәгер көлікті көрген. | | koo-a-GER | The witness saw the car.
+қылмыс | noun | crime | Бұл — ауыр қылмыс. | | qyl-MYS | This is a serious crime.
+қылмыскер | noun | criminal | Қылмыскер табылды. | | qyl-mys-KER | The criminal was found.
+ұры | noun | thief | Ұры телефонды ұрлап кетті. | | oo-RY | A thief stole the phone.
+ұрлық | noun | theft | Дүкенде ұрлық болды. | | oor-LYQ | There was a theft at the shop.
+ұрлау | verb | to steal | Менің сөмкемді ұрлап кетті. | | oor-LAU | My bag was stolen.
+жәбірленуші | noun | victim | Жәбірленушіге дәрігерлер көмектесті. | | zha-bir-le-noo-SHI | Doctors helped the victim.
+адвокат | noun | lawyer, barrister | Маған адвокат керек. | | ad-vo-KAT | I need a lawyer.
+үкім | noun | verdict, sentence | Сот үкім шығарды. | | u-KIM | The court gave its verdict.
+түрме | noun | prison | Ол екі жыл түрмеде отырды. | | tur-ME | He was in prison for two years.
+жаза | noun | punishment | Жаза қатаң болды. | | zha-ZA | The punishment was severe.
+кінәсіз | adjective | innocent | Ол кінәсіз болып шықты. | | ki-na-SIZ | He turned out to be innocent.
+тұтқындау | verb | to arrest | Полиция екі адамды тұтқындады. | | toot-qyn-DAU | The police arrested two people.
+тергеу | noun | investigation | Тергеу бір айға созылды. | | ter-GEU | The investigation lasted a month.
+дәлел | noun | evidence, proof | Полицияда дәлел жоқ. | | da-LEL | The police have no evidence.
+күдікті | noun | suspect | Күдікті ұсталды. | | ku-dik-TI | The suspect was caught.
+қорғаушы | noun | defender, defence lawyer | Оның қорғаушысы бар. | | qor-gha-oo-SHY | He has a defence lawyer.
+адам құқықтары | noun | human rights | Адам құқықтарын заң қорғайды. | | a-DAM qoo-qyq-ta-RY | Human rights are protected by law.
+әділдік | noun | justice, fairness | Адамдар әділдікті қалайды. | | a-dil-DIK | People want justice.
+әділ | adjective | fair, just | Бұл — әділ шешім. | | a-DIL | This is a fair decision.
+теңдік | noun | equality | Заң бәрінің теңдігі туралы айтады. | | teng-DIK | The law speaks of equality for all.
+бостандық | noun | freedom | Бостандық — үлкен құндылық. | | bos-tan-DYQ | Freedom is a great value.
+бұзушылық | noun | violation, offence | Бұзушылық үшін айыппұл бар. | | boo-zoo-shy-LYQ | There is a fine for the offence.
+күзетші | noun | security guard | Кіреберісте күзетші тұр. | | ku-zet-SHI | A security guard stands at the entrance.
+жүргізуші куәлігі | noun | driving licence | Менің жүргізуші куәлігім бар. | | zhur-gi-zoo-SHI koo-a-li-GI | I have a driving licence.
+үкімет | noun | government | Үкімет жаңа заң қабылдады. | | u-ki-MET | The government passed a new law.
+сайлау | noun | elections | Сайлау көктемде өтеді. | | say-LAU | The elections will be in spring.
+дауыс беру | verb | to vote | Мен сайлауда дауыс бердім. | | da-WYS be-ROO | I voted in the elections.
+заңсыз | adjective | illegal | Бұл — заңсыз әрекет. | | zang-SYZ | This is an illegal act.`,
+u18: `
+теория | noun | theory | Бұл — қызықты теория. | | te-O-ri-ya | This is an interesting theory.
+гипотеза | noun | hypothesis | Гипотезаны тексеру керек. | | gi-po-TE-za | The hypothesis needs to be tested.
+әдіс | noun | method | Бұл — емдеудің жаңа әдісі. | | a-DIS | This is a new method of treatment.
+қорытынды | noun | conclusion | Қандай қорытынды жасауға болады? | | qo-ry-tyn-DY | What conclusion can be drawn?
+формула | noun | formula | Формуланы жазып алыңыз. | | FOR-moo-la | Write down the formula.
+бақылау | verb | to observe | Ғалымдар құстарды бақылайды. | | ba-qy-LAU | Scientists observe the birds.
+салыстыру | verb | to compare | Екі нәтижені салыстырыңыз. | | sa-lys-ty-ROO | Compare the two results.
+микроскоп | noun | microscope | Микроскоппен қараңыз. | | mik-ro-SKOP | Look through the microscope.
+телескоп | noun | telescope | Телескоптан жұлдыздар көрінеді. | | te-le-SKOP | Stars can be seen through the telescope.
+жерсерік | noun | satellite | Жерсерік Жерді айналып ұшады. | | zher-se-RIK | The satellite flies around the Earth.
+ғалам | noun | the universe | Ғалам өте үлкен. | | gha-LAM | The universe is very big.
+атом | noun | atom | Бәрі атомдардан тұрады. | | A-tom | Everything is made of atoms.
+жасуша | noun | cell | Бұл — тірі жасуша. | | zha-soo-SHA | This is a living cell.
+ген | noun | gene | Ғалымдар осы генді зерттеп жатыр. | | gen | Scientists are studying this gene.
+химия | noun | chemistry | Менің сүйікті пәнім — химия. | | KHI-mi-ya | My favourite subject is chemistry.
+физика | noun | physics | Физика әлемді түсіндіреді. | | FI-zi-ka | Physics explains the world.
+биология | noun | biology | Биология сабағында біз өсімдіктерді оқимыз. | | bi-o-LO-gi-ya | In biology we study plants.
+математика | noun | mathematics | Математика бәріне керек. | | ma-te-MA-ti-ka | Everyone needs mathematics.
+астрономия | noun | astronomy | Ол астрономияға қызығады. | | as-tro-NO-mi-ya | He is interested in astronomy.
+медицина | noun | medicine (the science) | Медицина тез дамып келеді. | | me-di-TSI-na | Medicine is developing quickly.
+техника | noun | technology, equipment | Зертханада жаңа техника бар. | | TEKH-ni-ka | The laboratory has new equipment.
+өнертапқыш | noun | inventor | Ол — әйгілі өнертапқыш. | | o-ner-tap-QYSH | He is a famous inventor.
+жасап шығару | verb | to create, to produce | Ғалымдар жаңа дәрі жасап шығарды. | | zha-SAP shy-gha-ROO | Scientists created a new medicine.
+даму | verb | to develop | Ғылым тез дамып жатыр. | | da-MOO | Science is developing quickly.
+жетілдіру | verb | to improve, to perfect | Олар құрылғыны жетілдірді. | | zhe-til-di-ROO | They improved the device.
+күрделі | adjective | complex, difficult | Бұл — күрделі мәселе. | | kur-de-LI | This is a complex problem.
+нақты | adjective | exact, precise | Нақты деректер керек. | | naq-TY | Precise data are needed.
+салдар | noun | consequence | Мұның салдары ауыр болуы мүмкін. | | sal-DAR | The consequences of this may be serious.
+мәлімет | noun | information, data | Маған қосымша мәлімет керек. | | ma-li-MET | I need more information.
+есептеу | verb | to calculate | Шығынды есептеп көрейік. | | e-sep-TEU | Let’s calculate the expenses.
+құбылыс | noun | phenomenon | Бұл — сирек табиғи құбылыс. | | qoo-by-LYS | This is a rare natural phenomenon.
+жылдамдық | noun | speed | Көліктің жылдамдығы жоғары. | | zhyl-dam-DYQ | The car’s speed is high.`
 });
