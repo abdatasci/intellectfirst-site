@@ -434,7 +434,7 @@ export default async (req) => {
   if (path === 'feedback/public' && method === 'GET') return Response.json({ feedback: await publicFeedback() }, { headers: { 'Cache-Control': 'public, max-age=120' } });
   // classes for the registration form (names and times only)
   if (path === 'classes' && method === 'GET') {
-    const cl = hidePrivate(await doc('classes'), null);
+    const cl = hidePrivate(await doc('classes'), null).filter(c => !c.left);   // closed classes are not offered at sign-up
     return json({ classes: [...cl.map(c => ({ id: c.id, label: c.label, schedule: c.schedule || '', kind: c.kind || '' })), { id: 'alumni', label: 'IF Alumni', schedule: 'Former students who finished their course', kind: 'alumni' }], membership: await membership() });
   }
   // new self-registered accounts: skip the email-confirmation step (students rarely open that email)
