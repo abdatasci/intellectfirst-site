@@ -1390,6 +1390,20 @@
     $('.msg', fb).innerHTML = '<b>' + (ok ? '✓ ' + esc(t('correct')) : '✗ ' + esc(t('wrong'))) + '</b>' + (ans ? '<span>' + esc(t('answer')) + ': <b style="display:inline;font-size:inherit">' + esc(ans) + '</b></span>' : '') + (e.why ? '<span style="display:block">' + esc(e.why) + '</span>' : '');
     var ck = $('#ck'); ck.disabled = false; ck.className = 'btn ' + (ok ? 'ok' : 'bad'); ck.textContent = t('cont');
     ck.onclick = function () { fb.remove(); L.i++; drawStep(); }; setTimeout(function () { ck.focus(); }, 30);
+    /* A wrong answer to a badly written question should not cost the student: "Question wrong? Don't count it" takes it
+       out of the score (and out of the retry at the end) and sends the question to the activity log for staff to fix. */
+    var old = $('#qbad', fb); if (old) old.remove();
+    if (!ok && !it.retry && it.k === 'ex') {
+      var qb = document.createElement('button'); qb.id = 'qbad'; qb.className = 'btn ghost'; qb.style.cssText = 'font-size:13px;padding:8px 12px;margin-top:8px';
+      qb.textContent = '⚑ Question wrong? Don\'t count it';
+      qb.onclick = function () {
+        if (L.total > 0) L.total--;
+        for (var j = L.items.length - 1; j > L.i; j--) if (L.items[j].retry && L.items[j].e === it.e) { L.items.splice(j, 1); break; }
+        try { actEvent('qreport', key3(L.c.id, L.u.id, L.l.id), String(e.q || e.p || '').replace(/<[^>]*>/g, '').slice(0, 110)); } catch (x) {}
+        qb.disabled = true; qb.textContent = '✓ Not counted. Thank you — we will check this question.';
+      };
+      $('.msg', fb).appendChild(qb);
+    }
   }
   function finish() {
     var fb = $('#fb'); if (fb) fb.remove();
