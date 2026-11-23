@@ -1,10 +1,10 @@
 /* IF Lingo · Kazakh B2: an original IF Academy course for people who speak English and have finished Kazakh B1.
    Word lines: word | part of speech | meaning in English | example | (empty) | how to say it | the example in English.
-   Plan: 24 units and a level test (project doc claude/if-lingo.md). Built so far: units 1 to 16. */
+   Plan: 24 units and a level test (project doc claude/if-lingo.md). Built so far: units 1 to 24. */
 IFX.course({
   id: 'kk-b2', track: 'lang', lang: 'kk-KZ', level: 'B2', next: 'C1', icon: '🇰🇿',
   title: 'Kazakh B2', sub: 'Confident Kazakh',
-  blurb: 'Discuss generations, work, the media, wellbeing, tourism, cities, the climate, machines at work, lifelong learning, fair play, business and migration, and read longer texts. The first 16 of 24 units, explained in English.',
+  blurb: 'Discuss generations, work, the media, wellbeing, tourism, cities, the climate, machines at work, lifelong learning, fair play, business, migration, the news, science, advertising and official letters, and read longer texts. 24 units, explained in English.',
   units: []
 });
 (function () {
@@ -360,6 +360,182 @@ IFX.course({
         k.mc('білім → “educated” = …', ['білімді', 'білімсіз', 'білімші'], 0),
         k.ord('Көше өнері қаланы әшекейлейді')]],
       r: ['The wall that began to speak', 'Біздің ауданда жиырма жыл бойы қараусыз қалған зауыт тұрды. Оның сұр қасбеті жазуларға толы болатын. Тұрғындар мұны бұзақылық деп санап, қала билігінен ғимаратты бұзуды сұрады.\n\nӨткен жазда бір топ жас суретші басқа шешім ұсынды. Олар нобай көрсетті: ауданның тарихы бейнеленген алып қабырға суреті — дала, алғашқы жұмысшылар, ауладағы балалар. Билік келісті, ал тұрғындар бояуға ақша жинады.\n\nЖұмыс екі айға созылды. Өткіншілер тоқтап, кеңес беріп, шай әкеліп тұрды. Осы зауытта отыз жыл жұмыс істеген зейнеткер Мария Ивановна суретшілерге әріптестері туралы айтып берді — олардың бейнесі қабырғада пайда болды.\n\nҚазір мұнда қоғамдық кеңістік бар: жазда кино көрсетеді, қыста мұз айдынын құяды.\n\n«Көше өнері — жай әшекей емес, — дейді суретшілердің бірі. — Граффити бұзақылық та, өнер де бола алады. Айырмашылық мынада: қабырға адамдармен сөйлесе ме, жоқ па».\n\n(сұр = grey · жазу = writing · бұзу = to pull down · бейнеленген = depicted · алып = huge · созылды = lasted · бейне = image · айырмашылық = difference)', [
-        k.mc('What stood in the district for twenty years?', ['an abandoned factory', 'an old school', 'an empty shop'], 0), k.mc('What did the young artists propose?', ['a huge mural of the district’s history', 'pulling the building down', 'a new car park'], 0), k.mc('How long did the work take?', ['two months', 'two years', 'two weeks'], 0), k.mc('Whose images appeared on the wall?', ['former workers of the factory', 'the city authorities', 'famous actors'], 0)]] }
+        k.mc('What stood in the district for twenty years?', ['an abandoned factory', 'an old school', 'an empty shop'], 0), k.mc('What did the young artists propose?', ['a huge mural of the district’s history', 'pulling the building down', 'a new car park'], 0), k.mc('How long did the work take?', ['two months', 'two years', 'two weeks'], 0), k.mc('Whose images appeared on the wall?', ['former workers of the factory', 'the city authorities', 'famous actors'], 0)]] },
+
+    { id: 'u17', t: 'Шындық па, өсек пе? Checking the news', topic: 'Media',
+      v: ['News you can trust', `
+қауесет | noun | rumour | Қалада бір қауесет тарады. | | qa-oo-e-SET | A rumour spread through the town.
+алғашқы дереккөз | noun | original source | Жаңалықтың алғашқы дереккөзін табыңыз. | | al-ghash-QY de-rek-KOZ | Find the original source of the news.
+сенсация | noun | sensation | Газет сенсация іздеді. | | sen-SA-tsi-ya | The newspaper was looking for a sensation.
+желі қолданушысы | noun | social media user | Желі қолданушылары жазбаны бөлісті. | | zhe-LI qol-da-noo-shy-SY | Social media users shared the post.
+деректі тексеру | noun | fact-checking | Деректі тексеру уақыт алады. | | de-rek-TI tek-se-ROO | Fact-checking takes time.
+теріске шығару | verb | to refute, to deny | Министр бұл жаңалықты теріске шығарды. | | te-ris-KE shy-gha-ROO | The minister denied this news.
+жаңылыстыру | verb | to mislead | Бұл жазба адамдарды жаңылыстырады. | | zha-ngy-lys-ty-ROO | This post misleads people.
+расталмаған | adjective | unconfirmed | Бұл — расталмаған ақпарат. | | ras-tal-ma-GHAN | This is unconfirmed information.
+күмәнді | adjective | doubtful, dubious | Бұл — күмәнді сайт. | | ku-man-DI | This is a dubious website.
+әсірелеу | verb | to exaggerate | Журналист оқиғаны әсіреледі. | | a-si-re-LEU | The journalist exaggerated the event.`],
+      g: ['They say, it seems, according to: showing where information comes from', '<p>At B2 you must show whether you <b>know</b> something or only <b>heard</b> it.</p><table><tr><th>Form</th><th>Meaning</th><th>Example</th></tr><tr><td>… <b>дейді</b></td><td>they say</td><td>Көпір жабылады <b>дейді</b>.</td></tr><tr><td><b>-ған көрінеді</b></td><td>apparently (I was told, or it looks so)</td><td>Мұны бір дереккөз айт<b>қан көрінеді</b>.</td></tr><tr><td><b>-ған сияқты</b></td><td>it seems</td><td>Ол ауырып қал<b>ған сияқты</b>.</td></tr><tr><td><b>… деген сөз бар</b></td><td>there is talk that</td><td>Баға өседі <b>деген сөз бар</b>.</td></tr><tr><td>кімнің + <b>айтуынша</b></td><td>according to (a person)</td><td>Оқытушы<b>ның айтуынша</b>, бұл жалған.</td></tr></table><ul><li>Compare B1: <b>-ыпты, екен</b> also show that you did not see it yourself.</li><li><b>айтуынша</b> is neutral. It only names the source. The others show that you are not sure.</li><li>The ending is -ған, -ген, -қан, -кен by the usual rule: жабыл<b>ған</b>, кел<b>ген</b>, айт<b>қан</b>, кет<b>кен</b>.</li></ul>', [
+        k.mc('Көпір жабыл___ көрінеді.', ['ған', 'ып', 'са'], 0),
+        k.mc('Оқытушының ___, бұл жаңалық жалған.', ['айтуынша', 'айтқан', 'айтып'], 0),
+        k.mc('“Көпір жабылады дейді.” = …', ['They say the bridge will close.', 'The bridge closed yesterday.', 'The bridge must close.'], 0),
+        k.mc('Ол ауырып қалған ___. (it seems)', ['сияқты', 'үшін', 'туралы'], 0),
+        k.tf('“деген сөз бар” shows that the speaker is completely sure.', false),
+        k.ord('Оқытушының айтуынша бұл жаңалық жалған')]],
+      r: ['The post he should not have shared', 'Тимур журналистика факультетінде оқиды. Бір күні ол әлеуметтік желіден «Қаланың басты көпірі бір жылға жабылады» деген жазбаны көрді. Мұны әкімдіктегі бір адам айтқан көрінеді. Тимур жазбаны бірден достарына жіберді. Бір сағаттың ішінде оны мыңдаған адам бөлісті.\n\nКешке әкімдік өсекті теріске шығарды: көпір тек екі түнге жабылады екен. Тимур ұялды. «Мен адамдарға көмектесіп жатқан сияқты едім, — дейді ол. — Ал шынында оларды жаңылыстырыппын».\n\nКелесі күні оқытушы студенттерге деректі тексерудің үш қадамын көрсетті. Біріншісі: алғашқы дереккөзді табу. Екіншісі: күніне қарау. Үшіншісі: бұл жаңалық кімге пайдалы деп өзіңнен сұрау. Оның айтуынша, күмәнді мәтін көбіне «дейді» немесе «бәрі біледі» деген сөздерден басталады.\n\nҚазір Тимур мектепте үйірме жүргізеді. Оның жазылушылары — жасөспірімдер, ал үйірменің бірінші ережесі қарапайым: алдымен тексеру, содан кейін бөлісу.\n\n(әлеуметтік желі = social network · жазба = post · ұялды = felt ashamed · қадам = step · үйірме = club · жасөспірім = teenager)', [
+        k.mc('What did the post say?', ['The main bridge would close for a year.', 'The bridge had fallen.', 'A new bridge would open.'], 0), k.mc('What was true?', ['The bridge would close for two nights.', 'The bridge would close for a year.', 'Nothing would close.'], 0), k.mc('Which is NOT one of the teacher’s three steps?', ['Count the likes.', 'Find the original source.', 'Look at the date.'], 0), k.mc('What is the first rule of Timur’s club?', ['Check first, then share.', 'Share quickly.', 'Never read the news.'], 0)]] },
+
+    { id: 'u18', t: 'Ғылым тілі. The language of science', topic: 'Science',
+      v: ['Doing research', `
+ғылыми болжам | noun | scientific hypothesis | Бұл — әзірге ғылыми болжам ғана. | | ghy-ly-MI bol-ZHAM | For now it is only a scientific hypothesis.
+сынама | noun | sample (taken for testing) | Ол топырақтан сынама алды. | | sy-na-MA | She took a sample of the soil.
+топырақ | noun | soil | Мұнда топырақ жақсы. | | to-py-RAQ | The soil is good here.
+бақылау жүргізу | verb | to carry out observation | Ол бір жыл бақылау жүргізді. | | ba-qy-LAU zhur-gi-ZOO | She carried out observation for a year.
+іріктеме | noun | sample (set of data) | Іріктеме үлкен болды. | | i-rik-te-ME | The sample was large.
+заңдылық | noun | pattern, regularity | Біз бір заңдылықты байқадық. | | zang-dy-LYQ | We noticed a pattern.
+өлшеу қателігі | noun | margin of error | Өлшеу қателігі аз. | | ol-SHEU qa-te-li-GI | The margin of error is small.
+негізделген | adjective | well-founded | Бұл — негізделген қорытынды. | | ne-giz-del-GEN | This is a well-founded conclusion.
+жел эрозиясы | noun | wind erosion | Жел эрозиясы топырақты бұзады. | | zhel e-ro-zi-ya-SY | Wind erosion damages the soil.
+орман белдеуі | noun | shelterbelt, line of trees | Орман белдеуі егістікті желден қорғайды. | | or-MAN bel-de-WI | A shelterbelt protects the field from the wind.`],
+      g: ['Is, consists of, belongs to: the verbs of formal writing', '<p>Scientific and official Kazakh uses fixed verb phrases. Each needs its own ending on the noun before it.</p><table><tr><th>Phrase</th><th>Meaning</th><th>Example</th></tr><tr><td><b>болып табылады</b></td><td>is (formal)</td><td>Топырақ табиғи байлық <b>болып табылады</b>.</td></tr><tr><td>-дан, -ден, -тан, -тен, -нан, -нен + <b>тұрады</b></td><td>consists of</td><td>Сынама құм мен саз<b>дан тұрады</b>.</td></tr><tr><td>-ға, -ге, -қа, -ке + <b>жатады</b></td><td>belongs to</td><td>Бидай дәнді дақылдар<b>ға жатады</b>.</td></tr><tr><td><b>деп аталады</b></td><td>is called</td><td>Бұл құбылыс эрозия <b>деп аталады</b>.</td></tr><tr><td>-мен, -бен, -пен + <b>байланысты</b></td><td>is connected with</td><td>Мәселе жел<b>мен байланысты</b>.</td></tr></table><p>In conversation say: Топырақ — байлық. In a report write: Топырақ байлық болып табылады.</p>', [
+        k.mc('Топырақ табиғи байлық болып ___.', ['табылады', 'тұрады', 'жатады'], 0),
+        k.mc('Сынама құм мен саз___ тұрады.', ['дан', 'ға', 'бен'], 0),
+        k.mc('Бидай дәнді дақылдар___ жатады.', ['ға', 'дан', 'мен'], 0),
+        k.mc('Бұл құбылыс эрозия деп ___.', ['аталады', 'табылады', 'тұрады'], 0),
+        k.mc('Мәселе жел___ байланысты.', ['мен', 'ден', 'ге'], 0),
+        k.ord('Сынама құм мен саздан тұрады')]],
+      r: ['Where did the wheat go?', 'Әлия — жас топырақтанушы. Екі жыл бұрын далалық аудандағы бір фермер одан көмек сұрады: бидай өнімі жыл сайын азайып бара жатты. Фермер мұның себебі құрғақ ауа райы екеніне сенімді болды.\n\nӘлияның гипотезасы басқа еді: мәселе суда емес, топырақтың үстіңгі қабатын ұшырып әкететін желде. Оны тексеру үшін ол әртүрлі егістіктен екі жүз сынама алып, бір жыл бойы бақылау жүргізді.\n\nІріктеме бір заңдылықты көрсетті. Орман белдеуі қорғап тұрған егістіктерде топырақ орнында қалып, өнім жоғары болды. Ашық егістіктерде жел оны көктемде ұшырып әкететін. Әлия өлшеу қателігін де есепке алды: айырмашылық кездейсоқ болу үшін тым үлкен еді.\n\nОның қорытындысы негізделген болды, сондықтан фермер барлық егістіктің айналасына ағаш отырғызды. «Ғылым — пікір емес, — дейді Әлия. — Ғылым сұрақтан, тексеруден және шынайы сандардан тұрады».\n\n(топырақтанушы = soil scientist · қабат = layer · ұшырып әкету = to blow away · егістік = field · есепке алу = to take into account · кездейсоқ = by chance)', [
+        k.mc('What did the farmer think the cause was?', ['dry weather', 'the wind', 'bad seeds'], 0), k.mc('What was Aliya’s hypothesis?', ['The wind was carrying the top soil away.', 'There was too much water.', 'The farmer planted too late.'], 0), k.mc('How many samples did she take?', ['two hundred', 'twenty', 'two thousand'], 0), k.mc('What did the farmer do in the end?', ['planted trees around all the fields', 'sold the farm', 'stopped growing wheat'], 0)]] },
+
+    { id: 'u19', t: 'Тек бүгін ғана! How advertising works', topic: 'Advertising',
+      v: ['Selling and persuading', `
+жарнамалық ролик | noun | advert, commercial | Бұл жарнамалық ролик өте қысқа. | | zhar-na-ma-LYQ RO-lik | This advert is very short.
+сауда белгісі | noun | trademark, brand name | Бұл — танымал сауда белгісі. | | sa-oo-DA bel-gi-SI | This is a well-known brand name.
+ұран | noun | slogan | Компанияның жаңа ұраны бар. | | oo-RAN | The company has a new slogan.
+мақсатты аудитория | noun | target audience | Біздің мақсатты аудиториямыз — студенттер. | | maq-sat-TY a-oo-di-TO-ri-ya | Our target audience is students.
+иландыру | verb | to persuade, to convince | Жарнама бізді сатып алуға иландырады. | | i-lan-dy-ROO | Advertising persuades us to buy.
+айла-шарғы | noun | trick, manipulation | Бұл кеңес емес, айла-шарғы. | | ay-LA shar-GHY | This is not advice but a trick.
+орауыш | noun | wrapper, wrapping | Кәмпиттің орауышы ашық түсті. | | o-ra-WYSH | The sweet has a bright wrapper.
+ойланбай сатып алу | noun | impulse buying | Ойланбай сатып алу — қымбат әдет. | | oy-lan-BAY sa-TYP a-LOO | Impulse buying is an expensive habit.
+азғыру | verb | to tempt, to lure | Жарнама бізді артық затқа азғырады. | | az-ghy-ROO | Advertising tempts us to buy things we do not need.
+адалдық | noun | loyalty, honesty | Брендтер клиенттің адалдығын бағалайды. | | a-dal-DYQ | Brands value customer loyalty.`],
+      g: ['Little words with big meanings: ғой, -шы, тіпті, ғана, -ақ', '<p>These short words show your <b>attitude</b>.</p><table><tr><th>Word</th><th>What it does</th><th>Example</th></tr><tr><td><b>ғой, қой</b></td><td>“you know, after all”</td><td>Бұл он мыңға жуық <b>қой</b>. Мен айттым <b>ғой</b>!</td></tr><tr><td><b>-шы, -ші</b></td><td>makes a request softer and friendlier</td><td>Қараңыз<b>шы</b>. Келіңіз<b>ші</b>.</td></tr><tr><td><b>тіпті</b></td><td>even</td><td><b>Тіпті</b> нанның иісі де әсер етеді.</td></tr><tr><td><b>ғана, қана</b> / <b>тек</b></td><td>only</td><td>Сенде <b>ғана</b> жоқ. <b>Тек</b> бүгін.</td></tr><tr><td><b>-ақ</b></td><td>only, just (after a number or a short word)</td><td>Оны екі<b>-ақ</b> рет пайдаландым.</td></tr><tr><td><b>ма екен?</b></td><td>I wonder if…</td><td>Дүкен ертең жабыла <b>ма екен</b>?</td></tr></table><ul><li><b>ғой, ғана</b> become <b>қой, қана</b> after к, қ, п, с, т, ш and other voiceless sounds: жуық <b>қой</b>, рет <b>қана</b>.</li><li><b>тек</b> stands before the word, <b>ғана</b> after it. They can be used together: <b>тек</b> бүгін <b>ғана</b>.</li></ul>', [
+        k.mc('Мен айттым ___!', ['ғой', 'ғана', 'тіпті'], 0),
+        k.mc('Бағаға қараңыз___.', ['шы', 'ші', 'ғой'], 0),
+        k.mc('Оны екі___ рет пайдаландым.', ['-ақ', '-шы', '-ма'], 0),
+        k.mc('___ балалар да біледі. (even)', ['Тіпті', 'Тек', 'Ғана'], 0),
+        k.tf('“ғана” means “only” and stands after the word.', true),
+        k.ord('Мен оны екі рет қана пайдаландым')]],
+      r: ['Only today!', 'Данияр он жыл бойы жарнама саласында жұмыс істеп келеді. Ол брендтердің бізді сатып алуға қалай иландыратынын біледі.\n\n«Бағаға қараңызшы: 9 990 теңге. Бұл он мыңға жуық қой, бірақ ми тоғызды көреді, — деп түсіндіреді ол. — Ал „тек бүгін ғана“ деген сөздер ше? Дүкен ертең жабылып қала ма екен? Жоқ, бірақ біз асығамыз».\n\nОның айтуынша, бәрі әсер етеді: дүкендегі баяу музыка, ашық түсті қаптама, тіпті кіреберістегі нанның иісі де. Әр жарнамалық ролик өзінің мақсатты аудиториясына арналған, ал қысқа ұран ұзақ түсіндірмеден жақсы есте қалады.\n\nЖарнама мен айла-шарғының шекарасы қайда? Данияр әділ жарнама тауар туралы айтады, ал әділетсіз жарнама қорқыныш таңады деп санайды: «Бәрінде бар, сенде ғана жоқ».\n\nӨзі де мінсіз емес: былтыр ойланбай шырын сыққыш сатып алып, оны екі-ақ рет пайдаланды. Қазір оның ережесі бар: жиырма төрт сағат күту. «Шынымен осылай оңай ма? Иә. Бір күннен кейін тілектің жартысы жоғалады».\n\n(ми = brain · асығу = to hurry · кіреберіс = entrance · шекара = border · мінсіз = perfect · шырын сыққыш = juicer · тілек = wish)', [
+        k.mc('Why do shops write 9,990 and not 10,000?', ['The brain sees nine.', 'It is the law.', 'It is easier to count.'], 0), k.mc('What does dishonest advertising push on us, according to Daniyar?', ['fear', 'facts about the product', 'slow music'], 0), k.mc('What did Daniyar buy without thinking?', ['a juicer', 'a phone', 'a car'], 0), k.mc('What is his rule now?', ['Wait twenty-four hours.', 'Never go shopping.', 'Buy only today.'], 0)]] },
+
+    { id: 'u20', t: 'Жер мен су. Land and water', topic: 'Farming',
+      v: ['On the farm', `
+шаруа қожалығы | noun | farm | Оның шағын шаруа қожалығы бар. | | sha-roo-A qo-zha-ly-GHY | He has a small farm.
+түсімділік | noun | crop yield | Биыл түсімділік жоғары. | | tu-sim-di-LIK | The yield is high this year.
+тыңайтқыш | noun | fertiliser | Ол тыңайтқышты азайтты. | | ty-ngayt-QYSH | He cut down on fertiliser.
+қуаңшылық | noun | drought | Қуаңшылық егісті құртты. | | qoo-ang-shy-LYQ | The drought destroyed the crops.
+тамшылатып суару | noun | drip irrigation | Тамшылатып суару суды үнемдейді. | | tam-shy-la-TYP soo-a-ROO | Drip irrigation saves water.
+жайылым | noun | pasture | Сиырлар жайылымда жүр. | | zha-yy-LYM | The cows are in the pasture.
+егіс | noun | sowing; sown crop | Егіс мамырда басталады. | | e-GIS | Sowing begins in May.
+дәнді дақыл | noun | grain crop, cereal | Бидай — дәнді дақыл. | | dan-DI da-QYL | Wheat is a grain crop.
+арамшөп | noun | weed | Бақшада арамшөп көп. | | a-ram-SHOP | There are a lot of weeds in the vegetable garden.
+құнарлы | adjective | fertile | Мұнда жер құнарлы. | | qoo-nar-LY | The land here is fertile.`],
+      g: ['If it were not for…, otherwise', '<table><tr><th>Pattern</th><th>Meaning</th><th>Example</th></tr><tr><td>noun + <b>болмағанда</b>, … <b>-ар еді</b></td><td>if it were not for, but for</td><td>Суару жүйесі <b>болмағанда</b>, біз астықтан айырыл<b>ар едік</b>.</td></tr><tr><td>… <b>-мас еді</b></td><td>would not have</td><td>Сен болмағанда, мен үлгер<b>мес едім</b>.</td></tr><tr><td><b>әйтпесе</b></td><td>otherwise, or else</td><td>Жиі суар, <b>әйтпесе</b> бәрі қурап қалады.</td></tr><tr><td><b>олай болмаған жағдайда</b></td><td>otherwise (formal)</td><td>Жұмаға дейін төлеңіз, <b>олай болмаған жағдайда</b> шарт тоқтатылады.</td></tr></table><ul><li><b>болмағанда</b> does not change for the person: сен <b>болмағанда</b>, достарым <b>болмағанда</b>.</li><li>The second half is the unreal form from B1, Unit 8: <b>-ар, -ер + еді</b>; the negative is <b>-мас, -мес + еді</b>.</li><li>It can be good news or bad news: Сен болмағанда, мен кешігер едім. (Thanks to you I was on time.)</li></ul>', [
+        k.mc('Суару жүйесі ___, біз астықтан айырылар едік.', ['болмағанда', 'болғанда', 'болса'], 0),
+        k.mc('Сен болмағанда, мен кешіг___ едім.', ['ер', 'ген', 'іп'], 0),
+        k.mc('Сен болмағанда, мен үлгер___ едім. (would not have)', ['мес', 'ген', 'ер'], 0),
+        k.mc('Жиі суар, ___ бәрі қурап қалады.', ['әйтпесе', 'өйткені', 'сондықтан'], 0),
+        k.mc('“Көршілер болмағанда, мен үлгермес едім.” = …', ['The neighbours helped me.', 'The neighbours did not help me.', 'I have no neighbours.'], 0),
+        k.ord('Сен болмағанда мен кешігер едім')]],
+      r: ['The dry year', 'Өткен жаз жиырма жылдағы ең құрғақ жаз болды. Құрғақшылық ауданның көптеген шаруа қожалығында егісті құртты. Бірақ Серіктің егістігі жасыл күйінде қалды.\n\nЕкі жыл бұрын ол несие алып, тамшылатып суару жүйесін орнатқан болатын. Көршілері күлген: жаңбыр тегін болса, ақшаны неге шашу керек? «Суару жүйесі болмағанда, біз бар астықтан айырылар едік, — дейді Серік. — Маған тәуекел етуге тура келді, әйтпесе қожалық аман қалмас еді».\n\nОл басқа нәрсені де өзгертті: топырақ суды ұстап тұруы үшін жерді аз жыртатын болды, тыңайтқышты да азайтты, өйткені құнарлы жер артық химияны ұнатпайды. Өнімділік бірден өскен жоқ — бірінші жыл қиын болды, арамшөп көбейді.\n\nҚұрғақшылық келгенде, Серік сумен екі көршісімен бөлісті. Күзде үшеуі кооператив құрып, қазір техниканы бірге сатып алады.\n\n«Сол құрғақ жыл болмағанда, біз әлі күнге дейін жеке-жеке жұмыс істеп жүрер едік», — деп күледі ол.\n\n(құртты = destroyed · тамшылатып суару = drip irrigation · шашу = to waste · тәуекел ету = to take a risk · жырту = to plough · жеке-жеке = each on his own)', [
+        k.mc('What did Serik do two years ago?', ['He took a loan and put in drip irrigation.', 'He sold his fields.', 'He bought more cows.'], 0), k.mc('Why did the neighbours laugh?', ['They thought it was a waste of money.', 'His fields were too small.', 'He planted too early.'], 0), k.tf('The yield grew in the very first year.', false), k.mc('What did the three farmers do in the autumn?', ['They set up a cooperative.', 'They moved to the city.', 'They stopped farming.'], 0)]] },
+
+    { id: 'u21', t: 'Бастық па, көшбасшы ма? Leading a team', topic: 'Work',
+      v: ['Working as a team', `
+бағынышты | adjective | subordinate | Оның алты бағынышты қызметкері бар. | | ba-ghy-nysh-TY | She has six members of staff under her.
+міндет жүктеу | verb | to give someone a duty, to delegate | Жақсы басшы міндет жүктей біледі. | | min-DET zhuk-TEU | A good boss knows how to delegate.
+келіспеушілік | noun | disagreement | Арамызда келіспеушілік болды. | | ke-lis-peu-shi-LIK | There was a disagreement between us.
+ымыра | noun | compromise | Біз ымыраға келдік. | | y-my-RA | We reached a compromise.
+сенім арту | verb | to put your trust in | Басшы қызметкерлеріне сенім артады. | | se-NIM ar-TOO | The boss puts her trust in her staff.
+өкілеттік | noun | authority, powers | Менде мұндай өкілеттік жоқ. | | o-ki-let-TIK | I do not have that authority.
+ұйымшыл | adjective | close-knit, united | Біздің топ ұйымшыл. | | oo-yym-SHYL | Our team is close-knit.
+тәлімгер | noun | mentor | Жаңа қызметкердің тәлімгері бар. | | ta-lim-GER | The new member of staff has a mentor.
+өзара түсіністік | noun | mutual understanding | Топта өзара түсіністік бар. | | o-za-RA tu-si-nis-TIK | There is mutual understanding in the group.
+бастама | noun | initiative | Ол бастама көтерді. | | bas-ta-MA | He took the initiative.`],
+      g: ['Both … and, not only … but also, either … or: joining words in pairs', '<table><tr><th>Pair</th><th>Meaning</th><th>Example</th></tr><tr><td>… <b>да</b>, … <b>да</b></td><td>both … and</td><td>Тәжірибелілер <b>де</b>, жаңадан келгендер <b>де</b> үндемеді.</td></tr><tr><td><b>әрі … әрі</b></td><td>both … and (two qualities of one person or thing)</td><td>Ол <b>әрі</b> басшы, <b>әрі</b> дос.</td></tr><tr><td><b>-ып қана қоймай</b>, …</td><td>not only … but also</td><td>Ол тексер<b>іп қана қоймай</b>, есептерді қайта жазатын.</td></tr><tr><td><b>не … не</b></td><td>either … or</td><td>Тапсырманы <b>не</b> толық аласыз, <b>не</b> мүлде алмайсыз.</td></tr><tr><td><b>бірде … бірде</b></td><td>now … now</td><td>Ол <b>бірде</b> ашуланады, <b>бірде</b> өзін кінәлайды.</td></tr></table><ul><li><b>да, де, та, те</b> follows the usual rule: дарын <b>да</b>, тәжірибе <b>де</b>, топ <b>та</b>.</li><li>With a negative verb, <b>… да, … да</b> means <i>neither … nor</i>: Дарын <b>да</b>, тәжірибе <b>де</b> көмектес<b>пей</b>ді.</li></ul>', [
+        k.mc('Ол ___ басшы, әрі дос.', ['әрі', 'не', 'бірде'], 0),
+        k.mc('Тәжірибелілер де, жаңадан келгендер ___ үндемеді.', ['де', 'не', 'әрі'], 0),
+        k.mc('Ол тексеріп қана ___, есептерді қайта жазатын.', ['қоймай', 'қойып', 'қойса'], 0),
+        k.mc('Ол ___ ашуланады, бірде өзін кінәлайды.', ['бірде', 'әрі', 'не'], 0),
+        k.mc('“Тапсырманы не аласыз, не алмайсыз.” = …', ['You either take the task or you do not.', 'You take the task and do it.', 'You never take the task.'], 0),
+        k.ord('Ол әрі басшы әрі дос')]],
+      r: ['The boss who did everything herself', 'Заринаны алты адамнан тұратын топтың жетекшісі етіп тағайындады. Ол бөлімдегі ең мықты маман еді, сондықтан жақсы басшы бәрін өзі істейді деп ойлады. Ол әр ұсақ-түйекті тексеріп қана қоймай, түнде өзгелердің есептерін қайта жазатын.\n\nҮш айдан кейін тәжірибелі қызметкерлер де, жаңадан келгендер де жиналыста үндемейтін болды. Екі бағынышты қызметкер жұмыстан шықпақшы болды. Зарина бірде ашуланып, бірде өзін кінәлайтын.\n\nКері байланыс көмектесті. Ол әркімнен жұмысқа не кедергі келтіретінін шынын айтып жазуды сұрады. Жауаптар ұқсас болды: «Бізге сенбейді», «Бізде өкілеттік жоқ», «Бастама көтерген жазаланады».\n\nЗарина міндет жүктеуді үйренді: адам тапсырманы не толық алады, не мүлде алмайды. Келіспеушіліктерді қазір ашық талқылап, ымыра іздейді.\n\nБүгінде топ ұйымшыл, ешкім жұмыстан кеткен жоқ. «Дарын да, тәжірибе де өзара түсіністіктің орнын баса алмайды, — дейді Зарина. — Басқару — бәрін өзің істеу емес, басқалардың жақсы істеуіне көмектесу».\n\n(тағайындады = appointed · ұсақ-түйек = small detail · үндемеу = to stay silent · кінәлау = to blame · кедергі келтіру = to get in the way · орнын басу = to replace)', [
+        k.mc('How many people are in Zarina’s group?', ['six', 'three', 'twelve'], 0), k.mc('What did she do at night?', ['rewrote other people’s reports', 'studied management', 'looked for a new job'], 0), k.mc('What did the answers have in common?', ['People felt they were not trusted.', 'People wanted more money.', 'People wanted a new office.'], 0), k.tf('In the end two people left the group.', false)]] },
+
+    { id: 'u22', t: 'Жас — кедергі емес. Growing older', topic: 'Society',
+      v: ['Later life', `
+ұзақ өмір сүру | verb | to live a long life | Ұзақ өмір сүрудің сыры неде? | | oo-ZAQ o-MIR su-ROO | What is the secret of living a long life?
+жалғыздық | noun | loneliness | Ол жалғыздықты сезінді. | | zhal-ghyz-DYQ | She felt loneliness.
+даналық | noun | wisdom | Даналық тәжірибемен келеді. | | da-na-LYQ | Wisdom comes with experience.
+әжім | noun | wrinkle | Оның көзінің жанында әжім бар. | | a-ZHIM | He has wrinkles by his eyes.
+ақ шашты | adjective | grey-haired, white-haired | Ақ шашты кісі — менің атам. | | aq shash-TY | The grey-haired man is my grandfather.
+ширақ | adjective | spry, lively | Атам әлі ширақ. | | shi-RAQ | My grandfather is still spry.
+замандас | noun | person of the same generation | Олар — менің замандастарым. | | za-man-DAS | They are people of my generation.
+зейнетке шығу | verb | to retire | Ол былтыр зейнетке шықты. | | zey-net-KE shy-GHOO | She retired last year.
+егде жас | noun | old age, advanced years | Ол егде жаста да жұмыс істейді. | | eg-DE zhas | He works even at an advanced age.
+масыл | noun | burden, someone who lives off others | Мен ешкімге масыл болғым келмейді. | | ma-SYL | I do not want to be a burden to anyone.`],
+      g: ['Very, too, brand new, more and more: making it stronger', '<table><tr><th>Form</th><th>Meaning</th><th>Example</th></tr><tr><td><b>ең</b></td><td>the most (A2)</td><td><b>ең</b> қарапайым бейне</td></tr><tr><td><b>аса</b></td><td>extremely (careful speech)</td><td><b>аса</b> маңызды сыр</td></tr><tr><td><b>тым</b></td><td>too (more than is good)</td><td>Бұл <b>тым</b> қымбат.</td></tr><tr><td><b>әлдеқайда</b> + -рақ, -рек</td><td>much, far</td><td><b>әлдеқайда</b> көп адам; <b>әлдеқайда</b> жақсы<b>рақ</b></td></tr><tr><td><b>барған сайын</b></td><td>more and more</td><td>Мен өзімді <b>барған сайын</b> сергек сезінемін.</td></tr><tr><td>first sounds + <b>п</b></td><td>completely, very</td><td><b>ап</b>-ақ, <b>қып</b>-қызыл, <b>жап</b>-жаңа, <b>тап</b>-таза</td></tr></table><ul><li>For the last form, take the word up to its first vowel, add <b>п</b>, then say the whole word: жа-ңа → <b>жап</b>-жаңа (brand new), қы-зыл → <b>қып</b>-қызыл (bright red), ақ → <b>ап</b>-ақ (snow-white).</li><li><b>тым</b> is a complaint. <b>өте</b> and <b>аса</b> are not.</li></ul>', [
+        k.mc('Бұл көйлек ___ қымбат, мен ала алмаймын.', ['тым', 'ең', 'сайын'], 0),
+        k.mc('Алғашқы бейнені ___ көп адам көрді.', ['әлдеқайда', 'барған', 'тап'], 0),
+        k.mc('Мен өзімді барған ___ сергек сезінемін.', ['сайын', 'соң', 'кезде'], 0),
+        k.mc('жаңа → “brand new” = …', ['жап-жаңа', 'жаң-жаңа', 'жа-жаңа'], 0),
+        k.mc('ақ → “snow-white” = …', ['ап-ақ', 'ақ-ап', 'ақп-ақ'], 0),
+        k.ord('Мен өзімді барған сайын сергек сезінемін')]],
+      r: ['Forty thousand grandchildren', 'Роза апа жетпіс төрт жаста. Зейнетке шыққаннан кейін ол жалғыздықты сезінді: балалары алыста тұрды, құрдастары ауырып жүрді, күндер бір-біріне ұқсас болды. «Мен өзімді масыл сияқты сезіндім», — деп еске алады ол.\n\nНемересі оған бауырсақ пісіру туралы қысқа бейне түсіруді ұсынды. Роза апа бірден келіскен жоқ: ап-ақ шаш, әжім — бұл кімге қызық? Өте көп адамға қызық екен. Алғашқы бейнені ол күткеннен әлдеқайда көп адам көрді.\n\nБүгінде оның қырық мың жазылушысы бар. Ол тек тағам туралы ғана емес, ауылдағы балалық шағы туралы да айтады. Ең танымал бейнелері — ең қарапайымдары: шай, ескі суреттер, әңгімелер.\n\n«Егде жас — өмірдің соңы емес, — дейді ол. — Мен өзімді барған сайын сергек сезінемін. Ұзақ өмір сүрудің сыры тұқымда дейді. Ал менің ойымша, аса маңызды сыр — біреуге керек болу. Даналық жылдармен емес, саған қойылатын сұрақтармен келеді».\n\n(бауырсақ = fried dough balls · бейне түсіру = to film a video · күткеннен = than expected · балалық шақ = childhood · сыр = secret · тұқым = here: family line, genes)', [
+        k.mc('How did Roza feel after she retired?', ['lonely', 'very busy', 'rich'], 0), k.mc('Who suggested the first video?', ['her grandchild', 'her son', 'a neighbour'], 0), k.mc('What was the first video about?', ['how to make baursaks', 'her childhood', 'old photographs'], 0), k.mc('What does she think is the most important secret?', ['being needed', 'a good family line', 'sleeping a lot'], 0)]] },
+
+    { id: 'u23', t: '…байланысты. Writing to an office', topic: 'Formal language',
+      v: ['Official letters', `
+жолданым | noun | official request, appeal | Біз әкімдікке жолданым жаздық. | | zhol-da-NYM | We wrote a request to the akimat.
+қарастыру | verb | to consider, to examine | Мәселемізді қарастыруыңызды сұраймыз. | | qa-ras-ty-ROO | We ask you to consider our question.
+хабардар ету | verb | to notify | Бізді шешім туралы хабардар етті. | | kha-bar-DAR e-TOO | We were notified of the decision.
+құзырлы орган | noun | the authority responsible | Бұл мәселені құзырлы орган шешеді. | | qoo-zyr-LY or-GAN | The authority responsible decides this question.
+лауазымды тұлға | noun | official (person) | Хатты лауазымды тұлға алды. | | la-oo-a-zym-DY tool-GHA | An official received the letter.
+куәландыру | verb | to certify | Көшірмені куәландыру керек. | | ku-a-lan-dy-ROO | The copy needs to be certified.
+қоса тіркеу | verb | to attach, to enclose | Хатқа суреттерді қоса тіркеңіз. | | qo-SA tir-KEU | Attach the photographs to the letter.
+қарау мерзімі | noun | time allowed for a reply | Қарау мерзімі — бір ай. | | qa-RAU mer-zi-MI | The time allowed for a reply is one month.
+қабылдамау | verb | to reject, not to accept | Олар жолданымды қабылдамады. | | qa-byl-da-MAU | They rejected the request.
+тіркеу бөлімі | noun | registry, registration desk | Хатты тіркеу бөліміне тапсырыңыз. | | tir-KEU bo-li-MI | Hand the letter in at the registry.`],
+      g: ['In connection with, in accordance with: the words of official Kazakh', '<table><tr><th>Word</th><th>Ending before it</th><th>Example</th></tr><tr><td><b>байланысты</b> (in connection with, because of)</td><td>-ға, -ге, -қа, -ке</td><td>Жөндеу<b>ге байланысты</b> кеңсе жабық.</td></tr><tr><td><b>сәйкес</b> (in accordance with)</td><td>-ға, -ге, -қа, -ке</td><td>Жоспар<b>ға сәйкес</b> жөндеу сәуірде басталады.</td></tr><tr><td><b>ішінде</b> (within)</td><td>no ending</td><td>Жауап бір ай <b>ішінде</b> келеді.</td></tr><tr><td><b>мақсатында</b> (for the purpose of)</td><td>the -у form, no ending</td><td>Қауіпсіздікті сақтау <b>мақсатында</b> есік жабық.</td></tr><tr><td><b>жөнінде</b> (concerning)</td><td>no ending</td><td>Мен жолданым <b>жөнінде</b> хабарласып тұрмын.</td></tr><tr><td><b>негізінде</b> (on the basis of)</td><td>no ending</td><td>Шарт <b>негізінде</b> ақшаны қайтаруды сұраймыз.</td></tr></table><ul><li>Everyday speech: жөндеу <b>үшін</b>, жоспар <b>бойынша</b>, жолданым <b>туралы</b>.</li><li>Official letters like the “we ask” form: <b>… -уыңызды сұраймыз</b> = we ask you to …</li></ul>', [
+        k.mc('Жөндеу___ байланысты кеңсе жабық.', ['ге', 'ден', 'мен'], 0),
+        k.mc('Жоспарға ___ жөндеу сәуірде басталады.', ['сәйкес', 'ішінде', 'жөнінде'], 0),
+        k.mc('Жауап бір ай ___ келеді.', ['ішінде', 'сәйкес', 'байланысты'], 0),
+        k.mc('Мен жолданым ___ хабарласып тұрмын.', ['жөнінде', 'ішінде', 'мақсатында'], 0),
+        k.mc('Which is everyday speech?', ['жоспар бойынша', 'жоспарға сәйкес', 'жоспар негізінде'], 0),
+        k.ord('Жауап бір ай ішінде келеді')]],
+      r: ['Two letters about one playground', 'Он екінші үйдің ауласындағы балалар ойын алаңы бұзылып қалды. Тұрғындар әкімдікке ашулы хат жазды: «Қашанғы күтеміз? Бірдеңе істеңіздер!» Жауап болмады.\n\nЗаңгер көрші Гүлнар түсіндірді: «Құзырлы орган сезімге емес, жолданымға жауап береді. Лауазымды тұлға кім жазып отырғанын, не туралы жазғанын және не сұрайтынын түсінуі керек».\n\nЕкінші хат басқаша болды. Ол мына сөздермен басталды: «Балалар ойын алаңының апатты жағдайына байланысты оны жөндеу мәселесін бір ай ішінде қарастыруыңызды сұраймыз». Тұрғындар деректерді сипаттап, күндерін көрсетіп, суреттерді қоса тіркеді. Хаттың көшірмесін қырық тұрғынның қолымен куәландырып, кеңсеге тапсырды.\n\nҮш аптадан кейін оларды хабардар етті: жоспарға сәйкес жөндеу сәуірде басталады. Бас тарту болған жоқ.\n\nКөктемде алаң жөнделді. «Ресми стиль құрғақ көрінеді, — дейді Гүлнар. — Бірақ ол бір-ақ бетте ең бастысын істейді: сіздің өз құқығыңызды білетініңізді және өзгенің уақытын сыйлайтыныңызды көрсетеді».\n\n(ойын алаңы = playground · тұрғын = resident · қашанғы = how long · апатты жағдай = dangerous condition · көшірме = copy · қолымен = with the signature · сыйлау = to respect)', [
+        k.mc('What happened to the first letter?', ['There was no answer.', 'It was refused.', 'It was lost in the post.'], 0), k.mc('What is Gulnar’s job?', ['lawyer', 'official', 'journalist'], 0), k.mc('What did the residents attach to the second letter?', ['photographs', 'money', 'a toy'], 0), k.mc('When were they notified?', ['after three weeks', 'the next day', 'after a year'], 0)]] },
+
+    { id: 'u24', t: 'Мен енді не істей аламын. B2 review', topic: 'Review',
+      v: ['Talking about your progress', `
+еркін сөйлеу | verb | to speak fluently | Еркін сөйлеу тәжірибемен келеді. | | er-KIN soy-LEU | Speaking fluently comes with practice.
+сөз байлығы | noun | richness of vocabulary | Оның сөз байлығы мол. | | soz bay-ly-GHY | He has a rich stock of words.
+тіл иесі | noun | native speaker | Ол тіл иесі сияқты сөйлейді. | | til i-ye-SI | He speaks like a native speaker.
+мүдіру | verb | to stumble, to falter (in speech) | Мен толқығанда мүдіремін. | | mu-di-ROO | I stumble when I am nervous.
+ойын жеткізу | verb | to get your thought across | Ол ойын анық жеткізеді. | | o-YYN zhet-ki-ZOO | He gets his thoughts across clearly.
+игеру | verb | to master, to take in | Мен бұл ережені игердім. | | i-ge-ROO | I have mastered this rule.
+тілдік кедергі | noun | language barrier | Тілдік кедергіні жеңуге болады. | | til-DIK ke-der-GI | The language barrier can be overcome.
+интонация | noun | intonation | Сұрақтың интонациясы басқа. | | in-to-NA-tsi-ya | A question has a different intonation.
+машық | noun | skill, practised habit | Сөйлеу — машықты қажет етеді. | | ma-SHYQ | Speaking takes practice.
+шыңдау | verb | to hone, to sharpen (a skill) | Мен қазақшамды шыңдап жүрмін. | | shyng-DAU | I am honing my Kazakh.`],
+      g: ['The patterns of B2', '<p>These are the main patterns of the level. If one is not clear, go back to its unit.</p><table><tr><th>Unit</th><th>Pattern</th><th>Example</th></tr><tr><td>1</td><td>a whole sentence as an object</td><td>Оның кел<b>генін</b> білемін.</td></tr><tr><td>2</td><td>making someone do it</td><td>Мен шашымды қи<b>дыр</b>дым.</td></tr><tr><td>3</td><td>helper verbs</td><td>жаз<b>а бастады</b>, оқ<b>ып болды</b>, жас<b>ап көрді</b></td></tr><tr><td>4</td><td>advice</td><td>Демал<b>ғаныңыз жөн</b>.</td></tr><tr><td>7</td><td>because, until, every time</td><td><b>-ғандықтан</b>, <b>-ғанша</b>, <b>-ған сайын</b></td></tr><tr><td>9</td><td>whatever, however</td><td><b>Қанша</b> қиын бол<b>са да</b>…</td></tr><tr><td>10</td><td>no time to, nothing to</td><td>Менің демал<b>атын уақытым жоқ</b>.</td></tr><tr><td>11</td><td>I intend to</td><td>Мен бар<b>мақшы</b>мын.</td></tr><tr><td>12</td><td>I had to</td><td>Маған кет<b>уге тура келді</b>.</td></tr><tr><td>15</td><td>in spite of, until</td><td><b>-ғанына қарамастан</b>, <b>-ғанға дейін</b></td></tr><tr><td>17</td><td>the source of information</td><td><b>-ған көрінеді</b>, <b>айтуынша</b></td></tr><tr><td>20</td><td>if it were not for</td><td>Сен <b>болмағанда</b>, мен кешіг<b>ер едім</b>.</td></tr><tr><td>23</td><td>official words</td><td><b>-ға байланысты</b>, <b>-ға сәйкес</b></td></tr></table>', [
+        k.mc('Мен оның кел___ білемін.', ['генін', 'ген', 'генде'], 0),
+        k.mc('Қанша қиын бол___ да, мен берілмеймін.', ['са', 'ған', 'ып'], 0),
+        k.mc('Мен ертең бар___мын. (I intend to)', ['мақшы', 'ған', 'атын'], 0),
+        k.mc('Маған ерте кетуге тура ___.', ['келді', 'барды', 'алды'], 0),
+        k.mc('Достарым ___, мен берілер едім.', ['болмағанда', 'болғанда', 'болса да'], 0),
+        k.ord('Достарым болмағанда мен берілер едім')]],
+      r: ['A letter from a learner', 'Екі жыл бұрын мен Қазақстанға келгенде тіпті шайға тапсырыс бере алмайтынмын. Кеше әріптесіммен фильм туралы жарты сағат қазақша пікір таластырдым. Қанша қиын болса да, тастап кетпегеніме қуанамын.\n\nМаған не көмектесті? Біріншіден, мен қателесуден қорқуды қойдым. Тіл иелері сен мүдірген кезде күлмейді; сенің тырысқаның оларға ұнайды. Екіншіден, мен жеке сөздерді емес, тіркестерді жаттадым: сөз сөйлемнің ішінде өмір сүрсе, сөздік қор тезірек өседі. Үшіншіден, дауыс ырғағын игеру үшін күн сайын тірі сөзді тыңдадым.\n\nТілдік кедергі бір күнде жоғалған жоқ. Мен сөйлеген сайын ол аласара берді. Сөйлемімді аяқтағанша шыдап күткен достарым болмағанда, мен берілер едім.\n\nЕркін сөйлеуге әлі алыс, жетілдіретін нәрсем көп. Бірақ қазір мен ойымды басқалар түсінетіндей жеткізе аламын. Дағды деген — осы.\n\nТом, Алматы\n\n(пікір таластыру = to argue · тіркес = phrase · аласару = to get lower · шыдап күту = to wait patiently · берілу = to give up)', [
+        k.mc('What could Tom not do two years ago?', ['order tea', 'read English', 'find a job'], 0), k.mc('What did he learn instead of single words?', ['phrases', 'grammar tables', 'songs'], 0), k.mc('Who helped him not to give up?', ['friends who waited patiently', 'his teacher at school', 'a phone app'], 0), k.tf('Tom says he is already completely fluent.', false)]] }
   ]);
 })();

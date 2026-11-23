@@ -1,10 +1,10 @@
 /* IF Lingo · Russian B2: an original IF Academy course for people who speak English and have finished Russian B1.
    Word lines: word | part of speech | meaning in English | example | (empty) | how to say it | the example in English.
-   Plan: 24 units and a level test (project doc claude/if-lingo.md). Built so far: units 1 to 16. */
+   Plan: 24 units and a level test (project doc claude/if-lingo.md). Built so far: units 1 to 24. */
 IFX.course({
   id: 'ru-b2', track: 'lang', lang: 'ru-RU', level: 'B2', next: 'C1', icon: '🇷🇺',
   title: 'Russian B2', sub: 'Confident Russian',
-  blurb: 'Discuss generations, work, the media, wellbeing, tourism, cities, the climate, machines at work, lifelong learning, fair play, business and migration, and read longer texts. The first 16 of 24 units, explained in English.',
+  blurb: 'Discuss generations, work, the media, wellbeing, tourism, cities, the climate, machines at work, lifelong learning, fair play, business, migration, the news, science, advertising and official letters, and read longer texts. 24 units, explained in English.',
   units: []
 });
 (function () {
@@ -360,6 +360,182 @@ IFX.course({
         k.mc('город → adjective = …', ['городской', 'городный', 'городовый'], 0),
         k.ord('Уличное искусство украшает город')]],
       r: ['The wall that began to speak', 'В нашем районе двадцать лет стоял заброшенный завод. Его серый фасад был покрыт надписями. Жители считали это вандализмом и просили городские власти снести здание.\n\nПрошлым летом группа молодых художников предложила другое решение. Они показали эскиз: огромная роспись с историей района — степь, первые рабочие, дети во дворе. Власти согласились, а жители собрали деньги на краски.\n\nРабота шла два месяца. Прохожие останавливались, давали советы, приносили чай. Пенсионерка Мария Ивановна, тридцать лет работавшая на этом заводе, рассказала художникам о своих коллегах — и их лица появились на стене.\n\nТеперь здесь общественное пространство: летом показывают кино, зимой заливают каток.\n\n«Уличное искусство — не украшение, — говорит одна из художниц. — Граффити может быть и вандализмом, и искусством. Разница в том, разговаривает ли стена с людьми».\n\n(серый = grey · покрыт надписями = covered in writing · снести = to pull down · рабочие = workers · заливают каток = make an ice rink · разница = difference)', [
-        k.mc('What stood in the district for twenty years?', ['an abandoned factory', 'an old school', 'an empty shop'], 0), k.mc('What did the young artists propose?', ['a huge mural of the district’s history', 'pulling the building down', 'a new car park'], 0), k.mc('How long did the work take?', ['two months', 'two years', 'two weeks'], 0), k.mc('Whose faces appeared on the wall?', ['former workers of the factory', 'the city authorities', 'famous actors'], 0)]] }
+        k.mc('What stood in the district for twenty years?', ['an abandoned factory', 'an old school', 'an empty shop'], 0), k.mc('What did the young artists propose?', ['a huge mural of the district’s history', 'pulling the building down', 'a new car park'], 0), k.mc('How long did the work take?', ['two months', 'two years', 'two weeks'], 0), k.mc('Whose faces appeared on the wall?', ['former workers of the factory', 'the city authorities', 'famous actors'], 0)]] },
+
+    { id: 'u17', t: 'Правда или слух? Checking the news', topic: 'Media',
+      v: ['News you can trust', `
+ложный | adjective | false | Это ложная новость. | | LOZH-ny | This is false news.
+перепроверить | verb | to double-check | Перепроверьте дату новости. | | pee-ree-pra-VYE-reet | Double-check the date of the news.
+сенсация | noun | sensation | Газета искала сенсацию. | | seen-SA-tsee-ya | The newspaper was looking for a sensation.
+репост | noun | repost, share | Он сделал репост записи. | | ree-POST | He reposted the post.
+проверка фактов | noun | fact-checking | Проверка фактов занимает время. | | pra-VYER-ka FAK-taf | Fact-checking takes time.
+опровергнуть | verb | to refute, to deny | Министр опроверг эту новость. | | a-pra-VYERG-noot | The minister denied this news.
+вводить в заблуждение | verb | to mislead | Заголовок вводит в заблуждение. | | vva-DEET v za-bloozh-DYE-nee-ye | The headline is misleading.
+непроверенный | adjective | unchecked, unverified | Это непроверенная информация. | | nee-pra-VYE-reen-ny | This is unverified information.
+сомнительный | adjective | doubtful, dubious | Это сомнительный сайт. | | sam-NEE-teel-ny | This is a dubious website.
+распространить | verb | to spread | Запись распространили за час. | | ras-pras-tra-NEET | The post was spread within an hour.`],
+      g: ['They say, supposedly, according to: showing where information comes from', '<p>At B2 you must show whether you <b>know</b> something or only <b>heard</b> it.</p><table><tr><th>Word</th><th>Meaning</th><th>Example</th></tr><tr><td><b>говорят, что</b></td><td>they say that</td><td><b>Говорят, что</b> мост закроют.</td></tr><tr><td><b>якобы</b></td><td>supposedly (I doubt it)</td><td>Он <b>якобы</b> видел документ.</td></tr><tr><td><b>будто (бы)</b></td><td>that, as if (I doubt it)</td><td>Пишут, <b>будто</b> мост закроют на год.</td></tr><tr><td><b>как будто</b></td><td>as if, it seems</td><td>Мне казалось, <b>как будто</b> я помогаю.</td></tr><tr><td><b>по словам</b> + “of” ending</td><td>according to (a person)</td><td><b>По словам</b> преподавател<b>я</b>, это неправда.</td></tr><tr><td><b>согласно</b> + “to” ending</td><td>according to (a document)</td><td><b>Согласно</b> отчёт<b>у</b>, цены выросли.</td></tr></table><ul><li><b>якобы</b> and <b>будто</b> tell the listener that you do not fully believe it.</li><li><b>по словам</b> and <b>согласно</b> are neutral. They only name the source.</li></ul>', [
+        k.mc('Он ___ видел документ, но я не верю.', ['якобы', 'согласно', 'по словам'], 0),
+        k.mc('По словам ___, это неправда.', ['преподавателя', 'преподаватель', 'преподавателю'], 0),
+        k.mc('Согласно ___, цены выросли.', ['отчёту', 'отчёта', 'отчёт'], 0),
+        k.mc('Пишут, ___ мост закроют на год.', ['будто', 'согласно', 'чтобы'], 0),
+        k.tf('The word “якобы” shows that the speaker is sure the news is true.', false),
+        k.ord('По словам преподавателя это неправда')]],
+      r: ['The post he should not have shared', 'Тимур учится на факультете журналистики. Однажды он увидел в соцсети запись: «Главный мост города закроют на год». Якобы об этом сообщил человек из администрации. Тимур сразу переслал запись друзьям. За час её распространили тысячи людей.\n\nВечером администрация опровергла слух: мост закроют только на две ночи. Тимуру было стыдно. «Мне казалось, будто я помогаю людям, — говорит он. — А я вводил их в заблуждение».\n\nНа следующий день преподаватель показала студентам три шага проверки фактов. Первый: найти первоисточник. Второй: посмотреть на дату. Третий: спросить себя, кому выгодна эта новость. По её словам, сомнительный текст часто начинается со слов «говорят» или «все уже знают».\n\nТеперь Тимур ведёт школьный кружок. Его подписчики — подростки, и первое правило кружка простое: сначала проверить, потом делиться.\n\n(соцсеть = social network · запись = post · переслал = forwarded · стыдно = ashamed · выгодна = benefits · кружок = club)', [
+        k.mc('What did the post say?', ['The main bridge would close for a year.', 'The bridge had fallen.', 'A new bridge would open.'], 0), k.mc('What was true?', ['The bridge would close for two nights.', 'The bridge would close for a year.', 'Nothing would close.'], 0), k.mc('Which is NOT one of the teacher’s three steps?', ['Count the likes.', 'Find the original source.', 'Look at the date.'], 0), k.mc('What is the first rule of Timur’s club?', ['Check first, then share.', 'Share quickly.', 'Never read the news.'], 0)]] },
+
+    { id: 'u18', t: 'Язык науки. The language of science', topic: 'Science',
+      v: ['Doing research', `
+предположение | noun | assumption, guess | Это только предположение. | | preed-pa-la-ZHE-nee-ye | It is only an assumption.
+образец | noun | sample | Она взяла образец почвы. | | ab-ra-ZYETS | She took a soil sample.
+почва | noun | soil | Здесь хорошая почва. | | POCH-va | The soil is good here.
+замер | noun | measurement (taken on the spot) | Она сделала замеры на поле. | | za-MYER | She took measurements in the field.
+выборка | noun | sample (set of data) | Выборка была большой. | | VY-bar-ka | The sample was large.
+закономерность | noun | pattern, regularity | Мы увидели закономерность. | | za-ka-na-MYER-nast | We saw a pattern.
+погрешность | noun | margin of error | Погрешность измерений небольшая. | | pa-GRESH-nast | The margin of error is small.
+обоснованный | adjective | well-founded | Это обоснованный вывод. | | a-bas-NO-van-ny | This is a well-founded conclusion.
+измерение | noun | measurement | Измерения делали каждый месяц. | | eez-mee-RYE-nee-ye | Measurements were taken every month.
+лесополоса | noun | shelterbelt, line of trees | Лесополоса защищает поле от ветра. | | lee-sa-pa-la-SA | A shelterbelt protects the field from the wind.`],
+      g: ['Is, consists of, belongs to: the verbs of formal writing', '<p>Everyday Russian has no word for <i>is</i>. Scientific and official Russian uses special verbs instead.</p><table><tr><th>Verb</th><th>Ending after it</th><th>Example</th></tr><tr><td><b>являться</b> (to be)</td><td>“work as” ending</td><td>Почва <b>является</b> природн<b>ым</b> богатств<b>ом</b>.</td></tr><tr><td><b>представлять собой</b> (to be, to look like)</td><td>object ending</td><td>Лесополоса <b>представляет собой</b> ряд деревьев.</td></tr><tr><td><b>состоять из</b> (to consist of)</td><td>“of” ending</td><td>Образец <b>состоит из</b> песк<b>а</b> и глин<b>ы</b>.</td></tr><tr><td><b>относиться к</b> (to belong to)</td><td>“to” ending</td><td>Пшеница <b>относится к</b> зернов<b>ым</b> культур<b>ам</b>.</td></tr><tr><td><b>заключаться в</b> (to lie in)</td><td>place ending</td><td>Причина <b>заключается в</b> ветр<b>е</b>.</td></tr><tr><td><b>называться</b> (to be called)</td><td>“work as” ending</td><td>Это <b>называется</b> эрози<b>ей</b>.</td></tr></table><p>In conversation say: Почва — это богатство. In a report write: Почва является богатством.</p>', [
+        k.mc('Почва ___ природным богатством.', ['является', 'состоит', 'относится'], 0),
+        k.mc('Образец состоит ___ песка и глины.', ['из', 'в', 'к'], 0),
+        k.mc('Пшеница относится ___ зерновым культурам.', ['к', 'из', 'на'], 0),
+        k.mc('Причина заключается ___ ветре.', ['в', 'из', 'к'], 0),
+        k.mc('Это называется ___.', ['эрозией', 'эрозия', 'эрозию'], 0),
+        k.ord('Образец состоит из песка и глины')]],
+      r: ['Where did the wheat go?', 'Алия — молодой почвовед. Два года назад фермер из степного района попросил её о помощи: урожай пшеницы падал каждый год. Фермер был уверен, что причина заключается в сухой погоде.\n\nУ Алии была другая гипотеза: проблема не в воде, а в ветре, который уносит верхний слой почвы. Чтобы проверить её, она взяла двести образцов с разных полей и целый год вела наблюдение.\n\nВыборка показала закономерность. На полях, защищённых лесополосой, почва оставалась на месте, и урожай был выше. На открытых полях ветер уносил её весной. Алия учла и погрешность измерений: разница была слишком большой, чтобы быть случайной.\n\nЕё вывод был обоснованным, и фермер посадил деревья вокруг всех полей. «Наука — это не мнение, — говорит Алия. — Наука состоит из вопросов, проверок и честных цифр».\n\n(почвовед = soil scientist · уносит = carries away · слой = layer · учла = took into account · случайный = by chance)', [
+        k.mc('What did the farmer think the cause was?', ['dry weather', 'the wind', 'bad seeds'], 0), k.mc('What was Aliya’s hypothesis?', ['The wind was carrying the top soil away.', 'There was too much water.', 'The farmer planted too late.'], 0), k.mc('How many samples did she take?', ['two hundred', 'twenty', 'two thousand'], 0), k.mc('What did the farmer do in the end?', ['planted trees around all the fields', 'sold the farm', 'stopped growing wheat'], 0)]] },
+
+    { id: 'u19', t: 'Только сегодня! How advertising works', topic: 'Advertising',
+      v: ['Selling and persuading', `
+рекламный ролик | noun | advert, commercial | Этот рекламный ролик очень короткий. | | reek-LAM-ny RO-leek | This advert is very short.
+торговая марка | noun | trademark, brand name | Это известная торговая марка. | | tar-GO-va-ya MAR-ka | This is a well-known brand name.
+слоган | noun | slogan | У компании новый слоган. | | SLO-gan | The company has a new slogan.
+целевая аудитория | noun | target audience | Наша целевая аудитория — студенты. | | tsee-lee-VA-ya a-oo-dee-TO-ree-ya | Our target audience is students.
+убеждать | verb | to persuade, to convince | Реклама убеждает нас покупать. | | oo-beezh-DAT | Advertising persuades us to buy.
+уловка | noun | trick | Это старая уловка продавцов. | | oo-LOF-ka | It is an old sellers’ trick.
+соблазн | noun | temptation | Трудно бороться с соблазном. | | sab-LAZN | It is hard to fight temptation.
+импульсивная покупка | noun | impulse purchase | Это была импульсивная покупка. | | eem-pool-SEEV-na-ya pa-KOOP-ka | It was an impulse purchase.
+внушать | verb | to instil, to make someone believe | Реклама внушает нам страх. | | vnoo-SHAT | Advertising instils fear in us.
+лояльность | noun | loyalty | Бренды ценят лояльность клиентов. | | la-YAL-nast | Brands value customer loyalty.`],
+      g: ['Little words with big meanings: ведь, же, разве, неужели, даже, лишь', '<p>These short words do not change. They show your <b>attitude</b>.</p><table><tr><th>Word</th><th>What it does</th><th>Example</th></tr><tr><td><b>ведь</b></td><td>“after all, you know” (gives a reason both people know)</td><td><b>Ведь</b> это почти десять тысяч.</td></tr><tr><td><b>же</b></td><td>makes the word before it stronger</td><td>Где <b>же</b> граница? Я <b>же</b> говорил!</td></tr><tr><td><b>разве</b></td><td>a question when you think the answer is no</td><td><b>Разве</b> магазин завтра закроется?</td></tr><tr><td><b>неужели</b></td><td>a question that shows surprise</td><td><b>Неужели</b> так просто?</td></tr><tr><td><b>даже</b></td><td>even</td><td>Работает <b>даже</b> запах хлеба.</td></tr><tr><td><b>лишь</b></td><td>only (a little more formal than только)</td><td>Я пользовался ею <b>лишь</b> два раза.</td></tr></table><ul><li><b>же</b> always comes <b>after</b> the word it makes stronger.</li><li><b>разве</b> and <b>неужели</b> stand at the start of the question.</li></ul>', [
+        k.mc('___ магазин завтра закроется? (I do not think so.)', ['Разве', 'Ведь', 'Даже'], 0),
+        k.mc('___ так просто? (I am surprised.)', ['Неужели', 'Лишь', 'Же'], 0),
+        k.mc('Работает ___ запах хлеба.', ['даже', 'разве', 'неужели'], 0),
+        k.mc('Я пользовался ею ___ два раза.', ['лишь', 'же', 'разве'], 0),
+        k.mc('Где ___ граница?', ['же', 'лишь', 'ведь'], 0),
+        k.ord('Я пользовался ею лишь два раза')]],
+      r: ['Only today!', 'Данияр десять лет работает в рекламе. Он знает, как бренды убеждают нас покупать.\n\n«Посмотрите на цену: 9 990 тенге. Ведь это почти десять тысяч, но мозг видит девять, — объясняет он. — А слова „только сегодня“? Разве завтра магазин закроется? Нет, но мы спешим».\n\nПо его словам, работает всё: медленная музыка в магазине, яркая упаковка, даже запах хлеба у входа. Каждый рекламный ролик сделан для своей целевой аудитории, а короткий слоган запоминается лучше длинного объяснения.\n\nГде же граница между рекламой и манипуляцией? Данияр считает, что честная реклама рассказывает о товаре, а нечестная навязывает страх: «У всех уже есть, лишь у тебя нет».\n\nСам он тоже не идеален: в прошлом году сделал импульсивную покупку — соковыжималку, которой пользовался лишь два раза. Теперь у него правило: подождать двадцать четыре часа. «Неужели так просто? Да. Через день половина желаний исчезает».\n\n(мозг = brain · спешим = we hurry · граница = border · соковыжималка = juicer · исчезает = disappears)', [
+        k.mc('Why do shops write 9,990 and not 10,000?', ['The brain sees nine.', 'It is the law.', 'It is easier to count.'], 0), k.mc('What does dishonest advertising push on us, according to Daniyar?', ['fear', 'facts about the product', 'slow music'], 0), k.mc('What did Daniyar buy on impulse?', ['a juicer', 'a phone', 'a car'], 0), k.mc('What is his rule now?', ['Wait twenty-four hours.', 'Never go shopping.', 'Buy only today.'], 0)]] },
+
+    { id: 'u20', t: 'Земля и вода. Land and water', topic: 'Farming',
+      v: ['On the farm', `
+фермерское хозяйство | noun | farm | У него небольшое фермерское хозяйство. | | FYER-meer-ska-ye kha-ZYAYST-va | He has a small farm.
+урожайность | noun | yield | Урожайность выросла. | | oo-ra-ZHAY-nast | The yield has grown.
+удобрение | noun | fertiliser | Он сократил удобрения. | | oo-dab-RYE-nee-ye | He cut down on fertilisers.
+неурожай | noun | crop failure, bad harvest | В прошлом году был неурожай. | | nee-oo-ra-ZHAY | Last year there was a bad harvest.
+капельный полив | noun | drip irrigation | Капельный полив экономит воду. | | KA-peel-ny pa-LEEF | Drip irrigation saves water.
+пастбище | noun | pasture | Коровы на пастбище. | | PAST-bee-shche | The cows are in the pasture.
+посев | noun | sowing; sown crop | Посев начинается в мае. | | pa-SYEF | Sowing begins in May.
+сорняк | noun | weed | В огороде много сорняков. | | sar-NYAK | There are a lot of weeds in the vegetable garden.
+плодородный | adjective | fertile | Здесь плодородная земля. | | pla-da-ROD-ny | The land here is fertile.
+кооператив | noun | cooperative | Фермеры создали кооператив. | | ka-a-pee-ra-TEEF | The farmers set up a cooperative.`],
+      g: ['If it were not for…, otherwise', '<table><tr><th>Pattern</th><th>Meaning</th><th>Example</th></tr><tr><td><b>если бы не</b> + noun (dictionary form), … <b>бы</b> + past</td><td>if it were not for, but for</td><td><b>Если бы не</b> орошени<b>е</b>, мы <b>бы потеряли</b> урожай.</td></tr><tr><td><b>иначе</b></td><td>otherwise</td><td>Мне пришлось рискнуть, <b>иначе</b> хозяйство не выжило бы.</td></tr><tr><td><b>а то</b></td><td>or else (everyday speech)</td><td>Поливай чаще, <b>а то</b> всё засохнет.</td></tr><tr><td><b>в противном случае</b></td><td>otherwise (formal)</td><td>Заплатите до пятницы, <b>в противном случае</b> договор закончится.</td></tr></table><ul><li>After <b>если бы не</b> the noun stays in its dictionary form: если бы не <b>дождь</b>, если бы не <b>ты</b>, если бы не <b>соседи</b>.</li><li>The second half has <b>бы</b> + past, as in B1, Unit 8.</li><li>It can be good news or bad news: Если бы не ты, я бы опоздал. (Thanks to you I was on time.) / Если бы не дождь, мы бы гуляли. (Because of the rain we did not.)</li></ul>', [
+        k.mc('Если бы ___ орошение, мы бы потеряли урожай.', ['не', 'ни', 'нет'], 0),
+        k.mc('Если бы не ___, я бы опоздал.', ['ты', 'тебя', 'тебе'], 0),
+        k.mc('Если бы не дождь, мы ___ гуляли.', ['бы', 'будем', 'были'], 0),
+        k.mc('Поливай чаще, ___ всё засохнет.', ['а то', 'если бы', 'чтобы'], 0),
+        k.mc('“Если бы не соседи, я бы не справился.” = …', ['The neighbours helped me.', 'The neighbours did not help me.', 'I have no neighbours.'], 0),
+        k.ord('Если бы не орошение мы бы потеряли урожай')]],
+      r: ['The dry year', 'Прошлое лето было самым сухим за двадцать лет. Засуха уничтожила посевы во многих хозяйствах района. Но поля Серика остались зелёными.\n\nДва года назад он взял кредит и провёл капельное орошение. Соседи смеялись: зачем тратить деньги, если дождь бесплатный? «Если бы не орошение, мы бы потеряли весь урожай, — говорит Серик. — Мне пришлось рискнуть, иначе хозяйство не выжило бы».\n\nОн изменил и другое: стал меньше пахать, чтобы земля держала воду, и сократил удобрения, потому что плодородная земля не любит лишней химии. Урожайность выросла не сразу — первый год был трудным, сорняков стало больше.\n\nКогда пришла засуха, Серик поделился водой с двумя соседями. Осенью они втроём создали кооператив и теперь вместе покупают технику.\n\n«Если бы не тот сухой год, мы бы до сих пор работали поодиночке», — улыбается он.\n\n(уничтожила = destroyed · капельное = drip · пахать = to plough · лишний = extra · поодиночке = each on his own)', [
+        k.mc('What did Serik do two years ago?', ['He took a loan and put in drip irrigation.', 'He sold his fields.', 'He bought more cows.'], 0), k.mc('Why did the neighbours laugh?', ['They thought it was a waste of money.', 'His fields were too small.', 'He planted too early.'], 0), k.tf('The yield grew in the very first year.', false), k.mc('What did the three farmers do in the autumn?', ['They set up a cooperative.', 'They moved to the city.', 'They stopped farming.'], 0)]] },
+
+    { id: 'u21', t: 'Начальник или лидер? Leading a team', topic: 'Work',
+      v: ['Working as a team', `
+подчинённый | noun | subordinate, member of your staff | У неё шесть подчинённых. | | pat-chee-NYON-ny | She has a staff of six.
+делегировать | verb | to delegate | Хороший начальник умеет делегировать. | | dee-lee-GEE-ra-vat | A good boss knows how to delegate.
+разногласие | noun | disagreement | У нас было разногласие. | | raz-na-GLA-see-ye | We had a disagreement.
+уступка | noun | concession | Обе стороны пошли на уступки. | | oos-TOOP-ka | Both sides made concessions.
+обратная связь | noun | feedback | Мне нужна обратная связь. | | ab-RAT-na-ya svyas | I need feedback.
+полномочия | noun | authority, powers | У меня нет таких полномочий. | | pal-na-MO-chee-ya | I do not have that authority.
+сплочённый | adjective | close-knit, united | У нас сплочённая команда. | | spla-CHON-ny | We have a close-knit team.
+уволиться | verb | to resign, to quit | Он решил уволиться. | | oo-VO-leet-sa | He decided to resign.
+поручение | noun | assignment, task given to someone | Я выполнил ваше поручение. | | pa-roo-CHE-nee-ye | I have carried out your assignment.
+инициатива | noun | initiative | Он проявил инициативу. | | ee-nee-tsee-a-TEE-va | He showed initiative.`],
+      g: ['Both … and, not only … but also, either … or: joining words in pairs', '<table><tr><th>Pair</th><th>Meaning</th><th>Example</th></tr><tr><td><b>как … так и</b></td><td>both … and</td><td><b>Как</b> опытные сотрудники, <b>так и</b> новички молчали.</td></tr><tr><td><b>не только … но и</b></td><td>not only … but also</td><td>Она <b>не только</b> проверяла, <b>но и</b> переписывала отчёты.</td></tr><tr><td><b>либо … либо</b></td><td>either … or</td><td><b>Либо</b> вы берёте задачу целиком, <b>либо</b> не берёте.</td></tr><tr><td><b>то … то</b></td><td>now … now</td><td>Она <b>то</b> сердилась, <b>то</b> винила себя.</td></tr><tr><td><b>ни … ни</b> + не</td><td>neither … nor</td><td><b>Ни</b> талант, <b>ни</b> опыт <b>не</b> заменят доверия.</td></tr></table><ul><li>Put a comma before the second half.</li><li>With <b>ни … ни</b> the verb still needs <b>не</b>.</li><li><b>либо … либо</b> is a little more formal than <b>или … или</b>.</li></ul>', [
+        k.mc('Как опытные сотрудники, ___ и новички молчали.', ['так', 'но', 'то'], 0),
+        k.mc('Она не только проверяла, ___ переписывала отчёты.', ['но и', 'так и', 'либо'], 0),
+        k.mc('Она ___ сердилась, то винила себя.', ['то', 'ни', 'как'], 0),
+        k.mc('Ни талант, ни опыт ___ заменят доверия.', ['не', 'ни', 'нет'], 0),
+        k.mc('___ вы берёте задачу, либо не берёте.', ['Либо', 'Ни', 'Как'], 0),
+        k.ord('Ни талант ни опыт не заменят доверия')]],
+      r: ['The boss who did everything herself', 'Зарину назначили руководителем группы из шести человек. Она была лучшим специалистом отдела и решила, что хороший начальник всё делает сам. Она не только проверяла каждую мелочь, но и переписывала чужие отчёты по ночам.\n\nЧерез три месяца как опытные сотрудники, так и новички молчали на совещаниях. Двое подчинённых собирались уволиться. Зарина то сердилась, то винила себя.\n\nПомогла обратная связь. Она попросила каждого честно написать, что мешает работать. Ответы были похожи: «Нам не доверяют», «У нас нет полномочий», «Инициатива наказуема».\n\nЗарина начала делегировать: либо человек получает задачу целиком, либо не получает её вообще. Разногласия теперь обсуждают открыто и ищут компромисс.\n\nСегодня группа стала сплочённой, никто не уволился. «Ни талант, ни опыт не заменят взаимопонимания, — говорит Зарина. — Руководить — значит не делать всё самой, а помогать другим делать хорошо».\n\n(назначили = appointed · мелочь = small detail · винила = blamed · наказуема = gets punished · целиком = as a whole)', [
+        k.mc('How many people are in Zarina’s group?', ['six', 'three', 'twelve'], 0), k.mc('What did she do at night?', ['rewrote other people’s reports', 'studied management', 'looked for a new job'], 0), k.mc('What did the answers have in common?', ['People felt they were not trusted.', 'People wanted more money.', 'People wanted a new office.'], 0), k.tf('In the end two people left the group.', false)]] },
+
+    { id: 'u22', t: 'Возраст — не конец. Growing older', topic: 'Society',
+      v: ['Later life', `
+долголетие | noun | long life, longevity | В чём секрет долголетия? | | dal-ga-LYE-tee-ye | What is the secret of a long life?
+одиночество | noun | loneliness | Она почувствовала одиночество. | | a-dee-NO-chest-va | She felt loneliness.
+мудрость | noun | wisdom | Мудрость приходит с опытом. | | MOOD-rast | Wisdom comes with experience.
+морщина | noun | wrinkle | У него морщины у глаз. | | mar-SHCHEE-na | He has wrinkles by his eyes.
+седой | adjective | grey-haired | У дедушки седые волосы. | | see-DOY | Grandad has grey hair.
+бодрый | adjective | lively, full of energy | Утром я бодрый. | | BOD-ry | In the morning I am full of energy.
+ровесник | noun | person of the same age | Мы с ним ровесники. | | ra-VYES-neek | He and I are the same age.
+выйти на пенсию | verb | to retire | Она вышла на пенсию в прошлом году. | | VY-tee na PYEN-see-yoo | She retired last year.
+преклонный возраст | noun | old age, advanced years | Он работает и в преклонном возрасте. | | pree-KLON-ny VOZ-rast | He works even at an advanced age.
+обуза | noun | burden | Я не хочу быть обузой. | | a-BOO-za | I do not want to be a burden.`],
+      g: ['The most, by far, more and more: making it stronger', '<table><tr><th>Form</th><th>Meaning</th><th>Example</th></tr><tr><td><b>самый</b> + adjective</td><td>the most (B1)</td><td><b>самый</b> простой рецепт</td></tr><tr><td><b>-ейший, -айший</b></td><td>a most, extremely</td><td>прост<b>ейший</b> рецепт, важн<b>ейший</b> секрет, велич<b>айший</b> писатель</td></tr><tr><td><b>наи-</b> + лучший, худший, больший</td><td>the very best, worst, greatest (formal)</td><td><b>наи</b>лучший результат</td></tr><tr><td><b>один из самых</b> + “of” plural</td><td>one of the most</td><td><b>один из самых</b> популярн<b>ых</b> блогов</td></tr><tr><td><b>гораздо, намного</b> + comparative</td><td>much, far</td><td><b>гораздо</b> больше людей</td></tr><tr><td><b>всё</b> + comparative</td><td>more and more</td><td>Я чувствую себя <b>всё</b> бодрее.</td></tr></table><ul><li><b>-айший</b> comes after г, к, х, which change: великий → велич<b>айший</b>, высокий → высоч<b>айший</b>.</li><li>Do not say “очень лучше”. Say <b>гораздо лучше</b> or <b>намного лучше</b>.</li></ul>', [
+        k.mc('Первое видео посмотрели ___ больше людей.', ['гораздо', 'очень', 'самый'], 0),
+        k.mc('Я чувствую себя ___ бодрее.', ['всё', 'самый', 'очень'], 0),
+        k.mc('важный → “a most important” = …', ['важнейший', 'важнее', 'важно'], 0),
+        k.mc('Это один из самых ___ блогов.', ['популярных', 'популярный', 'популярные'], 0),
+        k.mc('великий → …', ['величайший', 'великейший', 'величее'], 0),
+        k.ord('Я чувствую себя всё бодрее')]],
+      r: ['Forty thousand grandchildren', 'Розе Ахметовне семьдесят четыре года. Выйдя на пенсию, она почувствовала одиночество: дети жили далеко, ровесники болели, дни были похожи один на другой. «Мне казалось, что я стала обузой», — вспоминает она.\n\nВнучка предложила ей снять короткое видео о том, как печь баурсаки. Роза Ахметовна согласилась не сразу: седые волосы, морщины — кому это интересно? Оказалось, что очень многим. Первое видео посмотрели гораздо больше людей, чем она ожидала.\n\nСегодня у неё сорок тысяч подписчиков. Она рассказывает не только о рецептах, но и о своём детстве в ауле. Самые популярные видео — простейшие: чай, старые фотографии, истории.\n\n«Преклонный возраст — не конец, — говорит она. — Я чувствую себя всё бодрее. Говорят, секрет долголетия — в генах. А я думаю, что важнейший секрет — быть нужной. Мудрость приходит не с годами, а с вопросами, которые тебе задают».\n\n(снять видео = to film a video · баурсаки = fried dough balls · ожидала = expected · гены = genes)', [
+        k.mc('How did Roza Akhmetovna feel after she retired?', ['lonely', 'very busy', 'rich'], 0), k.mc('Who suggested the first video?', ['her granddaughter', 'her son', 'a neighbour'], 0), k.mc('What was the first video about?', ['how to make baursaks', 'her childhood', 'old photographs'], 0), k.mc('What does she think is the most important secret?', ['being needed', 'good genes', 'sleeping a lot'], 0)]] },
+
+    { id: 'u23', t: 'В связи с… Writing to an office', topic: 'Formal language',
+      v: ['Official letters', `
+заявитель | noun | applicant | Заявитель получил ответ. | | za-ya-VEE-teel | The applicant received an answer.
+рассмотреть | verb | to consider, to examine | Просим рассмотреть наш вопрос. | | ras-smat-RYET | We ask you to consider our question.
+уведомить | verb | to notify | Нас уведомили о решении. | | oo-VYE-da-meet | We were notified of the decision.
+ведомство | noun | government office, department | Это ведомство отвечает за дороги. | | VYE-dams-tva | This department is responsible for roads.
+должностное лицо | noun | official (person) | Письмо получило должностное лицо. | | dalzh-nast-NO-ye lee-TSO | An official received the letter.
+заверить | verb | to certify | Копию нужно заверить. | | za-VYE-reet | The copy needs to be certified.
+приложить | verb | to attach, to enclose | Приложите фотографии к письму. | | pree-la-ZHYT | Attach the photographs to the letter.
+срок рассмотрения | noun | time allowed for a reply | Срок рассмотрения — один месяц. | | srok ras-smat-RYE-nee-ya | The time allowed for a reply is one month.
+отказ | noun | refusal | Мы получили отказ. | | at-KAS | We received a refusal.
+канцелярия | noun | registry, office that takes in letters | Сдайте письмо в канцелярию. | | kan-tsee-LYA-ree-ya | Hand the letter in at the registry.`],
+      g: ['In connection with, in accordance with: the small words of official Russian', '<table><tr><th>Phrase</th><th>Ending after it</th><th>Example</th></tr><tr><td><b>в связи с</b> (in connection with, because of)</td><td>“with” ending</td><td><b>В связи с</b> ремонт<b>ом</b> офис закрыт.</td></tr><tr><td><b>в соответствии с</b> (in accordance with)</td><td>“with” ending</td><td><b>В соответствии с</b> план<b>ом</b> ремонт начнётся в апреле.</td></tr><tr><td><b>в течение</b> (within, during)</td><td>“of” ending</td><td>Ответ придёт <b>в течение</b> месяц<b>а</b>.</td></tr><tr><td><b>в целях</b> (for the purpose of)</td><td>“of” ending</td><td><b>В целях</b> безопасност<b>и</b> вход закрыт.</td></tr><tr><td><b>по поводу</b> (concerning)</td><td>“of” ending</td><td>Я звоню <b>по поводу</b> заявлени<b>я</b>.</td></tr><tr><td><b>на основании</b> (on the basis of)</td><td>“of” ending</td><td><b>На основании</b> договор<b>а</b> просим вернуть деньги.</td></tr></table><ul><li>Everyday speech: <b>из-за</b> ремонта, <b>по</b> плану, <b>за</b> месяц, <b>о</b> заявлении.</li><li>Official letters also like the “we ask” form: <b>Просим рассмотреть… Прошу сообщить…</b></li></ul>', [
+        k.mc('В связи с ___ офис закрыт.', ['ремонтом', 'ремонта', 'ремонт'], 0),
+        k.mc('Ответ придёт в течение ___.', ['месяца', 'месяцем', 'месяц'], 0),
+        k.mc('В соответствии ___ планом ремонт начнётся в апреле.', ['с', 'на', 'по'], 0),
+        k.mc('Я звоню по ___ заявления.', ['поводу', 'целях', 'связи'], 0),
+        k.mc('Which is everyday speech?', ['из-за ремонта', 'в связи с ремонтом', 'на основании ремонта'], 0),
+        k.ord('В связи с ремонтом офис закрыт')]],
+      r: ['Two letters about one playground', 'Во дворе дома номер двенадцать сломалась детская площадка. Жильцы написали в акимат эмоциональное письмо: «Сколько можно ждать? Сделайте что-нибудь!» Ответа не было.\n\nСоседка Гульнара, юрист, объяснила: «Ведомство отвечает на обращения, а не на эмоции. Должностное лицо должно понять, кто пишет, о чём и чего просит».\n\nВторое письмо было другим. Оно начиналось словами: «В связи с аварийным состоянием детской площадки просим рассмотреть вопрос о её ремонте в течение месяца». Жильцы описали факты, указали даты и приложили фотографии. Копию письма они заверили подписями сорока жильцов и сдали в канцелярию.\n\nЧерез три недели их уведомили: в соответствии с планом ремонт начнётся в апреле. Отказа не было.\n\nВесной площадку починили. «Официальный стиль кажется сухим, — говорит Гульнара. — Но всего на одной странице он делает главное: показывает, что вы знаете свои права и уважаете чужое время».\n\n(детская площадка = playground · жильцы = residents · аварийное состояние = dangerous condition · указали = gave · починили = repaired)', [
+        k.mc('What happened to the first letter?', ['There was no answer.', 'It was refused.', 'It was lost in the post.'], 0), k.mc('What is Gulnara’s job?', ['lawyer', 'official', 'journalist'], 0), k.mc('What did the residents attach to the second letter?', ['photographs', 'money', 'a toy'], 0), k.mc('When were they notified?', ['after three weeks', 'the next day', 'after a year'], 0)]] },
+
+    { id: 'u24', t: 'Что я умею теперь. B2 review', topic: 'Review',
+      v: ['Talking about your progress', `
+беглость | noun | fluency | Беглость приходит с практикой. | | BYEG-last | Fluency comes with practice.
+лексика | noun | vocabulary (of a language) | В тексте сложная лексика. | | LYEK-see-ka | The text has difficult vocabulary.
+разговорная речь | noun | spoken, everyday language | Это слово из разговорной речи. | | raz-ga-VOR-na-ya ryech | This word is from everyday speech.
+запинаться | verb | to stumble (in speech) | Я запинаюсь, когда волнуюсь. | | za-pee-NAT-sa | I stumble when I am nervous.
+выражаться | verb | to express yourself | Он выражается ясно. | | vy-ra-ZHAT-sa | He expresses himself clearly.
+усвоить | verb | to take in, to master | Я усвоил это правило. | | oos-VO-eet | I have mastered this rule.
+языковой барьер | noun | language barrier | Языковой барьер можно преодолеть. | | ya-zy-ka-VOY bar-YER | The language barrier can be overcome.
+подбирать слова | verb | to search for words | Я долго подбираю слова. | | pad-bee-RAT sla-VA | I take a long time to find the words.
+свободно владеть | verb | to be fluent in | Она свободно владеет русским. | | sva-BOD-na vla-DYET | She is fluent in Russian.
+совершенствовать | verb | to improve, to perfect | Я совершенствую свой русский. | | sa-veer-SHENST-va-vat | I am perfecting my Russian.`],
+      g: ['The patterns of B2', '<p>These are the main patterns of the level. If one is not clear, go back to its unit.</p><table><tr><th>Unit</th><th>Pattern</th><th>Example</th></tr><tr><td>1, 2</td><td>participles</td><td>человек, <b>живущий</b> здесь; письмо, <b>написанное</b> вчера</td></tr><tr><td>3</td><td>verbal adverbs</td><td><b>Прочитав</b> книгу, я лёг спать.</td></tr><tr><td>4</td><td>advice</td><td>Вам <b>стоит</b> отдохнуть.</td></tr><tr><td>7, 8</td><td>longer joining phrases</td><td><b>из-за того что</b>, <b>благодаря тому что</b>, <b>в то время как</b></td></tr><tr><td>9</td><td>whatever, however</td><td><b>Как бы</b> трудно <b>ни</b> было…</td></tr><tr><td>10</td><td>no time to, nothing to</td><td>Мне <b>некогда</b> отдыхать.</td></tr><tr><td>12</td><td>sentences with no “I”</td><td>Мне <b>пришлось</b> уйти.</td></tr><tr><td>15</td><td>although, as, before</td><td><b>несмотря на то что</b>, <b>по мере того как</b>, <b>прежде чем</b></td></tr><tr><td>17</td><td>the source of information</td><td><b>якобы</b>, <b>по словам</b>, <b>согласно</b></td></tr><tr><td>20</td><td>if it were not for</td><td><b>Если бы не</b> ты, я бы опоздал.</td></tr><tr><td>21</td><td>joining words in pairs</td><td><b>не только … но и</b>, <b>ни … ни</b></td></tr><tr><td>23</td><td>official phrases</td><td><b>в связи с</b>, <b>в течение</b></td></tr></table>', [
+        k.mc('Человек, ___ в этом доме, — мой сосед.', ['живущий', 'живя', 'жил'], 0),
+        k.mc('___ книгу, я лёг спать.', ['Прочитав', 'Прочитанный', 'Читающий'], 0),
+        k.mc('Как бы трудно ___ было, я не сдамся.', ['ни', 'не', 'нет'], 0),
+        k.mc('Мне ___ уйти раньше. (I had to)', ['пришлось', 'пришёл', 'некогда'], 0),
+        k.mc('Если бы не друзья, я ___ сдался.', ['бы', 'буду', 'был'], 0),
+        k.ord('Если бы не друзья я бы сдался')]],
+      r: ['A letter from a learner', 'Два года назад я приехал в Казахстан и не мог даже заказать чай. Вчера я полчаса спорил с коллегой о фильме — по-русски. Как бы трудно ни было, я рад, что не бросил.\n\nЧто мне помогло? Во-первых, я перестал бояться ошибок. Носители языка не смеются, когда ты запинаешься; им приятно, что ты стараешься. Во-вторых, я учил не слова, а фразы: словарный запас растёт быстрее, если слово живёт в предложении. В-третьих, я каждый день слушал живую речь, чтобы усвоить интонацию.\n\nЯзыковой барьер не исчез за один день. Он становился всё ниже по мере того, как я говорил. Если бы не друзья, которые терпеливо ждали, пока я закончу фразу, я бы сдался.\n\nДо беглости мне ещё далеко, и мне есть что совершенствовать. Но теперь я умею выражаться так, чтобы меня понимали. Это и есть навык.\n\nТом, Алматы\n\n(спорил = argued · не бросил = did not give up · терпеливо = patiently · сдался = gave up)', [
+        k.mc('What could Tom not do two years ago?', ['order tea', 'read English', 'find a job'], 0), k.mc('What did he learn instead of single words?', ['phrases', 'grammar tables', 'songs'], 0), k.mc('Who helped him not to give up?', ['friends who waited patiently', 'his teacher at school', 'a phone app'], 0), k.tf('Tom says he is already completely fluent.', false)]] }
   ]);
 })();
