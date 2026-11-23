@@ -391,7 +391,7 @@
   }
   function efFill(u, U) {
     var words = U.words.map(function (w) { return { w: w[0], p: '', d: w[1], e: w[4] || '', c: w[5] || '', ce: w[6] || '', ru: w[2], rd: w[3] }; });
-    u.words = words; u.talk = U.talk;
+    u.words = words; u.talk = U.talk; u.pool = (U.pool || []).map(function (w) { return { w: w }; });
     u.lessons.forEach(function (x) {
       var src = U.lessons.filter(function (y) { return y.id === x.id; })[0] || {};
       if (x.type === 'vocab') x.words = words.slice(src.from || 0, src.to || words.length);
@@ -836,6 +836,33 @@
       var bk = m.filter(function (k) { return /^book:/.test(k); }); if (bk.length) return bk.some(function (k) { return fitsKey(it, k); });
     }
     return m.some(function (k) { return fitsKey(it, k); }); }
+  /* Director's rule, 23 Nov 2026: a student whose level is A0 to B1 sees in Courses exactly the courses of their level:
+     General English of the level, the English Files book of the level (their class book if it is one) and, in a teen
+     class, the Teens course of the level where one exists. Nothing else is listed. Other levels still open by link. */
+  var LOWLV = ['A0', 'A1', 'A2', 'B1'];
+  function isTeenClass() {
+    if ((S.cls || []).some(function (k) { return /^book:teens-/.test(k); })) return true;
+    var books = (ME && ME.books) || [];
+    return ((ME && ME.classes) || []).some(function (c) { var b = books.filter(function (x) { return x.id === c.bookId; })[0]; return /teen|подрост/i.test(((b && b.title) || '') + ' ' + (c.label || '')); });
+  }
+  function levelCourses() {
+    var keys = S.cls || []; if (!keys.length || S.teacher || access().staff || access().teacher) return null;
+    if (keys.some(function (k) { return /^(yl:|be:|maths$|ielts$)/.test(k); })) return null;
+    var BL = { 'ef-a0': 'A0', 'ef-a1': 'A1', 'ef-a2': 'A2', 'ef-b1': 'B1', 'ef-b1p': 'B1', 'ef-b2': 'B2', 'ef-c1': 'C1', 'ef-c2': 'C2', 'teens-b1': 'B1', 'teens-b2': 'B2', giu: 'B1' };
+    var lvs = [], add = function (l) { if (l && lvs.indexOf(l) < 0) lvs.push(l); };
+    keys.forEach(function (k) { if (/^ge:/.test(k)) add(k.slice(3)); else if (/^book:/.test(k)) add(BL[k.slice(5)]); else if (k === 'pet') add('B1'); else if (k === 'ket') add('A2'); });
+    if (keys.indexOf('book:ef-a0') >= 0) lvs = lvs.filter(function (l) { return l !== 'A1' || keys.indexOf('book:ef-a1') >= 0; });   // a Beginner class: A0, not A1 as well
+    if (!lvs.length || lvs.some(function (l) { return LOWLV.indexOf(l) < 0; })) return null;
+    lvs.sort(function (a, b) { return LOWLV.indexOf(a) - LOWLV.indexOf(b); });
+    var teen = isTeenClass(), out = [], put = function (id) { var c = BY[id]; if (c && out.indexOf(c) < 0) out.push(c); };
+    lvs.forEach(function (l) {
+      var lo = l.toLowerCase(), own = keys.filter(function (k) { return /^book:ef-/.test(k) && BL[k.slice(5)] === l; }).map(function (k) { return k.slice(5); });
+      put('ge-' + (l === 'A0' ? 'a1' : lo));
+      (own.length ? own : ['ef-' + lo]).forEach(put);
+      if (teen) put('teens-' + lo);
+    });
+    return out;
+  }
   function myCourses() {
     var out = []; mine().forEach(function (k) { var c = planOf(k).course; if (c && out.indexOf(c) < 0) out.push(c); });
     if (S.teacher || (!out.length && !S.cls)) COURSES.forEach(function (c) { if (!c.daily && out.indexOf(c) < 0) out.push(c); });
@@ -947,9 +974,9 @@
   var CTRACK = [['all', 'All'], ['general', 'General English'], ['business', 'Business English'], ['exam', 'IELTS'], ['kids', 'Young learners']];
   function vCourses(f) {
     setNav('courses'); f = f || 'all';
-    var full = fullView(), list = APP ? appCourses() : full ? COURSES.filter(function (c) { return !c.daily && (f === 'all' || c.track === f); }) : myCourses();
+    var full = fullView(), lc = (!APP || APP === 'ge') ? levelCourses() : null, list = lc || (APP ? appCourses() : full ? COURSES.filter(function (c) { return !c.daily && (f === 'all' || c.track === f); }) : myCourses());
     view().innerHTML = '<div class="page-h"><div><p class="h-eyebrow">' + esc(t('courses')) + '</p><h1>Real English courses</h1><p>Each unit: new words, the grammar, a reading with photos, and a unit check. Finish a level to unlock the next one.</p></div></div>' +
-      (APP ? (ME && ME.student ? '<div class="goalbar">🎚 <span>Level: <b>' + esc(myLevel() || '—') + '</b></span><a href="#/level">Change level & materials</a></div>' : '') : full ? '<div class="chips">' + CTRACK.map(function (x) { return '<button class="chip' + (x[0] === f ? ' on' : '') + '" data-f="' + x[0] + '">' + esc(x[1]) + '</button>'; }).join('') + '</div>' : goalBar()) +
+      (APP ? (ME && ME.student ? '<div class="goalbar">🎚 <span>Level: <b>' + esc(myLevel() || '—') + '</b></span><a href="#/level">Change level & materials</a></div>' : '') : full && !lc ? '<div class="chips">' + CTRACK.map(function (x) { return '<button class="chip' + (x[0] === f ? ' on' : '') + '" data-f="' + x[0] + '">' + esc(x[1]) + '</button>'; }).join('') + '</div>' : goalBar()) +
       '<div class="grid">' + list.map(courseCard).join('') + '</div>' ;
     $$('[data-f]').forEach(function (b) { b.onclick = function () { vCourses(b.dataset.f); }; });
   }
@@ -1012,9 +1039,9 @@
     teach = !!teach && access().teacher;
     document.body.classList.toggle('teach', teach); document.body.classList.add('in-lesson');
     var items = [];
-    if (l.type === 'vocab') { items.push({ k: 'learn' }); items = items.concat(vocabEx(l.words)); }
+    if (l.type === 'vocab') { items.push({ k: 'learn' }); items = items.concat(vocabEx(l.words, otherWords(c, u))); }
     if (l.gen) l.ex = l.gen.map(function (f) { return f(); });   // fresh numbers every time
-    if (l.type === 'context') items = contextEx(u).map(function (e) { return { k: 'ex', e: e }; });
+    if (l.type === 'context') { L0c = c; items = contextEx(u).map(function (e) { return { k: 'ex', e: e }; }); }
     if (l.type === 'vocab' || l.type === 'context') {}
     else if (l.type === 'grammar' || l.type === 'skill' || l.type === 'maths') { items.push({ k: 'rule' }); items = items.concat(l.ex.map(function (e) { return { k: 'ex', e: e }; })); }
     else if (l.type === 'listen') { items.push({ k: 'listen' }); items = items.concat(l.ex.map(function (e) { return { k: 'ex', e: e }; })); }
@@ -1086,12 +1113,34 @@
     if (head.length > 3 && new RegExp('(^|[^A-Za-z])' + stem(head), 'i').test(out)) return '';
     return out;
   }
-  function vocabEx(words) {
+  /* Wrong choices for a gap question come from the course's OTHER units. A word from the same unit is often the same kind
+     of thing and fits the sentence too ("I don't eat ___ because I'm allergic to seafood": prawns / salmon). Words of the
+     same shape (one word or a phrase; -ing, -ed, -s, -ly) are preferred, so the answer cannot be guessed from its form. */
+  function otherWords(c, u) {
+    if (u.pool && u.pool.length) return u.pool;
+    var a = [], seen = {}; (c && c.units || []).forEach(function (v) { if (v === u) return; [].concat.apply(v.words ? v.words.slice() : [], (v.lessons || []).map(function (l) { return l.type === 'vocab' ? l.words || [] : []; })).forEach(function (w) { if (w && w.w && !w.pic && !seen[w.w]) { seen[w.w] = 1; a.push(w); } }); });
+    return a;
+  }
+  function shapeOf(w) {
+    var t = String(w).toLowerCase().replace(/\(.*?\)/g, ' ').trim(), ws = t.split(/\s+/), last = ws[ws.length - 1] || '';
+    return (ws.length > 1 ? 'm' : '1') + (/ing$/.test(last) ? 'ing' : /ed$/.test(last) ? 'ed' : /ly$/.test(last) ? 'ly' : /[^s]s$/.test(last) ? 's' : '');
+  }
+  function gapWrong(x, words, pool, sentence) {
+    var mine = {}; words.forEach(function (y) { mine[y.w.toLowerCase()] = 1; });
+    var low = String(sentence || '').toLowerCase(), sh = shapeOf(x.w);
+    var c = shuffle(pool.filter(function (y) { var k = y.w.toLowerCase(); return !mine[k] && low.indexOf(k) < 0 && y.w.length < 40; }));
+    var out = c.filter(function (y) { return shapeOf(y.w) === sh; }).slice(0, 2);
+    c.forEach(function (y) { if (out.length < 2 && out.indexOf(y) < 0) out.push(y); });
+    shuffle(words.filter(function (y) { return y !== x; })).forEach(function (y) { if (out.length < 2) out.push(y); });   // no other units: the old way
+    return out;
+  }
+  function vocabEx(words, pool) {
     if (words[0] && words[0].pic) return kidsEx(words);
-    var w = shuffle(words), out = [];
+    var w = shuffle(words), out = []; pool = pool || [];
     w.slice(0, 4).forEach(function (x) { var o = shuffle([x].concat(shuffle(words.filter(function (y) { return y !== x; })).slice(0, 2))); out.push({ k: 'ex', e: { t: 'mc', q: 'What does “' + x.w + '” mean?', o: o.map(function (y) { return y.d; }), a: o.indexOf(x), say: x.w } }); });
     w.slice(4, 8).forEach(function (x) {
       var o = shuffle([x].concat(shuffle(words.filter(function (y) { return y !== x; })).slice(0, 2))), g = gapOf(x.w, x.e);
+      if (g) o = shuffle([x].concat(gapWrong(x, words, pool, x.e)));
       if (g) out.push({ k: 'ex', e: { t: 'mc', q: g, o: o.map(function (y) { return y.w; }), a: o.indexOf(x), why: x.e } });
       else out.push({ k: 'ex', e: { t: 'mc', q: 'Which word or phrase means: “' + x.d + '”?', o: o.map(function (y) { return y.w; }), a: o.indexOf(x), say: x.w, why: x.e || '' } });
     });
@@ -1419,7 +1468,7 @@
       var adv = gl(['if-kart', 'block-quest', 'kids-quest']);
       view().innerHTML = '<div class="page-h"><div><p class="h-eyebrow">' + esc(t(k)) + '</p><h1>' + esc(sc.h) + '</h1><p>' + esc(sc.p) + '</p></div></div>' + (full ? '' : goalBar()) + gamesChip(k) +
         grp('🧠 Mind Lab', 'Daily mind training that uses every skill: words, grammar, memory and logic.', gl(['mind-lab', 'mind-lab-kids'])) +
-        grp('⚔️ Play online', 'See who is online and challenge them: Chess, Connect Four, a Word Duel, or a party race for up to 8 players.', gl(['arena'])) +
+        grp('⚔️ Play online', 'See who is online and challenge them: Chess, Connect Four, a Word Duel, or any IF Live game (Treasure Hunt, Cyber Heist, Kart Quest, Tug of War, Boss Battle and more), 1 vs 1 or up to 8 players.', gl(['arena'])) +
         grp('👥 Play together', 'For the class or a group of friends: one screen or everyone on their phones.', gl(['live', 'mafia-live', 'mystery-live', 'spyfall', 'alibi'])) +
         grp('♟️ Board games', 'Learn chess step by step, then play the computer or a friend. Say every move in English.', gl(['chess-lessons', 'chess'])) +
         grp('🏁 Adventure and racing', 'Play alone at your own level.', adv, adv.map(function (x) { return levelRow(x.id, x.id, true, kidsOK); }).join(''));
@@ -1649,6 +1698,7 @@
   function unitWords(u) { var a = []; u.lessons.forEach(function (l) { if (l.type === 'vocab') (l.words || []).forEach(function (w) { if (!w.pic && w.e) a.push(w); }); }); return a; }
   // the exact text of the word inside its example sentence ("split hairs" in "Let's not split hairs…"), or null
   function inEx(w) { var full = w.w.replace(/\s*\(.*?\)\s*/g, ' ').trim(), j = w.e.toLowerCase().indexOf(full.toLowerCase()); if (j >= 0 && full.length > 1) return w.e.substr(j, full.length); var b = w.w.replace(/^(to |a |an |the )/i, '').replace(/\s*\(.*?\)\s*/g, ' ').replace(/ (sb|sth|someone|something)\b/gi, '').trim(); if (b.length < 2) return null; var i = w.e.toLowerCase().indexOf(b.toLowerCase()); return i < 0 ? null : w.e.substr(i, b.length); }
+  var L0c = null;
   function contextEx(u) {
     var all = unitWords(u), ok = shuffle(all.filter(inEx)), out = [], used = {};
     var pick = function (n, f) { var r = []; ok.forEach(function (w) { if (r.length < n && !used[w.w] && (!f || f(w))) { used[w.w] = 1; r.push(w); } }); return r; };
@@ -1656,7 +1706,8 @@
     pick(3).forEach(function (x) { var o = three(x); out.push({ t: 'mc', q: 'Listen. Which word or phrase do you hear?', listen: x.e, o: o.map(function (y) { return y.w; }), a: o.indexOf(x), why: x.e }); });
     pick(3).forEach(function (x) { var m = inEx(x); out.push({ t: 'gap', h: 'Listen and write the missing word or phrase.', listen: x.e, q: x.e.replace(m, '___'), a: [m, x.w], why: x.e }); });
     pick(2).forEach(function (x) {
-      var bad = shuffle(ok.filter(function (y) { return y !== x; })).slice(0, 2).map(function (y) { return y.e.replace(inEx(y), inEx(x)); });
+      var far = (L0c ? otherWords(L0c, u) : []).filter(function (y) { return y.e && inEx(y); }), src = far.length >= 2 ? far : ok.filter(function (y) { return y !== x; });   // other units: a same-topic sentence may still be right with the swapped word
+      var bad = shuffle(src).slice(0, 2).map(function (y) { return y.e.replace(inEx(y), inEx(x)); });
       if (bad.length < 2) return; var o = shuffle([x.e].concat(bad));
       out.push({ t: 'mc', q: 'Which sentence uses “' + x.w + '” correctly?', o: o, a: o.indexOf(x.e), why: x.w + ': ' + x.d });
     });

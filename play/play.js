@@ -29,8 +29,12 @@
     var A = window.AblyPubSub || window.Ably, first = token;
     var opts = { authCallback: function (p, cb) { if (first) { var t = first; first = null; return cb(null, t); } fetch('/api/arena/token', { method: 'POST', credentials: 'include' }).then(function (r) { return r.json(); }).then(function (d) { cb(d.token ? null : 'token', d.token); }, function (e) { cb(String(e), null); }); }, echoMessages: false, disconnectedRetryTimeout: 2000 };
     var client = A.createClient ? A.createClient(opts) : new A.Realtime(opts);
-    return { channel: function (name) {
-      var ch = client.channels.get(name);
+    return {
+      // a game channel replays its last minute when it attaches, so a move sent before the other side was listening is not lost
+      onUp: function (fn) { client.connection.on('connected', fn); },
+      wake: function () { var st = client.connection.state; if (st !== 'connected' && st !== 'connecting') try { client.connect(); } catch (e) {} },
+      channel: function (name) {
+      var ch = /^arena:g:/.test(name) ? client.channels.get(name, { params: { rewind: '1m' } }) : client.channels.get(name);
       return {
         pub: function (n, d) { return ch.publish(n, d).catch(function (e) { console.warn('publish', e); }); },
         sub: function (fn) { ch.subscribe(function (m) { fn(m.name, m.data, m.clientId); }); },
@@ -42,7 +46,7 @@
     } };
   }
   function localRT(me) {
-    return { channel: function (name) {
+    return { onUp: function () {}, wake: function () {}, channel: function (name) {
       var bc = new BroadcastChannel('arena-' + name), subs = [], pres = [], here = {}, mine = null;
       bc.onmessage = function (e) {
         var m = e.data;
@@ -78,15 +82,26 @@
     }, function () { V.innerHTML = '<div class="empty">No connection. Check the Internet and reload the page.</div>'; });
   }
   function signIn() {
-    V.innerHTML = '<h1>IF Arena</h1><p class="lead">Play Chess, Connect Four or a Word Duel against another IF player who is online now. Sign in so other players can see you and challenge you.</p>' +
+    V.innerHTML = '<h1>IF Arena</h1><p class="lead">Play Chess, Connect Four, a Word Duel or any IF Live game (Treasure Hunt, Kart Quest, Tug of War…) against other IF players who are online now. Sign in so other players can see you and challenge you.</p>' +
       '<p class="row" style="margin-top:18px"><a class="btn gold" href="/login/?next=/play/">Sign in</a><a class="btn" href="/app/">Back to IF App</a></p>' + gamesHTML();
   }
-  function gamesHTML() { return '<div class="games">' + Object.keys(GAMES).map(function (k) { var g = GAMES[k]; return '<div class="gcard"><b>' + g.i + ' ' + g.t + '</b><span>' + g.d + '</span></div>'; }).join('') + '</div>'; }
+  function gamesHTML() {
+    var card = function (i, t, d) { return '<div class="gcard"><b>' + i + ' ' + t + '</b><span>' + d + '</span></div>'; };
+    return '<p class="muted" style="margin:4px 0 0">1 vs 1</p><div class="games">' + Object.keys(GAMES).map(function (k) { var g = GAMES[k]; return card(g.i, g.t, g.d); }).join('') + '</div>' +
+      '<p class="muted" style="margin:16px 0 0">IF Live games · 1 vs 1 or a party of up to 8</p><div class="games">' + PMODES.map(function (m) { return card(m[1], m[2], m[3]); }).join('') + '</div>';
+  }
   function myStatus() { return { name: ME.name, lv: ME.level || '', r: ME.r, st: G || P ? 'busy' : 'free', g: G ? G.game : P ? 'party' : '' }; }
   function start() {
     var pill = $('#me'); pill.hidden = false; pill.textContent = ME.name + ' · ' + ME.r;
     LOBBY = RT.channel('arena:lobby'); INBOX = RT.channel('arena:u:' + ME.id.replace(/^u-/, ''));
-    LOBBY.onPresence(function (a, id, d) { if (id === ME.id) return; if (a === 'leave' || a === 'absent') delete players[id]; else players[id] = d || {}; if (!G && !P) drawLobby(); });
+    // Presence events alone go wrong: a player who reopens the page enters on a new connection, then the old connection's
+    // "leave" arrives up to 15 seconds later and removed them from the list. After every event the list is read again.
+    var syncT = null, sync = function () { clearTimeout(syncT); syncT = setTimeout(function () { LOBBY.members().then(function (l) { var np = {}; l.forEach(function (m) { if (m.id !== ME.id) np[m.id] = m.data || {}; }); players = np; if (!G && !P) drawLobby(); }, function () {}); }, 400); };
+    LOBBY.onPresence(function (a, id, d) { if (id === ME.id) return; if (a === 'leave' || a === 'absent') delete players[id]; else players[id] = d || {}; if (!G && !P) drawLobby(); sync(); });
+    RT.onUp(function () { LOBBY.update(myStatus()); sync(); });   // back online: show me again and read the list again
+    setInterval(sync, 10000);
+    document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible') { RT.wake(); LOBBY.update(myStatus()); sync(); } });
+    addEventListener('online', function () { RT.wake(); sync(); });
     LOBBY.enter(myStatus()).then(function () { return LOBBY.members(); }).then(function (l) { l.forEach(function (m) { if (m.id !== ME.id) players[m.id] = m.data || {}; }); if (!G) drawLobby(); });
     INBOX.sub(onInbox);
     drawLobby();
@@ -99,7 +114,7 @@
     var html = '<h1>IF Arena</h1><p class="lead">Players online now. Choose an opponent, choose a game, and send a challenge.</p>' +
       '<div class="tabs"><button data-tab="lobby" class="' + (tab === 'lobby' ? 'on' : '') + '">🟢 Online (' + ids.length + ')</button><button data-tab="top" class="' + (tab === 'top' ? 'on' : '') + '">🏆 Leaderboard</button><button data-tab="how" class="' + (tab === 'how' ? 'on' : '') + '">How to play</button></div>';
     if (tab === 'lobby') {
-      html += '<button class="party-cta" id="party"><span>🎉</span><span><b>Party game · 2 to 8 players</b><small>Race, Treasure Hunt, Cyber Heist, Fishing Frenzy, Balloon Race, Kart Quest, Block Mine or Bank Heist. Invite several players at once.</small></span><span>→</span></button>';
+      html += '<button class="party-cta" id="party"><span>🎉</span><span><b>Party game · 2 to 8 players</b><small>Race, Treasure Hunt, Cyber Heist, Fishing Frenzy, Balloon Race, Kart Quest, Block Mine, Bank Heist, Tug of War or Boss Battle. Invite several players at once.</small></span><span>→</span></button>';
       html += ids.length ? '<div class="list">' + ids.map(function (id) {
         var p = players[id], busy = p.st === 'busy';
         return '<div class="player">' + av(p.name, id) + '<div class="who"><b>' + esc(p.name || 'Player') + '</b><small><span class="dot' + (busy ? ' busy' : '') + '"></span>' + (busy ? 'Playing ' + esc((GAMES[p.g] || {}).t || '') : 'Free') + (p.lv ? ' · ' + esc(p.lv) : '') + ' · ' + (p.r || 1000) + '</small></div>' +
@@ -129,11 +144,14 @@
   function chooseGame(id) {
     var p = players[id]; if (!p) return;
     var pick = 'chess', s = sheet('<h3>Challenge ' + esc(p.name) + '</h3>' + Object.keys(GAMES).map(function (k) { return '<button class="opt' + (k === pick ? ' on' : '') + '" data-g="' + k + '"><span style="font-size:26px">' + GAMES[k].i + '</span><span><b>' + GAMES[k].t + '</b><small>' + GAMES[k].d + '</small></span></button>'; }).join('') +
-      '<label id="lvw" hidden>Word Duel level<select id="lv">' + LEVELS.map(function (l) { return '<option value="' + l[0] + '"' + (ME.level && l[1].indexOf(ME.level) === 0 ? ' selected' : '') + '>' + l[1] + '</option>'; }).join('') + '</select></label>' +
+      '<b style="display:block;margin:10px 0 6px">IF Live games</b><div class="pmodes">' + PMODES.map(function (m) { return '<button class="opt" data-g="live:' + m[0] + '"><span style="font-size:24px">' + m[1] + '</span><span><b>' + m[2] + '</b><small>' + m[3] + '</small></span></button>'; }).join('') + '</div>' +
+      '<label id="lvw" hidden>Level<select id="lv">' + LEVELS.map(function (l) { return '<option value="' + l[0] + '"' + (ME.level && l[1].indexOf(ME.level) === 0 ? ' selected' : '') + '>' + l[1] + '</option>'; }).join('') + '</select></label>' +
       '<div class="row"><button class="btn gold" id="send">Send challenge</button><button class="btn" id="cx">Cancel</button></div>');
-    $$('.opt', s).forEach(function (b) { b.onclick = function () { pick = b.dataset.g; $$('.opt', s).forEach(function (x) { x.classList.toggle('on', x === b); }); $('#lvw', s).hidden = pick !== 'duel'; }; });
+    $$('.opt', s).forEach(function (b) { b.onclick = function () { pick = b.dataset.g; $$('.opt', s).forEach(function (x) { x.classList.toggle('on', x === b); }); $('#lvw', s).hidden = pick !== 'duel' && !/^live:/.test(pick); }; });
     $('#cx', s).onclick = function () { s.remove(); };
-    $('#send', s).onclick = function () { var lv = $('#lv', s).value; s.remove(); invite(id, pick, lv); };
+    $('#send', s).onclick = function () { var lv = $('#lv', s).value; s.remove();
+      if (/^live:/.test(pick)) { var L5 = { 'v-A1': 'A1', 'v-A2': 'A2', 'v-B1': 'B1', 'v-B2': 'B2', 'v-C1': 'C1', 'v-Flyers': 'A2', 'v-PET': 'B1', 'v-IELTS': 'C1' }; return startParty({ mode: pick.slice(5), level: L5[lv] || 'B1', mins: 5 }, [id]); }
+      invite(id, pick, lv); };
   }
 
   /* ---------- invitations ---------- */
@@ -179,7 +197,8 @@
      The challenger's page runs the IF Live host in a hidden frame (/live/host/?arena=…), invites the chosen players with
      the PIN, and everybody (the challenger too) plays on the IF Live player screen inside this page. */
   var PMODES = [['race', '🏁', 'Race', 'Answer at your own speed. Most points wins.'], ['gold', '🪙', 'Treasure Hunt', 'Open chests: gold, double… or steal and swap!'], ['hack', '💻', 'Cyber Heist', 'Mine crypto and hack the others’ passwords.'], ['fish', '🎣', 'Fishing Frenzy', 'Catch the heaviest fish.'],
-    ['balloon', '🎈', 'Balloon Race', 'Right answers lift your balloon. Highest wins.'], ['kart', '🏎️', 'Kart Quest', 'Drive your kart to the finish first.'], ['mine', '⛏️', 'Block Mine', 'Mine gems, but watch out for TNT!'], ['cash', '💰', 'Bank Heist', 'Grab cash and buy crew upgrades.']];
+    ['balloon', '🎈', 'Balloon Race', 'Right answers lift your balloon. Highest wins.'], ['kart', '🏎️', 'Kart Quest', 'Drive your kart to the finish first.'], ['mine', '⛏️', 'Block Mine', 'Mine gems, but watch out for TNT!'], ['cash', '💰', 'Bank Heist', 'Grab cash and buy crew upgrades.'],
+    ['tug', '🪢', 'Tug of War', 'Two teams pull the rope. Every right answer is a pull.'], ['boss', '👾', 'Boss Battle', 'Team up and beat the Word Monster before time runs out.']];
   function pmode(k) { return PMODES.filter(function (m) { return m[0] === k; })[0] || PMODES[0]; }
   function partySetup() {
     var free = Object.keys(players).filter(function (id) { return players[id].st !== 'busy'; });
@@ -282,7 +301,7 @@
     G = { gid: o.gid, game: o.game, opp: o.opp, oname: o.oname || 'Opponent', mine: o.first === ME.id ? 0 : 1, over: false, seq: 0, ch: RT.channel('arena:g:' + o.gid), extra: o.extra, away: null };
     LOBBY.update(myStatus());
     var thisCh = G.ch;
-    thisCh.sub(function (n, d, from) { if (!G || G.ch !== thisCh || from !== G.opp) return; onGame(n, d); });
+    G.seen = {}; thisCh.sub(function (n, d, from) { if (!G || G.ch !== thisCh || from !== G.opp) return; if (d && d.mid) { if (G.seen[d.mid]) return; G.seen[d.mid] = 1; } onGame(n, d); });
     thisCh.onPresence(function (a, id) {
       if (!G || G.ch !== thisCh || id !== G.opp || G.over) return;
       if (a === 'leave' || a === 'absent') { G.away = setTimeout(function () { if (G && !G.over) end('w', G.oname + ' left the game.'); }, 30000); setStatus(G.oname + ' lost the connection… waiting 30 seconds.'); }
@@ -296,7 +315,7 @@
     if (o.game === 'duel') duelTick();
   }
   function opp() { return 1 - G.mine; }
-  function send(n, d) { G.ch.pub(n, d || {}); }
+  function send(n, d) { d = d || {}; d.mid = rid(); G.ch.pub(n, d); }
   function onGame(n, d) {
     if (n === 'emo') return bubble(d.e, false);
     if (n === 'resign') return end('w', G.oname + ' resigned.');
