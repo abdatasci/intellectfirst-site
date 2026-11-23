@@ -641,6 +641,10 @@ export default async (req) => {
   }
   if (path === 'app/progress') { const r = await appProgress(uid, method, req); if (r) return r; }
   // what the IF App reports about study time and finished items (for the student's teachers and parents)
+  if (path === 'app/qreport' && method === 'POST') {   // "Report this question" in a lesson: tells the administrators
+    let b; try { b = JSON.parse((await req.text()).slice(0, 4000)); } catch { return fail(400, 'bad'); }
+    const { reportQuestion } = await import('../lib/qreport.mjs'); return json(await reportQuestion(uid, profile, b));
+  }
   if (path === 'app/activity' && method === 'POST') {
     const raw = await req.text(); if (raw.length > 20000) return fail(413, 'big');
     let b; try { b = JSON.parse(raw); } catch { return fail(400, 'bad'); }
