@@ -82,6 +82,10 @@ export default async (req) => {
   }
   const u = B.units[unit]; if (!u) return fail(404, 'unit');
   if (!open(unit)) return fail(403, 'locked');
-  return json({ unit: { id: unit, ...u } });
+  // pool: words from the book's other units, used as wrong choices in gap questions. A wrong choice from the same unit
+  // is often the same kind of thing ("salmon" for "prawns" in a food unit) and also fits the sentence.
+  const pool = []; for (const id of ids) if (id !== unit) for (const w of B.units[id].words || []) if (w[0]) pool.push(w[0]);
+  for (let i = pool.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [pool[i], pool[j]] = [pool[j], pool[i]]; }
+  return json({ unit: { id: unit, ...u, pool: pool.slice(0, 150) } });
 };
 export const config = { path: ['/api/ef/*'] };

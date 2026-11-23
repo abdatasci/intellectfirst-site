@@ -391,7 +391,7 @@
   }
   function efFill(u, U) {
     var words = U.words.map(function (w) { return { w: w[0], p: '', d: w[1], e: w[4] || '', c: w[5] || '', ce: w[6] || '', ru: w[2], rd: w[3] }; });
-    u.words = words; u.talk = U.talk;
+    u.words = words; u.talk = U.talk; u.pool = (U.pool || []).map(function (w) { return { w: w }; });
     u.lessons.forEach(function (x) {
       var src = U.lessons.filter(function (y) { return y.id === x.id; })[0] || {};
       if (x.type === 'vocab') x.words = words.slice(src.from || 0, src.to || words.length);
@@ -1039,9 +1039,9 @@
     teach = !!teach && access().teacher;
     document.body.classList.toggle('teach', teach); document.body.classList.add('in-lesson');
     var items = [];
-    if (l.type === 'vocab') { items.push({ k: 'learn' }); items = items.concat(vocabEx(l.words)); }
+    if (l.type === 'vocab') { items.push({ k: 'learn' }); items = items.concat(vocabEx(l.words, otherWords(c, u))); }
     if (l.gen) l.ex = l.gen.map(function (f) { return f(); });   // fresh numbers every time
-    if (l.type === 'context') items = contextEx(u).map(function (e) { return { k: 'ex', e: e }; });
+    if (l.type === 'context') { L0c = c; items = contextEx(u).map(function (e) { return { k: 'ex', e: e }; }); }
     if (l.type === 'vocab' || l.type === 'context') {}
     else if (l.type === 'grammar' || l.type === 'skill' || l.type === 'maths') { items.push({ k: 'rule' }); items = items.concat(l.ex.map(function (e) { return { k: 'ex', e: e }; })); }
     else if (l.type === 'listen') { items.push({ k: 'listen' }); items = items.concat(l.ex.map(function (e) { return { k: 'ex', e: e }; })); }
@@ -1113,12 +1113,34 @@
     if (head.length > 3 && new RegExp('(^|[^A-Za-z])' + stem(head), 'i').test(out)) return '';
     return out;
   }
-  function vocabEx(words) {
+  /* Wrong choices for a gap question come from the course's OTHER units. A word from the same unit is often the same kind
+     of thing and fits the sentence too ("I don't eat ___ because I'm allergic to seafood": prawns / salmon). Words of the
+     same shape (one word or a phrase; -ing, -ed, -s, -ly) are preferred, so the answer cannot be guessed from its form. */
+  function otherWords(c, u) {
+    if (u.pool && u.pool.length) return u.pool;
+    var a = [], seen = {}; (c && c.units || []).forEach(function (v) { if (v === u) return; [].concat.apply(v.words ? v.words.slice() : [], (v.lessons || []).map(function (l) { return l.type === 'vocab' ? l.words || [] : []; })).forEach(function (w) { if (w && w.w && !w.pic && !seen[w.w]) { seen[w.w] = 1; a.push(w); } }); });
+    return a;
+  }
+  function shapeOf(w) {
+    var t = String(w).toLowerCase().replace(/\(.*?\)/g, ' ').trim(), ws = t.split(/\s+/), last = ws[ws.length - 1] || '';
+    return (ws.length > 1 ? 'm' : '1') + (/ing$/.test(last) ? 'ing' : /ed$/.test(last) ? 'ed' : /ly$/.test(last) ? 'ly' : /[^s]s$/.test(last) ? 's' : '');
+  }
+  function gapWrong(x, words, pool, sentence) {
+    var mine = {}; words.forEach(function (y) { mine[y.w.toLowerCase()] = 1; });
+    var low = String(sentence || '').toLowerCase(), sh = shapeOf(x.w);
+    var c = shuffle(pool.filter(function (y) { var k = y.w.toLowerCase(); return !mine[k] && low.indexOf(k) < 0 && y.w.length < 40; }));
+    var out = c.filter(function (y) { return shapeOf(y.w) === sh; }).slice(0, 2);
+    c.forEach(function (y) { if (out.length < 2 && out.indexOf(y) < 0) out.push(y); });
+    shuffle(words.filter(function (y) { return y !== x; })).forEach(function (y) { if (out.length < 2) out.push(y); });   // no other units: the old way
+    return out;
+  }
+  function vocabEx(words, pool) {
     if (words[0] && words[0].pic) return kidsEx(words);
-    var w = shuffle(words), out = [];
+    var w = shuffle(words), out = []; pool = pool || [];
     w.slice(0, 4).forEach(function (x) { var o = shuffle([x].concat(shuffle(words.filter(function (y) { return y !== x; })).slice(0, 2))); out.push({ k: 'ex', e: { t: 'mc', q: 'What does “' + x.w + '” mean?', o: o.map(function (y) { return y.d; }), a: o.indexOf(x), say: x.w } }); });
     w.slice(4, 8).forEach(function (x) {
       var o = shuffle([x].concat(shuffle(words.filter(function (y) { return y !== x; })).slice(0, 2))), g = gapOf(x.w, x.e);
+      if (g) o = shuffle([x].concat(gapWrong(x, words, pool, x.e)));
       if (g) out.push({ k: 'ex', e: { t: 'mc', q: g, o: o.map(function (y) { return y.w; }), a: o.indexOf(x), why: x.e } });
       else out.push({ k: 'ex', e: { t: 'mc', q: 'Which word or phrase means: “' + x.d + '”?', o: o.map(function (y) { return y.w; }), a: o.indexOf(x), say: x.w, why: x.e || '' } });
     });
@@ -1676,6 +1698,7 @@
   function unitWords(u) { var a = []; u.lessons.forEach(function (l) { if (l.type === 'vocab') (l.words || []).forEach(function (w) { if (!w.pic && w.e) a.push(w); }); }); return a; }
   // the exact text of the word inside its example sentence ("split hairs" in "Let's not split hairs…"), or null
   function inEx(w) { var full = w.w.replace(/\s*\(.*?\)\s*/g, ' ').trim(), j = w.e.toLowerCase().indexOf(full.toLowerCase()); if (j >= 0 && full.length > 1) return w.e.substr(j, full.length); var b = w.w.replace(/^(to |a |an |the )/i, '').replace(/\s*\(.*?\)\s*/g, ' ').replace(/ (sb|sth|someone|something)\b/gi, '').trim(); if (b.length < 2) return null; var i = w.e.toLowerCase().indexOf(b.toLowerCase()); return i < 0 ? null : w.e.substr(i, b.length); }
+  var L0c = null;
   function contextEx(u) {
     var all = unitWords(u), ok = shuffle(all.filter(inEx)), out = [], used = {};
     var pick = function (n, f) { var r = []; ok.forEach(function (w) { if (r.length < n && !used[w.w] && (!f || f(w))) { used[w.w] = 1; r.push(w); } }); return r; };
@@ -1683,7 +1706,8 @@
     pick(3).forEach(function (x) { var o = three(x); out.push({ t: 'mc', q: 'Listen. Which word or phrase do you hear?', listen: x.e, o: o.map(function (y) { return y.w; }), a: o.indexOf(x), why: x.e }); });
     pick(3).forEach(function (x) { var m = inEx(x); out.push({ t: 'gap', h: 'Listen and write the missing word or phrase.', listen: x.e, q: x.e.replace(m, '___'), a: [m, x.w], why: x.e }); });
     pick(2).forEach(function (x) {
-      var bad = shuffle(ok.filter(function (y) { return y !== x; })).slice(0, 2).map(function (y) { return y.e.replace(inEx(y), inEx(x)); });
+      var far = (L0c ? otherWords(L0c, u) : []).filter(function (y) { return y.e && inEx(y); }), src = far.length >= 2 ? far : ok.filter(function (y) { return y !== x; });   // other units: a same-topic sentence may still be right with the swapped word
+      var bad = shuffle(src).slice(0, 2).map(function (y) { return y.e.replace(inEx(y), inEx(x)); });
       if (bad.length < 2) return; var o = shuffle([x.e].concat(bad));
       out.push({ t: 'mc', q: 'Which sentence uses “' + x.w + '” correctly?', o: o, a: o.indexOf(x.e), why: x.w + ': ' + x.d });
     });
