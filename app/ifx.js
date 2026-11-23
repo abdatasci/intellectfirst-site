@@ -567,7 +567,7 @@
       var x = pool[i % pool.length], o = three(x);
       if (i < 4) return { t: 'mc', q: 'Which word or phrase means: “' + x.d + '”?', o: o.map(function (y) { return y.w; }), a: o.indexOf(x), say: x.w };
       if (i < 7) return { t: 'mc', q: 'What does “' + x.w + '” mean?', o: o.map(function (y) { return y.d; }), a: o.indexOf(x), say: x.w };
-      if (i === 7) return { t: 'match', p: shuffle(u.words).slice(0, 4).map(function (y) { return [y.w, y.ru || y.d]; }) };
+      if (i === 7) return { t: 'match', p: shuffle(u.words).slice(0, 4).map(function (y) { return [y.w, mside(y)]; }) };
       var gx = g && g.ex && g.ex.length ? shuffle(g.ex)[0] : null; return gx || { t: 'mc', q: 'What does “' + x.w + '” mean?', o: o.map(function (y) { return y.d; }), a: o.indexOf(x), say: x.w };
     };
     return [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(function (i) { return function () { return item(i); }; });
@@ -577,6 +577,8 @@
   var ruLevel = function () { return !!(L && L.c && /^(PA1|A0|A1|A2)/.test(L.c.level || '')); };
   var RUQ = [[/^Complete the sentence\.$/, 'Дополните предложение.'], [/^Put the words in order\.$/, 'Расставьте слова по порядку.'], [/^Match the pairs\.$/, 'Соедините пары.'], [/^Say it aloud\.?/, 'Скажите это вслух.'], [/^Listen and choose\.$/, 'Послушайте и выберите.'], [/^What is it\?$/, 'Что это?'], [/^Find the (.+)\.$/, 'Найдите: $1.'], [/^What does “(.+)” mean\?$/, 'Что означает «$1»?'], [/^Which word or phrase means: “(.+)”\?$/, 'Какое слово или фраза подходит к этому значению?'], [/^True or false\?$/i, 'Верно или неверно?']];
   function ruOf(s) { for (var i = 0; i < RUQ.length; i++) if (RUQ[i][0].test(s)) return String(s).replace(RUQ[i][0], RUQ[i][1]); return ''; }
+  // the right-hand side of a matching exercise: Russian where it helps, the English definition in IELTS (no translation activities)
+  function mside(y) { return (APP === 'ielts' || (L && L.c && /^ielts/.test(L.c.id))) ? (y.d || y.ru) : (y.ru || y.d); }
   function ruChip(text) { return text ? '<p class="ru-tap"><button class="chip" data-ru="' + esc(text) + '">🇷🇺 Show Russian</button></p>' : ''; }
   function bindRu() { $$('[data-ru]').forEach(function (b) { b.onclick = function () { var p = b.parentNode; p.innerHTML = '<span class="ru-shown">🇷🇺 ' + esc(b.dataset.ru).replace(/\n/g, '<br>') + '</span>'; }; }); }
   function ruHint(e) {
@@ -1091,7 +1093,7 @@
     w.slice(0, 3).forEach(function (x) { var o = three(x); out.push({ k: 'ex', e: { t: 'picmc', q: 'Find the ' + x.w + '.', say: x.w, o: o.map(function (y) { return y.pic; }), a: o.indexOf(x) } }); });
     w.slice(3, 5).forEach(function (x) { var o = three(x); out.push({ k: 'ex', e: { t: 'mc', pic: x.pic, q: 'What is it?', o: o.map(function (y) { return y.w; }), a: o.indexOf(x), say: x.w } }); });
     w.slice(5).concat(w.slice(0, 1)).slice(0, 2).forEach(function (x) { var o = three(x); out.push({ k: 'ex', e: { t: 'picmc', q: 'Listen and choose.', listen: x.w, o: o.map(function (y) { return y.pic; }), a: o.indexOf(x) } }); });
-    out.push({ k: 'ex', e: { t: 'match', p: shuffle(words).slice(0, 4).map(function (x) { return [x.w, x.ru || x.d]; }) } });
+    out.push({ k: 'ex', e: { t: 'match', p: shuffle(words).slice(0, 4).map(function (x) { return [x.w, mside(x)]; }) } });
     return out;
   }
   /* Gap for a word in its example sentence. Handles phrases whose words change form ("remain stable" in "remained stable")
@@ -1144,7 +1146,7 @@
       if (g) out.push({ k: 'ex', e: { t: 'mc', q: g, o: o.map(function (y) { return y.w; }), a: o.indexOf(x), why: x.e } });
       else out.push({ k: 'ex', e: { t: 'mc', q: 'Which word or phrase means: “' + x.d + '”?', o: o.map(function (y) { return y.w; }), a: o.indexOf(x), say: x.w, why: x.e || '' } });
     });
-    out.push({ k: 'ex', e: { t: 'match', p: shuffle(words).slice(0, 4).map(function (x) { return [x.w, x.ru || x.d]; }) } });
+    out.push({ k: 'ex', e: { t: 'match', p: shuffle(words).slice(0, 4).map(function (x) { return [x.w, mside(x)]; }) } });
     return out;
   }
   function pTop() {
@@ -1694,12 +1696,12 @@
       default: return APP ? vAppHome() : vHome();
     }
   }
-  /* C1–C2 courses are English only (no Russian translations), and every teen/adult unit gets an "In context"
+  /* C1–C2 and IELTS courses are English only (no Russian translations), and every teen/adult unit gets an "In context"
      lesson: listen and choose, listen and write, which sentence is right, listen and order, then say it aloud. */
   function prepCourses() {
     COURSES.forEach(function (c) {
       if (c.daily || c.ef) return;
-      var adv = /^C/.test(c.level || '');
+      var adv = /^C/.test(c.level || '') || /^ielts/.test(c.id);   // IELTS is English only too (director, 24 Nov 2026: no translation activities)
       c.units.forEach(function (u) {
         u.lessons.forEach(function (l) { if (adv) (l.words || []).forEach(function (w) { delete w.ru; }); });
         if (c.track === 'kids' || u.lessons.some(function (l) { return l.type === 'context'; })) return;
