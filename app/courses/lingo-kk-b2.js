@@ -1,10 +1,10 @@
 /* IF Lingo · Kazakh B2: an original IF Academy course for people who speak English and have finished Kazakh B1.
    Word lines: word | part of speech | meaning in English | example | (empty) | how to say it | the example in English.
-   Plan: 24 units and a level test (project doc claude/if-lingo.md). Built so far: units 1 to 8. */
+   Plan: 24 units and a level test (project doc claude/if-lingo.md). Built so far: units 1 to 16. */
 IFX.course({
   id: 'kk-b2', track: 'lang', lang: 'kk-KZ', level: 'B2', next: 'C1', icon: '🇰🇿',
   title: 'Kazakh B2', sub: 'Confident Kazakh',
-  blurb: 'Discuss generations, work, the media, wellbeing, tourism, consumer habits, cities and the climate, and read longer texts. The first 8 of 24 units, explained in English.',
+  blurb: 'Discuss generations, work, the media, wellbeing, tourism, cities, the climate, machines at work, lifelong learning, fair play, business and migration, and read longer texts. The first 16 of 24 units, explained in English.',
   units: []
 });
 (function () {
@@ -184,6 +184,182 @@ IFX.course({
         k.tf('“салдарынан” is used for a bad result.', true),
         k.ord('Бұл үлкен апатқа әкелді')]],
       r: ['The sea that is coming back', 'Жиырмасыншы ғасырдың ортасында Арал теңізі әлемдегі ең үлкен көлдердің бірі болған. Мұнда балық аулады, порттар жұмыс істеді, туристер демалды.\n\n1960-жылдардан бастап теңізге құятын өзендердің суын егістікті суландыруға ала бастады. Соның салдарынан су деңгейі төмендей бастады. Теңіз жылдан-жылға тартылып, балықшылар қалалары жағадан ондаған километр қашықта қалды. Теңіз табаны шөлге айналғандықтан, жел тұз бен шаңды таратты. Бұл экологиялық апатқа және адамдардың денсаулығы үшін ауыр зардаптарға әкелді.\n\n2005 жылы Қазақстанда Көкарал бөгеті салынды. Судың оңтүстікке кетуі тоқтағанының арқасында теңіздің солтүстік бөлігі қалпына келе бастады. Су деңгейі көтерілді, балық қайта оралды, жаға Арал қаласына жақындады.\n\nТеңізді толық қалпына келтіру мүмкін емес. Бірақ Солтүстік Арал мынаны көрсетеді: бірге әрекет етсек, үлкен қауіпті де азайтуға болады.\n\n(құятын = flowing into · балықшы = fisherman · табан = bed · бөлік = part · толық = full · азайту = to reduce · әрекет ету = to act)', [
-        k.mc('Why did the sea begin to dry up?', ['River water was taken to irrigate fields.', 'It stopped raining.', 'A dam broke.'], 0), k.mc('When was the Kokaral dam built?', ['in 2005', 'in 1960', 'in 1991'], 0), k.mc('Which part of the sea is recovering?', ['the northern part', 'the southern part', 'the whole sea'], 0), k.tf('The text says the whole sea will be fully restored.', false)]] }
+        k.mc('Why did the sea begin to dry up?', ['River water was taken to irrigate fields.', 'It stopped raining.', 'A dam broke.'], 0), k.mc('When was the Kokaral dam built?', ['in 2005', 'in 1960', 'in 1991'], 0), k.mc('Which part of the sea is recovering?', ['the northern part', 'the southern part', 'the whole sea'], 0), k.tf('The text says the whole sea will be fully restored.', false)]] },
+
+    { id: 'u9', t: 'Мені робот алмастыра ма? Work and machines', topic: 'Technology',
+      v: ['Jobs of the future', `
+автоматтандыру | noun | automation | Автоматтандыру зауыттарды өзгертіп жатыр. | | av-to-mat-tan-dy-ROO | Automation is changing factories.
+нейрожелі | noun | neural network | Бұл мәтінді нейрожелі жазды. | | ney-ro-zhe-LI | A neural network wrote this text.
+еңбек нарығы | noun | job market | Еңбек нарығы тез өзгеріп жатыр. | | eng-BEK na-ry-GHY | The job market is changing fast.
+қайта даярлау | noun | retraining | Ол қайта даярлаудан өтті. | | qay-TA da-yar-LAU | He went through retraining.
+шығармашыл | adjective | creative | Бұл — шығармашыл мамандық. | | shy-ghar-ma-SHYL | This is a creative profession.
+бірсарынды | adjective | routine, monotonous | Бағдарлама бірсарынды жұмысты істейді. | | bir-sa-ryn-DY | The program does the routine work.
+болжау | verb | to predict | Болашақты болжау қиын. | | bol-ZHAU | It is hard to predict the future.
+сұранысқа ие | adjective | in demand | Бұл мамандық сұранысқа ие. | | soo-ra-nys-QA i-YE | This profession is in demand.
+қауіп төндіру | verb | to threaten | Менің жұмысыма не қауіп төндіреді? | | qa-WIP ton-di-ROO | What threatens my job?
+бейімделу | verb | to adapt | Жаңа жағдайға бейімделу керек. | | be-yim-de-LOO | You need to adapt to the new situation.`],
+      g: ['Whatever, however, wherever: a question word + -са да', '<p>In B1 you learned <b>-са да</b> (although). Put a question word in front and it means <i>whatever, however, wherever</i>.</p><table><tr><th>Pattern</th><th>Meaning</th><th>Example</th></tr><tr><td><b>не</b> … <b>-са да</b></td><td>whatever</td><td>Ол <b>не</b> істе<b>се де</b>, бәрі сәтті болады.</td></tr><tr><td><b>қанша</b> … <b>-са да</b></td><td>however (much)</td><td><b>Қанша</b> қиын бол<b>са да</b>, мен берілмеймін.</td></tr><tr><td><b>қайда</b> … <b>-са да</b></td><td>wherever</td><td>Мен <b>қайда</b> тұр<b>сам да</b>, үйімді ұмытпаймын.</td></tr><tr><td><b>кім</b> … <b>-са да</b></td><td>whoever</td><td><b>Кім</b> кел<b>се де</b>, есікті ашыңыз.</td></tr></table><ul><li>The person ending goes on <b>-са</b>: бар<b>сам</b> да, бар<b>саң</b> да, бар<b>са</b> да.</li><li>After a soft word use <b>де</b>: кел<b>се де</b>, істе<b>се де</b>.</li><li>A phrase to remember: <b>не болса да</b> = whatever happens.</li></ul>', [
+        k.mc('Ол не істе___ де, бәрі сәтті болады.', ['се', 'са', 'сем'], 0),
+        k.mc('Қанша қиын бол___ да, мен берілмеймін.', ['са', 'се', 'сам'], 0),
+        k.mc('Мен қайда тұр___ да, үйімді ұмытпаймын.', ['сам', 'са', 'сем'], 0),
+        k.mc('“whatever happens” = …', ['не болса да', 'не болды', 'бірдеңе болса'], 0),
+        k.tf('In “қайда барса да” the word “да” gives the meaning “wherever”.', true),
+        k.ord('Қанша қиын болса да мен берілмеймін')]],
+      r: ['Will a robot take my job?', 'Дана он екі жыл есепші болып жұмыс істеді. Фирмасы автоматтандыруды бастағанда, оның бірсарынды тапсырмаларының жартысын бағдарлама орындайтын болды. «Алдымен қорықтым, — деп еске алады Дана. — Нейрожелі менің мамандығыма қауіп төндіріп тұрғандай көрінді».\n\nСарапшылар қандай мамандықтар жойылатынын болжауға тырысады. Бірақ олар не айтса да, бір нәрсе анық: еңбек нарығы бұрынғыдан тезірек өзгеріп жатыр. Машина қанша ақылды болса да, шығармашыл тапсырмаларды және адамдармен қарым-қатынасты нашар атқарады.\n\nДана күтіп отырмауға шешім қабылдады. Ол қайта даярлаудан өтіп, қаржы талдаушысы болды. Қазір бағдарлама есептейді, ал Дана клиенттерге сандардың мағынасын түсіндіреді.\n\n«Қырық жаста оқу қанша қиын болса да, қорқып отырғаннан жақсы, — дейді ол. — Бейімделе алатын адам ғана сұранысқа ие болып қалады».\n\n(орындау = to carry out · сарапшы = expert · анық = clear · атқарады = performs · талдаушы = analyst · сан = figure)', [
+        k.mc('What was Dana’s job for twelve years?', ['accountant', 'programmer', 'analyst'], 0), k.mc('What did the program take over?', ['half of her routine tasks', 'all of her work', 'her talks with clients'], 0), k.mc('What do machines do badly, according to the text?', ['creative tasks and dealing with people', 'counting', 'routine work'], 0), k.mc('What is Dana’s job now?', ['financial analyst', 'teacher', 'manager of a factory'], 0)]] },
+
+    { id: 'u10', t: 'Оқуға ешқашан кеш емес. Learning for life', topic: 'Education',
+      v: ['How we learn', `
+білім беру жүйесі | noun | education system | Білім беру жүйесі өзгеріп жатыр. | | bi-LIM be-ROO zhu-ye-SI | The education system is changing.
+оқу бағдарламасы | noun | curriculum, syllabus | Оқу бағдарламасында жаңа пән бар. | | o-QOO bagh-dar-la-ma-SY | There is a new subject in the curriculum.
+үздіксіз білім | noun | lifelong learning | Үздіксіз білім қалыпты нәрсеге айналды. | | uz-dik-SIZ bi-LIM | Lifelong learning has become the norm.
+өздігінен білім алу | noun | self-education | Ол өздігінен білім алумен айналысады. | | oz-di-gi-NEN bi-LIM a-LOO | He educates himself.
+бағалау | verb | to assess, to value | Мұғалім жұмысты бағалайды. | | ba-gha-LAU | The teacher assesses the work.
+құр жаттау | noun | rote learning | Ережені құр жаттаудың қажеті жоқ. | | qoor zhat-TAU | There is no need to learn the rules by rote.
+ұғыну | verb | to grasp, to understand | Мағынасын ұғыну маңызды. | | oo-ghy-NOO | It is important to grasp the meaning.
+тәсіл | noun | approach, method | Жаңа тәсіл керек. | | ta-SIL | A new approach is needed.
+ынталандыру | verb | to motivate | Жақсы тапсырма ынталандырады. | | yn-ta-lan-dy-ROO | A good task motivates.
+қашықтан оқыту | noun | distance teaching | Бұл — қашықтан оқыту курсы. | | qa-shyq-TAN o-qy-TOO | This is a distance course.`],
+      g: ['No time to, nothing to, nobody to', '<p>Kazakh says <i>my time for resting does not exist</i>. Use the <b>-атын, -етін, -йтын, -йтін</b> form (B1, Unit 1) before the noun, then <b>жоқ</b>.</p><table><tr><th>Meaning</th><th>Pattern</th><th>Example</th></tr><tr><td>no time to</td><td>-атын <b>уақыт</b> жоқ</td><td>Менің демал<b>атын уақытым жоқ</b>.</td></tr><tr><td>nothing to do</td><td>-атын <b>жұмыс, іс</b> жоқ</td><td>Кешке істе<b>йтін ісім жоқ</b>.</td></tr><tr><td>nobody to</td><td>-атын <b>адам</b> жоқ</td><td>Оның ақылдас<b>атын адамы жоқ</b>.</td></tr><tr><td>nowhere to</td><td>-атын <b>жер</b> жоқ</td><td>Біздің бар<b>атын жеріміз жоқ</b>.</td></tr></table><ul><li>The noun takes the owner ending: уақыт<b>ым</b>, адам<b>ы</b>, жер<b>іміз</b>.</li><li>With <b>бар</b> it means there <b>is</b>: Менің айтатын сөзім <b>бар</b>. = I have something to say.</li></ul>', [
+        k.mc('Менің демал___ уақытым жоқ.', ['атын', 'етін', 'ған'], 0),
+        k.mc('Кешке істе___ ісім жоқ.', ['йтін', 'йтын', 'ген'], 0),
+        k.mc('Оның ақылдас___ адамы жоқ.', ['атын', 'етін', 'қан'], 0),
+        k.mc('Біздің бар___ жеріміз жоқ.', ['атын', 'етін', 'ған'], 0),
+        k.tf('“айтатын сөзім жоқ” means “I have nothing to say”.', true),
+        k.ord('Менің демалатын уақытым жоқ')]],
+      r: ['It is never too late to learn', 'Болат елу екі жаста. Ол отыз жыл автобус жүргізушісі болып жұмыс істеді. «Менің оқитын уақытым ешқашан болған емес, — дейді ол. — Отбасы, жұмыс, үй. Ал балалар есейгенде, кешке істейтін ісім жоқ екен».\n\nҰлы оған бағдарламалауды қашықтан оқытатын курсты ұсынды. Алғашқы айлар ауыр болды. Болаттың ақылдасатын адамы болмады: топтағылардың бәрі одан екі есе жас еді. Мектепте ол құр жаттауға үйренген, ал мұнда ұғыну керек болды.\n\nОқытушы оған ерекше тәсіл тапты: өмірден алынған тапсырмалар берді. Мысалы, автобус кестесінің бағдарламасын жазу. Бұл бағадан гөрі жақсы ынталандырды.\n\nБір жарым жылдан кейін Болат IT саласындағы алғашқы жұмысын тапты. Оның ойынша, білім беру жүйесі фактіні емес, оқи білуді үйретуі керек. «Үздіксіз білім — сән емес. Бүгінде онсыз алға жылжитын жол жоқ».\n\n(бағдарламалау = programming · ақылдасу = to ask for advice · ерекше = special · гөрі = rather than · оқи білу = knowing how to learn · онсыз = without it · алға жылжу = to move forward)', [
+        k.mc('What was Bolat’s job for thirty years?', ['bus driver', 'teacher', 'programmer'], 0), k.mc('Who suggested the course?', ['his son', 'his boss', 'his teacher'], 0), k.mc('Why were the first months hard?', ['He had nobody to ask, and the group was much younger.', 'The course was too expensive.', 'He had no computer.'], 0), k.mc('Which task motivated him?', ['a program for a bus timetable', 'a game', 'a website for a school'], 0)]] },
+
+    { id: 'u11', t: 'Біз не үшін оқимыз. Why we read', topic: 'Culture',
+      v: ['Books and readers', `
+кітап оқу | noun | reading | Кітап оқу ойды дамытады. | | ki-TAP o-QOO | Reading develops the mind.
+әдебиет | noun | literature | Мен қазақ әдебиетін жақсы көремін. | | a-de-bi-YET | I love Kazakh literature.
+электрондық кітап | noun | e-book | Мен электрондық кітап оқып жатырмын. | | e-lek-tron-DYQ ki-TAP | I am reading an e-book.
+қиял | noun | imagination | Баланың қиялы бай. | | qi-YAL | The child has a rich imagination.
+хикая | noun | tale, narrative | Бұл — қызық хикая. | | khi-ka-YA | This is an interesting tale.
+қайта оқу | verb | to reread | Мен осы романды қайта оқығым келеді. | | qay-TA o-QOO | I want to reread this novel.
+жанр | noun | genre | Менің сүйікті жанрым — детектив. | | zhanr | My favourite genre is the detective story.
+үзінді | noun | extract, passage | Үзіндіні дауыстап оқыңыз. | | u-zin-DI | Read the passage aloud.
+дәйексөз | noun | quotation | Бұл — белгілі дәйексөз. | | da-yek-SOZ | This is a well-known quotation.
+зейін қою | verb | to concentrate | Маған зейін қою қиын. | | ze-YIN qo-YOO | I find it hard to concentrate.`],
+      g: ['I intend to, he will probably: two future forms', '<p><b>1. I intend to: -мақшы.</b> A firm plan.</p><table><tr><th>The verb stem ends in…</th><th>Ending</th><th>Examples</th></tr><tr><td>a vowel, or л, р, й, у</td><td><b>-мақшы, -мекші</b></td><td>оқы → оқы<b>мақшы</b>мын, кел → кел<b>мекші</b></td></tr><tr><td>м, н, ң, з, ж</td><td><b>-бақшы, -бекші</b></td><td>жаз → жаз<b>бақшы</b>мын</td></tr><tr><td>к, қ, п, с, т, ш</td><td><b>-пақшы, -пекші</b></td><td>аш → аш<b>пақшы</b>мыз, кет → кет<b>пекші</b></td></tr></table><ul><li>Мен осы кітапты қайта оқы<b>мақшымын</b>. = I intend to reread this book.</li><li>Біз клуб аш<b>пақшымыз</b>. = We intend to open a club.</li></ul><p><b>2. Probably will: -ар, -ер, -р.</b> You are not sure.</p><ul><li>Ол бүгін кел<b>ер</b>. = He will probably come today.</li><li>Not: Ол кел<b>мес</b>. = He probably will not come.</li></ul><p>Compare: кел<b>еді</b> (he will come, a fact) · кел<b>мекші</b> (he intends to come) · кел<b>ер</b> (he may well come).</p>', [
+        k.mc('Мен осы кітапты қайта оқы___мын.', ['мақшы', 'мекші', 'бақшы'], 0),
+        k.mc('Ол ертең кел___.', ['мекші', 'мақшы', 'пекші'], 0),
+        k.mc('Біз клуб аш___мыз.', ['пақшы', 'мақшы', 'бақшы'], 0),
+        k.mc('“Ол бүгін келер.” = …', ['He will probably come today.', 'He came today.', 'He must not come today.'], 0),
+        k.tf('“бармақшымын” means “I intend to go”.', true),
+        k.ord('Мен осы кітапты қайта оқымақшымын')]],
+      r: ['A club in a village library', 'Сәуле шағын ауылға кітапханашы болып келгенде, кітапханаға ешкім дерлік келмейтін. «Бәрі жастар енді кітап оқымайды дейтін, — деп еске алады ол. — Бірақ біз оларды дұрыс бағаламадық деп ойлаймын».\n\nСәуле оқырмандар клубын ашты. Ереже біреу ғана болды: әркім өзіне ұнайтын үзіндіні әкеліп, оның неге маңызды екенін түсіндіреді. Жанр маңызды емес — фантастика, өлең, тіпті комикс те болады.\n\nБірінші болып тоғызыншы сынып оқушысы Алмас келді. Ол электрондық кітапқа беріліп кетіп, автобусқа кешігіп қалғанын айтты. Кейін оның достары келді. Бір жылдан кейін клубта отыз адам болды.\n\n«Кітап оқу қиялды дамытады және зейін қоюға үйретеді, — дейді Сәуле. — Балалар мектеп бағдарламасындағы кітаптарды қайта оқып, олардан жаңа нәрсе таба бастады. Келесі жылы біз жазушылармен кездесу өткізбекшіміз».\n\nКітапхана қабырғасында қазір клуб таңдаған дәйексөз ілулі тұр: «Жақсы кітапты оқып болған адам сәл де болса өзгереді».\n\n(кітапханашы = librarian · дұрыс бағаламадық = did not value properly · беріліп кетіп = absorbed · өткізбекшіміз = we intend to hold · сәл де болса = at least a little)', [
+        k.mc('What is Saule’s job?', ['librarian', 'teacher', 'writer'], 0), k.mc('What was the club’s one rule?', ['Bring a favourite passage and explain why it matters.', 'Read one book a week.', 'Read only the classics.'], 0), k.mc('Why was Almas late for the bus?', ['He was lost in an e-book.', 'He was at the club.', 'He overslept.'], 0), k.mc('What does the club intend to do next year?', ['hold meetings with writers', 'close the library', 'buy a bus'], 0)]] },
+
+    { id: 'u12', t: 'Әділ ойын. Fair play', topic: 'Sport',
+      v: ['Sport and honesty', `
+әділ ойын | noun | fair play | Біз әділ ойынды қолдаймыз. | | a-DIL o-YYN | We support fair play.
+допинг | noun | doping | Спортшы допинг үшін жазаланды. | | DO-ping | The athlete was punished for doping.
+шеттету | verb | to disqualify, to exclude | Оны жарыстан шеттетті. | | shet-te-TOO | He was disqualified from the competition.
+бақталас | noun | rival | Менің бақталасым өте мықты. | | baq-ta-LAS | My rival is very strong.
+төрелік | noun | refereeing, judging | Төрелік әділ болды. | | to-re-LIK | The refereeing was fair.
+қысым | noun | pressure | Спортшыларға қысым көп. | | qy-SYM | There is a lot of pressure on athletes.
+алдау | verb | to deceive, to cheat | Ол ешкімді алдаған жоқ. | | al-DAU | He did not deceive anyone.
+бедел | noun | reputation, standing | Клубтың беделі жоғары. | | be-DEL | The club has a high reputation.
+абырой | noun | honour, dignity | Ол абыроймен жеңілді. | | a-by-ROY | He lost with dignity.
+жол беру | verb | to give way | Ол бақталасына жол берді. | | zhol be-ROO | He gave way to his rival.`],
+      g: ['I had to, I was forced to', '<table><tr><th>Pattern</th><th>Meaning</th><th>Example</th></tr><tr><td>кімге + <b>-уға тура келді</b></td><td>had to (it turned out that way)</td><td>Маған тоқта<b>уға тура келді</b>. = I had to stop.</td></tr><tr><td>кімге + <b>-уға тура келеді</b></td><td>has to (regularly)</td><td>Оған күн сайын жаттығ<b>уға тура келеді</b>.</td></tr><tr><td>кім + <b>-уға мәжбүр болды</b></td><td>was forced to</td><td>Ол жарыстан шығ<b>уға мәжбүр болды</b>.</td></tr></table><ul><li>With <b>тура келу</b> the person takes the “to” ending: <b>маған, сізге, оған, Ерланға</b>.</li><li>With <b>мәжбүр болу</b> the person has no ending: <b>мен, ол, Ерлан</b>.</li><li>Not: Маған күтуге тура <b>келмеді</b>. = I did not have to wait.</li></ul><p>Compare with what you know: бар<b>уым керек</b> (I must, B1) · бар<b>уға тура келді</b> (I had to, there was no choice) · бар<b>ғым келді</b> (I wanted to).</p>', [
+        k.mc('Маған тоқта___ тура келді.', ['уға', 'уды', 'удан'], 0),
+        k.mc('Маған көмектесуге тура ___. (had to)', ['келді', 'барды', 'берді'], 0),
+        k.mc('Ол жарыстан шығуға ___ болды. (forced)', ['мәжбүр', 'керек', 'тиіс'], 0),
+        k.mc('___ күтуге тура келді. (he)', ['Оған', 'Ол', 'Оның'], 0),
+        k.mc('“I had to wait.” = …', ['Маған күтуге тура келді.', 'Менің күткім келді.', 'Мен күте алдым.'], 0),
+        k.ord('Маған тоқтауға тура келді')]],
+      r: ['The race he did not win', 'Алматыдағы қалалық марафонда студент Ерлан екінші болып келе жатты. Мәреге екі жүз метр қалғанда, бірінші келе жатқан бақталасы құлап қалды.\n\nЕрланға ұзақ ойлануға тура келмеді. Ол тоқтап, бақталасына тұруға көмектесті және оны мәреге дейін жеткізді. Екеуі бесінші және алтыншы болып келді: оларды басқалар басып озды.\n\n«Әрине, менің жеңгім келді, — дейді Ерлан. — Мен жарты жыл дайындалдым, сөре алдында ұйықтай алмадым. Бірақ осылай алынған жеңіс алдау болар еді».\n\nМарафоннан түсірілген бейнені миллиондаған адам көрді. Көп адам спортта қысым, допинг және төрелік туралы дау тым көп екенін, ал мұндай оқиғалар әділ ойынға деген сенімді қайтаратынын жазды.\n\nЖаттықтырушысы: «Медальді келесі жылы ұтуға болады. Ал бедел мен абырой бір-ақ рет жиналады», — деді.\n\nБір айдан кейін Ерланға мектептерде сөз сөйлеуге тура келді: балалар оның оқиғасын тыңдағысы келді.\n\n(мәре = finish · құлап қалды = fell · басып озды = overtook · сөре = start · ұту = to win · сөз сөйлеу = to give a talk)', [
+        k.mc('What place was Erlan in before his rival fell?', ['second', 'first', 'fifth'], 0), k.mc('What did Erlan do?', ['He helped his rival to the finish.', 'He ran past and won.', 'He stopped the race.'], 0), k.tf('Erlan won a medal.', false), k.mc('What did his coach say is earned only once?', ['reputation and honour', 'a medal', 'money'], 0)]] },
+
+    { id: 'u13', t: 'Өз ісің. A business of your own', topic: 'Economy',
+      v: ['Running a small business', `
+шағын бизнес | noun | small business | Шағын бизнес жұмыс орындарын ашады. | | sha-GHYN BIZ-nes | Small business creates jobs.
+түсім | noun | takings, revenue | Түсім екі есе өсті. | | tu-SIM | Takings have doubled.
+өзіндік құн | noun | cost price | Тауардың өзіндік құны жоғары. | | o-zin-DIK qoon | The cost price of the product is high.
+бизнес-жоспар | noun | business plan | Ол бизнес-жоспар жазды. | | BIZ-nes zhos-PAR | She wrote a business plan.
+жеткізуші | noun | supplier | Біздің жеткізушіміз сенімді. | | zhet-ki-zoo-SHI | Our supplier is reliable.
+тапсырыс беруші | noun | client (who orders) | Тапсырыс беруші жұмысқа риза. | | tap-sy-RYS be-roo-SHI | The client is pleased with the work.
+өзін ақтау | verb | to pay for itself | Бизнес бір жылда өзін ақтады. | | o-ZIN aq-TAU | The business paid for itself in a year.
+қаржы салу | verb | to invest | Ол дүкенге қаржы салды. | | qar-ZHY sa-LOO | He invested in the shop.
+кеңейту | verb | to expand | Ол ісін кеңейткісі келеді. | | ke-ngey-TOO | She wants to expand her business.
+тұрақты тұтынушы | noun | regular customer | Біздің тұрақты тұтынушыларымыз көп. | | too-raq-TY too-ty-noo-SHY | We have many regular customers.`],
+      g: ['Depend on, take part in, give up: verbs and their endings', '<p>Many verbs always need the same ending on the noun before them. Learn them together.</p><table><tr><th>Verb</th><th>Ending before it</th><th>Example</th></tr><tr><td><b>байланысты болу</b> (to depend on)</td><td>-ға, -ге, -қа, -ке</td><td>Табыс сапа<b>ға</b> байланысты.</td></tr><tr><td><b>әсер ету</b> (to affect)</td><td>-ға, -ге, -қа, -ке</td><td>Баға сұраныс<b>қа</b> әсер етеді.</td></tr><tr><td><b>қатысу</b> (to take part in)</td><td>-ға, -ге, -қа, -ке</td><td>Біз жәрмеңке<b>ге</b> қатысамыз.</td></tr><tr><td><b>сену</b> (to rely on, to believe)</td><td>-ға, -ге, -қа, -ке</td><td>Мен достарым<b>а</b> сенемін.</td></tr><tr><td><b>айналысу</b> (to be engaged in)</td><td>-мен, -бен, -пен</td><td>Ол бизнес<b>пен</b> айналысады.</td></tr><tr><td><b>бас тарту</b> (to give up, to refuse)</td><td>-дан, -ден, -тан, -тен</td><td>Ол демалыс<b>тан</b> бас тартты.</td></tr><tr><td><b>қорқу</b> (to be afraid of)</td><td>-дан, -ден, -тан, -тен</td><td>Ол тәуекел<b>ден</b> қорықпайды.</td></tr></table>', [
+        k.mc('Табыс сапа___ байланысты.', ['ға', 'дан', 'мен'], 0),
+        k.mc('Баға сұраныс___ әсер етеді.', ['қа', 'тан', 'пен'], 0),
+        k.mc('Ол бизнес___ айналысады.', ['пен', 'ке', 'тен'], 0),
+        k.mc('Біз жәрмеңке___ қатысамыз.', ['ге', 'ден', 'мен'], 0),
+        k.mc('Ол демалыс___ бас тартты.', ['тан', 'қа', 'пен'], 0),
+        k.ord('Табыс сапаға байланысты')]],
+      r: ['A bakery on wheels', 'Үш жыл бұрын Айгүл базарда бәліш сататын. Түсім ауа райына байланысты болатын: жаңбырда сатып алушы болмайтын. Сол кезде оның ойына бір идея келді — адамдарға өзі баратын фургондағы наубайхана.\n\nАйгүл бизнес-жоспар жазып, бар жинағын ескі фургонға салды. Оған екі жыл демалыстан бас тартуға тура келді. Туыстары күмәнданды, бірақ ол тұрақты тұтынушыларына сенді.\n\nАлдымен шығын кірістен көп болды. Айгүл сенімді ұн жеткізушісін тауып, қалалық жәрмеңкелерге қатыса бастады. Бір жылдан кейін бизнес өзін ақтады.\n\nБүгінде оның үш фургоны және алғашқы ірі тапсырыс берушісі — кофеханалар желісі бар. Ол цех жалдап, ісін кеңейткісі келеді.\n\n«Шағын бизнес — тек ақша емес, — дейді Айгүл. — Ол ауданның өміріне әсер етеді. Адамдар жаңа піскен нанның иісіне үйден шығып, бір-бірімен сөйлеседі».\n\n(сатып алушы = buyer · фургон = van · жәрмеңке = fair · ірі = large · цех жалдап = renting a workshop · иіс = smell)', [
+        k.mc('Where did Aigul sell her pies before?', ['at the market', 'in a café', 'online'], 0), k.mc('What did she put her savings into?', ['an old van', 'a new shop', 'a coffee machine'], 0), k.mc('When did the business pay for itself?', ['after a year', 'after a month', 'after five years'], 0), k.mc('Who is her first large client?', ['a chain of coffee shops', 'a school', 'the market'], 0)]] },
+
+    { id: 'u14', t: 'Екі үй. Two homes', topic: 'Migration',
+      v: ['Living in another country', `
+шетелге көшу | noun | moving abroad, emigration | Шетелге көшу — қиын шешім. | | she-tel-GE ko-SHOO | Moving abroad is a hard decision.
+қоныс аудару | verb | to move, to resettle | Олар Германияға қоныс аударды. | | qo-NYS a-oo-da-ROO | They moved to Germany.
+сіңісу | verb | to settle in, to integrate | Жаңа ортаға сіңісу оңай емес. | | si-ngi-SOO | It is not easy to settle into a new place.
+сағыныш | noun | longing, homesickness | Үйге деген сағынышым басылмайды. | | sa-ghy-NYSH | My longing for home does not fade.
+бөтен | adjective | strange, not your own | Бұл маған бөтен қала. | | bo-TEN | This city is strange to me.
+ықтиярхат | noun | residence permit | Ол ықтиярхат алды. | | yq-ti-yar-KHAT | She received a residence permit.
+диаспора | noun | diaspora | Қалада үлкен қазақ диаспорасы бар. | | di-AS-po-ra | There is a large Kazakh diaspora in the city.
+тамыр | noun | root | Ол өз тамырын ұмытпайды. | | ta-MYR | He does not forget his roots.
+аңсау | verb | to long for | Мен туған жерімді аңсаймын. | | ang-SAU | I long for my homeland.
+отандас | noun | compatriot | Мен шетелде отандасымды кездестірдім. | | o-tan-DAS | I met a compatriot abroad.`],
+      g: ['Time flies, it occurred to me: set phrases', '<p>Some phrases cannot be translated word for word. Learn them whole.</p><table><tr><th>Phrase</th><th>Word for word</th><th>Meaning</th></tr><tr><td><b>уақыт зымырап өтеді</b></td><td>time rushes past</td><td>time flies</td></tr><tr><td><b>ойыма келді</b></td><td>it came to my thought</td><td>it occurred to me</td></tr><tr><td><b>ашуы келді</b></td><td>his anger came</td><td>he got angry</td></tr><tr><td><b>өзін ұстау</b></td><td>to hold oneself</td><td>to behave</td></tr><tr><td><b>көңілі толды</b></td><td>his heart filled</td><td>he was satisfied</td></tr><tr><td><b>көңіл бөлу</b></td><td>to share one’s heart</td><td>to pay attention</td></tr></table><ul><li>The owner ending shows whose thought or feeling it is: ой<b>ым</b>а келді (to me), ой<b>ың</b>а келді (to you), ой<b>ын</b>а келді (to him).</li><li>Менің <b>ойыма</b> қызық идея келді. = An interesting idea occurred to me.</li><li>Балалар <b>өздерін</b> жақсы ұстады. = The children behaved well.</li></ul>', [
+        k.mc('Уақыт қалай тез ___!', ['зымырайды', 'жүзеді', 'отырады'], 0),
+        k.mc('Менің ___ қызық идея келді.', ['ойыма', 'ойымда', 'ойымнан'], 0),
+        k.mc('Оның ___ келіп, айқайлай бастады.', ['ашуы', 'ойы', 'көңілі'], 0),
+        k.mc('Балалар өздерін жақсы ___.', ['ұстады', 'алды', 'берді'], 0),
+        k.tf('“көңілі толды” means “he was satisfied”.', true),
+        k.ord('Менің ойыма қызық идея келді')]],
+      r: ['Two homes', 'Әйгерім бес жыл бұрын университетте оқу үшін Германияға кетті. Қазір оның жұмысы мен ықтиярхаты бар. Уақыт зымырап өтіп жатыр, бірақ үйге деген сағыныш басылмайды.\n\n«Алғашқы айларда мен өзімді қонақ сияқты ұстадым, — дейді ол. — Бәрі бөтен көрінді: тіл, тамақ, тіпті жексенбідегі тыныштық та. Бәрін тастап кету талай рет ойыма келді».\n\nЖаңа ортаға сіңісу баяу жүрді. Қазақ диаспорасы көмектесті: сенбі сайын отандастар жиналып, бешбармақ пісіріп, ана тілінде сөйлесетін. Бірақ Әйгерім тек өз адамдарының арасында өмір сүруге болмайтынын түсінді. Ол хорға жазылып, неміс достар тапты.\n\n«Жаңа елге сіңісу — тамырыңды ұмыту емес, — дейді ол. — Туған жерді аңсау қалды, бірақ қазір бұл ауру емес, жылу».\n\nОдан үйің қайда деп сұрағанда, ол: «Менің екі үйім бар. Таңдаудың қажеті жоқ екеніне қуанамын», — деп жауап береді.\n\n(басылмайды = does not fade · талай рет = many a time · баяу = slowly · хор = choir · неміс = German · қажеті жоқ = no need)', [
+        k.mc('Why did Aigerim go to Germany?', ['to study at university', 'to get married', 'for a holiday'], 0), k.mc('What helped her settle in?', ['the Kazakh diaspora', 'a pay rise', 'a new flat'], 0), k.mc('What did she join to meet local people?', ['a choir', 'a football team', 'a book club'], 0), k.mc('What does she say about her home?', ['She has two.', 'It is only in Kazakhstan.', 'She has none.'], 0)]] },
+
+    { id: 'u15', t: 'Бір дастарқанда үш тіл. Living in two languages', topic: 'Language',
+      v: ['Being bilingual', `
+қостілділік | noun | bilingualism | Қостілділік Қазақстанда қалыпты нәрсе. | | qos-til-di-LIK | Bilingualism is usual in Kazakhstan.
+қостілді | adjective | bilingual | Менің ұлым қостілді. | | qos-til-DI | My son is bilingual.
+тілден тілге ауысу | verb | to switch between languages | Ол тілден тілге оңай ауысады. | | til-DEN til-GE a-wy-SOO | She switches easily between languages.
+шатастыру | verb | to mix up, to confuse | Балалар кейде тілдерді шатастырады. | | sha-tas-ty-ROO | Children sometimes mix up languages.
+ресми тіл | noun | official language | Бұл елде екі ресми тіл бар. | | res-MI til | This country has two official languages.
+меңгеру | verb | to master | Ол үш тілді меңгерген. | | meng-ge-ROO | She has mastered three languages.
+тілдік орта | noun | language environment | Тілдік орта үйренуге көмектеседі. | | til-DIK or-TA | A language environment helps you learn.
+дарыту | verb | to pass on, to instil | Ата-ана балаға тілді дарытады. | | da-ry-TOO | Parents pass the language on to the child.
+тіл тазалығы | noun | purity of language | Ол тіл тазалығына мән береді. | | til ta-za-ly-GHY | He cares about the purity of the language.
+сөйлеу тілі | noun | spoken, everyday language | Бұл сөз сөйлеу тілінде жиі кездеседі. | | soy-LEU ti-LI | This word is common in everyday speech.`],
+      g: ['In spite of, in case, on condition, until', '<table><tr><th>Ending or word</th><th>Meaning</th><th>Example</th></tr><tr><td><b>-ғанына қарамастан</b></td><td>in spite of the fact that</td><td>Тіл үшеу бол<b>ғанына қарамастан</b>, балалар шатастырмайды.</td></tr><tr><td><b>-ған жағдайда</b></td><td>in case, if it happens that</td><td>Жаңбыр жау<b>ған жағдайда</b> сабақ сыныпта болады.</td></tr><tr><td><b>-у шартымен</b></td><td>on condition that</td><td>Сен тырыс<b>у шартымен</b> көмектесемін.</td></tr><tr><td><b>-ғанға дейін</b></td><td>until, before</td><td>Жауап бер<b>генге дейін</b> ол ойланады.</td></tr></table><ul><li>The first, second and fourth are built on <b>-ған, -ген, -қан, -кен</b>, like the endings in Unit 7.</li><li><b>қарамастан</b> can also follow a noun with the “to” ending: жаңбыр<b>ға қарамастан</b> = in spite of the rain.</li><li>These forms belong to careful speech and writing. In everyday talk people say <b>-са да</b> and <b>егер</b>.</li></ul>', [
+        k.mc('Тіл үшеу бол___ қарамастан, балалар оларды шатастырмайды.', ['ғанына', 'ғанға', 'ған соң'], 0),
+        k.mc('Жаңбыр жау___ жағдайда сабақ сыныпта болады.', ['ған', 'са', 'ып'], 0),
+        k.mc('Сен тырысу ___ мен көмектесемін.', ['шартымен', 'жағдайда', 'қарамастан'], 0),
+        k.mc('Жауап бер___ дейін ол ойланады.', ['генге', 'геннен', 'гендіктен'], 0),
+        k.tf('“қарамастан” means “in spite of”.', true),
+        k.ord('Жауап бергенге дейін ол ойланады')]],
+      r: ['Three languages at one table', 'Серіковтер отбасында үш тілде сөйлейді. Әжемен — қазақша, мектепте балалар орысша оқиды, ал оқытушы болып жұмыс істейтін әкесі оларға әр кеш сайын ағылшынша кітап оқып береді.\n\nТіл үшеу болғанына қарамастан, балалар оларды шатастырмайды десе де болады. Жеті жасар Әмина тілден тілге оңай ауысады: жауап бергенге дейін ол өзімен кім сөйлесіп тұрғанына қарайды.\n\nБұрын бұлай емес еді. Отбасы қалаға көшкеннен кейін балалар қазақ тілін ұмыта бастады: айналадағы тілдік орта басқа болды. Сонда ата-анасы ереже қойды: үйде тек қазақша сөйлесеміз.\n\n«Қостілділік — сый, бірақ оны сақтай білу керек, — дейді анасы. — Балалар өскен сайын оларға әр тілде кітап, ән, дос керек».\n\nКейбір зерттеулер қостілді адамдардың зейінін бір нәрседен екіншісіне оңай аударатынын көрсетеді. Бірақ Серіковтер үшін басқа нәрсе маңыздырақ: әженің тілін балаларға дарыту — отбасы тарихын жеткізу деген сөз.\n\n(десе де болады = one could say · жасар = -year-old · сый = gift · кейбір = some · зейін = attention · деген сөз = means)', [
+        k.mc('Which language do the children speak with their grandmother?', ['Kazakh', 'Russian', 'English'], 0), k.mc('What does Amina do before she answers?', ['She looks at who is speaking to her.', 'She asks her mother.', 'She answers in English.'], 0), k.mc('What rule did the parents set?', ['only Kazakh at home', 'only Russian at school', 'no English'], 0), k.mc('Why does the grandmother’s language matter to the family?', ['It carries the family’s history.', 'It is needed for exams.', 'It is easier than Russian.'], 0)]] },
+
+    { id: 'u16', t: 'Сөйлей бастаған қабырға. Art in the street', topic: 'Art',
+      v: ['Art and the city', `
+граффити | noun | graffiti | Қабырғада граффити бар. | | graf-FI-ti | There is graffiti on the wall.
+қабырға суреті | noun | mural, wall painting | Суретшілер қабырға суретін салды. | | qa-byr-GHA soo-re-TI | The artists painted a mural.
+қасбет | noun | facade, front of a building | Үйдің қасбетін сырлады. | | qas-BET | The front of the house was painted.
+көше өнері | noun | street art | Көше өнері қаланы өзгертеді. | | ko-SHE o-ne-RI | Street art changes the city.
+бұзақылық | noun | vandalism, hooliganism | Бұл өнер емес, бұзақылық. | | boo-za-qy-LYQ | This is not art but vandalism.
+әшекейлеу | verb | to decorate | Біз ауланы гүлмен әшекейледік. | | a-she-key-LEU | We decorated the yard with flowers.
+қараусыз қалған | adjective | abandoned, neglected | Бұл — қараусыз қалған зауыт. | | qa-ra-oo-SYZ qal-GHAN | This is an abandoned factory.
+қоғамдық кеңістік | noun | public space | Бұл — қоғамдық кеңістік. | | qo-gham-DYQ ke-ngis-TIK | This is a public space.
+нобай | noun | sketch | Суретші нобай көрсетті. | | no-BAY | The artist showed a sketch.
+өткінші | noun | passer-by | Өткіншілер тоқтап қарады. | | ot-kin-SHI | Passers-by stopped and looked.`],
+      g: ['Making new words: endings that build words', '<table><tr><th>Ending</th><th>It makes…</th><th>Examples</th></tr><tr><td><b>-шы, -ші</b></td><td>the person who does it</td><td>сурет → сурет<b>ші</b> (artist), жазу → жазу<b>шы</b> (writer), өткін → өткін<b>ші</b></td></tr><tr><td><b>-лық, -лік, -дық, -дік, -тық, -тік</b></td><td>a quality or an idea</td><td>батыл → батыл<b>дық</b> (courage), дос → дос<b>тық</b> (friendship), бұзақы → бұзақы<b>лық</b></td></tr><tr><td><b>-хана</b></td><td>a place</td><td>кітап → кітап<b>хана</b> (library), шебер → шебер<b>хана</b> (workshop), ас → ас<b>хана</b> (canteen)</td></tr><tr><td><b>-сыз, -сіз</b></td><td>without</td><td>үй → үй<b>сіз</b> (homeless), су → су<b>сыз</b> (without water), қарау → қарау<b>сыз</b></td></tr><tr><td><b>-лы, -лі, -ды, -ді, -ты, -ті</b></td><td>with, having</td><td>білім → білім<b>ді</b> (educated), тұз → тұз<b>ды</b> (salty), дарын → дарын<b>ды</b></td></tr></table><p>Hard words take the hard form, soft words the soft form. Knowing the endings helps you guess new words when you read.</p>', [
+        k.mc('сурет → the person = …', ['суретші', 'суреттік', 'суретхана'], 0),
+        k.mc('батыл → the quality = …', ['батылдық', 'батылшы', 'батылсыз'], 0),
+        k.mc('кітап → the place = …', ['кітапхана', 'кітапшы', 'кітапты'], 0),
+        k.mc('үй → “without a home” = …', ['үйсіз', 'үйлі', 'үйші'], 0),
+        k.mc('білім → “educated” = …', ['білімді', 'білімсіз', 'білімші'], 0),
+        k.ord('Көше өнері қаланы әшекейлейді')]],
+      r: ['The wall that began to speak', 'Біздің ауданда жиырма жыл бойы қараусыз қалған зауыт тұрды. Оның сұр қасбеті жазуларға толы болатын. Тұрғындар мұны бұзақылық деп санап, қала билігінен ғимаратты бұзуды сұрады.\n\nӨткен жазда бір топ жас суретші басқа шешім ұсынды. Олар нобай көрсетті: ауданның тарихы бейнеленген алып қабырға суреті — дала, алғашқы жұмысшылар, ауладағы балалар. Билік келісті, ал тұрғындар бояуға ақша жинады.\n\nЖұмыс екі айға созылды. Өткіншілер тоқтап, кеңес беріп, шай әкеліп тұрды. Осы зауытта отыз жыл жұмыс істеген зейнеткер Мария Ивановна суретшілерге әріптестері туралы айтып берді — олардың бейнесі қабырғада пайда болды.\n\nҚазір мұнда қоғамдық кеңістік бар: жазда кино көрсетеді, қыста мұз айдынын құяды.\n\n«Көше өнері — жай әшекей емес, — дейді суретшілердің бірі. — Граффити бұзақылық та, өнер де бола алады. Айырмашылық мынада: қабырға адамдармен сөйлесе ме, жоқ па».\n\n(сұр = grey · жазу = writing · бұзу = to pull down · бейнеленген = depicted · алып = huge · созылды = lasted · бейне = image · айырмашылық = difference)', [
+        k.mc('What stood in the district for twenty years?', ['an abandoned factory', 'an old school', 'an empty shop'], 0), k.mc('What did the young artists propose?', ['a huge mural of the district’s history', 'pulling the building down', 'a new car park'], 0), k.mc('How long did the work take?', ['two months', 'two years', 'two weeks'], 0), k.mc('Whose images appeared on the wall?', ['former workers of the factory', 'the city authorities', 'famous actors'], 0)]] }
   ]);
 })();

@@ -1,10 +1,10 @@
 /* IF Lingo · Russian B2: an original IF Academy course for people who speak English and have finished Russian B1.
    Word lines: word | part of speech | meaning in English | example | (empty) | how to say it | the example in English.
-   Plan: 24 units and a level test (project doc claude/if-lingo.md). Built so far: units 1 to 8. */
+   Plan: 24 units and a level test (project doc claude/if-lingo.md). Built so far: units 1 to 16. */
 IFX.course({
   id: 'ru-b2', track: 'lang', lang: 'ru-RU', level: 'B2', next: 'C1', icon: '🇷🇺',
   title: 'Russian B2', sub: 'Confident Russian',
-  blurb: 'Discuss generations, work, the media, wellbeing, tourism, consumer habits, cities and the climate, and read longer texts. The first 8 of 24 units, explained in English.',
+  blurb: 'Discuss generations, work, the media, wellbeing, tourism, cities, the climate, machines at work, lifelong learning, fair play, business and migration, and read longer texts. The first 16 of 24 units, explained in English.',
   units: []
 });
 (function () {
@@ -184,6 +184,182 @@ IFX.course({
         k.mc('Это привело к серьёзным ___.', ['последствиям', 'последствия', 'последствий'], 0),
         k.ord('Это привело к серьёзным последствиям')]],
       r: ['The sea that is coming back', 'В середине двадцатого века Аральское море было одним из самых больших озёр мира. Здесь ловили рыбу, работали порты, отдыхали туристы.\n\nС 1960-х годов воду рек, впадающих в море, стали забирать на орошение полей. Вследствие этого уровень воды начал падать. Море высыхало год за годом, и рыбацкие города оказались в десятках километров от берега. Из-за того что дно стало пустыней, ветер разносил соль и пыль. Это привело к экологической катастрофе и серьёзным последствиям для здоровья людей.\n\nВ 2005 году в Казахстане была построена плотина Кокарал. Благодаря тому что вода перестала уходить на юг, северная часть моря начала восстанавливаться. Уровень воды поднялся, вернулась рыба, а берег стал ближе к городу Аральску.\n\nПолное восстановление моря невозможно. Но Северный Арал показывает: даже большую угрозу можно уменьшить, если действовать вместе.\n\n(впадающих = flowing into · рыбацкий = fishing · дно = the sea bed · разносил = carried · уменьшить = to reduce · действовать = to act)', [
-        k.mc('Why did the sea begin to dry up?', ['River water was taken to irrigate fields.', 'It stopped raining.', 'A dam broke.'], 0), k.mc('When was the Kokaral dam built?', ['in 2005', 'in 1960', 'in 1991'], 0), k.mc('Which part of the sea is recovering?', ['the northern part', 'the southern part', 'the whole sea'], 0), k.tf('The text says the whole sea will be fully restored.', false)]] }
+        k.mc('Why did the sea begin to dry up?', ['River water was taken to irrigate fields.', 'It stopped raining.', 'A dam broke.'], 0), k.mc('When was the Kokaral dam built?', ['in 2005', 'in 1960', 'in 1991'], 0), k.mc('Which part of the sea is recovering?', ['the northern part', 'the southern part', 'the whole sea'], 0), k.tf('The text says the whole sea will be fully restored.', false)]] },
+
+    { id: 'u9', t: 'Заменит ли меня робот? Work and machines', topic: 'Technology',
+      v: ['Jobs of the future', `
+автоматизация | noun | automation | Автоматизация меняет заводы. | | af-ta-ma-tee-ZA-tsee-ya | Automation is changing factories.
+нейросеть | noun | neural network | Нейросеть написала этот текст. | | ney-ra-SYET | A neural network wrote this text.
+рынок труда | noun | job market | Рынок труда быстро меняется. | | RY-nak troo-DA | The job market is changing fast.
+переобучение | noun | retraining | Он прошёл переобучение. | | pee-ree-a-boo-CHE-nee-ye | He went through retraining.
+творческий | adjective | creative | Это творческая профессия. | | TVOR-chees-kee | This is a creative profession.
+рутинный | adjective | routine | Программа делает рутинную работу. | | roo-TEEN-ny | The program does the routine work.
+предсказать | verb | to predict | Трудно предсказать будущее. | | preet-ska-ZAT | It is hard to predict the future.
+востребованный | adjective | in demand | Это востребованная профессия. | | vas-TRYE-ba-van-ny | This profession is in demand.
+угрожать | verb | to threaten | Что угрожает моей работе? | | oog-ra-ZHAT | What threatens my job?
+приспособиться | verb | to adapt | Нужно приспособиться к новому. | | pree-spa-SO-beet-sa | You need to adapt to what is new.`],
+      g: ['Whatever, however, wherever: бы ни', '<p>A question word + <b>бы</b> + <b>ни</b> + the past form means <i>whatever, however, wherever</i>. The verb looks past, but the meaning is general.</p><table><tr><th>Pattern</th><th>Meaning</th><th>Example</th></tr><tr><td><b>что бы … ни</b></td><td>whatever</td><td><b>Что бы</b> он <b>ни</b> делал, у него всё получается.</td></tr><tr><td><b>как бы … ни</b></td><td>however</td><td><b>Как бы</b> трудно <b>ни</b> было, я не сдамся.</td></tr><tr><td><b>где бы … ни</b></td><td>wherever</td><td><b>Где бы</b> я <b>ни</b> жил, я помню дом.</td></tr><tr><td><b>какой бы … ни</b></td><td>however, whatever kind of</td><td><b>Какой бы</b> умной <b>ни</b> была машина, она не заменит врача.</td></tr></table><ul><li>It is <b>ни</b>, not <b>не</b>. Here <b>ни</b> does not make the sentence negative.</li><li>A phrase to remember: <b>что бы ни случилось</b> = whatever happens.</li></ul>', [
+        k.mc('Что бы он ___ делал, у него всё получается.', ['ни', 'не', 'нет'], 0),
+        k.mc('Как ___ трудно ни было, я не сдамся.', ['бы', 'был', 'будет'], 0),
+        k.mc('Где бы я ни ___, я помню дом.', ['жил', 'живу', 'буду жить'], 0),
+        k.mc('___ бы умной ни была машина, она не заменит врача.', ['Какой', 'Что', 'Где'], 0),
+        k.mc('“whatever happens” = …', ['что бы ни случилось', 'что не случилось', 'что-нибудь случилось'], 0),
+        k.ord('Как бы трудно ни было я не сдамся')]],
+      r: ['Will a robot take my job?', 'Дана двенадцать лет работала бухгалтером. Когда её фирма начала автоматизацию, половину её рутинных задач стала выполнять программа. «Сначала я испугалась, — вспоминает Дана. — Мне казалось, что нейросеть угрожает моей профессии».\n\nЭксперты пытаются предсказать, какие профессии исчезнут. Но что бы они ни говорили, одно ясно: рынок труда меняется быстрее, чем раньше. Какой бы умной ни была машина, она плохо справляется с творческими задачами и с общением с людьми.\n\nДана решила не ждать. Она прошла переобучение и стала финансовым аналитиком. Теперь программа считает, а Дана объясняет клиентам, что значат цифры.\n\n«Как бы трудно ни было учиться в сорок лет, это лучше, чем бояться, — говорит она. — Востребованным остаётся тот, кто умеет приспособиться».\n\n(выполнять = to carry out · пытаются = try · справляется с = copes with · аналитик = analyst · цифры = figures)', [
+        k.mc('What was Dana’s job for twelve years?', ['accountant', 'programmer', 'analyst'], 0), k.mc('What did the program take over?', ['half of her routine tasks', 'all of her work', 'her talks with clients'], 0), k.mc('What do machines do badly, according to the text?', ['creative tasks and talking with people', 'counting', 'routine work'], 0), k.mc('What is Dana’s job now?', ['financial analyst', 'teacher', 'manager of a factory'], 0)]] },
+
+    { id: 'u10', t: 'Учиться никогда не поздно. Learning for life', topic: 'Education',
+      v: ['How we learn', `
+система образования | noun | education system | Система образования меняется. | | sees-TYE-ma ab-ra-za-VA-nee-ya | The education system is changing.
+учебная программа | noun | curriculum, syllabus | В учебной программе новый предмет. | | oo-CHEB-na-ya pra-GRA-ma | There is a new subject in the curriculum.
+непрерывное обучение | noun | lifelong learning | Непрерывное обучение стало нормой. | | nee-pree-RYV-na-ye a-boo-CHE-nee-ye | Lifelong learning has become the norm.
+самообразование | noun | self-education | Он занимается самообразованием. | | sa-ma-ab-ra-za-VA-nee-ye | He educates himself.
+оценивать | verb | to assess | Учитель оценивает работу. | | a-TSE-nee-vat | The teacher assesses the work.
+зубрить | verb | to learn by rote, to cram | Не нужно зубрить правила. | | zoob-REET | There is no need to cram rules.
+понимание | noun | understanding | Важно понимание, а не память. | | pa-nee-MA-nee-ye | Understanding matters, not memory.
+подход | noun | approach | Нужен новый подход. | | pat-KHOT | A new approach is needed.
+мотивировать | verb | to motivate | Хорошие задачи мотивируют. | | ma-tee-VEE-ra-vat | Good tasks motivate.
+дистанционный | adjective | distance, remote | Это дистанционный курс. | | dees-tan-tsee-ON-ny | This is a distance course.`],
+      g: ['No time to, nothing to, nobody to: некогда, нечего, некого', '<p>These words begin with stressed <b>не-</b> and go with the dictionary form of the verb. They mean that something is <b>impossible because there is no time, thing, person or place</b>.</p><table><tr><th>Word</th><th>Meaning</th><th>Example</th></tr><tr><td><b>некогда</b></td><td>there is no time to</td><td>Мне <b>некогда</b> отдыхать.</td></tr><tr><td><b>нечего</b></td><td>there is nothing to</td><td>Здесь <b>нечего</b> делать.</td></tr><tr><td><b>некого</b></td><td>there is nobody to</td><td>Мне <b>некого</b> спросить.</td></tr><tr><td><b>негде, некуда</b></td><td>there is nowhere to (be / go)</td><td>Нам <b>некуда</b> идти.</td></tr><tr><td><b>не с кем</b></td><td>there is nobody to … with</td><td>Ему <b>не с кем</b> поговорить.</td></tr></table><ul><li>The person is in the “to” form: <b>мне, ему, нам</b>.</li><li>Past: Мне <b>было</b> некогда. Future: Мне <b>будет</b> некогда.</li><li>Compare B1: Я <b>ничего не</b> делаю. (I do nothing.) / Мне <b>нечего</b> делать. (I have nothing to do.)</li></ul>', [
+        k.mc('Мне ___ отдыхать: много работы.', ['некогда', 'никогда', 'негде'], 0),
+        k.mc('Здесь ___ делать.', ['нечего', 'ничего', 'никого'], 0),
+        k.mc('Нам ___ идти.', ['некуда', 'никуда', 'нигде'], 0),
+        k.mc('Ему не ___ поговорить.', ['с кем', 'с никем', 'кого'], 0),
+        k.mc('Я ___ не видел.', ['ничего', 'нечего', 'некуда'], 0),
+        k.ord('Мне некогда отдыхать')]],
+      r: ['It is never too late to learn', 'Болату пятьдесят два года. Тридцать лет он работал водителем автобуса. «Мне всегда было некогда учиться, — рассказывает он. — Семья, работа, дом. А когда дети выросли, оказалось, что вечерами мне нечего делать».\n\nСын посоветовал ему дистанционный курс программирования. Первые месяцы были тяжёлыми. Болату не с кем было посоветоваться: в группе все были моложе в два раза. В школе он привык зубрить, а здесь требовалось понимание.\n\nПреподаватель нашёл к нему особый подход: он давал задачи из жизни. Например, написать программу расписания автобусов. Это мотивировало лучше, чем оценки.\n\nЧерез полтора года Болат получил первую работу в IT. Он считает, что система образования должна учить не фактам, а умению учиться. «Непрерывное обучение — не мода. Сегодня без него некуда двигаться».\n\n(посоветовал = advised · посоветоваться = to ask for advice · особый = special · умение = ability · двигаться = to move)', [
+        k.mc('What was Bolat’s job for thirty years?', ['bus driver', 'teacher', 'programmer'], 0), k.mc('Who suggested the course?', ['his son', 'his boss', 'his teacher'], 0), k.mc('Why were the first months hard?', ['He had nobody to ask, and the group was much younger.', 'The course was too expensive.', 'He had no computer.'], 0), k.mc('Which task motivated him?', ['a program for a bus timetable', 'a game', 'a website for a school'], 0)]] },
+
+    { id: 'u11', t: 'Зачем мы читаем. Why we read', topic: 'Culture',
+      v: ['Books and readers', `
+чтение | noun | reading | Чтение развивает ум. | | CHTYE-nee-ye | Reading develops the mind.
+литература | noun | literature | Я люблю русскую литературу. | | lee-tee-ra-TOO-ra | I love Russian literature.
+электронная книга | noun | e-book | Я читаю электронную книгу. | | e-leek-TRON-na-ya KNEE-ga | I am reading an e-book.
+воображение | noun | imagination | У ребёнка богатое воображение. | | va-ab-ra-ZHE-nee-ye | The child has a rich imagination.
+повествование | noun | narrative | Повествование идёт от первого лица. | | pa-veest-va-VA-nee-ye | The narrative is in the first person.
+перечитать | verb | to reread | Я хочу перечитать этот роман. | | pee-ree-chee-TAT | I want to reread this novel.
+жанр | noun | genre | Мой любимый жанр — детектив. | | zhanr | My favourite genre is the detective story.
+отрывок | noun | extract, passage | Прочитайте отрывок вслух. | | at-RY-vak | Read the passage aloud.
+цитата | noun | quotation | Это известная цитата. | | tsee-TA-ta | This is a well-known quotation.
+сосредоточиться | verb | to concentrate | Мне трудно сосредоточиться. | | sas-ree-da-TO-cheet-sa | I find it hard to concentrate.`],
+      g: ['Read again, read to the end, get lost in a book: beginnings that change the meaning', '<table><tr><th>Beginning</th><th>It adds…</th><th>Examples</th></tr><tr><td><b>пере-</b></td><td>again</td><td><b>пере</b>читать (to reread), <b>пере</b>писать (to rewrite), <b>пере</b>делать (to redo)</td></tr><tr><td><b>до-</b></td><td>to the end</td><td><b>до</b>читать (to finish reading), <b>до</b>писать (to finish writing)</td></tr><tr><td><b>недо-</b></td><td>not enough</td><td><b>недо</b>оценить (to underestimate), <b>недо</b>спать (not to get enough sleep)</td></tr><tr><td><b>за-</b> … <b>-ся</b></td><td>to get lost in it</td><td><b>за</b>читать<b>ся</b> (to be absorbed in reading), <b>за</b>думать<b>ся</b> (to be lost in thought)</td></tr><tr><td><b>на-</b> … <b>-ся</b></td><td>as much as you want</td><td><b>на</b>читать<b>ся</b> (to read your fill), <b>на</b>говорить<b>ся</b> (to talk your fill)</td></tr></table><ul><li>Я хочу <b>перечитать</b> эту книгу. = I want to read this book again.</li><li>Он <b>зачитался</b> и опоздал. = He got lost in his book and was late.</li><li>Мы <b>недооценили</b> его. = We underestimated him.</li></ul>', [
+        k.mc('Я хочу ___ эту книгу ещё раз.', ['перечитать', 'дочитать', 'начитаться'], 0),
+        k.mc('Осталось десять страниц. Я хочу ___ книгу сегодня.', ['дочитать', 'перечитать', 'зачитаться'], 0),
+        k.mc('Он ___ и пропустил свою остановку.', ['зачитался', 'начитался', 'перечитал'], 0),
+        k.mc('Мы ___ этого писателя: он гений.', ['недооценили', 'дочитали', 'начитались'], 0),
+        k.mc('За каникулы я ___ на весь год.', ['начитался', 'зачитался', 'недочитал'], 0),
+        k.ord('Я хочу перечитать эту книгу')]],
+      r: ['A club in a village library', 'Когда Сауле стала библиотекарем в небольшом селе, в библиотеку почти никто не ходил. «Все говорили, что молодёжь больше не читает, — вспоминает она. — Но я думаю, что мы их недооценили».\n\nСауле открыла читательский клуб. Правило было одно: каждый приносит любимый отрывок и объясняет, почему он важен. Жанр не имел значения — фантастика, стихи, даже комиксы.\n\nПервым пришёл девятиклассник Алмас. Он признался, что зачитался электронной книгой и опоздал на автобус. Потом пришли его друзья. Через год в клубе было тридцать человек.\n\n«Чтение развивает воображение и учит сосредоточиться, — говорит Сауле. — Ребята начали перечитывать книги из школьной программы и находить в них новое».\n\nНа стене библиотеки теперь висит цитата, выбранная клубом: «Дочитав хорошую книгу, ты уже немного другой человек».\n\n(библиотекарь = librarian · не имел значения = did not matter · фантастика = science fiction · ребята = the youngsters)', [
+        k.mc('What is Saule’s job?', ['librarian', 'teacher', 'writer'], 0), k.mc('What was the club’s one rule?', ['Bring a favourite passage and explain why it matters.', 'Read one book a week.', 'Read only the classics.'], 0), k.mc('Why was Almas late for the bus?', ['He was lost in an e-book.', 'He was at the club.', 'He overslept.'], 0), k.mc('How many members did the club have after a year?', ['thirty', 'nine', 'three'], 0)]] },
+
+    { id: 'u12', t: 'Честная игра. Fair play', topic: 'Sport',
+      v: ['Sport and honesty', `
+честная игра | noun | fair play | Мы за честную игру. | | CHES-na-ya eeg-RA | We are for fair play.
+допинг | noun | doping | Спортсмена наказали за допинг. | | DO-peenk | The athlete was punished for doping.
+дисквалификация | noun | disqualification | Ему грозит дисквалификация. | | dees-kva-lee-fee-KA-tsee-ya | He faces disqualification.
+соперник | noun | rival, opponent | Мой соперник очень сильный. | | sa-PYER-neek | My opponent is very strong.
+судейство | noun | refereeing, judging | Судейство было справедливым. | | soo-DYEYST-va | The refereeing was fair.
+жульничать | verb | to cheat | Он никогда не жульничает. | | ZHOOL-nee-chat | He never cheats.
+обман | noun | deception, cheating | Это был обман. | | ab-MAN | It was cheating.
+репутация | noun | reputation | У клуба хорошая репутация. | | ree-poo-TA-tsee-ya | The club has a good reputation.
+достоинство | noun | dignity | Он проиграл с достоинством. | | das-TO-eenst-va | He lost with dignity.
+уступить | verb | to give way, to yield | Он уступил место сопернику. | | oos-too-PEET | He gave up his place to his rival.`],
+      g: ['I had to, I feel like, I cannot sleep: sentences with no “I”', '<p>For things that <b>happen to</b> you, Russian puts the person in the “to” form and the verb in the <b>оно</b> form.</p><table><tr><th>Pattern</th><th>Meaning</th><th>Example</th></tr><tr><td>мне <b>пришлось</b> + verb</td><td>I had to (once)</td><td>Мне <b>пришлось</b> остановиться.</td></tr><tr><td>мне <b>приходится</b> + verb</td><td>I have to (often)</td><td>Ему <b>приходится</b> тренироваться каждый день.</td></tr><tr><td>мне <b>хочется</b> + verb</td><td>I feel like</td><td>Мне <b>хочется</b> пить.</td></tr><tr><td>мне <b>не спится</b></td><td>I cannot sleep</td><td>Перед стартом мне <b>не спалось</b>.</td></tr><tr><td>мне <b>повезло</b></td><td>I was lucky</td><td>Нам <b>повезло</b> с погодой.</td></tr></table><ul><li>Compare: Я <b>хочу</b> победить. (my decision) / Мне <b>хочется</b> победить. (a feeling that comes to me)</li><li>Past: хотелось, приходилось, не спалось. All end in <b>-ось</b> or <b>-ло</b>.</li></ul>', [
+        k.mc('Мне ___ остановиться и помочь.', ['пришлось', 'пришёл', 'приходил'], 0),
+        k.mc('Перед стартом мне не ___.', ['спится', 'сплю', 'спит'], 0),
+        k.mc('Ему ___ тренироваться каждый день.', ['приходится', 'приходит', 'пришёл'], 0),
+        k.mc('Мне ___ пить.', ['хочется', 'хочу', 'хочет'], 0),
+        k.mc('___ пришлось уйти. (she)', ['Ей', 'Она', 'Её'], 0),
+        k.ord('Мне пришлось остановиться и помочь')]],
+      r: ['The race he did not win', 'На городском марафоне в Алматы студент Ерлан бежал вторым. До финиша оставалось двести метров, когда его соперник, бежавший первым, упал.\n\nЕрлану не пришлось долго думать. Он остановился, помог сопернику встать и довёл его до финиша. Они пришли пятым и шестым: их обогнали другие.\n\n«Мне, конечно, хотелось победить, — говорит Ерлан. — Я готовился полгода, перед стартом мне не спалось. Но победа, полученная так, была бы обманом».\n\nВидео с марафона посмотрели миллионы людей. Многие писали, что в спорте слишком много давления, допинга и споров о судействе, и что такие истории возвращают веру в честную игру.\n\nТренер сказал: «Медаль можно выиграть в следующем году. А репутация и достоинство зарабатываются один раз».\n\nЧерез месяц Ерлану пришлось выступать в школах: дети хотели услышать его историю.\n\n(финиш = finish · упал = fell · довёл = led · обогнали = overtook · выступать = to give talks)', [
+        k.mc('What place was Erlan in before his rival fell?', ['second', 'first', 'fifth'], 0), k.mc('What did Erlan do?', ['He helped his rival to the finish.', 'He ran past and won.', 'He stopped the race.'], 0), k.tf('Erlan won a medal.', false), k.mc('What did his coach say is earned only once?', ['reputation and dignity', 'a medal', 'money'], 0)]] },
+
+    { id: 'u13', t: 'Своё дело. A business of your own', topic: 'Economy',
+      v: ['Running a small business', `
+малый бизнес | noun | small business | Малый бизнес создаёт рабочие места. | | MA-ly BEEZ-nes | Small business creates jobs.
+выручка | noun | takings, revenue | Выручка выросла вдвое. | | VY-rooch-ka | Takings have doubled.
+затраты | noun | costs | Затраты на аренду высокие. | | za-TRA-ty | Rent costs are high.
+бизнес-план | noun | business plan | Она написала бизнес-план. | | BEEZ-nes plan | She wrote a business plan.
+поставщик | noun | supplier | У нас надёжный поставщик. | | pas-taf-SHCHEEK | We have a reliable supplier.
+заказчик | noun | customer, client (who orders) | Заказчик доволен работой. | | za-KAS-cheek | The client is pleased with the work.
+окупиться | verb | to pay for itself | Бизнес окупился через год. | | a-koo-PEET-sa | The business paid for itself in a year.
+вложить | verb | to invest, to put in | Он вложил деньги в магазин. | | vla-ZHYT | He invested money in the shop.
+арендовать | verb | to rent, to lease | Мы арендуем офис. | | a-reen-da-VAT | We rent an office.
+расширить | verb | to expand | Она хочет расширить дело. | | ras-SHY-reet | She wants to expand the business.`],
+      g: ['Depend on, take part in, invest in: verbs and their small words', '<p>Many verbs always take the same small word and ending. Learn them together.</p><table><tr><th>Verb</th><th>Small word + ending</th><th>Example</th></tr><tr><td>зависеть</td><td><b>от</b> + “of” ending</td><td>Успех зависит <b>от</b> качеств<b>а</b>.</td></tr><tr><td>отказаться</td><td><b>от</b> + “of” ending</td><td>Она отказалась <b>от</b> отпуск<b>а</b>.</td></tr><tr><td>влиять</td><td><b>на</b> + object ending</td><td>Цены влияют <b>на</b> спрос.</td></tr><tr><td>рассчитывать, надеяться</td><td><b>на</b> + object ending</td><td>Я рассчитываю <b>на</b> ваш<b>у</b> помощь.</td></tr><tr><td>вложить</td><td><b>в</b> + object ending</td><td>Он вложил деньги <b>в</b> фургон.</td></tr><tr><td>участвовать</td><td><b>в</b> + place ending</td><td>Мы участвуем <b>в</b> ярмарк<b>е</b>.</td></tr><tr><td>заниматься</td><td>“work as” ending, no small word</td><td>Она занимается бизнес<b>ом</b>.</td></tr></table>', [
+        k.mc('Успех зависит ___ качества.', ['от', 'на', 'в'], 0),
+        k.mc('Цены влияют ___ спрос.', ['на', 'от', 'в'], 0),
+        k.mc('Она занимается ___.', ['бизнесом', 'бизнес', 'бизнеса'], 0),
+        k.mc('Мы участвуем ___ ярмарке.', ['в', 'на', 'от'], 0),
+        k.mc('Она отказалась ___ отпуска.', ['от', 'в', 'на'], 0),
+        k.ord('Успех зависит от качества')]],
+      r: ['A bakery on wheels', 'Три года назад Айгуль продавала пироги на рынке. Выручка зависела от погоды: в дождь покупателей не было. Тогда ей пришла идея — пекарня в фургоне, которая сама приезжает к людям.\n\nАйгуль написала бизнес-план и вложила все сбережения в старый фургон. Ей пришлось отказаться от отпуска на два года. Родственники сомневались, но она рассчитывала на постоянных клиентов.\n\nСначала затраты были выше доходов. Айгуль нашла надёжного поставщика муки и начала участвовать в городских ярмарках. Через год бизнес окупился.\n\nСегодня у неё три фургона и первый крупный заказчик — сеть кофеен. Она арендовала цех и хочет расширить дело.\n\n«Малый бизнес — это не только деньги, — говорит Айгуль. — Он влияет на жизнь района. Люди выходят из дома на запах свежего хлеба и разговаривают друг с другом».\n\n(фургон = van · постоянный = regular · ярмарка = fair · крупный = large · сеть кофеен = chain of coffee shops · цех = workshop · запах = smell)', [
+        k.mc('Where did Aigul sell her pies before?', ['at the market', 'in a café', 'online'], 0), k.mc('What did she put her savings into?', ['an old van', 'a new shop', 'a coffee machine'], 0), k.mc('When did the business pay for itself?', ['after a year', 'after a month', 'after five years'], 0), k.mc('Who is her first large client?', ['a chain of coffee shops', 'a school', 'the market'], 0)]] },
+
+    { id: 'u14', t: 'Два дома. Two homes', topic: 'Migration',
+      v: ['Living in another country', `
+эмиграция | noun | emigration | Эмиграция — трудное решение. | | e-mee-GRA-tsee-ya | Emigration is a hard decision.
+переезд | noun | move (to a new home) | Переезд занял неделю. | | pee-ree-YEST | The move took a week.
+адаптация | noun | adaptation, settling in | Адаптация заняла год. | | a-dap-TA-tsee-ya | Settling in took a year.
+тоска по дому | noun | homesickness | Её мучает тоска по дому. | | tas-KA pa DO-moo | She suffers from homesickness.
+чужой | adjective | strange, not your own | Это чужой для меня город. | | choo-ZHOY | This city is strange to me.
+вид на жительство | noun | residence permit | Она получила вид на жительство. | | veet na ZHY-teel-stva | She received a residence permit.
+диаспора | noun | diaspora | В городе большая казахская диаспора. | | dee-AS-pa-ra | There is a large Kazakh diaspora in the city.
+корни | noun | roots | Он не забывает свои корни. | | KOR-nee | He does not forget his roots.
+ностальгия | noun | nostalgia | Иногда у меня ностальгия. | | nas-tal-GEE-ya | Sometimes I feel nostalgia.
+интегрироваться | verb | to integrate | Трудно интегрироваться без языка. | | een-teg-REE-ra-vat-sa | It is hard to integrate without the language.`],
+      g: ['Time flies, an idea came to me: verbs of motion in set phrases', '<p>Verbs of motion are used in many phrases that have nothing to do with walking.</p><table><tr><th>Phrase</th><th>Meaning</th><th>Example</th></tr><tr><td><b>время идёт / летит</b></td><td>time passes / flies</td><td>Как быстро <b>летит</b> время!</td></tr><tr><td><b>прийти в голову</b></td><td>to occur to someone</td><td>Мне <b>пришла в голову</b> идея.</td></tr><tr><td><b>выйти из себя</b></td><td>to lose your temper</td><td>Он <b>вышел из себя</b>.</td></tr><tr><td><b>вести себя</b></td><td>to behave</td><td>Дети хорошо <b>вели себя</b>.</td></tr><tr><td><b>войти в положение</b></td><td>to understand someone’s situation</td><td><b>Войдите в моё положение</b>.</td></tr><tr><td><b>пройти</b> (о боли, времени)</td><td>to pass, to go away</td><td>Тоска не <b>проходит</b>.</td></tr></table><ul><li>The verb still changes in the usual way: идея <b>пришла</b>, мысли <b>пришли</b>.</li><li>The person is in the “to” form with <b>прийти в голову</b>: <b>мне, ему, нам</b>.</li></ul>', [
+        k.mc('Как быстро ___ время!', ['летит', 'едет', 'плывёт'], 0),
+        k.mc('Мне ___ в голову интересная идея.', ['пришла', 'вошла', 'дошла'], 0),
+        k.mc('Он ___ из себя и начал кричать.', ['вышел', 'ушёл', 'пришёл'], 0),
+        k.mc('Дети хорошо ___ себя.', ['вели', 'шли', 'несли'], 0),
+        k.mc('“to understand someone’s situation” = …', ['войти в положение', 'выйти из себя', 'прийти в голову'], 0),
+        k.ord('Мне пришла в голову интересная идея')]],
+      r: ['Two homes', 'Айгерим уехала в Германию пять лет назад, чтобы учиться в университете. Сейчас у неё есть работа и вид на жительство. Время летит, но тоска по дому не проходит.\n\n«Первые месяцы я вела себя как гостья, — рассказывает она. — Всё казалось чужим: язык, еда, даже тишина по воскресеньям. Мне не раз приходило в голову всё бросить».\n\nАдаптация шла медленно. Помогла казахская диаспора: по субботам земляки собирались, готовили бешбармак и говорили на родном языке. Но Айгерим понимала, что нельзя жить только среди своих. Она записалась в хор и нашла немецких друзей.\n\n«Интегрироваться — не значит забыть корни, — считает она. — Ностальгия осталась, но теперь это не боль, а тепло».\n\nКогда её спрашивают, где её дом, она отвечает: «У меня их два. И я счастлива, что мне не нужно выбирать».\n\n(не раз = more than once · земляки = people from the same homeland · среди своих = among your own people · хор = choir · тепло = warmth)', [
+        k.mc('Why did Aigerim go to Germany?', ['to study at university', 'to get married', 'for a holiday'], 0), k.mc('What helped her settle in?', ['the Kazakh diaspora', 'a pay rise', 'a new flat'], 0), k.mc('What did she join to meet local people?', ['a choir', 'a football team', 'a book club'], 0), k.mc('What does she say about her home?', ['She has two.', 'It is only in Kazakhstan.', 'She has none.'], 0)]] },
+
+    { id: 'u15', t: 'Три языка за одним столом. Living in two languages', topic: 'Language',
+      v: ['Being bilingual', `
+двуязычие | noun | bilingualism | Двуязычие — обычное дело в Казахстане. | | dvoo-ya-ZY-chee-ye | Bilingualism is usual in Kazakhstan.
+билингв | noun | bilingual person | Мой сын — билингв. | | bee-LEENGF | My son is bilingual.
+переключаться | verb | to switch | Она легко переключается с языка на язык. | | pee-ree-klyoo-CHAT-sa | She switches easily from one language to another.
+смешивать | verb | to mix | Дети иногда смешивают языки. | | SMYE-shy-vat | Children sometimes mix languages.
+государственный язык | noun | state language | Казахский — государственный язык. | | ga-soo-DARST-veen-ny ya-ZYK | Kazakh is the state language.
+официальный | adjective | official | Это официальный документ. | | a-fee-tsee-AL-ny | This is an official document.
+владеть | verb | to have command of | Она владеет тремя языками. | | vla-DYET | She has command of three languages.
+языковая среда | noun | language environment | Языковая среда помогает учиться. | | ya-zy-KO-va-ya sree-DA | A language environment helps you learn.
+передавать | verb | to pass on | Родители передают детям язык. | | pee-ree-da-VAT | Parents pass the language on to their children.
+сохранять | verb | to keep, to preserve | Важно сохранять родной язык. | | sa-khra-NYAT | It is important to keep your native language.`],
+      g: ['Although, as, before, after: longer joining phrases', '<table><tr><th>Phrase</th><th>Meaning</th><th>Example</th></tr><tr><td><b>несмотря на то что</b></td><td>although, in spite of the fact that</td><td><b>Несмотря на то что</b> языков три, дети их не смешивают.</td></tr><tr><td><b>по мере того как</b></td><td>as (gradually)</td><td><b>По мере того как</b> дети растут, их словарь растёт.</td></tr><tr><td><b>прежде чем</b> + verb</td><td>before</td><td><b>Прежде чем</b> ответить, она думает.</td></tr><tr><td><b>после того как</b></td><td>after</td><td><b>После того как</b> мы переехали, дети выучили язык.</td></tr><tr><td><b>при условии что</b></td><td>on condition that</td><td>Я помогу <b>при условии, что</b> ты будешь стараться.</td></tr><tr><td><b>в случае если</b></td><td>in case, if</td><td><b>В случае если</b> пойдёт дождь, урок будет в классе.</td></tr></table><ul><li><b>прежде чем</b> takes the dictionary form when the doer is the same: прежде чем <b>ответить</b>.</li><li>These phrases belong to careful speech and writing. In everyday talk people say <b>хотя, когда, если</b>.</li></ul>', [
+        k.mc('___ на то что дома говорят по-казахски, дети знают русский.', ['Несмотря', 'Благодаря', 'Прежде'], 0),
+        k.mc('По мере того ___ дети растут, их словарь растёт.', ['как', 'что', 'чем'], 0),
+        k.mc('___ чем ответить, она думает.', ['Прежде', 'После', 'Перед'], 0),
+        k.mc('Я помогу при условии, ___ ты будешь стараться.', ['что', 'как', 'если'], 0),
+        k.mc('После того ___ мы переехали, дети выучили язык.', ['как', 'что', 'чем'], 0),
+        k.ord('Прежде чем ответить она думает')]],
+      r: ['Three languages at one table', 'В семье Сериковых говорят на трёх языках. С бабушкой — по-казахски, в школе дети учатся по-русски, а папа, преподаватель, каждый вечер читает им по-английски.\n\nНесмотря на то что языков три, дети их почти не смешивают. Семилетняя Амина легко переключается: прежде чем ответить, она смотрит, кто с ней говорит.\n\nТак было не всегда. После того как семья переехала в город, дети начали забывать казахский: вокруг была другая языковая среда. Тогда родители установили правило: дома — только казахский.\n\n«Двуязычие — это подарок, но его нужно сохранять, — говорит мама. — По мере того как дети растут, им нужны книги, песни, друзья на каждом языке».\n\nНекоторые исследования показывают, что билингвы легче переключают внимание. Но для Сериковых важнее другое: передавать детям язык бабушки — значит передавать историю семьи.\n\n(семилетняя = seven-year-old · установили = set · некоторые = some · внимание = attention)', [
+        k.mc('Which language do the children speak with their grandmother?', ['Kazakh', 'Russian', 'English'], 0), k.mc('What does Amina do before she answers?', ['She looks at who is speaking to her.', 'She asks her mother.', 'She answers in English.'], 0), k.mc('What rule did the parents set?', ['only Kazakh at home', 'only Russian at school', 'no English'], 0), k.mc('Why does the grandmother’s language matter to the family?', ['It carries the family’s history.', 'It is needed for exams.', 'It is easier than Russian.'], 0)]] },
+
+    { id: 'u16', t: 'Стена, которая заговорила. Art in the street', topic: 'Art',
+      v: ['Art and the city', `
+граффити | noun | graffiti | На стене граффити. | | gra-FEE-tee | There is graffiti on the wall.
+роспись | noun | mural, wall painting | Художники сделали роспись стены. | | ROS-pees | The artists painted a mural on the wall.
+фасад | noun | facade, front of a building | Фасад дома покрасили. | | fa-SAT | The front of the house was painted.
+уличное искусство | noun | street art | Уличное искусство меняет город. | | OO-leech-na-ye ees-KOOST-va | Street art changes the city.
+вандализм | noun | vandalism | Это не искусство, а вандализм. | | van-da-LEEZM | This is not art but vandalism.
+украсить | verb | to decorate | Мы украсили двор цветами. | | oo-KRA-seet | We decorated the yard with flowers.
+заброшенный | adjective | abandoned | Это заброшенный завод. | | za-BRO-shen-ny | This is an abandoned factory.
+пространство | noun | space | Это общественное пространство. | | pras-TRANST-va | This is a public space.
+эскиз | noun | sketch | Художник показал эскиз. | | es-KEES | The artist showed a sketch.
+прохожий | noun | passer-by | Прохожие останавливались и смотрели. | | pra-KHO-zhee | Passers-by stopped and looked.`],
+      g: ['Making new words: endings that build nouns and adjectives', '<table><tr><th>Ending</th><th>It makes…</th><th>Examples</th></tr><tr><td><b>-ость</b></td><td>a quality (from an adjective)</td><td>смелый → смел<b>ость</b> (courage), доступный → доступн<b>ость</b>, новый → нов<b>ость</b></td></tr><tr><td><b>-ение, -ание</b></td><td>an action or its result (from a verb)</td><td>украсить → украш<b>ение</b>, создать → созд<b>ание</b>, решить → реш<b>ение</b></td></tr><tr><td><b>-тель</b></td><td>the person who does it</td><td>читать → чита<b>тель</b>, жить → жи<b>тель</b>, писать → писа<b>тель</b></td></tr><tr><td><b>-ство</b></td><td>an activity or a state</td><td>искус<b>ство</b>, творче<b>ство</b>, дет<b>ство</b></td></tr><tr><td><b>-ный, -ский</b></td><td>an adjective (from a noun)</td><td>улица → улич<b>ный</b>, город → город<b>ской</b>, школа → школь<b>ный</b></td></tr></table><p>Nouns in <b>-ость</b> are “она” words; nouns in <b>-ение, -ство</b> are “оно” words; nouns in <b>-тель</b> are “он” words. Knowing the endings helps you guess new words when you read.</p>', [
+        k.mc('смелый → the quality = …', ['смелость', 'смеление', 'смелитель'], 0),
+        k.mc('украсить → the result = …', ['украшение', 'украсость', 'украситель'], 0),
+        k.mc('читать → the person = …', ['читатель', 'читание', 'читость'], 0),
+        k.mc('улица → adjective = …', ['уличный', 'улицкий', 'улицовый'], 0),
+        k.mc('город → adjective = …', ['городской', 'городный', 'городовый'], 0),
+        k.ord('Уличное искусство украшает город')]],
+      r: ['The wall that began to speak', 'В нашем районе двадцать лет стоял заброшенный завод. Его серый фасад был покрыт надписями. Жители считали это вандализмом и просили городские власти снести здание.\n\nПрошлым летом группа молодых художников предложила другое решение. Они показали эскиз: огромная роспись с историей района — степь, первые рабочие, дети во дворе. Власти согласились, а жители собрали деньги на краски.\n\nРабота шла два месяца. Прохожие останавливались, давали советы, приносили чай. Пенсионерка Мария Ивановна, тридцать лет работавшая на этом заводе, рассказала художникам о своих коллегах — и их лица появились на стене.\n\nТеперь здесь общественное пространство: летом показывают кино, зимой заливают каток.\n\n«Уличное искусство — не украшение, — говорит одна из художниц. — Граффити может быть и вандализмом, и искусством. Разница в том, разговаривает ли стена с людьми».\n\n(серый = grey · покрыт надписями = covered in writing · снести = to pull down · рабочие = workers · заливают каток = make an ice rink · разница = difference)', [
+        k.mc('What stood in the district for twenty years?', ['an abandoned factory', 'an old school', 'an empty shop'], 0), k.mc('What did the young artists propose?', ['a huge mural of the district’s history', 'pulling the building down', 'a new car park'], 0), k.mc('How long did the work take?', ['two months', 'two years', 'two weeks'], 0), k.mc('Whose faces appeared on the wall?', ['former workers of the factory', 'the city authorities', 'famous actors'], 0)]] }
   ]);
 })();
