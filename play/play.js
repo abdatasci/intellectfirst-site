@@ -78,10 +78,14 @@
     }, function () { V.innerHTML = '<div class="empty">No connection. Check the Internet and reload the page.</div>'; });
   }
   function signIn() {
-    V.innerHTML = '<h1>IF Arena</h1><p class="lead">Play Chess, Connect Four or a Word Duel against another IF player who is online now. Sign in so other players can see you and challenge you.</p>' +
+    V.innerHTML = '<h1>IF Arena</h1><p class="lead">Play Chess, Connect Four, a Word Duel or any IF Live game (Treasure Hunt, Kart Quest, Tug of War…) against other IF players who are online now. Sign in so other players can see you and challenge you.</p>' +
       '<p class="row" style="margin-top:18px"><a class="btn gold" href="/login/?next=/play/">Sign in</a><a class="btn" href="/app/">Back to IF App</a></p>' + gamesHTML();
   }
-  function gamesHTML() { return '<div class="games">' + Object.keys(GAMES).map(function (k) { var g = GAMES[k]; return '<div class="gcard"><b>' + g.i + ' ' + g.t + '</b><span>' + g.d + '</span></div>'; }).join('') + '</div>'; }
+  function gamesHTML() {
+    var card = function (i, t, d) { return '<div class="gcard"><b>' + i + ' ' + t + '</b><span>' + d + '</span></div>'; };
+    return '<p class="muted" style="margin:4px 0 0">1 vs 1</p><div class="games">' + Object.keys(GAMES).map(function (k) { var g = GAMES[k]; return card(g.i, g.t, g.d); }).join('') + '</div>' +
+      '<p class="muted" style="margin:16px 0 0">IF Live games · 1 vs 1 or a party of up to 8</p><div class="games">' + PMODES.map(function (m) { return card(m[1], m[2], m[3]); }).join('') + '</div>';
+  }
   function myStatus() { return { name: ME.name, lv: ME.level || '', r: ME.r, st: G || P ? 'busy' : 'free', g: G ? G.game : P ? 'party' : '' }; }
   function start() {
     var pill = $('#me'); pill.hidden = false; pill.textContent = ME.name + ' · ' + ME.r;
@@ -99,7 +103,7 @@
     var html = '<h1>IF Arena</h1><p class="lead">Players online now. Choose an opponent, choose a game, and send a challenge.</p>' +
       '<div class="tabs"><button data-tab="lobby" class="' + (tab === 'lobby' ? 'on' : '') + '">🟢 Online (' + ids.length + ')</button><button data-tab="top" class="' + (tab === 'top' ? 'on' : '') + '">🏆 Leaderboard</button><button data-tab="how" class="' + (tab === 'how' ? 'on' : '') + '">How to play</button></div>';
     if (tab === 'lobby') {
-      html += '<button class="party-cta" id="party"><span>🎉</span><span><b>Party game · 2 to 8 players</b><small>Race, Treasure Hunt, Cyber Heist, Fishing Frenzy, Balloon Race, Kart Quest, Block Mine or Bank Heist. Invite several players at once.</small></span><span>→</span></button>';
+      html += '<button class="party-cta" id="party"><span>🎉</span><span><b>Party game · 2 to 8 players</b><small>Race, Treasure Hunt, Cyber Heist, Fishing Frenzy, Balloon Race, Kart Quest, Block Mine, Bank Heist, Tug of War or Boss Battle. Invite several players at once.</small></span><span>→</span></button>';
       html += ids.length ? '<div class="list">' + ids.map(function (id) {
         var p = players[id], busy = p.st === 'busy';
         return '<div class="player">' + av(p.name, id) + '<div class="who"><b>' + esc(p.name || 'Player') + '</b><small><span class="dot' + (busy ? ' busy' : '') + '"></span>' + (busy ? 'Playing ' + esc((GAMES[p.g] || {}).t || '') : 'Free') + (p.lv ? ' · ' + esc(p.lv) : '') + ' · ' + (p.r || 1000) + '</small></div>' +
@@ -129,11 +133,14 @@
   function chooseGame(id) {
     var p = players[id]; if (!p) return;
     var pick = 'chess', s = sheet('<h3>Challenge ' + esc(p.name) + '</h3>' + Object.keys(GAMES).map(function (k) { return '<button class="opt' + (k === pick ? ' on' : '') + '" data-g="' + k + '"><span style="font-size:26px">' + GAMES[k].i + '</span><span><b>' + GAMES[k].t + '</b><small>' + GAMES[k].d + '</small></span></button>'; }).join('') +
-      '<label id="lvw" hidden>Word Duel level<select id="lv">' + LEVELS.map(function (l) { return '<option value="' + l[0] + '"' + (ME.level && l[1].indexOf(ME.level) === 0 ? ' selected' : '') + '>' + l[1] + '</option>'; }).join('') + '</select></label>' +
+      '<b style="display:block;margin:10px 0 6px">IF Live games</b><div class="pmodes">' + PMODES.map(function (m) { return '<button class="opt" data-g="live:' + m[0] + '"><span style="font-size:24px">' + m[1] + '</span><span><b>' + m[2] + '</b><small>' + m[3] + '</small></span></button>'; }).join('') + '</div>' +
+      '<label id="lvw" hidden>Level<select id="lv">' + LEVELS.map(function (l) { return '<option value="' + l[0] + '"' + (ME.level && l[1].indexOf(ME.level) === 0 ? ' selected' : '') + '>' + l[1] + '</option>'; }).join('') + '</select></label>' +
       '<div class="row"><button class="btn gold" id="send">Send challenge</button><button class="btn" id="cx">Cancel</button></div>');
-    $$('.opt', s).forEach(function (b) { b.onclick = function () { pick = b.dataset.g; $$('.opt', s).forEach(function (x) { x.classList.toggle('on', x === b); }); $('#lvw', s).hidden = pick !== 'duel'; }; });
+    $$('.opt', s).forEach(function (b) { b.onclick = function () { pick = b.dataset.g; $$('.opt', s).forEach(function (x) { x.classList.toggle('on', x === b); }); $('#lvw', s).hidden = pick !== 'duel' && !/^live:/.test(pick); }; });
     $('#cx', s).onclick = function () { s.remove(); };
-    $('#send', s).onclick = function () { var lv = $('#lv', s).value; s.remove(); invite(id, pick, lv); };
+    $('#send', s).onclick = function () { var lv = $('#lv', s).value; s.remove();
+      if (/^live:/.test(pick)) { var L5 = { 'v-A1': 'A1', 'v-A2': 'A2', 'v-B1': 'B1', 'v-B2': 'B2', 'v-C1': 'C1', 'v-Flyers': 'A2', 'v-PET': 'B1', 'v-IELTS': 'C1' }; return startParty({ mode: pick.slice(5), level: L5[lv] || 'B1', mins: 5 }, [id]); }
+      invite(id, pick, lv); };
   }
 
   /* ---------- invitations ---------- */
@@ -179,7 +186,8 @@
      The challenger's page runs the IF Live host in a hidden frame (/live/host/?arena=…), invites the chosen players with
      the PIN, and everybody (the challenger too) plays on the IF Live player screen inside this page. */
   var PMODES = [['race', '🏁', 'Race', 'Answer at your own speed. Most points wins.'], ['gold', '🪙', 'Treasure Hunt', 'Open chests: gold, double… or steal and swap!'], ['hack', '💻', 'Cyber Heist', 'Mine crypto and hack the others’ passwords.'], ['fish', '🎣', 'Fishing Frenzy', 'Catch the heaviest fish.'],
-    ['balloon', '🎈', 'Balloon Race', 'Right answers lift your balloon. Highest wins.'], ['kart', '🏎️', 'Kart Quest', 'Drive your kart to the finish first.'], ['mine', '⛏️', 'Block Mine', 'Mine gems, but watch out for TNT!'], ['cash', '💰', 'Bank Heist', 'Grab cash and buy crew upgrades.']];
+    ['balloon', '🎈', 'Balloon Race', 'Right answers lift your balloon. Highest wins.'], ['kart', '🏎️', 'Kart Quest', 'Drive your kart to the finish first.'], ['mine', '⛏️', 'Block Mine', 'Mine gems, but watch out for TNT!'], ['cash', '💰', 'Bank Heist', 'Grab cash and buy crew upgrades.'],
+    ['tug', '🪢', 'Tug of War', 'Two teams pull the rope. Every right answer is a pull.'], ['boss', '👾', 'Boss Battle', 'Team up and beat the Word Monster before time runs out.']];
   function pmode(k) { return PMODES.filter(function (m) { return m[0] === k; })[0] || PMODES[0]; }
   function partySetup() {
     var free = Object.keys(players).filter(function (id) { return players[id].st !== 'busy'; });
