@@ -836,6 +836,33 @@
       var bk = m.filter(function (k) { return /^book:/.test(k); }); if (bk.length) return bk.some(function (k) { return fitsKey(it, k); });
     }
     return m.some(function (k) { return fitsKey(it, k); }); }
+  /* Director's rule, 23 Nov 2026: a student whose level is A0 to B1 sees in Courses exactly the courses of their level:
+     General English of the level, the English Files book of the level (their class book if it is one) and, in a teen
+     class, the Teens course of the level where one exists. Nothing else is listed. Other levels still open by link. */
+  var LOWLV = ['A0', 'A1', 'A2', 'B1'];
+  function isTeenClass() {
+    if ((S.cls || []).some(function (k) { return /^book:teens-/.test(k); })) return true;
+    var books = (ME && ME.books) || [];
+    return ((ME && ME.classes) || []).some(function (c) { var b = books.filter(function (x) { return x.id === c.bookId; })[0]; return /teen|подрост/i.test(((b && b.title) || '') + ' ' + (c.label || '')); });
+  }
+  function levelCourses() {
+    var keys = S.cls || []; if (!keys.length || S.teacher || access().staff || access().teacher) return null;
+    if (keys.some(function (k) { return /^(yl:|be:|maths$|ielts$)/.test(k); })) return null;
+    var BL = { 'ef-a0': 'A0', 'ef-a1': 'A1', 'ef-a2': 'A2', 'ef-b1': 'B1', 'ef-b1p': 'B1', 'ef-b2': 'B2', 'ef-c1': 'C1', 'ef-c2': 'C2', 'teens-b1': 'B1', 'teens-b2': 'B2', giu: 'B1' };
+    var lvs = [], add = function (l) { if (l && lvs.indexOf(l) < 0) lvs.push(l); };
+    keys.forEach(function (k) { if (/^ge:/.test(k)) add(k.slice(3)); else if (/^book:/.test(k)) add(BL[k.slice(5)]); else if (k === 'pet') add('B1'); else if (k === 'ket') add('A2'); });
+    if (keys.indexOf('book:ef-a0') >= 0) lvs = lvs.filter(function (l) { return l !== 'A1' || keys.indexOf('book:ef-a1') >= 0; });   // a Beginner class: A0, not A1 as well
+    if (!lvs.length || lvs.some(function (l) { return LOWLV.indexOf(l) < 0; })) return null;
+    lvs.sort(function (a, b) { return LOWLV.indexOf(a) - LOWLV.indexOf(b); });
+    var teen = isTeenClass(), out = [], put = function (id) { var c = BY[id]; if (c && out.indexOf(c) < 0) out.push(c); };
+    lvs.forEach(function (l) {
+      var lo = l.toLowerCase(), own = keys.filter(function (k) { return /^book:ef-/.test(k) && BL[k.slice(5)] === l; }).map(function (k) { return k.slice(5); });
+      put('ge-' + (l === 'A0' ? 'a1' : lo));
+      (own.length ? own : ['ef-' + lo]).forEach(put);
+      if (teen) put('teens-' + lo);
+    });
+    return out;
+  }
   function myCourses() {
     var out = []; mine().forEach(function (k) { var c = planOf(k).course; if (c && out.indexOf(c) < 0) out.push(c); });
     if (S.teacher || (!out.length && !S.cls)) COURSES.forEach(function (c) { if (!c.daily && out.indexOf(c) < 0) out.push(c); });
@@ -947,9 +974,9 @@
   var CTRACK = [['all', 'All'], ['general', 'General English'], ['business', 'Business English'], ['exam', 'IELTS'], ['kids', 'Young learners']];
   function vCourses(f) {
     setNav('courses'); f = f || 'all';
-    var full = fullView(), list = APP ? appCourses() : full ? COURSES.filter(function (c) { return !c.daily && (f === 'all' || c.track === f); }) : myCourses();
+    var full = fullView(), lc = (!APP || APP === 'ge') ? levelCourses() : null, list = lc || (APP ? appCourses() : full ? COURSES.filter(function (c) { return !c.daily && (f === 'all' || c.track === f); }) : myCourses());
     view().innerHTML = '<div class="page-h"><div><p class="h-eyebrow">' + esc(t('courses')) + '</p><h1>Real English courses</h1><p>Each unit: new words, the grammar, a reading with photos, and a unit check. Finish a level to unlock the next one.</p></div></div>' +
-      (APP ? (ME && ME.student ? '<div class="goalbar">🎚 <span>Level: <b>' + esc(myLevel() || '—') + '</b></span><a href="#/level">Change level & materials</a></div>' : '') : full ? '<div class="chips">' + CTRACK.map(function (x) { return '<button class="chip' + (x[0] === f ? ' on' : '') + '" data-f="' + x[0] + '">' + esc(x[1]) + '</button>'; }).join('') + '</div>' : goalBar()) +
+      (APP ? (ME && ME.student ? '<div class="goalbar">🎚 <span>Level: <b>' + esc(myLevel() || '—') + '</b></span><a href="#/level">Change level & materials</a></div>' : '') : full && !lc ? '<div class="chips">' + CTRACK.map(function (x) { return '<button class="chip' + (x[0] === f ? ' on' : '') + '" data-f="' + x[0] + '">' + esc(x[1]) + '</button>'; }).join('') + '</div>' : goalBar()) +
       '<div class="grid">' + list.map(courseCard).join('') + '</div>' ;
     $$('[data-f]').forEach(function (b) { b.onclick = function () { vCourses(b.dataset.f); }; });
   }
