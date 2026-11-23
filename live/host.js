@@ -263,9 +263,10 @@
         if (CFG.source === 'vg') {   // two requests at the same time: words from the book, grammar from the set
           var n = CFG.count === 'all' ? 30 : +CFG.count, h = halves(), two = await Promise.allSettled([L.api('generate', aiRequest(h[0], Math.max(5, Math.ceil(n / 2)))), L.api('generate', aiRequest(h[1], Math.max(5, Math.floor(n / 2))))]);
           var part = function (i) { return two[i].status === 'fulfilled' ? two[i].value.qs || [] : []; }, all = function (i) { return L.build(Object.assign({}, h[i], { count: 'all' }), BANKS); };
+          if (two.every(function (t) { return t.status === 'rejected' && t.reason && t.reason.status === 401; })) { var e401 = new Error('login'); e401.status = 401; throw e401; }
           qs = part(0).length || part(1).length ? mixed(part(0).length ? part(0) : all(0), part(1).length ? part(1) : all(1), n) : null;
         } else qs = (await L.api('generate', aiRequest())).qs;
-      } catch (e) { qs = null; }
+      } catch (e) { qs = null; if (e.status === 401) { $('#go').disabled = false; err.style.color = ''; err.innerHTML = 'Your sign-in has expired. <a href="/me/#/login" target="_blank" rel="noopener">Sign in again</a>, then press the button again — your settings are kept.'; return; } }
       err.style.color = '';
       if (!qs || !qs.length) err.textContent = 'AI is busy right now, so this game uses the ready-made questions instead.';
       else err.textContent = '';

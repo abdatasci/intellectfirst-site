@@ -16,7 +16,8 @@
   LIVE.api = async function (path, body, again) {
     var res = await fetch('/api/live/' + path, body ? { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), credentials: 'same-origin' } : { credentials: 'same-origin' });
     // the 1-hour sign-in token runs out during long lessons: renew it and try again (every time, not just once per page)
-    if (res.status === 401 && !again && window.NFIdentity) { try { await NFIdentity.refreshSession(); } catch (e) {} return LIVE.api(path, body, true); }
+    // A request sent at the same moment may have just renewed the sign-in: wait a moment for its new cookie, then try once more.
+    if (res.status === 401 && !again) { try { if (window.NFIdentity) await NFIdentity.refreshSession(); } catch (e) {} await new Promise(function (r) { setTimeout(r, 1200); }); return LIVE.api(path, body, true); }
     var d = await res.json().catch(function () { return {}; });
     if (!res.ok) { var e = new Error(d.error || res.status); e.code = d.error; e.free = !!d.free; e.status = res.status; throw e; }
     return d;

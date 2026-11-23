@@ -5,7 +5,8 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { tgAccount } from '../lib/tgauth.mjs';
 import { getStore } from '@netlify/blobs';
-import { getUser, refreshSession } from '@netlify/identity';
+import { getUser } from '@netlify/identity';
+import { refreshSession } from '../lib/refresh.mjs';   // never deletes the sign-in cookies (parallel requests)
 import bank from '../../a/ielts/data/writing.json';
 import speakBank from '../../a/ielts/data/speaking.json';
 import { roleForCode, isStaff } from '../lib/codes.mjs';

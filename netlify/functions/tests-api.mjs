@@ -8,7 +8,8 @@
 // Store "tests": t/<code>, r/<code>/<rid>, u/<uid> (index), quota/<uid>/<day>
 import { getStore } from '@netlify/blobs';
 import { tgAccount } from '../lib/tgauth.mjs';
-import { getUser, refreshSession } from '@netlify/identity';
+import { getUser } from '@netlify/identity';
+import { refreshSession } from '../lib/refresh.mjs';   // never deletes the sign-in cookies (parallel requests)
 import { randomInt } from 'node:crypto';
 import { isStaff } from '../lib/codes.mjs';
 import { aiJSON, cleanQ, str, MODEL_MARK } from '../lib/aiq.mjs';

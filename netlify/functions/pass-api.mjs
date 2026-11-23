@@ -8,7 +8,8 @@
 // The full name stays in the store; the public answer carries the first name only.
 import { getStore } from '@netlify/blobs';
 import { tgAccount } from '../lib/tgauth.mjs';
-import { getUser, refreshSession } from '@netlify/identity';
+import { getUser } from '@netlify/identity';
+import { refreshSession } from '../lib/refresh.mjs';   // never deletes the sign-in cookies (parallel requests)
 import { isStaff } from '../lib/codes.mjs';
 import { randomInt } from 'node:crypto';
 

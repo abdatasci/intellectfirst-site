@@ -8,7 +8,8 @@ import { DEV_COOKIE, qrLookup, tgAccount, claimQr, pendingQr } from '../lib/tgau
 import { readFile } from 'node:fs/promises';
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import { join } from 'node:path';
-import { getUser, refreshSession, admin as idAdmin } from '@netlify/identity';
+import { getUser, admin as idAdmin } from '@netlify/identity';
+import { refreshSession } from '../lib/refresh.mjs';   // never deletes the sign-in cookies (parallel requests)
 import { roleForCode, isStaff, lockKeysFromCode, verifyLockKeys, isPrivateCode } from '../lib/codes.mjs';
 import { listReceipts, decideReceipt, receiptFile, cashInfo, cashClaim } from '../lib/receipts.mjs';
 import { kaspiInfo, createInvoice } from '../lib/kaspi.mjs';
