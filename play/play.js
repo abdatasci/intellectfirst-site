@@ -29,8 +29,12 @@
     var A = window.AblyPubSub || window.Ably, first = token;
     var opts = { authCallback: function (p, cb) { if (first) { var t = first; first = null; return cb(null, t); } fetch('/api/arena/token', { method: 'POST', credentials: 'include' }).then(function (r) { return r.json(); }).then(function (d) { cb(d.token ? null : 'token', d.token); }, function (e) { cb(String(e), null); }); }, echoMessages: false, disconnectedRetryTimeout: 2000 };
     var client = A.createClient ? A.createClient(opts) : new A.Realtime(opts);
-    return { channel: function (name) {
-      var ch = client.channels.get(name);
+    return {
+      // a game channel replays its last minute when it attaches, so a move sent before the other side was listening is not lost
+      onUp: function (fn) { client.connection.on('connected', fn); },
+      wake: function () { var st = client.connection.state; if (st !== 'connected' && st !== 'connecting') try { client.connect(); } catch (e) {} },
+      channel: function (name) {
+      var ch = /^arena:g:/.test(name) ? client.channels.get(name, { params: { rewind: '1m' } }) : client.channels.get(name);
       return {
         pub: function (n, d) { return ch.publish(n, d).catch(function (e) { console.warn('publish', e); }); },
         sub: function (fn) { ch.subscribe(function (m) { fn(m.name, m.data, m.clientId); }); },
@@ -42,7 +46,7 @@
     } };
   }
   function localRT(me) {
-    return { channel: function (name) {
+    return { onUp: function () {}, wake: function () {}, channel: function (name) {
       var bc = new BroadcastChannel('arena-' + name), subs = [], pres = [], here = {}, mine = null;
       bc.onmessage = function (e) {
         var m = e.data;
@@ -90,7 +94,14 @@
   function start() {
     var pill = $('#me'); pill.hidden = false; pill.textContent = ME.name + ' · ' + ME.r;
     LOBBY = RT.channel('arena:lobby'); INBOX = RT.channel('arena:u:' + ME.id.replace(/^u-/, ''));
-    LOBBY.onPresence(function (a, id, d) { if (id === ME.id) return; if (a === 'leave' || a === 'absent') delete players[id]; else players[id] = d || {}; if (!G && !P) drawLobby(); });
+    // Presence events alone go wrong: a player who reopens the page enters on a new connection, then the old connection's
+    // "leave" arrives up to 15 seconds later and removed them from the list. After every event the list is read again.
+    var syncT = null, sync = function () { clearTimeout(syncT); syncT = setTimeout(function () { LOBBY.members().then(function (l) { var np = {}; l.forEach(function (m) { if (m.id !== ME.id) np[m.id] = m.data || {}; }); players = np; if (!G && !P) drawLobby(); }, function () {}); }, 400); };
+    LOBBY.onPresence(function (a, id, d) { if (id === ME.id) return; if (a === 'leave' || a === 'absent') delete players[id]; else players[id] = d || {}; if (!G && !P) drawLobby(); sync(); });
+    RT.onUp(function () { LOBBY.update(myStatus()); sync(); });   // back online: show me again and read the list again
+    setInterval(sync, 10000);
+    document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible') { RT.wake(); LOBBY.update(myStatus()); sync(); } });
+    addEventListener('online', function () { RT.wake(); sync(); });
     LOBBY.enter(myStatus()).then(function () { return LOBBY.members(); }).then(function (l) { l.forEach(function (m) { if (m.id !== ME.id) players[m.id] = m.data || {}; }); if (!G) drawLobby(); });
     INBOX.sub(onInbox);
     drawLobby();
@@ -290,7 +301,7 @@
     G = { gid: o.gid, game: o.game, opp: o.opp, oname: o.oname || 'Opponent', mine: o.first === ME.id ? 0 : 1, over: false, seq: 0, ch: RT.channel('arena:g:' + o.gid), extra: o.extra, away: null };
     LOBBY.update(myStatus());
     var thisCh = G.ch;
-    thisCh.sub(function (n, d, from) { if (!G || G.ch !== thisCh || from !== G.opp) return; onGame(n, d); });
+    G.seen = {}; thisCh.sub(function (n, d, from) { if (!G || G.ch !== thisCh || from !== G.opp) return; if (d && d.mid) { if (G.seen[d.mid]) return; G.seen[d.mid] = 1; } onGame(n, d); });
     thisCh.onPresence(function (a, id) {
       if (!G || G.ch !== thisCh || id !== G.opp || G.over) return;
       if (a === 'leave' || a === 'absent') { G.away = setTimeout(function () { if (G && !G.over) end('w', G.oname + ' left the game.'); }, 30000); setStatus(G.oname + ' lost the connection… waiting 30 seconds.'); }
@@ -304,7 +315,7 @@
     if (o.game === 'duel') duelTick();
   }
   function opp() { return 1 - G.mine; }
-  function send(n, d) { G.ch.pub(n, d || {}); }
+  function send(n, d) { d = d || {}; d.mid = rid(); G.ch.pub(n, d); }
   function onGame(n, d) {
     if (n === 'emo') return bubble(d.e, false);
     if (n === 'resign') return end('w', G.oname + ' resigned.');
