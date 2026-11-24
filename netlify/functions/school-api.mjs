@@ -1014,7 +1014,21 @@ export default async (req) => {
     const [students, classes] = await Promise.all([doc('students'), classesForTeacher(profile)]);
     const list = students.filter(s => !/withdrawn|finished/i.test(s.status || '') && (profile.role === 'admin' || classes.some(c => inClass(c, s))));
     const { overview } = await import('../lib/studyact.mjs'), ov = await overview(list.map(s => s.uid).filter(Boolean));
-    return json({ rows: list.map(s => ({ sid: s.id, name: `${s.first || ''} ${s.last || ''}`.trim(), level: s.level || '', classes: classes.filter(c => inClass(c, s)).map(c => c.label || c.name || '').filter(Boolean), registered: !!s.uid, ...(s.uid ? ov[s.uid] || {} : {}) })) });
+    const rows = list.map(s => ({ sid: s.id, name: `${s.first || ''} ${s.last || ''}`.trim(), level: s.level || '', classes: classes.filter(c => inClass(c, s)).map(c => c.label || c.name || '').filter(Boolean), registered: !!s.uid, ...(s.uid ? ov[s.uid] || {} : {}) }));
+    /* Director, 24 Nov 2026: "show me everyone who is busy using the app", not only IF Academy students. For the director
+       and the manager, every other account that has used IF App in the last 28 days is added: individual students whose
+       account is not linked to a school record, and app users with no class. Staff accounts are left out. */
+    if (profile.role === 'admin') {
+      const linked = new Set(students.map(s => s.uid).filter(Boolean)), dir = (await U().get('directory', { type: 'json' })) || {};
+      const others = Object.keys(dir).filter(uid => !linked.has(uid) && !/admin|teacher|staff/.test(dir[uid].role || ''));
+      const ov2 = await overview(others), today = Date.now();
+      for (const uid of others) {
+        const o = ov2[uid]; if (!o || !o.last || today - Date.parse(o.last) > 28 * 864e5) continue;
+        const d = dir[uid], tr = d.track === 'private' ? 'Individual student' : d.track === 'if' ? 'IF Academy account (not linked to a school record)' : d.track === 'alumni' ? 'Former student' : 'App user (no class)';
+        rows.push({ uid, name: d.name || d.email || 'No name', level: '', classes: [tr], registered: true, app: true, ...o });
+      }
+    }
+    return json({ rows });
   }
   // a private link to one student's report, to send to the parents (works for 90 days)
   const tsh = path.match(/^teach\/student\/([A-Za-z0-9-]+)\/share$/);
