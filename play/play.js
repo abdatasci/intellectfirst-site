@@ -9,6 +9,7 @@
   try { speak = localStorage.getItem('arena.speak') === '1'; } catch (e) {}
   var GAMES = {
     chess: { t: 'Chess', i: '♟️', d: 'A full game of chess. Every move is shown in English.' },
+    qchess: { t: 'Chess + English', i: '♟️', d: 'Answer an English question before each move. A wrong answer loses your turn.' },
     c4: { t: 'Connect Four', i: '🔴', d: 'Drop your discs. Four in a row wins.' },
     duel: { t: 'Word Duel', i: '⚡', d: '10 vocabulary questions at your level. Faster correct answers score more.' }
   };
@@ -147,7 +148,7 @@
       '<b style="display:block;margin:10px 0 6px">IF Live games</b><div class="pmodes">' + PMODES.map(function (m) { return '<button class="opt" data-g="live:' + m[0] + '"><span style="font-size:24px">' + m[1] + '</span><span><b>' + m[2] + '</b><small>' + m[3] + '</small></span></button>'; }).join('') + '</div>' +
       '<label id="lvw" hidden>Level<select id="lv">' + LEVELS.map(function (l) { return '<option value="' + l[0] + '"' + (ME.level && l[1].indexOf(ME.level) === 0 ? ' selected' : '') + '>' + l[1] + '</option>'; }).join('') + '</select></label>' +
       '<div class="row"><button class="btn gold" id="send">Send challenge</button><button class="btn" id="cx">Cancel</button></div>');
-    $$('.opt', s).forEach(function (b) { b.onclick = function () { pick = b.dataset.g; $$('.opt', s).forEach(function (x) { x.classList.toggle('on', x === b); }); $('#lvw', s).hidden = pick !== 'duel' && !/^live:/.test(pick); }; });
+    $$('.opt', s).forEach(function (b) { b.onclick = function () { pick = b.dataset.g; $$('.opt', s).forEach(function (x) { x.classList.toggle('on', x === b); }); $('#lvw', s).hidden = pick !== 'duel' && pick !== 'qchess' && !/^live:/.test(pick); }; });
     $('#cx', s).onclick = function () { s.remove(); };
     $('#send', s).onclick = function () { var lv = $('#lv', s).value; s.remove();
       if (/^live:/.test(pick)) { var L5 = { 'v-A1': 'A1', 'v-A2': 'A2', 'v-B1': 'B1', 'v-B2': 'B2', 'v-C1': 'C1', 'v-Flyers': 'A2', 'v-PET': 'B1', 'v-IELTS': 'C1' }; return startParty({ mode: pick.slice(5), level: L5[lv] || 'B1', mins: 5 }, [id]); }
@@ -165,7 +166,7 @@
       toast('<b>Waiting for ' + esc(p.name || 'the player') + '…</b><span class="muted">' + GAMES[game].t + '</span><div class="row"><button class="btn sm" id="tcx">Cancel</button></div>');
       $('#tcx').onclick = function () { inbox(id).pub('cancel', { gid: gid }); cancelInvite(); };
     };
-    if (game === 'duel') duelQuestions(lv).then(function (qs) { if (!qs.length) return flash('Could not load the questions.'); go({ lv: lv, qs: qs }); });
+    if (game === 'duel' || game === 'qchess') duelQuestions(lv, game === 'qchess' ? 120 : 10).then(function (qs) { if (!qs.length) return flash('Could not load the questions.'); go({ lv: lv, qs: qs }); });
     else go();
   }
   function cancelInvite(msg) { if (pending) clearTimeout(pending.t); pending = null; toast(null); if (msg) flash(msg); }
@@ -298,7 +299,7 @@
 
   /* ---------- a game ---------- */
   function begin(o) {
-    G = { gid: o.gid, game: o.game, opp: o.opp, oname: o.oname || 'Opponent', mine: o.first === ME.id ? 0 : 1, over: false, seq: 0, ch: RT.channel('arena:g:' + o.gid), extra: o.extra, away: null };
+    G = { gid: o.gid, game: o.game === 'qchess' ? 'chess' : o.game, q: o.game === 'qchess', opp: o.opp, oname: o.oname || 'Opponent', mine: o.first === ME.id ? 0 : 1, over: false, seq: 0, ch: RT.channel('arena:g:' + o.gid), extra: o.extra, away: null };
     LOBBY.update(myStatus());
     var thisCh = G.ch;
     G.seen = {}; thisCh.sub(function (n, d, from) { if (!G || G.ch !== thisCh || from !== G.opp) return; if (d && d.mid) { if (G.seen[d.mid]) return; G.seen[d.mid] = 1; } onGame(n, d); });
@@ -308,7 +309,7 @@
       if ((a === 'enter' || a === 'present') && G.away) { clearTimeout(G.away); G.away = null; redraw(); }
     });
     G.ch.enter({ name: ME.name });
-    if (o.game === 'chess') { G.chess = new Chess(); G.sel = null; G.last = null; G.log = []; }
+    if (G.game === 'chess') { G.chess = new Chess(); G.sel = null; G.last = null; G.log = []; G.qi = G.mine; G.ok = false; G.qmsg = ''; }
     if (o.game === 'c4') { G.cells = []; for (var i = 0; i < 42; i++) G.cells.push(0); G.turn = 0; G.win = null; }
     if (o.game === 'duel') { G.qs = o.extra.qs; G.i = 0; G.pts = [0, 0]; G.done = [0, 0]; G.right = [0, 0]; G.started = Date.now() + 3000; }
     redraw();
@@ -324,6 +325,7 @@
     if (n === 'drawno') return flash(G.oname + ' wants to keep playing.');
     if (n === 'bye') return G.over ? flash(G.oname + ' went back to the lobby.') : end('w', G.oname + ' left the game.');
     if (n === 'again' && G.over) { if (G.wantAgain) return rematch(true); G.oppAgain = true; return setStatus(G.oname + ' wants a rematch!'); }
+    if (G.game === 'chess' && n === 'skip') { if (skipTurn()) { G.log.push(G.oname + ' answered wrongly and lost the turn.'); say(G.oname + ' lost the turn.'); drawChess(); } return; }
     if (G.game === 'chess' && n === 'mv') { var m = G.chess.move({ from: d.from, to: d.to, promotion: d.p || 'q' }); if (m) afterChess(m, false); }
     if (G.game === 'c4' && n === 'drop') { drop(d.c, opp()); }
     if (G.game === 'duel' && n === 'ans') { G.pts[opp()] = d.pts; G.done[opp()] = d.done; G.right[opp()] = d.right; drawDuelScore(); duelCheckEnd(); }
@@ -362,7 +364,7 @@
   }
   function rematch(theyAsked) {
     if (theyAsked) return;   // the player who presses second creates the new game for both
-    var o = { gid: rid(), game: G.game, first: G.mine === 0 ? G.opp : ME.id, extra: G.extra }, oppId = G.opp, oname = G.oname, ch = G.ch;
+    var o = { gid: rid(), game: G.q ? 'qchess' : G.game, first: G.mine === 0 ? G.opp : ME.id, extra: G.extra }, oppId = G.opp, oname = G.oname, ch = G.ch;
     var go = function () { ch.pub('re', o).then(function () { closeGame(); begin({ gid: o.gid, game: o.game, opp: oppId, oname: oname, first: o.first, extra: o.extra }); }); };
     if (G.game === 'duel') duelQuestions(G.extra.lv).then(function (qs) { o.extra = { lv: G.extra.lv, qs: qs }; go(); }); else go();
   }
@@ -389,15 +391,31 @@
       board += '<button class="sq ' + cls + '" data-sq="' + sq + '" aria-label="' + sq + (p ? ' ' + (p.color === 'w' ? 'white ' : 'black ') + NAME[p.type] : '') + '">' + (p ? '<span class="pc ' + p.color + '">' + GLYPH[p.type] + '</span>' : '') + (legal[sq] ? '<span class="hint ' + (legal[sq] === 'cap' ? 'cap' : '') + '"></span>' : '') +
         (f === 0 ? '<span class="co r">' + (rr + 1) + '</span>' : '') + (r === 7 ? '<span class="co f">' + files[ff] + '</span>' : '') + '</button>';
     }
-    var myTurn = (c.turn() === 'w') === (G.mine === 0);
-    V.innerHTML = head() + '<div class="layout"><div><div class="board" id="board">' + board + '</div><div id="promo"></div></div><div class="panel"><div class="status" id="status">' + esc(G.over ? G.msg : (myTurn ? 'Your move' : G.oname + ' is thinking…') + (c.in_check() && !G.over ? ' · Check!' : '')) + '</div>' +
+    var myTurn = (c.turn() === 'w') === (G.mine === 0), ask = G.q && myTurn && !G.over && !G.ok, Q = ask ? G.extra.qs[G.qi % G.extra.qs.length] : null;
+    var qbox = !G.q || G.over ? '' : ask ? '<div class="qbox"><p class="muted" style="margin:0 0 6px">Answer to move' + (c.in_check() ? ' (you are in check: you move anyway)' : '') + '</p><b>' + esc(Q.p) + '</b><div class="qopts">' + Q.o.map(function (x, i) { return '<button class="btn sm" data-qa="' + i + '">' + esc(x) + '</button>'; }).join('') + '</div></div>'
+      : G.qmsg ? '<div class="qbox"><b>' + esc(G.qmsg) + '</b></div>' : '';
+    V.innerHTML = head() + '<div class="layout"><div><div class="board" id="board">' + board + '</div><div id="promo"></div></div><div class="panel"><div class="status" id="status">' + esc(G.over ? G.msg : (myTurn ? (ask ? 'Your turn: answer the question first' : 'Your move') : G.oname + ' is thinking…') + (c.in_check() && !G.over ? ' · Check!' : '')) + '</div>' + qbox +
       '<div class="moves" id="moves">' + (G.log.length ? G.log.map(function (t, i) { return '<div><span>' + (i + 1) + '.</span><span>' + esc(t) + '</span></div>'; }).join('') : '<p class="muted">White moves first. Tap a piece, then tap where it goes.</p>') + '</div><div style="margin-top:12px">' + tools() + '</div></div></div>';
     var mv = $('#moves'); if (mv) mv.scrollTop = mv.scrollHeight;
     wire();
     $$('.sq').forEach(function (b) { b.onclick = function () { chessTap(b.dataset.sq); }; });
+    $$('[data-qa]').forEach(function (b) { b.onclick = function () { answerQ(+b.dataset.qa, Q); }; });
+  }
+  /* Chess + English (director, 24 Nov 2026): before each move the player answers a vocabulary question at the chosen level.
+     Right: they move. Wrong: they lose the turn, unless they are in check (a turn cannot be passed in check). */
+  function answerQ(i, Q) {
+    if (!G || G.ok || G.over) return;
+    G.qi += 2; var right = Q.o[Q.a];
+    if (i === Q.a) { G.ok = true; G.qmsg = '✅ Correct! Make your move.'; return drawChess(); }
+    if (G.chess.in_check()) { G.ok = true; G.qmsg = '❌ The answer was “' + right + '”. You are in check, so you still move.'; return drawChess(); }
+    G.qmsg = '❌ The answer was “' + right + '”. You lose this turn.'; send('skip', {}); skipTurn(); G.log.push('You answered wrongly and lost the turn.'); drawChess();
+  }
+  function skipTurn() {   // pass the move to the other side (no en passant after a pass)
+    var f = G.chess.fen().split(' '); f[1] = f[1] === 'w' ? 'b' : 'w'; f[3] = '-';
+    return G.chess.load(f.join(' '));
   }
   function chessTap(sq) {
-    var c = G.chess; if (G.over || (c.turn() === 'w') !== (G.mine === 0)) return;
+    var c = G.chess; if (G.over || (c.turn() === 'w') !== (G.mine === 0) || (G.q && !G.ok)) return;
     var p = c.get(sq), mineColor = G.mine === 0 ? 'w' : 'b';
     if (G.sel) {
       var opts = c.moves({ square: G.sel, verbose: true }).filter(function (m) { return m.to === sq; });
@@ -413,7 +431,7 @@
     el.innerHTML = '<p class="center muted" style="margin:10px 0 6px">Your pawn becomes…</p><div class="promo">' + ['q', 'r', 'b', 'n'].map(function (t) { return '<button data-p="' + t + '" aria-label="' + NAME[t] + '"><span class="pc ' + col + '">' + GLYPH[t] + '</span></button>'; }).join('') + '</div>';
     $$('[data-p]', el).forEach(function (b) { b.onclick = function () { myMove(from, to, b.dataset.p); }; });
   }
-  function myMove(from, to, pr) { var m = G.chess.move({ from: from, to: to, promotion: pr || 'q' }); if (!m) return; send('mv', { from: from, to: to, p: pr || 'q' }); afterChess(m, true); }
+  function myMove(from, to, pr) { var m = G.chess.move({ from: from, to: to, promotion: pr || 'q' }); if (!m) return; G.ok = false; G.qmsg = ''; send('mv', { from: from, to: to, p: pr || 'q' }); afterChess(m, true); }
   function afterChess(m, mine) {
     var c = G.chess, t = english(m, mine ? 'You' : G.oname); G.sel = null; G.last = { from: m.from, to: m.to }; G.log.push(t); say(t);
     if (c.in_checkmate()) return end(mine ? 'w' : 'l', 'Checkmate.');
@@ -456,12 +474,12 @@
 
   /* ---------- word duel ---------- */
   var BANKS = null;
-  function duelQuestions(lv) {
+  function duelQuestions(lv, n) {
     return (BANKS ? Promise.resolve(BANKS) : fetch('/live/banks.json').then(function (r) { return r.json(); }).then(function (d) { BANKS = d.banks || []; return BANKS; })).then(function (banks) {
       var b = banks.filter(function (x) { return x.id === lv; })[0]; if (!b) return [];
       var words = [], seen = {}; b.units.forEach(function (u) { (u.w || []).forEach(function (w) { if (w[1] && !seen[w[0]]) { seen[w[0]] = 1; words.push(w); } }); });
       var sh = function (a) { a = a.slice(); for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)), t = a[i]; a[i] = a[j]; a[j] = t; } return a; };
-      return sh(words).slice(0, 10).map(function (w) { var o = sh([w].concat(sh(words.filter(function (x) { return x !== w; })).slice(0, 3))).map(function (x) { return x[0]; }); return { p: w[1], o: o, a: o.indexOf(w[0]) }; });
+      return sh(words).slice(0, n || 10).map(function (w) { var o = sh([w].concat(sh(words.filter(function (x) { return x !== w; })).slice(0, 3))).map(function (x) { return x[0]; }); return { p: w[1], o: o, a: o.indexOf(w[0]) }; });
     }).catch(function () { return []; });
   }
   var DUEL_SECS = 12;
