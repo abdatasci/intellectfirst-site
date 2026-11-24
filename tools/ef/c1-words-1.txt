@@ -31,7 +31,7 @@ a perk | A company car is one of the perks of the job. | a perk of the job | Fre
 freelance | I went freelance so as to have more control over my time. | go freelance | He went freelance last year.
 resign | He resigned due to a disagreement with the board. | resign from + post | She resigned from the committee.
 be laid off | Two hundred workers were laid off as a result of the merger. | be laid off | I was laid off in January.
-networking | Networking is tiring, but consequently I've found two clients. | a networking + event | I went to a networking event.
+networking | Networking is tiring, but it has already brought me two new clients. | a networking + event | I went to a networking event.
 cold-calling | Cold-calling is unpleasant; even so, it sometimes works. | do cold-calling | Nobody likes doing cold-calling.
 @2A
 childhood | I spent my childhood in a village that no longer exists. | a happy childhood | She had a happy childhood.

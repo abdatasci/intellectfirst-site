@@ -7,7 +7,8 @@
 // Store "arena": s/<uid> {name, w, d, l, r}   (r = rating, starts at 1000)
 import { getStore } from '@netlify/blobs';
 import { tgAccount } from '../lib/tgauth.mjs';
-import { getUser, refreshSession } from '@netlify/identity';
+import { getUser } from '@netlify/identity';
+import { refreshSession } from '../lib/refresh.mjs';   // never deletes the sign-in cookies (parallel requests)
 import { createHmac, randomBytes } from 'node:crypto';
 
 const A = () => getStore({ name: 'arena', consistency: 'strong' });

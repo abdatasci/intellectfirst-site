@@ -63,7 +63,7 @@
          A0 to B1   the class coursebook (or the English Files book of the level) + General English of the level
          B2         the same for B2, plus IELTS
          C1 and C2  both levels, plus IELTS
-         IELTS      IELTS, plus the B2, C1 and C2 materials
+         IELTS      IELTS, plus General English B2, C1 and C2 (no English Files books: 24 Nov 2026)
        An individual student whose level is not known keeps every level, as before. */
     var isI = out.indexOf('ielts') >= 0 && (!lv || /^(B2|C1|C2)$/.test(lv)), ge = function (l) { add('ge:' + (l === 'A0' ? 'A1' : l)); };
     if (cls.some(indiv) && !lv && !isI) {
@@ -80,7 +80,9 @@
       if (lv === 'B2') add('ielts');
       if (lv === 'C1' || lv === 'C2') { ge('C1'); ge('C2'); add('book:ef-c1'); add('book:ef-c2'); add('ielts'); }
     }
-    if (isI) ['B2', 'C1', 'C2'].forEach(function (l) { ge(l); add('book:' + PRIMARY[l]); });
+    /* Director's rule, 24 Nov 2026: an IELTS class does not get the English Files books (they belong to General English);
+       it gets IELTS and General English B2, C1 and C2. A coursebook set for the class that is not English Files is kept. */
+    if (isI) { ['B2', 'C1', 'C2'].forEach(function (l) { ge(l); }); out = out.filter(function (k) { return !/^book:ef-/.test(k); }); }
     return out.length ? out : null;
   }
   /* Test centres a student may see, by study key */

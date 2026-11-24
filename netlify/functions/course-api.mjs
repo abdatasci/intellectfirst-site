@@ -6,7 +6,8 @@
 // Store "courses": <cid>/videos {lessonId: youtubeId}, <cid>/p/<uid> {done: {lessonId: ts}, quiz: {unit: score}},
 // <cid>/sub/<uid>/<unit> {text, words, at, feedback?, by?}, <cid>/subs (index for teachers).
 import { getStore } from '@netlify/blobs';
-import { getUser, refreshSession } from '@netlify/identity';
+import { getUser } from '@netlify/identity';
+import { refreshSession } from '../lib/refresh.mjs';   // never deletes the sign-in cookies (parallel requests)
 import { tgAccount } from '../lib/tgauth.mjs';
 import { tier } from '../lib/access.mjs';
 

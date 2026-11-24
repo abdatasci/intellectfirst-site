@@ -6,7 +6,8 @@
 // Content lives in netlify/lib/ef/<book>.json (built by tools/build-ef.mjs); it is never shipped to the browser as a static file.
 // Store "ielts": ef/cover/<classId> → { <book>: { <unit>: { at, by } } }
 import { getStore } from '@netlify/blobs';
-import { getUser, refreshSession } from '@netlify/identity';
+import { getUser } from '@netlify/identity';
+import { refreshSession } from '../lib/refresh.mjs';   // never deletes the sign-in cookies (parallel requests)
 import { tgAccount } from '../lib/tgauth.mjs';
 import { tier } from '../lib/access.mjs';
 import { doc, inClass } from '../lib/bot-core.mjs';

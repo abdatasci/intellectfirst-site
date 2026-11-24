@@ -6,7 +6,8 @@
 //   POST /api/assistant/telegram/link   → {url}          (one-time deep link, 30 minutes)
 //   DELETE /api/assistant/telegram      → unlink
 //   admin: GET bot/status, POST bot/setup, GET bot/preview, POST bot/test
-import { getUser, refreshSession } from '@netlify/identity';
+import { getUser } from '@netlify/identity';
+import { refreshSession } from '../lib/refresh.mjs';   // never deletes the sign-in cookies (parallel requests)
 import { tgAccount } from '../lib/tgauth.mjs';
 import Anthropic from '@anthropic-ai/sdk';
 import { waReady, waSend, waState, waNumber } from '../lib/whatsapp.mjs';

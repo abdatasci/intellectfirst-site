@@ -8,7 +8,8 @@ import { DEV_COOKIE, qrLookup, tgAccount, claimQr, pendingQr } from '../lib/tgau
 import { readFile } from 'node:fs/promises';
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import { join } from 'node:path';
-import { getUser, refreshSession, admin as idAdmin } from '@netlify/identity';
+import { getUser, admin as idAdmin } from '@netlify/identity';
+import { refreshSession } from '../lib/refresh.mjs';   // never deletes the sign-in cookies (parallel requests)
 import { roleForCode, isStaff, lockKeysFromCode, verifyLockKeys, isPrivateCode } from '../lib/codes.mjs';
 import { listReceipts, decideReceipt, receiptFile, cashInfo, cashClaim } from '../lib/receipts.mjs';
 import { kaspiInfo, createInvoice } from '../lib/kaspi.mjs';
@@ -640,6 +641,10 @@ export default async (req) => {
   }
   if (path === 'app/progress') { const r = await appProgress(uid, method, req); if (r) return r; }
   // what the IF App reports about study time and finished items (for the student's teachers and parents)
+  if (path === 'app/qreport' && method === 'POST') {   // "Report this question" in a lesson: tells the administrators
+    let b; try { b = JSON.parse((await req.text()).slice(0, 4000)); } catch { return fail(400, 'bad'); }
+    const { reportQuestion } = await import('../lib/qreport.mjs'); return json(await reportQuestion(uid, profile, b));
+  }
   if (path === 'app/activity' && method === 'POST') {
     const raw = await req.text(); if (raw.length > 20000) return fail(413, 'big');
     let b; try { b = JSON.parse(raw); } catch { return fail(400, 'bad'); }
@@ -674,6 +679,7 @@ export default async (req) => {
     const b = await req.json().catch(() => ({}));
     for (const k of ['name', 'phone', 'about', 'goals', 'birth', 'parent', 'parentPhone', 'city']) if (k in b) profile[k] = str(b[k], k === 'about' || k === 'goals' ? 600 : 120);
     if (Array.isArray(b.study)) profile.study = cleanStudy(b.study);
+    if (typeof b.level === 'string' && /^(A0|A1|A2|B1|B2|C1|C2)$/.test(b.level)) profile.level = b.level;   // the English level chosen in IF App (24 Nov 2026)
     if (Array.isArray(b.hide)) profile.hide = [...new Set(b.hide.map(x => String(x || '').trim()).filter(x => STUDY.test(x)))].slice(0, 12);   // materials the student switched off in IF App
     // teachers' professional profile
     if (isStaff(profile.role)) for (const k of ['education', 'experience', 'skillsHard', 'skillsSoft', 'hobbies']) if (k in b) profile[k] = String(b[k] == null ? '' : b[k]).slice(0, 3000);
@@ -1009,7 +1015,21 @@ export default async (req) => {
     const [students, classes] = await Promise.all([doc('students'), classesForTeacher(profile)]);
     const list = students.filter(s => !/withdrawn|finished/i.test(s.status || '') && (profile.role === 'admin' || classes.some(c => inClass(c, s))));
     const { overview } = await import('../lib/studyact.mjs'), ov = await overview(list.map(s => s.uid).filter(Boolean));
-    return json({ rows: list.map(s => ({ sid: s.id, name: `${s.first || ''} ${s.last || ''}`.trim(), level: s.level || '', classes: classes.filter(c => inClass(c, s)).map(c => c.label || c.name || '').filter(Boolean), registered: !!s.uid, ...(s.uid ? ov[s.uid] || {} : {}) })) });
+    const rows = list.map(s => ({ sid: s.id, name: `${s.first || ''} ${s.last || ''}`.trim(), level: s.level || '', classes: classes.filter(c => inClass(c, s)).map(c => c.label || c.name || '').filter(Boolean), registered: !!s.uid, ...(s.uid ? ov[s.uid] || {} : {}) }));
+    /* Director, 24 Nov 2026: "show me everyone who is busy using the app", not only IF Academy students. For the director
+       and the manager, every other account that has used IF App in the last 28 days is added: individual students whose
+       account is not linked to a school record, and app users with no class. Staff accounts are left out. */
+    if (profile.role === 'admin') {
+      const linked = new Set(students.map(s => s.uid).filter(Boolean)), dir = (await U().get('directory', { type: 'json' })) || {};
+      const others = Object.keys(dir).filter(uid => !linked.has(uid) && !/admin|teacher|staff/.test(dir[uid].role || ''));
+      const ov2 = await overview(others), today = Date.now();
+      for (const uid of others) {
+        const o = ov2[uid]; if (!o || !o.last || today - Date.parse(o.last) > 28 * 864e5) continue;
+        const d = dir[uid], tr = d.track === 'private' ? 'Individual student' : d.track === 'if' ? 'IF Academy account (not linked to a school record)' : d.track === 'alumni' ? 'Former student' : 'App user (no class)';
+        rows.push({ uid, name: d.name || d.email || 'No name', level: '', classes: [tr], registered: true, app: true, ...o });
+      }
+    }
+    return json({ rows });
   }
   // a private link to one student's report, to send to the parents (works for 90 days)
   const tsh = path.match(/^teach\/student\/([A-Za-z0-9-]+)\/share$/);

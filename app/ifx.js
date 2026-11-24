@@ -567,7 +567,7 @@
       var x = pool[i % pool.length], o = three(x);
       if (i < 4) return { t: 'mc', q: 'Which word or phrase means: “' + x.d + '”?', o: o.map(function (y) { return y.w; }), a: o.indexOf(x), say: x.w };
       if (i < 7) return { t: 'mc', q: 'What does “' + x.w + '” mean?', o: o.map(function (y) { return y.d; }), a: o.indexOf(x), say: x.w };
-      if (i === 7) return { t: 'match', p: shuffle(u.words).slice(0, 4).map(function (y) { return [y.w, y.ru || y.d]; }) };
+      if (i === 7) return { t: 'match', p: shuffle(u.words).slice(0, 4).map(function (y) { return [y.w, mside(y)]; }) };
       var gx = g && g.ex && g.ex.length ? shuffle(g.ex)[0] : null; return gx || { t: 'mc', q: 'What does “' + x.w + '” mean?', o: o.map(function (y) { return y.d; }), a: o.indexOf(x), say: x.w };
     };
     return [0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(function (i) { return function () { return item(i); }; });
@@ -577,6 +577,8 @@
   var ruLevel = function () { return !!(L && L.c && /^(PA1|A0|A1|A2)/.test(L.c.level || '')); };
   var RUQ = [[/^Complete the sentence\.$/, 'Дополните предложение.'], [/^Put the words in order\.$/, 'Расставьте слова по порядку.'], [/^Match the pairs\.$/, 'Соедините пары.'], [/^Say it aloud\.?/, 'Скажите это вслух.'], [/^Listen and choose\.$/, 'Послушайте и выберите.'], [/^What is it\?$/, 'Что это?'], [/^Find the (.+)\.$/, 'Найдите: $1.'], [/^What does “(.+)” mean\?$/, 'Что означает «$1»?'], [/^Which word or phrase means: “(.+)”\?$/, 'Какое слово или фраза подходит к этому значению?'], [/^True or false\?$/i, 'Верно или неверно?']];
   function ruOf(s) { for (var i = 0; i < RUQ.length; i++) if (RUQ[i][0].test(s)) return String(s).replace(RUQ[i][0], RUQ[i][1]); return ''; }
+  // the right-hand side of a matching exercise: Russian where it helps, the English definition in IELTS (no translation activities)
+  function mside(y) { return (APP === 'ielts' || (L && L.c && /^ielts/.test(L.c.id))) ? (y.d || y.ru) : (y.ru || y.d); }
   function ruChip(text) { return text ? '<p class="ru-tap"><button class="chip" data-ru="' + esc(text) + '">🇷🇺 Show Russian</button></p>' : ''; }
   function bindRu() { $$('[data-ru]').forEach(function (b) { b.onclick = function () { var p = b.parentNode; p.innerHTML = '<span class="ru-shown">🇷🇺 ' + esc(b.dataset.ru).replace(/\n/g, '<br>') + '</span>'; }; }); }
   function ruHint(e) {
@@ -882,6 +884,17 @@
       return;
     }
     var sel = (S.study || []).slice(), kid = S.who === 'child';
+    /* Director, 24 Nov 2026: a learner first chooses their English level, and the app gives them that level's courses
+       and materials (General English + the English Files book of the level). "Choose courses myself" keeps the old picker. */
+    if (!kid && !vOnboard.custom && window.IFClass) {
+      var LV7 = [['A0', 'Beginner'], ['A1', 'Elementary'], ['A2', 'Pre-intermediate'], ['B1', 'Intermediate'], ['B2', 'Upper-intermediate'], ['C1', 'Advanced'], ['C2', 'Proficiency']];
+      view().innerHTML = '<div class="onb lvpage"><p class="h-eyebrow">Step 2 of 2</p><h1>What is your English level?</h1><p class="lead">We will give you the courses and materials of your level. You can change it any time.</p><div class="lvgrid">' +
+        LV7.map(function (l) { return '<button class="lvb" data-lv="' + l[0] + '"><b>' + l[0] + '</b><span>' + l[1] + '</span></button>'; }).join('') + '</div>' +
+        '<p style="margin-top:22px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap"><a class="btn ghost" href="/a/placement-test/index.html">🧭 Not sure? Free placement test</a><button class="btn ghost" id="own">Choose courses myself</button></p></div>';
+      $$('[data-lv]').forEach(function (b) { b.onclick = function () { var k = IFClass.forLevel(b.dataset.lv).filter(function (x) { return x !== 'ielts' && SNAME[x]; }); S.study = k; S.active = k[0]; save(); saveStudy(k); if (ME && ME.profile) fetch('/api/school/profile', { method: 'PUT', credentials: 'same-origin', headers: hdrs({ 'Content-Type': 'application/json' }), body: JSON.stringify({ level: b.dataset.lv }) }).catch(function () {}); go('#/'); }; });
+      $('#own').onclick = function () { vOnboard.custom = true; vOnboard('pick'); };
+      return;
+    }
     view().innerHTML = '<div class="onb" style="text-align:left"><p class="h-eyebrow" style="text-align:center">Step 2 of 2</p><h1 style="text-align:center">' + (kid ? 'What should your child study?' : 'What do you want to study?') + '</h1><p class="lead" style="text-align:center">Choose up to <b>3 courses</b> and up to <b>2 coursebooks</b>. You can change them any time.</p><div class="study-pick">' + pickerHTML(sel, kid) + '</div>' +
       '<p style="text-align:center;margin-top:22px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap"><a class="btn ghost" href="/a/placement-test/index.html">🧭 Not sure? Placement test</a><button class="btn gold" id="ok">Save →</button></p></div>';
     $$('[data-s]').forEach(function (b) { b.onclick = function () { var k = b.dataset.s, i = sel.indexOf(k), book = /^book:/.test(k);
@@ -936,6 +949,7 @@
     var nextLv = P.level ? LEVELS[LEVELS.indexOf(P.level) + 1] : null;
     var html = tasterHTML() + trialHTML() + '<div class="page-h"><div><p class="h-eyebrow">' + (S.teacher ? '👩‍🏫 Teacher' : S.who === 'child' ? '🧸 Young learner' : 'IF App') + '</p><h1>' + (a.name ? 'Hi, ' + esc(a.name.split(' ')[0]) + '!' : 'Welcome to IF App') + '</h1></div><a class="chip" href="#/onboard">✎ My courses</a></div>' +
       (keys.length ? '<div class="chips mycourses">' + keys.map(function (k) { return '<button class="chip' + (k === act ? ' on' : '') + '" data-a="' + k + '">' + SICON[k] + ' ' + esc(SNAME[k]) + '</button>'; }).join('') + '</div>' : '') +
+      (S.teacher ? '' : myCoursesHTML()) +
       '<div class="hello"><div class="plan">' + (main ? '<p class="h-eyebrow" style="color:var(--gold2)">' + esc(t('yourPlan')) + '</p><h2>' + (nx ? esc(nx.l.title) : 'Course complete! 🎉') + '</h2><p>' + esc(main.title) + (nx ? ' · ' + esc(t('unit')) + ' ' + (nx.ui + 1) + ': ' + esc(nx.u.title) : '') + '</p>' +
         (nx ? '<a class="btn gold" href="#/lesson/' + main.id + '/' + nx.u.id + '/' + nx.l.id + '">' + (st.d ? t('cont') : t('start')) + ' →</a>' : '<a class="btn gold" href="#/courses">Next course →</a>')
         : '<p class="h-eyebrow" style="color:var(--gold2)">' + esc(t('yourPlan')) + '</p><h2>' + esc(P.name || '') + '</h2><p>' + (P.voc ? 'Start with the vocabulary course, then play and test yourself.' : 'Choose a course.') + '</p>' + (P.voc ? '<a class="btn gold" href="' + '#/play/' + P.voc.id + '">' + esc(P.voc.t) + ' →</a>' : '<a class="btn gold" href="#/courses">Courses →</a>')) +
@@ -950,11 +964,17 @@
         step(3, P.game ? { href: '#/play/' + P.game.id, t: P.game.t, d: 'Play to review' } : null, 'Game') +
       '</div>' +
       (S.teacher || a.teacher ? teacherBox(a) : '') +
-      '<div class="sec"><h2>' + esc(t('forYou')) + '</h2><a href="#/courses">' + esc(t('all')) + ' →</a></div><div class="grid">' + myCourses().slice(0, 6).map(courseCard).join('') + '</div>';
-    if (!S.teacher && addOns().length) html = '<div class="goalbar">✨ <span>Ready for more?</span>' + addOnHTML() + '</div>' + html;
+      (S.teacher ? '<div class="sec"><h2>' + esc(t('forYou')) + '</h2><a href="#/courses">' + esc(t('all')) + ' →</a></div><div class="grid">' + myCourses().slice(0, 6).map(courseCard).join('') + '</div>' : '');
+    if (!S.teacher && addOns().length) html += '<div class="goalbar" style="margin-top:18px">✨ <span>Ready for more?</span>' + addOnHTML() + '</div>';
     view().innerHTML = html;
     $$('[data-a]').forEach(function (b) { b.onclick = function () { S.active = b.dataset.a; save(); vHome(); }; });
     var ok = $('#actOk'); if (ok) ok.onclick = function (e) { e.preventDefault(); S.actSeen = 1; save(); var n = $('#actNote'); if (n) n.remove(); };
+  }
+  /* Director, 24 Nov 2026: a student's home starts with their own courses ("Students should not see all these on the
+     first page of their app as it overwhelms them"). The other IF apps are listed at the bottom, small. */
+  function myCoursesHTML() {
+    var cs = levelCourses() || myCourses(); if (!cs.length) return '';   // the same list as the Courses tab
+    return '<div class="sec"><h2>My courses</h2><a href="#/courses">' + esc(t('all')) + ' →</a></div><div class="grid">' + cs.slice(0, 6).map(courseCard).join('') + '</div>';
   }
   function step(n, x, label) {
     if (!x) return '';
@@ -1091,7 +1111,7 @@
     w.slice(0, 3).forEach(function (x) { var o = three(x); out.push({ k: 'ex', e: { t: 'picmc', q: 'Find the ' + x.w + '.', say: x.w, o: o.map(function (y) { return y.pic; }), a: o.indexOf(x) } }); });
     w.slice(3, 5).forEach(function (x) { var o = three(x); out.push({ k: 'ex', e: { t: 'mc', pic: x.pic, q: 'What is it?', o: o.map(function (y) { return y.w; }), a: o.indexOf(x), say: x.w } }); });
     w.slice(5).concat(w.slice(0, 1)).slice(0, 2).forEach(function (x) { var o = three(x); out.push({ k: 'ex', e: { t: 'picmc', q: 'Listen and choose.', listen: x.w, o: o.map(function (y) { return y.pic; }), a: o.indexOf(x) } }); });
-    out.push({ k: 'ex', e: { t: 'match', p: shuffle(words).slice(0, 4).map(function (x) { return [x.w, x.ru || x.d]; }) } });
+    out.push({ k: 'ex', e: { t: 'match', p: shuffle(words).slice(0, 4).map(function (x) { return [x.w, mside(x)]; }) } });
     return out;
   }
   /* Gap for a word in its example sentence. Handles phrases whose words change form ("remain stable" in "remained stable")
@@ -1144,7 +1164,7 @@
       if (g) out.push({ k: 'ex', e: { t: 'mc', q: g, o: o.map(function (y) { return y.w; }), a: o.indexOf(x), why: x.e } });
       else out.push({ k: 'ex', e: { t: 'mc', q: 'Which word or phrase means: “' + x.d + '”?', o: o.map(function (y) { return y.w; }), a: o.indexOf(x), say: x.w, why: x.e || '' } });
     });
-    out.push({ k: 'ex', e: { t: 'match', p: shuffle(words).slice(0, 4).map(function (x) { return [x.w, x.ru || x.d]; }) } });
+    out.push({ k: 'ex', e: { t: 'match', p: shuffle(words).slice(0, 4).map(function (x) { return [x.w, mside(x)]; }) } });
     return out;
   }
   function pTop() {
@@ -1390,6 +1410,19 @@
     $('.msg', fb).innerHTML = '<b>' + (ok ? '✓ ' + esc(t('correct')) : '✗ ' + esc(t('wrong'))) + '</b>' + (ans ? '<span>' + esc(t('answer')) + ': <b style="display:inline;font-size:inherit">' + esc(ans) + '</b></span>' : '') + (e.why ? '<span style="display:block">' + esc(e.why) + '</span>' : '');
     var ck = $('#ck'); ck.disabled = false; ck.className = 'btn ' + (ok ? 'ok' : 'bad'); ck.textContent = t('cont');
     ck.onclick = function () { fb.remove(); L.i++; drawStep(); }; setTimeout(function () { ck.focus(); }, 30);
+    /* "Report this question": the question goes straight to the administrators (account note and Telegram bot, see
+       netlify/lib/qreport.mjs) so it can be fixed. It does not change the score. Signed-in users only. */
+    var old = $('#qbad', fb); if (old) old.remove();
+    if (!it.retry && it.k === 'ex' && ME && ME.profile) {
+      var qb = document.createElement('button'); qb.id = 'qbad'; qb.className = 'btn ghost'; qb.style.cssText = 'font-size:13px;padding:8px 12px;margin-top:8px';
+      qb.textContent = '⚑ Report this question';
+      qb.onclick = function () {
+        var plain = function (x) { return String(x == null ? '' : x).replace(/<[^>]*>/g, ''); };
+        try { fetch('/api/school/app/qreport', { method: 'POST', credentials: 'same-origin', headers: hdrs({ 'Content-Type': 'application/json' }), body: JSON.stringify({ lesson: L.c.title + ' · ' + L.u.title + ' · ' + L.l.title, q: plain(e.q || (e.p && e.p.map ? e.p.map(function (y) { return y.join(' = '); }).join('; ') : e.p) || ''), right: e.o && e.a != null ? plain(e.o[e.a]) : plain(ans || '') }) }); } catch (x) {}
+        qb.disabled = true; qb.textContent = '✓ Reported. Thank you — we will check it.';
+      };
+      $('.msg', fb).appendChild(qb);
+    }
   }
   function finish() {
     var fb = $('#fb'); if (fb) fb.remove();
@@ -1661,7 +1694,9 @@
     } catch (e) {}
     setTimeout(function () { try { wireAddOns(); } catch (e) {} }, 0);
     switch (p[0]) {
-      case '': if (APP) return vAppHome(); vHome(); if ((mine().length || S.teacher) && !$('.apps3') && view().firstElementChild) view().firstElementChild.insertAdjacentHTML('afterend', appsStrip()); return;
+      case '': if (APP) return vAppHome(); vHome();
+        if ((mine().length || S.teacher) && !$('.apps3')) { if (S.teacher || access().staff) { if (view().firstElementChild) view().firstElementChild.insertAdjacentHTML('afterend', appsStrip()); } else view().insertAdjacentHTML('beforeend', appsStrip().replace('<h2>IF Academy apps</h2>', '<h2>More IF Academy apps</h2>')); }
+        return;
       case 'onboard': return vOnboard();
       case 'level': return vLevel();
       case 'courses': return vCourses(p[1]);
@@ -1680,12 +1715,12 @@
       default: return APP ? vAppHome() : vHome();
     }
   }
-  /* C1–C2 courses are English only (no Russian translations), and every teen/adult unit gets an "In context"
+  /* C1–C2 and IELTS courses are English only (no Russian translations), and every teen/adult unit gets an "In context"
      lesson: listen and choose, listen and write, which sentence is right, listen and order, then say it aloud. */
   function prepCourses() {
     COURSES.forEach(function (c) {
       if (c.daily || c.ef) return;
-      var adv = /^C/.test(c.level || '');
+      var adv = /^C/.test(c.level || '') || /^ielts/.test(c.id);   // IELTS is English only too (director, 24 Nov 2026: no translation activities)
       c.units.forEach(function (u) {
         u.lessons.forEach(function (l) { if (adv) (l.words || []).forEach(function (w) { delete w.ru; }); });
         if (c.track === 'kids' || u.lessons.some(function (l) { return l.type === 'context'; })) return;

@@ -11,7 +11,8 @@
 // Data lives in the private Blobs store "ifadmin", one document per collection (key c/<name>) holding {id: doc}.
 import { getStore } from '@netlify/blobs';
 import { tgAccount, makeQr } from '../lib/tgauth.mjs';
-import { getUser, refreshSession } from '@netlify/identity';
+import { getUser } from '@netlify/identity';
+import { refreshSession } from '../lib/refresh.mjs';   // never deletes the sign-in cookies (parallel requests)
 import enc from '../lib/ifadmin-app.json';
 import { chat, run } from '../lib/ifadmin-ai.mjs';
 import { applyTimetable } from '../lib/migrate.mjs';

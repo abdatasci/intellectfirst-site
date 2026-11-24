@@ -4,7 +4,8 @@
 //   POST /api/kart/run               { level, driver, time, rec }  saves the caller's run, returns the week's fastest
 // Open to subscribers and staff. Other players see a first name only.
 import { getStore } from '@netlify/blobs';
-import { getUser, refreshSession } from '@netlify/identity';
+import { getUser } from '@netlify/identity';
+import { refreshSession } from '../lib/refresh.mjs';   // never deletes the sign-in cookies (parallel requests)
 import { tgAccount } from '../lib/tgauth.mjs';
 import { tier } from '../lib/access.mjs';
 

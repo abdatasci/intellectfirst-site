@@ -7,7 +7,8 @@
 // Store "live": r/<PIN> room, res/<date>-<PIN> finished game summaries.
 import { getStore } from '@netlify/blobs';
 import { tgAccount } from '../lib/tgauth.mjs';
-import { getUser, refreshSession } from '@netlify/identity';
+import { getUser } from '@netlify/identity';
+import { refreshSession } from '../lib/refresh.mjs';   // never deletes the sign-in cookies (parallel requests)
 import { isStaff } from '../lib/codes.mjs';
 import { doc, hidePrivate, loadChanges } from '../lib/bot-core.mjs';
 import { createHmac, randomBytes, randomInt } from 'node:crypto';
