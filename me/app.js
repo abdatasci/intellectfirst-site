@@ -74,6 +74,21 @@
   }
   /* keep to 3 courses and 2 coursebooks */
   document.addEventListener('change', function (e) { var i = e.target; if (!i.closest || !i.closest('#study') || !i.checked || i.value === 'placement') return; var book = /^book:/.test(i.value), n = [].slice.call(document.querySelectorAll('#study input:checked')).filter(function (x) { return x.value !== 'placement' && /^book:/.test(x.value) === book; }).length; if (n > (book ? 2 : 3)) { i.checked = false; toast(book ? 'You can choose up to 2 coursebooks.' : 'You can choose up to 3 courses. Untick one first.'); } });
+  /* Registration, director's rule 24 Nov 2026: a learner first chooses their English level; the app then gives them the
+     courses and materials of that level (General English + the English Files book of the level, and the teenagers'
+     book for 12–17-year-olds at B1 or B2). Parents still choose their child's courses. */
+  var LVS = [['A0', 'Beginner', 'I am just starting'], ['A1', 'Elementary', 'Simple everyday phrases'], ['A2', 'Pre-intermediate', 'Short talks about daily life'], ['B1', 'Intermediate', 'I can manage most everyday situations'], ['B2', 'Upper-intermediate', 'I speak quite fluently'], ['C1', 'Advanced', 'Complex topics, work and study'], ['C2', 'Proficiency', 'Near-native']];
+  function levelPicker() {
+    return '<div class="lvpick" id="lvpick">' + LVS.map(function (l) { return '<label class="schip lvo"><input type="radio" name="englv" value="' + l[0] + '"><span><b>' + l[0] + ' · ' + esc(l[1]) + '</b><small style="display:block;font-weight:400;color:var(--muted)">' + esc(l[2]) + '</small></span></label>'; }).join('') +
+      '<label class="schip ns lvo"><input type="radio" name="englv" value="placement"><span>🧭 Not sure: I\'ll take the free placement test</span></label></div>';
+  }
+  function levelKeys(lv, age) {
+    if (!lv || lv === 'placement') return [];
+    var P = window.IFClass ? IFClass.forLevel(lv).filter(function (k) { return k !== 'ielts'; }) : ['ge:' + (lv === 'A0' ? 'A1' : lv)];
+    if (age >= 12 && age < 18 && (lv === 'B1' || lv === 'B2')) P.push('book:teens-' + lv.toLowerCase());
+    return P;
+  }
+  function levelValue() { var r = document.querySelector('#lvpick input:checked'); return r ? r.value : ''; }
   function studyValue() { return [].slice.call(document.querySelectorAll('#study input:checked')).map(function (i) { return i.value; }).filter(function (v) { return v !== 'placement'; }); }
   function studySummary(a) { return (a || []).map(function (k) { return STUDY_NAME[k] || k; }).join(', '); }
   /* Today's article at the student's level (from their class, or the courses chosen in their account). Young learners have none. */
@@ -212,7 +227,8 @@
       (isStaff ? '' : '<div id="parw" style="display:none"><div class="grid2"><div><label class="f">Parent / guardian</label><input class="inp" id="pn" autocomplete="off" placeholder="Name"></div><div><label class="f">Parent\'s phone</label><input class="inp" id="pp" type="tel" placeholder="+7 7__ ___ __ __"></div></div><p class="hint">For students under 18.</p></div>') +
       (isStaff ? '' : whoPicker(as === 'teacher' ? 'tutor' : as === 'parent' ? 'parent' : 'if') +
         '<div id="chw"><label class="f">Your child\'s name</label><input class="inp" id="ch" autocomplete="off" placeholder="e.g. Amina"></div>' +
-        '<div id="stw"><label class="f" id="stl">What do you want to study? <span style="font-weight:400;color:var(--muted)">Choose one or more</span></label>' + studyPicker([], as === 'parent') + '<p class="hint">You can change your courses and levels any time.</p></div>' +
+        '<div id="lvw"><label class="f">Your English level</label>' + levelPicker() + '<p class="hint">We give you the courses and materials of your level straight away. You can change your level any time in the app.</p></div>' +
+        '<div id="stw"><label class="f" id="stl">What should your child study? <span style="font-weight:400;color:var(--muted)">Choose one or more</span></label>' + studyPicker([], true) + '<p class="hint">You can change the courses any time.</p></div>' +
         '<div class="grid2">' +
         '<div id="clw"><label class="f">Your class</label><select class="inp" id="cl"><option value="">Loading…</option></select></div></div><p class="hint" id="clh">Not in a class yet? Choose “New student”.</p>') +
       '<div id="ccw"><label class="f">' + (isStaff ? 'Staff code' : 'Code <span style="font-weight:400;color:var(--muted)">(optional)</span>') + '</label><input class="inp" id="cc" name="school-code" type="text" autocomplete="off" autocapitalize="characters" autocorrect="off" spellcheck="false" data-1p-ignore data-lpignore="true"><p class="hint">' + (isStaff ? 'Given to you by the school director.' : 'From your teacher: it gives full access straight away. No code? Abdoulie confirms you after you register.') + '</p></div>' +
@@ -225,9 +241,9 @@
       if ($('#parw')) { var bd = $('#bd').value, age = bd ? (Date.now() - Date.parse(bd)) / 31557600000 : 99; $('#parw').style.display = (t !== 'parent' && t !== 'staff' && t !== 'tutor' && age < 18) ? '' : 'none'; }
       $('#clw').style.display = t === 'if' ? '' : 'none'; $('#clh').style.display = t === 'if' ? '' : 'none';
       $('#ccw').style.display = t === 'outside' || t === 'tutor' || t === 'parent' || t === 'staff' ? 'none' : '';
-      $('#stw').style.display = t === 'tutor' || t === 'staff' ? 'none' : '';
+      $('#stw').style.display = t === 'parent' ? '' : 'none';
+      $('#lvw').style.display = t === 'tutor' || t === 'staff' || t === 'parent' ? 'none' : '';
       $('#chw').style.display = t === 'parent' ? '' : 'none';
-      $('#stl').firstChild.textContent = t === 'parent' ? 'What should your child study? ' : 'What do you want to study? ';
       $('#clw').closest('.grid2').style.display = t === 'if' ? '' : 'none';
     }
     view.querySelectorAll('input[name=trk]').forEach(function (r) { r.onchange = syncWho; }); if ($('#bd')) $('#bd').addEventListener('change', syncWho); syncWho();
@@ -244,11 +260,12 @@
       if (cc && cc === pw) cc = '';   // iPhone's password AutoFill can paste the new password into the code box
       if (!name || !ph || (isStaff && !cc)) return err(f, isStaff ? 'Please fill in your name, phone number and staff code.' : 'Please fill in your name and phone number.');
       if (trk === 'outside' || trk === 'tutor' || trk === 'parent' || trk === 'staff') cc = '';
-      var study = isStaff ? [] : studyValue(), notSure = !!document.querySelector('#study input[value=placement]:checked');
-      var lv = (study.filter(function (k) { return /^(ge|be):|^yl:/.test(k); })[0] || '').replace(/^ge:|^be:/, '').replace(/^yl:(\w)/, function (_, c) { return c.toUpperCase(); }) || (notSure ? 'Not sure' : ''), cl = $('#cl') ? $('#cl').value : '';
+      var bdv = $('#bd') ? $('#bd').value : '', age = bdv ? (Date.now() - Date.parse(bdv)) / 31557600000 : 99, elv = levelValue();
+      var study = isStaff ? [] : trk === 'parent' ? studyValue() : levelKeys(elv, age), notSure = trk === 'parent' ? !!document.querySelector('#study input[value=placement]:checked') : elv === 'placement';
+      var lv = elv && elv !== 'placement' && trk !== 'parent' ? elv : (study.filter(function (k) { return /^(ge|be):|^yl:/.test(k); })[0] || '').replace(/^ge:|^be:/, '').replace(/^yl:(\w)/, function (_, c) { return c.toUpperCase(); }) || (notSure ? 'Not sure' : ''), cl = $('#cl') ? $('#cl').value : '';
       if (cl === '__pv') trk = 'private';   // "Other (individual)" in the class list: Abdoulie's own private students
       if (trk === 'alumni') cl = 'IF Alumni'; else if (trk === 'private') cl = 'Individual (Abdoulie Manneh)'; else if (trk === 'outside' || trk === 'tutor' || trk === 'parent' || trk === 'staff') cl = '';
-      if (!isStaff && trk !== 'tutor' && trk !== 'staff' && !study.length && !notSure) return err(f, trk === 'parent' ? 'Please choose what your child should study.' : 'Please choose at least one course or level.');
+      if (!isStaff && trk !== 'tutor' && trk !== 'staff' && !study.length && !notSure) return err(f, trk === 'parent' ? 'Please choose what your child should study.' : 'Please choose your English level, or “Not sure”.');
       if (trk === 'if' && !cl) return err(f, 'Please choose your class, or “New student”.');
       if (ph.replace(/\D/g, '').length < 10) return err(f, 'Please type the full phone number, for example +7 701 234 56 78.');
       if (em && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)) return err(f, 'That email does not look right. Check it, or leave it empty.');

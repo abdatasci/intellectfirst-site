@@ -884,6 +884,17 @@
       return;
     }
     var sel = (S.study || []).slice(), kid = S.who === 'child';
+    /* Director, 24 Nov 2026: a learner first chooses their English level, and the app gives them that level's courses
+       and materials (General English + the English Files book of the level). "Choose courses myself" keeps the old picker. */
+    if (!kid && !vOnboard.custom && window.IFClass) {
+      var LV7 = [['A0', 'Beginner'], ['A1', 'Elementary'], ['A2', 'Pre-intermediate'], ['B1', 'Intermediate'], ['B2', 'Upper-intermediate'], ['C1', 'Advanced'], ['C2', 'Proficiency']];
+      view().innerHTML = '<div class="onb lvpage"><p class="h-eyebrow">Step 2 of 2</p><h1>What is your English level?</h1><p class="lead">We will give you the courses and materials of your level. You can change it any time.</p><div class="lvgrid">' +
+        LV7.map(function (l) { return '<button class="lvb" data-lv="' + l[0] + '"><b>' + l[0] + '</b><span>' + l[1] + '</span></button>'; }).join('') + '</div>' +
+        '<p style="margin-top:22px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap"><a class="btn ghost" href="/a/placement-test/index.html">🧭 Not sure? Free placement test</a><button class="btn ghost" id="own">Choose courses myself</button></p></div>';
+      $$('[data-lv]').forEach(function (b) { b.onclick = function () { var k = IFClass.forLevel(b.dataset.lv).filter(function (x) { return x !== 'ielts' && SNAME[x]; }); S.study = k; S.active = k[0]; save(); saveStudy(k); if (ME && ME.profile) fetch('/api/school/profile', { method: 'PUT', credentials: 'same-origin', headers: hdrs({ 'Content-Type': 'application/json' }), body: JSON.stringify({ level: b.dataset.lv }) }).catch(function () {}); go('#/'); }; });
+      $('#own').onclick = function () { vOnboard.custom = true; vOnboard('pick'); };
+      return;
+    }
     view().innerHTML = '<div class="onb" style="text-align:left"><p class="h-eyebrow" style="text-align:center">Step 2 of 2</p><h1 style="text-align:center">' + (kid ? 'What should your child study?' : 'What do you want to study?') + '</h1><p class="lead" style="text-align:center">Choose up to <b>3 courses</b> and up to <b>2 coursebooks</b>. You can change them any time.</p><div class="study-pick">' + pickerHTML(sel, kid) + '</div>' +
       '<p style="text-align:center;margin-top:22px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap"><a class="btn ghost" href="/a/placement-test/index.html">🧭 Not sure? Placement test</a><button class="btn gold" id="ok">Save →</button></p></div>';
     $$('[data-s]').forEach(function (b) { b.onclick = function () { var k = b.dataset.s, i = sel.indexOf(k), book = /^book:/.test(k);
@@ -938,6 +949,7 @@
     var nextLv = P.level ? LEVELS[LEVELS.indexOf(P.level) + 1] : null;
     var html = tasterHTML() + trialHTML() + '<div class="page-h"><div><p class="h-eyebrow">' + (S.teacher ? '👩‍🏫 Teacher' : S.who === 'child' ? '🧸 Young learner' : 'IF App') + '</p><h1>' + (a.name ? 'Hi, ' + esc(a.name.split(' ')[0]) + '!' : 'Welcome to IF App') + '</h1></div><a class="chip" href="#/onboard">✎ My courses</a></div>' +
       (keys.length ? '<div class="chips mycourses">' + keys.map(function (k) { return '<button class="chip' + (k === act ? ' on' : '') + '" data-a="' + k + '">' + SICON[k] + ' ' + esc(SNAME[k]) + '</button>'; }).join('') + '</div>' : '') +
+      (S.teacher ? '' : myCoursesHTML()) +
       '<div class="hello"><div class="plan">' + (main ? '<p class="h-eyebrow" style="color:var(--gold2)">' + esc(t('yourPlan')) + '</p><h2>' + (nx ? esc(nx.l.title) : 'Course complete! 🎉') + '</h2><p>' + esc(main.title) + (nx ? ' · ' + esc(t('unit')) + ' ' + (nx.ui + 1) + ': ' + esc(nx.u.title) : '') + '</p>' +
         (nx ? '<a class="btn gold" href="#/lesson/' + main.id + '/' + nx.u.id + '/' + nx.l.id + '">' + (st.d ? t('cont') : t('start')) + ' →</a>' : '<a class="btn gold" href="#/courses">Next course →</a>')
         : '<p class="h-eyebrow" style="color:var(--gold2)">' + esc(t('yourPlan')) + '</p><h2>' + esc(P.name || '') + '</h2><p>' + (P.voc ? 'Start with the vocabulary course, then play and test yourself.' : 'Choose a course.') + '</p>' + (P.voc ? '<a class="btn gold" href="' + '#/play/' + P.voc.id + '">' + esc(P.voc.t) + ' →</a>' : '<a class="btn gold" href="#/courses">Courses →</a>')) +
@@ -952,11 +964,17 @@
         step(3, P.game ? { href: '#/play/' + P.game.id, t: P.game.t, d: 'Play to review' } : null, 'Game') +
       '</div>' +
       (S.teacher || a.teacher ? teacherBox(a) : '') +
-      '<div class="sec"><h2>' + esc(t('forYou')) + '</h2><a href="#/courses">' + esc(t('all')) + ' →</a></div><div class="grid">' + myCourses().slice(0, 6).map(courseCard).join('') + '</div>';
-    if (!S.teacher && addOns().length) html = '<div class="goalbar">✨ <span>Ready for more?</span>' + addOnHTML() + '</div>' + html;
+      (S.teacher ? '<div class="sec"><h2>' + esc(t('forYou')) + '</h2><a href="#/courses">' + esc(t('all')) + ' →</a></div><div class="grid">' + myCourses().slice(0, 6).map(courseCard).join('') + '</div>' : '');
+    if (!S.teacher && addOns().length) html += '<div class="goalbar" style="margin-top:18px">✨ <span>Ready for more?</span>' + addOnHTML() + '</div>';
     view().innerHTML = html;
     $$('[data-a]').forEach(function (b) { b.onclick = function () { S.active = b.dataset.a; save(); vHome(); }; });
     var ok = $('#actOk'); if (ok) ok.onclick = function (e) { e.preventDefault(); S.actSeen = 1; save(); var n = $('#actNote'); if (n) n.remove(); };
+  }
+  /* Director, 24 Nov 2026: a student's home starts with their own courses ("Students should not see all these on the
+     first page of their app as it overwhelms them"). The other IF apps are listed at the bottom, small. */
+  function myCoursesHTML() {
+    var cs = levelCourses() || myCourses(); if (!cs.length) return '';   // the same list as the Courses tab
+    return '<div class="sec"><h2>My courses</h2><a href="#/courses">' + esc(t('all')) + ' →</a></div><div class="grid">' + cs.slice(0, 6).map(courseCard).join('') + '</div>';
   }
   function step(n, x, label) {
     if (!x) return '';
@@ -1676,7 +1694,9 @@
     } catch (e) {}
     setTimeout(function () { try { wireAddOns(); } catch (e) {} }, 0);
     switch (p[0]) {
-      case '': if (APP) return vAppHome(); vHome(); if ((mine().length || S.teacher) && !$('.apps3') && view().firstElementChild) view().firstElementChild.insertAdjacentHTML('afterend', appsStrip()); return;
+      case '': if (APP) return vAppHome(); vHome();
+        if ((mine().length || S.teacher) && !$('.apps3')) { if (S.teacher || access().staff) { if (view().firstElementChild) view().firstElementChild.insertAdjacentHTML('afterend', appsStrip()); } else view().insertAdjacentHTML('beforeend', appsStrip().replace('<h2>IF Academy apps</h2>', '<h2>More IF Academy apps</h2>')); }
+        return;
       case 'onboard': return vOnboard();
       case 'level': return vLevel();
       case 'courses': return vCourses(p[1]);

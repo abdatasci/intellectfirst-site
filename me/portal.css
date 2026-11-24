@@ -304,3 +304,8 @@ tr.regrow-admin td{background:#fbf8f1}
 table.t a.btn:not(.ghost):not(.gold){color:#fff}
 /* iPhone in dark mode drew a white caret on light fields: the caret now follows the text colour */
 input,textarea,[contenteditable]{caret-color:currentColor}
+/* registration: English level picker (24 Nov 2026) */
+.lvpick{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px;margin:6px 0 4px}
+.lvpick .lvo span{display:block;border-radius:14px;padding:10px 13px;height:100%}
+.lvpick .lvo input:checked+span small{color:#e9e3d6!important}.lvpick .lvo input:checked+span::before{content:""}
+.lvpick .ns{grid-column:1/-1}

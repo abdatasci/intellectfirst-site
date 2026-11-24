@@ -679,6 +679,7 @@ export default async (req) => {
     const b = await req.json().catch(() => ({}));
     for (const k of ['name', 'phone', 'about', 'goals', 'birth', 'parent', 'parentPhone', 'city']) if (k in b) profile[k] = str(b[k], k === 'about' || k === 'goals' ? 600 : 120);
     if (Array.isArray(b.study)) profile.study = cleanStudy(b.study);
+    if (typeof b.level === 'string' && /^(A0|A1|A2|B1|B2|C1|C2)$/.test(b.level)) profile.level = b.level;   // the English level chosen in IF App (24 Nov 2026)
     if (Array.isArray(b.hide)) profile.hide = [...new Set(b.hide.map(x => String(x || '').trim()).filter(x => STUDY.test(x)))].slice(0, 12);   // materials the student switched off in IF App
     // teachers' professional profile
     if (isStaff(profile.role)) for (const k of ['education', 'experience', 'skillsHard', 'skillsSoft', 'hobbies']) if (k in b) profile[k] = String(b[k] == null ? '' : b[k]).slice(0, 3000);
