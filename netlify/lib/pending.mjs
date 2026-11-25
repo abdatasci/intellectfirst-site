@@ -3,7 +3,9 @@
 // day (lesson-watch runs every 5 minutes), so this week's registers, reminders and pay stay as they are.
 //   { id, from: 'YYYY-MM-DD', kind: 'group', gid, set: { n?, sch? } }
 //   { id, from, kind: 'class', classId, set: { label?, teacherId?, schedule?, room? } }
-//   { id, from, kind: 'student', sid, set: { g, bg? } }   → g/gs/bg changed; xps[g] = from (counts lessons in the new group from that day)
+//   { id, from, kind: 'student', sid, set: { g, bg? } }   → g/gs/bg changed. Lessons already attended in the current package carry
+//     over (director, 25 Nov 2026: students pay for what they attended, whatever the group): the marks since the package
+//     started in the old group are copied into the new group's attendance and xps[new group] = that package start.
 import { getStore } from '@netlify/blobs';
 
 const A = () => getStore({ name: 'ifadmin', consistency: 'strong' });
@@ -24,20 +26,26 @@ export async function applyPending(day = today()) {
   const P = await loadPending(), due = P.filter(x => x.from <= day && !x.done);
   if (!due.length) return [];
   const coll = async c => (await A().get('c/' + c, { type: 'json' })) || {};
-  const groups = await coll('groups'), students = await coll('students'), classes = (await W().get('classes', { type: 'json' })) || [];
+  const groups = await coll('groups'), students = await coll('students'), att = await coll('attendance'), classes = (await W().get('classes', { type: 'json' })) || [];
   const touched = new Set(), log = [];
   for (const x of due) {
     if (x.kind === 'group' && groups[x.gid]) { Object.assign(groups[x.gid], x.set); touched.add('groups'); log.push(`group ${x.gid}`); }
     if (x.kind === 'class') { const c = classes.find(k => k.id === x.classId); if (c) { Object.assign(c, x.set); touched.add('classes'); log.push(`class ${x.classId}`); } }
     if (x.kind === 'student' && students[x.sid] && x.set.g) {
-      const s = students[x.sid]; s.g = x.set.g; s.gs = [x.set.g]; if (x.set.bg) s.bg = x.set.bg;
-      s.xps = { ...(s.xps || {}), [x.set.g]: x.from }; touched.add('students'); log.push(`student ${x.sid} → ${x.set.g}`);
+      const s = students[x.sid], og = s.g, ng = x.set.g, G = groups[og] || {};
+      const ps = (s.xps || {})[og] || G.ps || ((G.dates || []).slice().sort()[0]) || x.from;   // where the current package began
+      const mk = (att[og] || {})[x.sid] || {}, carry = Object.keys(mk).filter(d => d >= ps && d < x.from && mk[d]);
+      if (carry.length) { att[ng] = att[ng] || {}; const to = att[ng][x.sid] = att[ng][x.sid] || {}; for (const d of carry) if (!to[d]) to[d] = mk[d]; touched.add('attendance'); }
+      s.g = ng; s.gs = [ng]; if (x.set.bg) s.bg = x.set.bg;
+      s.xps = { ...(s.xps || {}), [ng]: carry.length ? carry.sort()[0] : x.from }; touched.add('students');
+      log.push(`student ${x.sid} ${og} → ${ng} (${carry.length} lessons carried over)`);
     }
     x.done = new Date().toISOString();
   }
   const st = (await A().get('stamp', { type: 'json' })) || {};
-  for (const c of ['groups', 'students']) if (touched.has(c)) { await A().setJSON('c/' + c, c === 'groups' ? groups : students); st[c] = Date.now(); }
-  if (touched.has('groups') || touched.has('students')) await A().setJSON('stamp', st);
+  const V = { groups, students, attendance: att };
+  for (const c of ['groups', 'students', 'attendance']) if (touched.has(c)) { await A().setJSON('c/' + c, V[c]); st[c] = Date.now(); }
+  if (['groups', 'students', 'attendance'].some(c => touched.has(c))) await A().setJSON('stamp', st);
   if (touched.has('classes')) await W().setJSON('classes', classes);
   await A().setJSON('pending', P);
   console.log('pending applied', log.join('; '));
