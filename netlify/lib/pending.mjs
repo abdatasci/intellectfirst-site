@@ -33,8 +33,12 @@ export async function applyPending(day = today()) {
     if (x.kind === 'class') { const c = classes.find(k => k.id === x.classId); if (c) { Object.assign(c, x.set); touched.add('classes'); log.push(`class ${x.classId}`); } }
     if (x.kind === 'student' && students[x.sid] && x.set.g) {
       const s = students[x.sid], og = s.g, ng = x.set.g, G = groups[og] || {};
-      const ps = (s.xps || {})[og] || G.ps || ((G.dates || []).slice().sort()[0]) || x.from;   // where the current package began
-      const mk = (att[og] || {})[x.sid] || {}, carry = Object.keys(mk).filter(d => d >= ps && d < x.from && mk[d]);
+      // where the current package began: full packages (size lessons) since the start are skipped; the rest carries over
+      const mk = (att[og] || {})[x.sid] || {}, size = +G.pkg || ({ ielts: 12, st: 12 })[og] || 8, own = (s.xps || {})[og];
+      const base = own ? Object.keys(mk).filter(d => mk[d] === 'P' || mk[d] === 'UA') : (G.dates || []);
+      const ps = own || G.ps || ((G.dates || []).slice().sort()[0]) || x.from, ds = base.filter(d => d >= ps && d < x.from).sort();
+      const cur = ds[Math.floor(ds.length / size) * size] || null;   // null: the last package is complete, nothing to carry
+      const carry = cur ? Object.keys(mk).filter(d => d >= cur && d < x.from && mk[d]) : [];
       if (carry.length) { att[ng] = att[ng] || {}; const to = att[ng][x.sid] = att[ng][x.sid] || {}; for (const d of carry) if (!to[d]) to[d] = mk[d]; touched.add('attendance'); }
       s.g = ng; s.gs = [ng]; if (x.set.bg) s.bg = x.set.bg;
       s.xps = { ...(s.xps || {}), [ng]: carry.length ? carry.sort()[0] : x.from }; touched.add('students');
