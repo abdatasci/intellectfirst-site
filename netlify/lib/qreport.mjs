@@ -7,7 +7,7 @@ const U = () => getStore({ name: 'ielts', consistency: 'strong' });
 const clean = (s, n) => String(s == null ? '' : s).replace(/[\u0000-\u001f]/g, ' ').trim().slice(0, n);
 
 export async function reportQuestion(uid, profile, b) {
-  const lesson = clean(b.lesson, 80), q = clean(b.q, 300), right = clean(b.right, 120);
+  const lesson = clean(b.lesson, 160), q = clean(b.q, 300), right = clean(b.right, 120);
   if (!lesson || !q) return { ok: false };
   // at most 20 reports a day per account, one per question
   const day = new Date().toISOString().slice(0, 10), key = `qrep/${uid}/${day}`, seen = (await U().get(key, { type: 'json' })) || [];
