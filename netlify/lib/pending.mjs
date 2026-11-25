@@ -3,7 +3,7 @@
 // day (lesson-watch runs every 5 minutes), so this week's registers, reminders and pay stay as they are.
 //   { id, from: 'YYYY-MM-DD', kind: 'group', gid, set: { n?, sch? } }
 //   { id, from, kind: 'class', classId, set: { label?, teacherId?, schedule?, room? } }
-//   { id, from, kind: 'student', sid, set: { g, bg? } }   → g/gs/bg changed. Lessons already attended in the current package carry
+//   { id, from, kind: 'student', sid, set: { g, bg?, xps? } }   → g/gs/bg changed. Lessons already attended in the current package carry
 //     over (director, 25 Nov 2026: students pay for what they attended, whatever the group): the marks since the package
 //     started in the old group are copied into the new group's attendance and xps[new group] = that package start.
 import { getStore } from '@netlify/blobs';
@@ -38,10 +38,10 @@ export async function applyPending(day = today()) {
       const base = own ? Object.keys(mk).filter(d => mk[d] === 'P' || mk[d] === 'UA') : (G.dates || []);
       const ps = own || G.ps || ((G.dates || []).slice().sort()[0]) || x.from, ds = base.filter(d => d >= ps && d < x.from).sort();
       const cur = ds[Math.floor(ds.length / size) * size] || null;   // null: the last package is complete, nothing to carry
-      const carry = cur ? Object.keys(mk).filter(d => d >= cur && d < x.from && mk[d]) : [];
+      const carry = cur && !x.set.xps ? Object.keys(mk).filter(d => d >= cur && d < x.from && mk[d]) : [];   // set.xps: the new package start is given (pays with the old group)
       if (carry.length) { att[ng] = att[ng] || {}; const to = att[ng][x.sid] = att[ng][x.sid] || {}; for (const d of carry) if (!to[d]) to[d] = mk[d]; touched.add('attendance'); }
       s.g = ng; s.gs = [ng]; if (x.set.bg) s.bg = x.set.bg;
-      s.xps = { ...(s.xps || {}), [ng]: carry.length ? carry.sort()[0] : x.from }; touched.add('students');
+      s.xps = { ...(s.xps || {}), [ng]: x.set.xps || (carry.length ? carry.sort()[0] : x.from) }; touched.add('students');
       log.push(`student ${x.sid} ${og} → ${ng} (${carry.length} lessons carried over)`);
     }
     x.done = new Date().toISOString();
