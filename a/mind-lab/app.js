@@ -210,7 +210,7 @@
     ['listen', 'Listening', ['echo', 'rapid']],
     ['grammar', 'Grammar', ['fault']],
     ['speak', 'Speaking', ['voice']],
-    ['neon', 'Neon arcade', ['serpent', 'skyline', 'fusion', 'cipher']],
+    ['neon', 'Neon arcade', ['skyline', 'fusion', 'cipher']],
     ['arcade', 'Word arcade', ['race', 'factory', 'cafe', 'defense', 'boss', 'balloon']]
   ];
   var SCOL = { focus: ['#22d3ee', '#6366f1'], speed: ['#a78bfa', '#22d3ee'], vocab: ['#fbbf24', '#f472b6'], write: ['#f472b6', '#a78bfa'], listen: ['#38bdf8', '#f472b6'], grammar: ['#fb7185', '#fbbf24'], speak: ['#34d399', '#22d3ee'], arcade: ['#fbbf24', '#22d3ee'], neon: ['#f472b6', '#22d3ee'] };
