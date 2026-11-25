@@ -212,7 +212,14 @@ export default async (req) => {
     const m = await T().get('marks/' + decodeURIComponent(path.slice(6)).slice(0, 60), { type: 'json' });
     return m ? json({ s: m.s, total: m.total }) : json({});
   }
-  if (!user) return fail(401, 'login');
+  // a test centre result can be sent without signing in (matched to the student by name and class): no code to copy
+  if (!user && path !== 'legacy') return fail(401, 'login');
+  if (!user && path === 'legacy') {
+    const ip = (req.headers.get('x-nf-client-connection-ip') || req.headers.get('x-forwarded-for') || 'x').split(',')[0].trim();
+    const k = `anon/${new Date().toISOString().slice(0, 10)}/${ip.replace(/[^0-9a-f.:]/gi, '')}`, n = +(await T().get(k)) || 0;
+    if (n >= 15) return fail(429, 'limit');
+    await T().set(k, String(n + 1));
+  }
 
   // speaking task in a test centre, talked through with the IF examiner (NOVA/ATLAS): AI gives the mark straight away
   if (path === 'speakmark' && method_(req) === 'POST') {
@@ -229,6 +236,7 @@ export default async (req) => {
   }
   // a test centre result (no code to send any more): saved to the student's record and the teachers' results list
   if (path === 'legacy' && method_(req) === 'POST') {
+    const anon = !user;
     const p = body.p || {};
     const secs = (Array.isArray(p.s) ? p.s : []).slice(0, 12).map(x => [str(x[0], 40), x[1] == null ? null : +x[1] || 0, +x[2] || 0]);
     if (!secs.length) return fail(400, 'empty');
@@ -262,18 +270,22 @@ export default async (req) => {
     const entry = { id: rid, test: [str(p.t, 120), str(p.v, 20)].filter(Boolean).join(' ') + (p.c ? ' · ' + str(p.c, 80).replace(/ Test Centre$/, '') : ''), date: new Date().toISOString().slice(0, 10),
       score: Math.round(score * 10) / 10, max, note: secs.map(x => `${x[0]} ${x[1] == null ? '–' : x[1]}/${x[2]}`).join(', ') + (pending ? ' (to be marked by the teacher)' : '') + (aiSpeak ? ' (speaking marked by AI)' : '') + (aiMarked ? ' (writing marked by AI)' : ''), ...(sp.length ? { speaking: sp } : {}) };
     if (spComment) p.comment = [spComment, p.comment].filter(Boolean).join(' ');
-    let studentName = str(p.n, 60) || profile?.name || '';
+    let studentName = str(p.n, 60) || profile?.name || '', matchedId = null;
     if (!staff) {
       try {
         const list = await loadStudents(), norm = v => String(v || '').toLowerCase().replace(/[^a-zа-яё]+/gi, ' ').trim();
         let st = profile?.studentId ? list.find(x => x.id === profile.studentId) : null;
-        if (!st && p.n) { const n = norm(p.n), m = list.filter(x => { const a = norm(x.first + ' ' + x.last), b = norm(x.last + ' ' + x.first); return a && (a === n || b === n); }); if (m.length === 1) st = m[0]; }
-        if (st) { studentName = `${st.first} ${st.last}`.trim(); st.tests = (st.tests || []).filter(t => t.id !== rid); st.tests.push(entry); await saveStudents(list); }
+        if (!st && p.n) {
+          const n = norm(p.n), m = list.filter(x => x.status !== 'withdrawn' && (() => { const a = norm(x.first + ' ' + x.last), b = norm(x.last + ' ' + x.first); return a && (a === n || b === n); })());
+          const c = norm(p.cl).replace(/\s+/g, ''), inCls = m.filter(x => (x.classes || []).some(l => norm(l).replace(/\s+/g, '').replace(/teen|group/g, '') === c.replace(/teen|group/g, '')));
+          if (m.length === 1) st = m[0]; else if (inCls.length === 1) st = inCls[0];   // two students with the same name: the class decides
+        }
+        if (st) { matchedId = st.id; studentName = `${st.first} ${st.last}`.trim(); st.tests = (st.tests || []).filter(t => t.id !== rid); st.tests.push(entry); await saveStudents(list); }
       } catch (e) { console.error('legacy record', e); }
     }
-    await addRecent({ kind: 'centre', at: new Date().toISOString(), uid: user.id, studentId: profile?.studentId || null, name: studentName, cls: str(p.cl, 60), level: str(p.lv, 20),
+    await addRecent({ kind: 'centre', at: new Date().toISOString(), uid: user?.id || null, studentId: profile?.studentId || matchedId || null, anon, matched: !!(profile?.studentId || matchedId), name: studentName, cls: str(p.cl, 60), level: str(p.lv, 20),
       test: entry.test, score: entry.score, max, pct: max ? Math.round(score / max * 100) : 0, note: entry.note, comment: p.comment || '' }, rid);
-    return json({ ok: true, score: entry.score, max, pending, aiMarked, aiSpeak, comment: spComment });
+    return json({ ok: true, score: entry.score, max, pending, aiMarked, aiSpeak, comment: spComment, matched: !!(profile?.studentId || matchedId), anon });
   }
   // staff enter the Speaking mark for each task (0-10) of a handed-in test; the result list, the student's record and the student's own page follow
   if (path === 'marks' && method_(req) === 'POST') {

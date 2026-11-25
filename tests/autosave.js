@@ -34,7 +34,7 @@
     ready.then(go).then(function (r) { return r.json().then(function (d) { return { ok: r.ok, status: r.status, d: d }; }); }).then(function (x) {
       if (x.ok) {
         var d = x.d;
-        note(container, '', '<b>\u2713 Saved to your profile and your teacher\u2019s results</b>Score ' + d.score + ' / ' + d.max +
+        note(container, '', '<b>\u2713 ' + (d.matched ? 'Saved to your profile and your teacher\u2019s results' : 'Sent to your teacher\u2019s results') + '</b>' + (d.matched || !d.anon ? '' : 'Check that your full name is written at the top of the test, so it is added to your profile. ') + 'Score ' + d.score + ' / ' + d.max +
           (d.aiSpeak ? '. Your speaking was marked by AI' + (d.aiMarked ? ', and your writing too.' : '.') + (d.comment ? ' ' + d.comment : '') : d.aiMarked ? '. Your writing was marked by AI.' : d.pending ? '. Your teacher will mark the writing.' : '.') + ' No need to send anything.');
         var box = container.querySelector('.ifr'); if (box) box.classList.add('ifas-done');
         toast('\u2713 Sent to your teacher. Score ' + d.score + ' / ' + d.max + (d.pending ? ' (speaking or writing still to be marked)' : '') + '. It is in your account and the bot\u2019s \u201cMy results\u201d.');
