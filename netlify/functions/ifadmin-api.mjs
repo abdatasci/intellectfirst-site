@@ -260,6 +260,12 @@ export default async (req) => {
     if (path === 'ctask/sendlate' && method === 'POST') { const b = await req.json().catch(() => ({})), { sendLate } = await import('../lib/classtask.mjs'); return json({ ok: true, sent: await sendLate(String(b.classId || ''), !!b.force) }); }
     const pm = path.match(/^payroll\/(\d{4}-\d{2})\/(t-[\w-]+)$/);   // one teacher's month (totals and deductions) — sync key only
     if (pm && method === 'GET') { const { payroll } = await import('../lib/payroll.mjs'), P = await payroll(pm[1], pm[2]), T = (P.teachers || []).find(x => x.teacherId === pm[2]) || {}; return json({ total: T.total, hours: T.hours, lessons: T.lessons, late: T.late, rule: T.rule, deduct: (T.items || []).filter(x => x.kind === 'deduct') }); }
+    // changes planned for a date (see lib/pending.mjs): GET the list, POST {items} to add, POST {apply:true} to apply what is due
+    if (path === 'pending') {
+      const P = await import('../lib/pending.mjs');
+      if (method === 'GET') return json(await P.loadPending());
+      if (method === 'POST') { const b = await req.json().catch(() => ({})); if (b.apply) return json({ ok: true, applied: await P.applyPending() }); return json({ ok: true, pending: await P.addPending(b.items) }); }
+    }
     if (path === 'studentkb' && method === 'POST') { const b = await req.json().catch(() => ({})), { pushStudentKb } = await import('../lib/classtask.mjs'); return json({ ok: true, sent: await pushStudentKb(b.classId || null) }); }
     if (path === 'ctask/catchup' && method === 'POST') {
       const b = await req.json().catch(() => ({})), { catchUp } = await import('../lib/classtask.mjs');
