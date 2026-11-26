@@ -362,8 +362,14 @@ window.IFAIW=(function(){
      "\n\nANSWER ("+words(text)+" words), between the markers:\n<<<\n"+String(text).slice(0,6000)+"\n>>>\n\nIf the answer is blank, off-task, copied from the task or not in English, give 0 for every criterion.\n"+
      "Reply with JSON only: {\"scores\":["+c.crit.map(function(){return 0}).join(",")+"],\"comments\":["+c.crit.map(function(){return '"one short sentence"'}).join(",")+"],\"feedback\":\"2–3 encouraging, specific sentences for the learner in simple English\",\"corrections\":[{\"wrong\":\"exact words from the answer\",\"right\":\"corrected version\",\"why\":\"very short reason\"}],\"cefr\":\"A1|A2|B1|B2|C1|C2\"}  Give up to 6 corrections of the most important errors.";
   }
+  function srv(c,text){
+    var body={exam:c.exam,who:c.who||"",task:typeof c.task==="function"?c.task():c.task,words:c.words||"",bands:c.bands||"",crit:c.crit,text:String(text).slice(0,6000)};
+    var post=function(){return fetch("/api/tests/writemark",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)}).then(function(r){return r.json().catch(function(){return{}}).then(function(d){return{ok:r.ok,st:r.status,d:d}})})};
+    return post().then(function(x){return x.ok||x.st===401||x.st===400||x.st===429?x:post()}).then(function(x){
+      if(x.ok&&x.d&&x.d.scores)return x.d;throw{code:x.st===401?"login":x.st===429?"rate_limited":"ai"}});
+  }
   function mark(c,text){
-    return sample().then(function(s){if(!s)throw{code:"unavailable"};return s.json(prompt(c,text),{modelTier:"default",cache:false})}).then(function(j){
+    return sample().then(function(s){return s?s.json(prompt(c,text),{modelTier:"default",cache:false}):srv(c,text)}).then(function(j){
       var sc=c.crit.map(function(x,i){var v=Math.round(Number(j&&j.scores&&j.scores[i]));return isFinite(v)?Math.max(0,Math.min(x[1],v)):0});
       var cm=c.crit.map(function(x,i){return String(j&&j.comments&&j.comments[i]||"")});
       var corr=(j&&Array.isArray(j.corrections)?j.corrections:[]).slice(0,6).map(function(x){return{w:String(x&&x.wrong||""),r:String(x&&x.right||""),y:String(x&&x.why||"")}}).filter(function(x){return x.w||x.r});
@@ -406,10 +412,10 @@ window.IFAIW=(function(){
       var text=c.getText()||"";if(words(text)<(c.min||25))return;
       busy=true;err="";draw();
       mark(c,text).then(function(r){res=r;lsSet(c.key,r);busy=false;draw();if(c.onResult)try{c.onResult(r)}catch(e){}})
-      .catch(function(e){busy=false;err=e&&e.code==="rate_limited"?"Too many requests just now. Try again in a minute.":e&&(e.code==="not_granted"||e.code==="unavailable")?"AI marking isn’t allowed on this device. Your teacher will mark your writing.":"The examiner couldn’t mark this just now. Try again.";
+      .catch(function(e){busy=false;err=e&&e.code==="login"?"Sign in to the IF App to get an AI mark, then try again. Your teacher can also mark it.":e&&e.code==="rate_limited"?"Too many requests just now. Try again in a minute.":e&&(e.code==="not_granted"||e.code==="unavailable")?"AI marking isn’t allowed on this device. Your teacher will mark your writing.":"The examiner couldn’t mark this just now. Try again.";
         if(e&&(e.code==="not_granted"||e.code==="unavailable")&&c.mode!=="teacher"&&!res){box.hidden=false}draw()});
     }
-    sample().then(function(s){if(!s&&!res){box.remove();return}box.hidden=false;draw()});
+    sample().then(function(){box.hidden=false;draw()});
     if(c.watch){[].concat(c.watch).forEach(function(w){w.addEventListener("input",function(){if(!busy&&!box.hidden)draw()})})}
     return box;
   }
