@@ -69,7 +69,7 @@
           if (v == null) return; got.push(esc(crit[i]) + ' ' + v);
           var live = [].slice.call(document.querySelectorAll('.rate.crit button[data-task="' + rows[i].querySelector('button[data-task]').dataset.task + '"]'));
           var b = live.filter(function (z) { return +z.dataset.n === v; })[0];
-          if (b && b.getAttribute('aria-pressed') !== 'true') { var dis = b.disabled; b.disabled = false; b.click(); b.disabled = dis; }
+          if (b && b.getAttribute('aria-pressed') !== 'true') { var dis = b.disabled, lk = b.classList.contains('lk'); b.disabled = false; b.classList.remove('lk'); b.click(); b.disabled = dis; if (lk) b.classList.add('lk'); }
         });
         var tot = x.d.marks.reduce(function (a, v) { return a + (v || 0); }, 0);
         note('', '<b>✓ AI marks: ' + got.join(' · ') + ' (' + tot + ' / ' + (x.d.max * crit.length) + ')</b> ' + (x.d.comment ? esc(x.d.comment) : '') + ' <small>(your teacher can change them)</small>');
@@ -116,7 +116,7 @@
         // the page may have re-drawn the speaking section: use the buttons on the page now
         var live = [].slice.call(document.querySelectorAll('.rate button[data-task="' + tk + '"]'));
         var b = (live.length ? live : btns).filter(function (z) { return +z.dataset.n === x.d.mark; })[0];
-        if (b && b.getAttribute('aria-pressed') !== 'true') { var dis = b.disabled; b.disabled = false; b.click(); b.disabled = dis; }
+        if (b && b.getAttribute('aria-pressed') !== 'true') { var dis = b.disabled, lk = b.classList.contains('lk'); b.disabled = false; b.classList.remove('lk'); b.click(); b.disabled = dis; if (lk) b.classList.add('lk'); }
         note('', '<b>✓ AI mark: ' + x.d.mark + ' / ' + x.d.max + '</b> ' + (x.d.comment ? esc(x.d.comment) : '') + ' <small>(your teacher can change it)</small>');
       }).catch(function () { note('no', '<b>The examiner could not start.</b> Your teacher will mark this task.'); })
         .then(function () { delete busy[tk]; go.disabled = false; });

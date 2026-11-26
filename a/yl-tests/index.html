@@ -609,6 +609,7 @@ const isF=t=>HASF&&FK(t);
 const RT={ready:false,user:null,db:null,dl:null,owner:false,uid:null,canWrite:null,sync:'local',all:[],remote:null,writeErr:null};
 if(!state.view)state.view='tests';
 const studentLocked=()=>!RT.owner&&(RT.ready?!!RT.user:!!window.claude);
+window.IFLK={cur:()=>{const t=T();return t?{t,st:ts(t.id)}:null},student:()=>studentLocked()};
 const slug=s=>ifTr(String(s||'').toLowerCase()).normalize('NFKD').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,40)||'x';
 /* answers and marks are stored as JSON strings so each write replaces them (the class record merges nested objects) */
 function recA(r){if(!r)return {};if(typeof r.aj==='string'){try{return JSON.parse(r.aj)}catch(e){}}return r.a||{}}
@@ -1167,4 +1168,4 @@ initRuntime();
 </script>
 </body>
 </html>
-<script src="/a/ielts/identity.js"></script><script src="/tests/deeplink.js?v=1"></script><script src="/tests/autosave.js?v=11"></script><script src="/tests/speakai.js?v=7"></script></body></html>
+<script src="/a/ielts/identity.js"></script><script src="/tests/deeplink.js?v=1"></script><script src="/tests/autosave.js?v=11"></script><script src="/tests/speakai.js?v=8"></script><script src="/tests/lockhint.js?v=1"></script></body></html>

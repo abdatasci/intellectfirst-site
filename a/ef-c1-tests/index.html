@@ -484,6 +484,7 @@ TESTS.forEach(t=>t.secs.forEach(s=>{s.items=[];(s.parts||[]).forEach((p,pi)=>p.i
 const RT={ready:false,user:null,db:null,owner:false,uid:null,canWrite:null,sync:'local',docKey:null,remote:null,writeErr:null,downloads:null,all:[]};
 const teacherUI=()=>RT.owner||(RT.ready?RT.sync==='local'&&!RT.user:!window.claude);
 const studentLocked=()=>RT.ready&&!RT.owner&&!!RT.user;
+window.IFLK={cur:()=>{const t=T();return t?{t,st:ts(t.id)}:null},student:()=>studentLocked()};
 
 /* ---------- theme ---------- */
 const themeSel=$('#theme');
@@ -1339,4 +1340,4 @@ initRuntime();
 </body>
 </html>
 
-<script src="/a/ielts/identity.js"></script><script src="/tests/deeplink.js?v=1"></script><script src="/tests/autosave.js?v=11"></script><script src="/tests/speakai.js?v=7"></script></body></html>
+<script src="/a/ielts/identity.js"></script><script src="/tests/deeplink.js?v=1"></script><script src="/tests/autosave.js?v=11"></script><script src="/tests/speakai.js?v=8"></script><script src="/tests/lockhint.js?v=1"></script></body></html>
