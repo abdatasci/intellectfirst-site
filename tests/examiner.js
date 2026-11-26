@@ -33,7 +33,9 @@
       '.ifexam .top{display:flex;justify-content:space-between;align-items:center;padding:12px 18px;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#9fb3e6;border-bottom:1px solid #ffffff14}' +
       '.ifexam .stage{display:grid;grid-template-columns:150px 1fr;gap:18px;align-items:center;padding:18px}' +
       '.ifexam .ifbot{width:150px;position:relative}.ifexam .ifbot svg{width:100%;height:auto;display:block}.ifexam .ifbot .tag{display:block;text-align:center;font-size:11px;letter-spacing:.2em;color:#9fd8ff;margin-top:2px}' +
-      '.ifexam .q{font-size:19px;font-weight:600;line-height:1.35;margin:0 0 12px;color:#fff}' +
+      '.ifexam .ifx-q{all:unset;display:block;font-size:19px;font-weight:600;line-height:1.35;margin:0 0 12px;color:#fff;text-align:inherit}' +
+      '.ifexam .ifx-qc{display:block;margin:0 0 12px;padding:12px 14px;border-radius:14px;background:#ffffff14;border:1px solid #ffffff2e;text-align:left}.ifexam .ifx-qc small{display:block;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#9fb3e6;margin-bottom:4px}' +
+      '.ifexam .ifx-qc .ifx-q{margin:0;font-size:20px}.ifexam .ifx-hear{all:unset;cursor:pointer;display:inline-block;margin-top:8px;font-size:14px;color:#9fd8ff;text-decoration:underline}' +
       '.ifexam .tr{min-height:64px;padding:10px 12px;border-radius:12px;background:#ffffff0d;border:1px solid #ffffff1f;color:#cfe0ff;font-size:15px;white-space:pre-wrap}' +
       '.ifexam textarea{width:100%;box-sizing:border-box;min-height:90px;border-radius:12px;border:1px solid #ffffff2a;background:#ffffff0d;color:#fff;font:inherit;padding:10px}' +
       '.ifexam .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:12px}' +
@@ -88,7 +90,7 @@
           box.querySelector('.x').onclick = function () { end(answers.some(function (a) { return a.text; }) ? answers : null); };
         }
         function intro() {
-          frame(-1, '<p class="q">' + (kid ? 'Hello! I am ' + name + '. Let’s talk! I will ask you ' + (qs.length === 1 ? 'one question' : qs.length + ' questions') + '.' : 'Hello, I’m ' + name + ', your speaking examiner. ' + (qs.length === 1 ? 'I’ll give you one task — talk about it for about ' + (opt.mins || 2) + ' minutes.' : 'I’ll ask you ' + qs.length + ' questions.') + ' Answer in full sentences — about 30 to 60 seconds each.') + '</p>' +
+          frame(-1, '<p class="ifx-q">' + (kid ? 'Hello! I am ' + name + '. Let’s talk! I will ask you ' + (qs.length === 1 ? 'one question' : qs.length + ' questions') + '.' : 'Hello, I’m ' + name + ', your speaking examiner. ' + (qs.length === 1 ? 'I’ll give you one task — talk about it for about ' + (opt.mins || 2) + ' minutes.' : 'I’ll ask you ' + qs.length + ' questions.') + ' Answer in full sentences — about 30 to 60 seconds each.') + '</p>' +
             '<p style="margin:0;color:#9fb3e6;font-size:14px">' + (SR || canRec ? 'Press the microphone and speak, then press Stop. Allow the microphone when you are asked. You can press the microphone again as many times as you need: there is no limit.' : 'This browser cannot hear you, so type your answers instead.') + '</p>' +
             '<div class="row"><button class="nx" id="ifx-go">Start speaking</button><button class="sk" id="ifx-sk">' + (opt.skip || 'Skip — my teacher will mark speaking') + '</button></div>');
           box.querySelector('#ifx-go').onclick = function () { ask(0); };
@@ -99,11 +101,12 @@
           if (i >= qs.length) return wrap();
           // SR: the browser hears speech itself (Chrome). REC: record and turn it into text on the server (Telegram mini-app, Safari).
           var REC = !SR && canRec, q = qs[i], text = '', rec = null, t0 = 0, timer = null, speechStart = 0, mr = null, chunks = [], stream = null, busy = false;
-          frame(i, '<p class="q">' + esc(q) + '</p>' + (SR || REC ? '<div class="tr" id="ifx-tr">…</div><textarea id="ifx-ta" placeholder="Type your answer" style="display:none"></textarea>' : '<textarea id="ifx-ta" placeholder="Type your answer"></textarea>') +
+          frame(i, '<div class="ifx-qc"><small>Question ' + (i + 1) + ' of ' + qs.length + '</small><p class="ifx-q">' + esc(q) + '</p><button type="button" class="ifx-hear" id="ifx-hear">🔊 Hear it again</button></div>' + (SR || REC ? '<div class="tr" id="ifx-tr">…</div><textarea id="ifx-ta" placeholder="Type your answer" style="display:none"></textarea>' : '<textarea id="ifx-ta" placeholder="Type your answer"></textarea>') +
             (SR || REC ? '<p style="margin:0 0 8px;color:#9fb3e6;font-size:13px">Not happy with your answer, or it was not heard? Press the microphone again. You can do it as many times as you need, more than twice if you want; each new answer is added to the last.</p>' : '') + '<div class="row">' + (SR || REC ? '<button class="mic" id="ifx-mic">🎙 Answer</button><span class="tm" id="ifx-tm"></span>' : '') + '<button class="nx" id="ifx-nx" ' + (SR || REC ? 'disabled' : '') + '>' + (i === qs.length - 1 ? 'Finish' : 'Next question') + '</button>' +
             (REC ? '<button class="sk" id="ifx-type">Type instead</button>' : '') + '</div>');
           var nx = box.querySelector('#ifx-nx'), mic = box.querySelector('#ifx-mic'), tr = box.querySelector('#ifx-tr'), tm = box.querySelector('#ifx-tm'), ta = box.querySelector('#ifx-ta'), ty = box.querySelector('#ifx-type');
           say((i === 0 ? '' : ACK[i % ACK.length] + ' ') + q, g);
+          var hear = box.querySelector('#ifx-hear'); if (hear) hear.onclick = function () { say(q, g); };
           function typing(msg) {
             if (mic) mic.style.display = 'none'; if (ty) ty.style.display = 'none'; if (tm) tm.textContent = '';
             if (tr) tr.textContent = msg || 'Type your answer below.';
@@ -167,7 +170,7 @@
           };
         }
         function wrap() {
-          frame(qs.length - 1, '<p class="q">' + (kid ? 'Well done! Thank you for talking with me.' : 'That’s the end of the speaking part. Thank you.') + '</p><p style="margin:0;color:#9fb3e6">Your answers are being marked now.</p>');
+          frame(qs.length - 1, '<p class="ifx-q">' + (kid ? 'Well done! Thank you for talking with me.' : 'That’s the end of the speaking part. Thank you.') + '</p><p style="margin:0;color:#9fb3e6">Your answers are being marked now.</p>');
           say(kid ? 'Well done! Thank you for talking with me.' : 'That is the end of the speaking test. Thank you.', g);
           setTimeout(function () { end(answers.some(function (a) { return a.text; }) ? answers : null); }, 900);
         }
