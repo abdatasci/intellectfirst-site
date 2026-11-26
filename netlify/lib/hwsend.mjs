@@ -8,6 +8,20 @@ import { waReady, waSend, waNumber } from './whatsapp.mjs';
 
 const S = () => getStore({ name: 'school', consistency: 'strong' });
 
+/* The teacher's attachments after the homework text: several pages (director, 26 Nov 2026). Photos go as albums of up to
+   10 (one message each), files one by one. attach: { pages: [{ photo } | { document }], photo, document } (older form). */
+async function sendAttach(chatId, a) {
+  if (!a) return;
+  const list = a.pages && a.pages.length ? a.pages : a.photo ? [{ photo: a.photo }] : a.document ? [{ document: a.document }] : [];
+  const ph = list.filter(x => x.photo), docs = list.filter(x => x.document);
+  for (let i = 0; i < ph.length; i += 10) {
+    const g = ph.slice(i, i + 10);
+    if (g.length === 1) await tg('sendPhoto', { chat_id: chatId, photo: g[0].photo }).catch(() => {});
+    else await tg('sendMediaGroup', { chat_id: chatId, media: g.map(x => ({ type: 'photo', media: x.photo })) }).catch(() => {});
+  }
+  for (const d of docs) await tg('sendDocument', { chat_id: chatId, document: d.document }).catch(() => {});
+}
+
 /** Returns how many messages went out. attach: { photo | document: Telegram file_id } sent after the text on Telegram. */
 export async function tellClass(c, item, attach, opts = {}) {   // opts.since: resend only to students who joined the bot after this time (Telegram only)
   const students = (await doc('students')).filter(s => inClass(c, s) && !/withdrawn|finished|frozen/i.test(s.status || ''));
@@ -25,8 +39,7 @@ export async function tellClass(c, item, attach, opts = {}) {   // opts.since: r
         // an online test opens inside the bot (a web_app button passes the sign-in), so the student is in at once
         await tgSend(l.chatId, hwText(kind, item, lang), item.url ? { reply_markup: { inline_keyboard: [[{ text: { en: '🖥 Open the test', ru: '🖥 Открыть тест', kk: '🖥 Тестті ашу' }[lang] || '🖥 Open the test', web_app: { url: testLink(item, s, true) } }]] } } : undefined); n++;
         sentTo.push(`${s.first} ${s.last}`.trim());
-        if (attach?.photo) await tg('sendPhoto', { chat_id: l.chatId, photo: attach.photo }).catch(() => {});
-        else if (attach?.document) await tg('sendDocument', { chat_id: l.chatId, document: attach.document }).catch(() => {});
+        await sendAttach(l.chatId, attach);
       }
       else if (!opts.since && wa && !prefs[s.id]?.off) for (const num of [...new Set([s.phone, s.parentPhone].map(waNumber).filter(Boolean))]) { await waSend(num, 'IF Academy\n' + hwText(kind, item, lang, true)); n++; }
     } catch (e) { console.error('homework notify', s.id, e.message); }
@@ -41,8 +54,7 @@ export async function tellClass(c, item, attach, opts = {}) {   // opts.since: r
       if (l && tgToken()) {
         await tgSend(l.chatId, hwText(kind, item, lang), item.url ? { reply_markup: { inline_keyboard: [[{ text: { en: '🖥 Open the test', ru: '🖥 Открыть тест', kk: '🖥 Тестті ашу' }[lang] || '🖥 Open the test', web_app: { url: testLink(item, st, true) } }]] } } : {});
         n++; sentTo.push(st.first || 'private student');
-        if (attach?.photo) await tg('sendPhoto', { chat_id: l.chatId, photo: attach.photo }).catch(() => {});
-        else if (attach?.document) await tg('sendDocument', { chat_id: l.chatId, document: attach.document }).catch(() => {});
+        await sendAttach(l.chatId, attach);
       }
     } catch (e) { console.error('homework notify private', e.message); }
   }
