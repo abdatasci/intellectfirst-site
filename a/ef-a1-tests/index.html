@@ -486,15 +486,15 @@ function fillVoices(sel){sel.innerHTML='<option value="">Automatic (British firs
 if(synth){loadVoices();if(synth.addEventListener)synth.addEventListener('voiceschanged',loadVoices);else synth.onvoiceschanged=loadVoices}
 function stopAudio(){if(synth){synth.cancel()}playing=false;paused=false}
 function renderListening(t){
-  const st=ts(t.id);const lim=2;
+  const st=ts(t.id);const lim=Infinity;
   let h='<h2>Listening</h2><p style="color:var(--muted);margin:0">'+esc(t.l.setting)+' Choose A, B, or C. '+((t.rw||2)===1?'One mark':'Two marks')+' for each answer.</p>';
   h+='<div class="player">';
   if(!synth){h+='<p style="margin:0">Audio playback isn\'t available in this browser. The teacher can reveal the script and read it aloud.</p>'}
   else{
-    h+='<div class="row"><button class="primary" id="lplay">'+(paused?'Resume':'Play recording')+'</button><button id="lpause">Pause</button><button id="lstop">Stop</button><span class="plays" id="lplays">Plays used: '+st.plays+' of '+lim+'</span></div>';
+    h+='<div class="row"><button class="primary" id="lplay">'+(paused?'Resume':'Play recording')+'</button><button id="lpause">Pause</button><button id="lstop">Stop</button><span class="plays" id="lplays">Times played: '+st.plays+'</span></div>';
     h+='<div class="row" style="margin-top:10px"><label>Voice <select id="voice"></select></label><label>Speed <select id="rate"><option value="0.85">Slower</option><option value="0.95" selected>Normal</option><option value="1.05">Faster</option></select></label></div>';
-    h+='<div class="status" id="lstatus">'+(st.plays>=lim?'Both plays used. The teacher can allow another play.':'Press play when the class is ready.')+'</div>';
-    h+='<div class="row" style="margin-top:6px"><button class="linkbtn" id="lreset" style="color:#E7D6A2">Teacher: allow another play</button></div>';
+    h+='<div class="status" id="lstatus">'+(st.plays>=lim?'Both plays used. The teacher can allow another play.':'Press play. You can listen as many times as you need.')+'</div>';
+    h+='<div class="row" style="margin-top:6px"><button class="linkbtn" id="lreset" style="display:none">Teacher: allow another play</button></div>';
   }
   h+='</div>';
   h+='<p><button class="linkbtn" id="ltoggle">'+(st.showScript?'Hide script':'Show script (teacher)')+'</button></p>';
@@ -503,18 +503,18 @@ function renderListening(t){
   return h;
 }
 function bindListening(t){
-  const st=ts(t.id),lim=2;
+  const st=ts(t.id),lim=Infinity;
   const tg=$('#ltoggle');if(tg)tg.onclick=()=>{st.showScript=!st.showScript;save();$('#sec').innerHTML=renderSec(t,'l');bindSec(t)};
   if(!synth)return;
   const vs=$('#voice');fillVoices(vs);vs.onchange=()=>{chosenVoice=vs.value};
-  $('#lreset').onclick=()=>{st.plays=Math.max(0,st.plays-1);save();$('#lplays').textContent='Plays used: '+st.plays+' of '+lim;$('#lstatus').textContent='One more play allowed.'};
+  $('#lreset').onclick=()=>{st.plays=Math.max(0,st.plays-1);save();$('#lplays').textContent='Times played: '+st.plays;$('#lstatus').textContent='One more play allowed.'};
   $('#lpause').onclick=()=>{if(playing&&!paused){synth.pause();paused=true;$('#lplay').textContent='Resume';$('#lstatus').textContent='Paused.'}};
   $('#lstop').onclick=()=>{stopAudio();$('#lplay').textContent='Play recording';$('#lstatus').textContent='Stopped.';markLine(-1)};
   $('#lplay').onclick=()=>{
     if(paused){synth.resume();paused=false;$('#lplay').textContent='Play recording';$('#lstatus').textContent='Playing…';return}
     if(playing)return;
     if(st.plays>=lim){$('#lstatus').textContent='Both plays used. The teacher can allow another play.';return}
-    st.plays++;save();$('#lplays').textContent='Plays used: '+st.plays+' of '+lim;
+    st.plays++;save();$('#lplays').textContent='Times played: '+st.plays;
     speakScript(t,+$('#rate').value);
   };
 }

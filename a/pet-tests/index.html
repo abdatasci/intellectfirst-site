@@ -1023,7 +1023,7 @@ function home() {
       <div class="row"><div class="seg" role="group" aria-label="Mode">
         <button data-mode="exam" aria-pressed="${S.mode === "exam"}">Exam conditions</button>
         <button data-mode="practice" aria-pressed="${S.mode === "practice"}">Practice</button></div>
-        <span class="small muted" id="modeNote">${S.mode === "exam" ? "Timed. Each recording plays twice." : "No time limit. Replay recordings as often as you like."}</span></div>
+        <span class="small muted" id="modeNote">${S.mode === "exam" ? "Timed. Each recording plays twice, and you can listen again." : "No time limit. Replay recordings as often as you like."}</span></div>
     </div>
     <div class="card who stack">
       <div class="row" style="justify-content:space-between"><span class="eyebrow" style="color:#E3C46A">Candidate</span><span class="candno">${esc(c.no)}</span></div>
@@ -1187,12 +1187,11 @@ function listening(tid) {
   $$("[data-play]").forEach(b => b.addEventListener("click", async () => {
     const ri = +b.dataset.play, box = b.closest(".player"), st = $(`[data-st="${ri}"]`);
     if (box.classList.contains("playing")) { TTS.stop(); return; }
-    if (exam && plays[ri]) return;
     $$(".player.playing").forEach(x => x.classList.remove("playing"));
     plays[ri] = true; box.classList.add("playing"); b.textContent = "■ Stop";
     const done = await TTS.play(recs[ri], exam ? 2 : 1, t => st.textContent = exam ? `Playing · ${t} of 2` : "Playing");
     box.classList.remove("playing");
-    if (exam) { b.textContent = done ? "✓ Played" : "▶ Play"; b.disabled = done; if (!done) plays[ri] = false; st.textContent = done ? "Finished" : "Stopped – you can start again"; }
+    if (exam) { b.textContent = "▶ Play again"; plays[ri] = false; st.textContent = done ? "Finished – you can listen again" : "Stopped – you can start again"; }
     else { b.textContent = "▶ Play again"; st.textContent = "Practice: replay any time"; }
   }));
   const used = startClock(null);
