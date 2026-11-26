@@ -1,5 +1,5 @@
 /* IF Mind Lab — Neon arcade: four original word games on the IF App word bank (Pre A1–C2).
-   NEON SERPENT (snake) · SKYLINE (tower) · FUSION CORE (2048) · CIPHER RAIN (falling letter blocks).
+   SKYLINE (tower) · FUSION CORE (2048) · CIPHER RAIN (falling letter blocks).
    Every right answer counts towards a level up (3 in a row), every slip towards a level down (2 in a row): the
    next word is chosen from the new level at once. Each game gets the runner's api A (add, miss, word, others, …). */
 (function () {
@@ -23,74 +23,7 @@
   }
   function glowText(x, t, px, py, size, col) { x.save(); x.font = '700 ' + size + 'px "Space Grotesk",system-ui,sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.shadowColor = col; x.shadowBlur = 12; x.fillStyle = '#fff'; x.fillText(t, px, py); x.restore(); }
 
-  /* ===== NEON SERPENT ===== steer the light-snake into the orb whose word matches the meaning */
-  G.push({ id: 'serpent', t: 'NEON SERPENT', sk: 'focus', words: true, c1: '#34d399', c2: '#22d3ee',
-    p: 'Steer a snake of light. Eat the orb with the word that matches the meaning — grow longer and faster. Wrong orbs cut you short.',
-    art: function (s) { return '<path d="M10 46c0-10 8-12 14-12s12 2 12-6-8-8-8-14 6-8 12-8 10 4 12 8" ' + s + '/><circle cx="52" cy="14" r="3" fill="#34d399"/><circle cx="14" cy="52" r="5" ' + s + '/>'; },
-    run: function (ar, A) {
-      var H = A.H;
-      ar.innerHTML = '<div class="mlx-top"><span class="mlx-k">EAT THE WORD FOR</span><b id="sq"></b><span class="mlx-lives" id="lv">❤❤❤</span></div><div class="mlx-board" id="bd"></div>' + dpad();
-      var bd = H.$('#bd'), cv = canvasIn(bd), x = cv.x, size = cv.fit(), COLS = 18, ROWS = 12, cell = 0, ox = 0, oy = 0;
-      function layout() { size = cv.fit(); cell = Math.floor(Math.min(size.w / COLS, size.h / ROWS)); ox = (size.w - cell * COLS) / 2; oy = (size.h - cell * ROWS) / 2; }
-      layout(); addEventListener('resize', layout);
-      var snake, dir, want, grow = 0, orbs = [], cur = null, lives = 3, tick = 190, acc = 0, prev = performance.now(), flashT = 0, flashCol = '#34d399';
-      function reset() { snake = [{ x: 5, y: 6 }, { x: 4, y: 6 }, { x: 3, y: 6 }]; dir = want = 'R'; }
-      function free() { for (var k = 0; k < 200; k++) { var p = { x: 1 + Math.floor(Math.random() * (COLS - 2)), y: 1 + Math.floor(Math.random() * (ROWS - 2)) }; if (!snake.some(function (s) { return Math.abs(s.x - p.x) + Math.abs(s.y - p.y) < 3; }) && !orbs.some(function (o) { return Math.abs(o.x - p.x) + Math.abs(o.y - p.y) < 4; })) return p; } return { x: 2, y: 2 }; }
-      function round() {
-        cur = A.word(shortW); orbs = [];
-        [cur.w].concat(A.others(cur.w, 2, shortW)).forEach(function (w, i) { var p = free(); orbs.push({ x: p.x, y: p.y, w: w, ok: i === 0, ph: Math.random() * 6 }); });
-        H.$('#sq').textContent = cur.d;
-      }
-      reset(); round();
-      var go = function (d) { var opp = { U: 'D', D: 'U', L: 'R', R: 'L' }; if (d && d !== opp[dir]) want = d; };
-      keys(A, function (e) { if (DIRK[e.key]) { e.preventDefault(); go(DIRK[e.key]); } });
-      swipe(bd, A, go);
-      H.$$('.dpad button', ar).forEach(function (b) { b.onpointerdown = function (e) { e.preventDefault(); go(b.dataset.d); }; });
-      function lose(msg) {
-        lives--; H.$('#lv').textContent = '❤'.repeat(Math.max(0, lives)) + '♡'.repeat(3 - Math.max(0, lives)); H.sfx.bad(); H.flash(ar, false); flashT = 12; flashCol = '#fb7185';
-        if (lives <= 0) return A.end();
-        H.toast(msg); reset();
-      }
-      function step() {
-        dir = want; var h = snake[0], n = { x: h.x + (dir === 'R') - (dir === 'L'), y: h.y + (dir === 'D') - (dir === 'U') };
-        if (n.x < 0 || n.y < 0 || n.x >= COLS || n.y >= ROWS) return lose('Hit the wall!');
-        if (snake.some(function (s) { return s.x === n.x && s.y === n.y; })) return lose('Hit your own tail!');
-        snake.unshift(n);
-        var o = orbs.filter(function (o) { return o.x === n.x && o.y === n.y; })[0];
-        if (o) {
-          if (o.ok) { A.add(30, ar, ox + n.x * cell, oy + n.y * cell); grow += 2; tick = Math.max(85, tick - 6); flashCol = '#34d399'; flashT = 10; A.log(true, cur.w); }
-          else { A.miss(10, ar, ox + n.x * cell, oy + n.y * cell); A.log(false, '<b>' + H.esc(cur.d) + '</b> → <b>' + H.esc(cur.w) + '</b> (not ' + H.esc(o.w) + ')'); for (var k = 0; k < 2 && snake.length > 3; k++) snake.pop(); flashCol = '#fb7185'; flashT = 12; H.toast('It was “' + cur.w + '”'); }
-          round();
-        }
-        if (grow > 0) grow--; else snake.pop();
-      }
-      function draw(t) {
-        x.clearRect(0, 0, size.w, size.h);
-        // grid floor
-        x.strokeStyle = 'rgba(34,211,238,.08)'; x.lineWidth = 1;
-        for (var i = 0; i <= COLS; i++) { x.beginPath(); x.moveTo(ox + i * cell, oy); x.lineTo(ox + i * cell, oy + ROWS * cell); x.stroke(); }
-        for (var j = 0; j <= ROWS; j++) { x.beginPath(); x.moveTo(ox, oy + j * cell); x.lineTo(ox + COLS * cell, oy + j * cell); x.stroke(); }
-        x.strokeStyle = flashT > 0 ? flashCol : 'rgba(34,211,238,.5)'; x.lineWidth = 2; x.strokeRect(ox, oy, COLS * cell, ROWS * cell); if (flashT > 0) flashT--;
-        // orbs
-        orbs.forEach(function (o) { var cx = ox + (o.x + .5) * cell, cy = oy + (o.y + .5) * cell, r = cell * .42 + Math.sin(t / 300 + o.ph) * 2;
-          var g = x.createRadialGradient(cx, cy, 1, cx, cy, r * 2.2); g.addColorStop(0, 'rgba(167,139,250,.95)'); g.addColorStop(.45, 'rgba(99,102,241,.35)'); g.addColorStop(1, 'rgba(99,102,241,0)'); x.fillStyle = g; x.beginPath(); x.arc(cx, cy, r * 2.2, 0, 7); x.fill();
-          x.fillStyle = '#fff'; x.beginPath(); x.arc(cx, cy, r * .45, 0, 7); x.fill();
-          glowText(x, o.w, cx, cy - cell * .95, Math.max(12, Math.min(17, cell * .55)), '#a78bfa'); });
-        // the serpent
-        snake.forEach(function (s, k) { var cx = ox + (s.x + .5) * cell, cy = oy + (s.y + .5) * cell, f = 1 - k / (snake.length + 4);
-          x.save(); x.shadowColor = '#34d399'; x.shadowBlur = k ? 8 : 18; x.fillStyle = k ? 'rgba(52,211,153,' + (.35 + f * .6).toFixed(2) + ')' : '#a7f3d0';
-          var rr = cell * (k ? .38 + f * .08 : .48); x.beginPath(); x.arc(cx, cy, rr, 0, 7); x.fill(); x.restore(); });
-        var hd = snake[0], ex = ox + (hd.x + .5) * cell, ey = oy + (hd.y + .5) * cell, dx = (dir === 'R') - (dir === 'L'), dy = (dir === 'D') - (dir === 'U');
-        x.fillStyle = '#050816'; [[-1, 1], [1, 1]].forEach(function (q) { x.beginPath(); x.arc(ex + dx * cell * .15 + dy * q[0] * cell * .16, ey + dy * cell * .15 + dx * q[0] * cell * .16, cell * .07, 0, 7); x.fill(); });
-      }
-      function loop(t) {
-        if (!A.alive()) return;
-        acc += t - prev; prev = t; while (acc > tick) { acc -= tick; step(); if (!A.alive()) return; }
-        draw(t); RUN_RAF(loop);
-      }
-      RUN_RAF(loop); A.clock(90);
-    } });
-
+  /* NEON SERPENT (word snake) was removed on 25 Nov 2026: the director found it too complicated for students. */
   /* ===== SKYLINE ===== drop sliding floors to build a neon tower; Power Words repair it */
   G.push({ id: 'skyline', t: 'SKYLINE', sk: 'vocab', words: true, c1: '#f472b6', c2: '#fbbf24',
     p: 'Build a skyscraper of light. Tap to drop each sliding floor — overhang is cut off. Every third floor, a Power Word restores your tower.',

@@ -16,6 +16,16 @@ const dm = iso => iso.slice(8) + '.' + iso.slice(5, 7);
 const answer = (q, text, alert) => tg('answerCallbackQuery', { callback_query_id: q.id, text, show_alert: !!alert }).catch(() => {});
 const edit = (q, text, markup) => q.message && tg('editMessageText', { chat_id: q.message.chat.id, message_id: q.message.message_id, text, reply_markup: markup || { inline_keyboard: [] } }).catch(() => {});
 const CANCEL = [{ text: '✖ Cancel', callback_data: 'hw:x' }];
+/* Several pages (director, 26 Nov 2026): every photo or file the teacher sends is kept under its own key, so an album of
+   pages (which Telegram delivers as separate messages at the same moment) loses none. Up to 20 pages. */
+const PK = chatId => `bot/hwpages/${chatId}/`, MAXP = 20;
+async function pageKeys(chatId) { const { blobs } = await S().list({ prefix: PK(chatId) }); return blobs.map(b => b.key).sort(); }
+async function pages(chatId) { const out = []; for (const k of await pageKeys(chatId)) { const v = await S().get(k, { type: 'json' }); if (v) out.push(v); } return out; }
+async function clearPages(chatId) {
+  const { blobs } = await S().list({ prefix: PK(chatId) }); await Promise.all(blobs.map(b => S().delete(b.key)));
+}
+const pagesText = n => n ? `\n\n📷 + ${n} page${n === 1 ? '' : 's'}` : '';
+const READY = [[{ text: '👀 Preview and send', callback_data: 'hw:pv' }], CANCEL];
 
 async function myClasses(p) {
   const classes = await doc('classes');
@@ -29,21 +39,22 @@ const putState = (chatId, st) => S().setJSON(KEY(chatId), { ...st, exp: Date.now
 export async function startHomework(chatId, p, mode) {
   const P = classPicker(await myClasses(p), 'hw', false, CANCEL);
   if (P.empty) return tgSend(chatId, 'You have no classes on the timetable yet. Ask the manager to set you as the teacher in Admin → Classes.');
+  await clearPages(chatId);
   await putState(chatId, { step: 'class', ids: P.ids, mode: mode || '' });
   return tgSend(chatId, mode === 'test' ? '🧪 Send a test.\nWhich class?' : '📝 Send homework or a test date to a class.\nWhich class?', { reply_markup: { inline_keyboard: P.rows } });
 }
 
-function preview(st) {
+function preview(st, n) {
   if (st.kind === 'online') return `🖥 Online test: ${st.text}${st.text !== st.centre ? ' (' + st.centre + ')' : ''}\nClass: ${st.label}\n\nStudents get a button that opens the test signed in; speaking is with NOVA/ATLAS and it is all marked straight away.\n\nSend this to every student in the class?`;
   const what = st.kind === 'test' ? `🧪 Test on ${DAY[new Date(st.due + 'T12:00:00Z').getUTCDay()]} ${dm(st.due)}${st.time ? ' at ' + st.time : ''}` : `📝 Homework due ${DAY[new Date(st.due + 'T12:00:00Z').getUTCDay()]} ${dm(st.due)}`;
-  return `${what}\nClass: ${st.label}\n\n${st.text}${st.photo ? '\n\n📷 + your photo' : st.document ? '\n\n📎 + your file' : ''}\n\nSend this to every student in the class?`;
+  return `${what}\nClass: ${st.label}\n\n${st.text}${n ? pagesText(n) : st.photo ? '\n\n📷 + your photo' : st.document ? '\n\n📎 + your file' : ''}\n\nSend this to every student in the class?`;
 }
 
 /** Inline buttons: hw:c:<i> class · hw:k:hw|test · hw:d:<date>|other · hw:send · hw:x (cancel). */
 export async function hwCallback(q, p) {
   const data = String(q.data || ''), chatId = q.message?.chat?.id;
   const st = await getState(chatId);
-  if (data === 'hw:x') { await S().delete(KEY(chatId)); await answer(q, 'Cancelled'); await edit(q, '✖ Cancelled. Nothing was sent.'); return true; }
+  if (data === 'hw:x') { await S().delete(KEY(chatId)); await clearPages(chatId); await answer(q, 'Cancelled'); await edit(q, '✖ Cancelled. Nothing was sent.'); return true; }
   if (!st) { await answer(q, 'Expired. Press 📝 Send homework (or 🧪 Send test) again.', true); return true; }
   if (data === 'hw:ind' || data === 'hw:grp') {   // switch the class list: groups / individual students
     const P = classPicker(await myClasses(p), 'hw', data === 'hw:ind', CANCEL);
@@ -110,7 +121,16 @@ export async function hwCallback(q, p) {
     if (d === 'other') { await putState(chatId, { ...st, step: 'date' }); await edit(q, `Class: ${st.label}\nType the date, for example 25.11 (or 25.11 14:00 for a test).`, { inline_keyboard: [CANCEL] }); return true; }
     if (!/^\d{4}-\d{2}-\d{2}$/.test(d)) return true;
     await putState(chatId, { ...st, step: 'text', due: d, time: st.kind === 'test' ? (st.times || {})[d] || '' : '' });
-    await edit(q, `Class: ${st.label} · ${st.kind === 'test' ? 'test on' : 'due'} ${dm(d)}\nNow type the ${st.kind === 'test' ? 'test details (units, what to revise)' : 'homework'} in one message.\nYou can also send a photo or file of the worksheet, with the task written as its caption.`, { inline_keyboard: [CANCEL] });
+    await edit(q, `Class: ${st.label} · ${st.kind === 'test' ? 'test on' : 'due'} ${dm(d)}\nNow type the ${st.kind === 'test' ? 'test details (units, what to revise)' : 'homework'} in one message.\n📷 You can also send photos or files of the worksheet: one page or several (up to ${MAXP}), all at once or one by one.`, { inline_keyboard: [CANCEL] });
+    return true;
+  }
+  if (data === 'hw:pv') {   // pages sent: show the preview
+    if (st.step !== 'text' && st.step !== 'confirm') { await answer(q, 'Not ready yet.', true); return true; }
+    const n = (await pageKeys(chatId)).length;
+    if (!n && !st.text) { await answer(q, 'Type the task or send a photo first.', true); return true; }
+    const next = { ...st, step: 'confirm', text: st.text || (st.kind === 'test' ? 'Test — see the attached pages.' : n > 1 ? 'See the attached pages.' : 'See the attached worksheet.') };
+    await putState(chatId, next); await answer(q, '');
+    await tgSend(chatId, preview(next, n), { reply_markup: { inline_keyboard: [[{ text: '✅ Send to the class', callback_data: 'hw:send' }], CANCEL] } });
     return true;
   }
   if (data === 'hw:send') {
@@ -121,9 +141,10 @@ export async function hwCallback(q, p) {
     if (!item) { await answer(q, 'Something is missing. Start again.', true); return true; }
     await answer(q, 'Sending…');
     await addHomework(item);
-    const n = await tellClass(cls, item, { photo: st.photo, document: st.document });
-    await S().delete(KEY(chatId));
-    await edit(q, preview(st).replace(/\n\nSend this to every student in the class\?$/, '') + `\n\n✅ Sent — ${n} message${n === 1 ? '' : 's'} to students and parents. It is also on the website (My classes, students' profiles) and in their reminders.`);
+    const pg = await pages(chatId);
+    const n = await tellClass(cls, item, { pages: pg, photo: st.photo, document: st.document });
+    await S().delete(KEY(chatId)); await clearPages(chatId);
+    await edit(q, preview(st, pg.length).replace(/\n\nSend this to every student in the class\?$/, '') + `\n\n✅ Sent — ${n} message${n === 1 ? '' : 's'} to students and parents. It is also on the website (My classes, students' profiles) and in their reminders.`);
     return true;
   }
   return false;
@@ -134,7 +155,7 @@ export async function hwMessage(chatId, p, m) {
   const st = await getState(chatId); if (!st) return false;
   const text = String(m.text || m.caption || '').trim();
   if (m.text && /^(🕑|📅|❓|📊|💳|📎|🎯|📚|👤|🧪|🏫|📋|🔁|📆|📝 Send homework)/.test(text)) { await S().delete(KEY(chatId)); return false; }   // a menu button: leave the flow
-  if (/^\/cancel\b|^✖/i.test(text)) { await S().delete(KEY(chatId)); await tgSend(chatId, '✖ Cancelled. Nothing was sent.'); return true; }
+  if (/^\/cancel\b|^✖/i.test(text)) { await S().delete(KEY(chatId)); await clearPages(chatId); await tgSend(chatId, '✖ Cancelled. Nothing was sent.'); return true; }
   if (st.step === 'date') {
     const x = text.match(/^(\d{1,2})[./-](\d{1,2})(?:[./-](\d{2,4}))?(?:\s+(\d{1,2})[:.](\d{2}))?$/);
     if (!x) { await tgSend(chatId, 'Please type the date like 25.11 (or 25.11 14:00), or press ✖ Cancel.'); return true; }
@@ -143,15 +164,29 @@ export async function hwMessage(chatId, p, m) {
     if (!x[3] && due < now.toISOString().slice(0, 10)) due = `${y + 1}${due.slice(4)}`;
     if (isNaN(Date.parse(due + 'T00:00:00Z'))) { await tgSend(chatId, 'That date does not exist. Try again, e.g. 25.11.'); return true; }
     await putState(chatId, { ...st, step: 'text', due, time: st.kind === 'test' && x[4] ? `${String(+x[4]).padStart(2, '0')}:${x[5]}` : '' });
-    await tgSend(chatId, `Date: ${dm(due)}. Now type the ${st.kind === 'test' ? 'test details' : 'homework'} in one message (or send a photo/file with the task as its caption).`, { reply_markup: { inline_keyboard: [CANCEL] } });
+    await tgSend(chatId, `Date: ${dm(due)}. Now type the ${st.kind === 'test' ? 'test details' : 'homework'} in one message (or send photos/files of the pages: one or several).`, { reply_markup: { inline_keyboard: [CANCEL] } });
     return true;
   }
   if (st.step === 'text' || st.step === 'confirm') {
     const photo = m.photo ? m.photo[m.photo.length - 1].file_id : null, document = m.document ? m.document.file_id : null;
     if (!text && !photo && !document) return false;
-    const next = { ...st, step: 'confirm', text: (text || (st.kind === 'online' ? st.centre : st.kind === 'test' ? 'Test — see the attached file.' : 'See the attached worksheet.')).slice(0, st.kind === 'online' ? 300 : 600), ...(st.kind === 'online' ? {} : { photo, document }) };
+    if (st.kind !== 'online' && (photo || document)) {   // a page: keep it and wait for more
+      if ((await pageKeys(chatId)).length >= MAXP) { await tgSend(chatId, `That is ${MAXP} pages already, the most one homework can have. Press 👀 Preview and send.`, { reply_markup: { inline_keyboard: READY } }); return true; }
+      await S().setJSON(PK(chatId) + String(m.message_id).padStart(12, '0'), { ...(photo ? { photo } : { document }), g: m.media_group_id || '', mid: m.message_id });
+      if (text && !st.text) await putState(chatId, { ...st, text: text.slice(0, 600) });   // the caption is the task
+      if (m.media_group_id) {   // an album: wait for the other pages; only its first page (lowest message id) answers
+        await new Promise(ok => setTimeout(ok, 2500));
+        const mine = (await pages(chatId)).filter(x => x.g === m.media_group_id).map(x => x.mid);
+        if (Math.min(...mine) !== m.message_id) return true;
+      }
+      const n = (await pageKeys(chatId)).length, cur = (await getState(chatId)) || st;
+      await tgSend(chatId, `📷 ${n} page${n === 1 ? '' : 's'} added.\nSend more pages${cur.text ? '' : ', type the task (optional)'}, or press 👀 Preview and send.`, { reply_markup: { inline_keyboard: READY } });
+      return true;
+    }
+    const n = st.kind === 'online' ? 0 : (await pageKeys(chatId)).length;
+    const next = { ...st, step: 'confirm', text: (text || st.centre).slice(0, st.kind === 'online' ? 300 : 600) };
     await putState(chatId, next);
-    await tgSend(chatId, preview(next), { reply_markup: { inline_keyboard: [[{ text: '✅ Send to the class', callback_data: 'hw:send' }], CANCEL] } });
+    await tgSend(chatId, preview(next, n) + (st.kind === 'online' ? '' : '\n\n(You can still send photos of more pages before you press Send.)'), { reply_markup: { inline_keyboard: [[{ text: '✅ Send to the class', callback_data: 'hw:send' }], CANCEL] } });
     return true;
   }
   return false;   // still choosing with buttons: let other handlers answer

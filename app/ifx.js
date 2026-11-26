@@ -1169,11 +1169,32 @@
   }
   function pTop() {
     var p = L.items.length ? Math.round(L.i / L.items.length * 100) : 0;
-    return '<div class="p-top"><button class="x pback" id="px" aria-label="Back">← Back</button><div class="bar"><i style="width:' + p + '%"></i></div>' + (access().teacher ? '<button class="chip' + (L.teach ? ' on' : '') + '" id="tm">👩‍🏫 ' + esc(t('teach')) + '</button>' : '') + '</div><p class="p-title">' + esc(TYPE[L.l.type]) + ' · ' + esc(L.l.title) + '</p>';
+    return '<div class="p-top"><button class="x pback" id="px" aria-label="Back">← Back</button><div class="bar"><i style="width:' + p + '%"></i></div>' + (access().teacher ? '<button class="chip' + (L.teach ? ' on' : '') + '" id="tm">👩‍🏫 ' + esc(t('teach')) + '</button>' : '') + (canReport() ? '<button class="x" id="qrep" title="Report a problem with this question" aria-label="Report a problem with this question" style="padding:6px 10px;opacity:.55;font-size:15px">⚑</button>' : '') + '</div><p class="p-title">' + esc(TYPE[L.l.type]) + ' · ' + esc(L.l.title) + '</p>';
   }
   function bindTop() {
     $('#px').onclick = function () { document.body.classList.remove('teach'); go('#/course/' + L.c.id); };
     var tm = $('#tm'); if (tm) tm.onclick = function () { L.teach = !L.teach; document.body.classList.toggle('teach', L.teach); drawStep(); };
+    var qr = $('#qrep'); if (qr) qr.onclick = reportAsk;
+  }
+  /* "Report a problem with this question" (director, 26 Nov 2026: moved off the answer bar, where students pressed it by
+     accident). A small ⚑ in the lesson's top bar opens a box that asks first; only "Yes, report it" sends the report to the
+     administrators (account note and Telegram bot, netlify/lib/qreport.mjs). It never changes the score. */
+  function canReport() { var it = L && L.items[L.i]; return !!(it && it.k === 'ex' && !it.retry && it.e && ME && ME.profile); }
+  function reportAsk() {
+    var it = L.items[L.i], e = it && it.e; if (!e) return;
+    var plain = function (x) { return String(x == null ? '' : x).replace(/<[^>]*>/g, ''); };
+    var q = plain(e.q || (e.p && e.p.map ? e.p.map(function (y) { return y.join(' = '); }).join('; ') : e.p) || '');
+    var box = document.createElement('div'); box.className = 'qrep-sheet';
+    box.style.cssText = 'position:fixed;inset:0;background:rgba(10,20,40,.45);display:flex;align-items:flex-end;justify-content:center;z-index:9999';
+    box.innerHTML = '<div style="background:var(--card,#fff);color:var(--ink,#152238);border-radius:18px 18px 0 0;padding:20px;max-width:520px;width:100%;box-shadow:0 -8px 30px rgba(0,0,0,.2)"><h3 style="margin:0 0 6px">Report a problem with this question?</h3><p style="margin:0 0 14px;color:var(--soft,#667)">Only if the question or its answer is wrong. Your teacher will check it.</p><p style="margin:0 0 16px;font-size:14px"><i>' + esc(q.slice(0, 160)) + '</i></p><div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn" id="qrno">Cancel</button><button class="btn ghost" id="qryes">⚑ Yes, report it</button></div></div>';
+    document.body.appendChild(box);
+    box.onclick = function (ev) { if (ev.target === box) box.remove(); };
+    $('#qrno', box).onclick = function () { box.remove(); };
+    $('#qryes', box).onclick = function () {
+      try { fetch('/api/school/app/qreport', { method: 'POST', credentials: 'same-origin', headers: hdrs({ 'Content-Type': 'application/json' }), body: JSON.stringify({ lesson: L.c.title + ' · ' + L.u.title + ' · ' + L.l.title, q: q, right: e.o && e.a != null ? plain(e.o[e.a]) : plain(e.a || '') }) }); } catch (x) {}
+      box.innerHTML = '<div style="background:var(--card,#fff);color:var(--ink,#152238);border-radius:18px 18px 0 0;padding:20px;max-width:520px;width:100%"><b>✓ Reported. Thank you — we will check it.</b></div>';
+      setTimeout(function () { box.remove(); }, 1600);
+    };
   }
   function drawStep() {
     var it = L.items[L.i]; if (!it) return finish();
@@ -1410,19 +1431,6 @@
     $('.msg', fb).innerHTML = '<b>' + (ok ? '✓ ' + esc(t('correct')) : '✗ ' + esc(t('wrong'))) + '</b>' + (ans ? '<span>' + esc(t('answer')) + ': <b style="display:inline;font-size:inherit">' + esc(ans) + '</b></span>' : '') + (e.why ? '<span style="display:block">' + esc(e.why) + '</span>' : '');
     var ck = $('#ck'); ck.disabled = false; ck.className = 'btn ' + (ok ? 'ok' : 'bad'); ck.textContent = t('cont');
     ck.onclick = function () { fb.remove(); L.i++; drawStep(); }; setTimeout(function () { ck.focus(); }, 30);
-    /* "Report this question": the question goes straight to the administrators (account note and Telegram bot, see
-       netlify/lib/qreport.mjs) so it can be fixed. It does not change the score. Signed-in users only. */
-    var old = $('#qbad', fb); if (old) old.remove();
-    if (!it.retry && it.k === 'ex' && ME && ME.profile) {
-      var qb = document.createElement('button'); qb.id = 'qbad'; qb.className = 'btn ghost'; qb.style.cssText = 'font-size:13px;padding:8px 12px;margin-top:8px';
-      qb.textContent = '⚑ Report this question';
-      qb.onclick = function () {
-        var plain = function (x) { return String(x == null ? '' : x).replace(/<[^>]*>/g, ''); };
-        try { fetch('/api/school/app/qreport', { method: 'POST', credentials: 'same-origin', headers: hdrs({ 'Content-Type': 'application/json' }), body: JSON.stringify({ lesson: L.c.title + ' · ' + L.u.title + ' · ' + L.l.title, q: plain(e.q || (e.p && e.p.map ? e.p.map(function (y) { return y.join(' = '); }).join('; ') : e.p) || ''), right: e.o && e.a != null ? plain(e.o[e.a]) : plain(ans || '') }) }); } catch (x) {}
-        qb.disabled = true; qb.textContent = '✓ Reported. Thank you — we will check it.';
-      };
-      $('.msg', fb).appendChild(qb);
-    }
   }
   function finish() {
     var fb = $('#fb'); if (fb) fb.remove();
