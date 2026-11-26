@@ -664,13 +664,13 @@ function fillVoices(sel){sel.innerHTML='<option value="">Automatic (several voic
 if(synth){loadVoices();if(synth.addEventListener)synth.addEventListener('voiceschanged',loadVoices);else synth.onvoiceschanged=loadVoices}
 function stopAudio(){if(synth){synth.cancel()}playing=null;paused=false}
 function playerHtml(t,pi){
-  const st=ts(t.id),lim=2,used=st.plays[pi]||0;let h='<div class="player" data-player="'+pi+'">';
+  const st=ts(t.id),lim=Infinity,used=st.plays[pi]||0;let h='<div class="player" data-player="'+pi+'">';
   if(!synth){h+='<p style="margin:0">Audio playback isn’t available in this browser. The teacher can open the script and read it aloud.</p>'}
   else{
-    h+='<div class="row"><button class="primary" data-lplay="'+pi+'">Play recording</button><button data-lpause="'+pi+'">Pause</button><button data-lstop="'+pi+'">Stop</button><span class="plays" id="lplays'+pi+'">Plays used: '+used+' of '+lim+'</span></div>';
+    h+='<div class="row"><button class="primary" data-lplay="'+pi+'">Play recording</button><button data-lpause="'+pi+'">Pause</button><button data-lstop="'+pi+'">Stop</button><span class="plays" id="lplays'+pi+'">Times played: '+used+'</span></div>';
     h+='<div class="row" style="margin-top:10px"><label>Voice <select data-voice="'+pi+'"></select></label><label>Speed <select data-rate="'+pi+'"><option value="0.85">Slower</option><option value="0.95" selected>Normal</option><option value="1.05">Faster</option></select></label></div>';
-    h+='<div class="status" id="lstatus'+pi+'">'+(used>=lim?'Both plays used.'+(teacherUI()?' The teacher can allow another play.':''):'Press play when you are ready. You can listen twice.')+'</div>';
-    if(teacherUI())h+='<div class="row" style="margin-top:6px"><button class="linkbtn" data-lreset="'+pi+'" style="color:#E7D6A2">Teacher: allow another play</button><button class="linkbtn" data-ltoggle="'+pi+'" style="color:#E7D6A2">'+(st.script&&st.script[pi]?'Hide script':'Show script')+'</button></div>';
+    h+='<div class="status" id="lstatus'+pi+'">'+(used>=lim?'Both plays used.'+(teacherUI()?' The teacher can allow another play.':''):'Press play. You can listen as many times as you need.')+'</div>';
+    if(teacherUI())h+='<div class="row" style="margin-top:6px"><button class="linkbtn" data-lreset="'+pi+'" style="display:none">Teacher: allow another play</button><button class="linkbtn" data-ltoggle="'+pi+'" style="color:#E7D6A2">'+(st.script&&st.script[pi]?'Hide script':'Show script')+'</button></div>';
   }
   return h+'</div>';
 }
@@ -682,23 +682,23 @@ function renderListening(t,s){
     if(teacherUI()&&ts(t.id).script&&ts(t.id).script[0])h+='<div class="script" id="lscript0">'+L2.script.map((ln,i)=>'<p data-line="'+i+'"><b>'+esc(ln[0])+':</b> '+esc(ln[1])+'</p>').join('')+'</div>';
     return h+partsBlock(t,s,false);
   }
-  h+='<p style="color:var(--muted);margin:0">Each recording can be played twice. One mark for each answer.</p>';
+  h+='<p style="color:var(--muted);margin:0">You can play each recording as many times as you need. One mark for each answer.</p>';
   return h+partsBlock(t,s,true);
 }
 function audioOf(s,pi){return s.listen&&s.listen.script?s.listen.script:((s.parts[pi]||{}).audio||{}).script}
 function bindListening(t,s){
-  const st=ts(t.id),lim=2;
+  const st=ts(t.id),lim=Infinity;
   document.querySelectorAll('[data-ltoggle]').forEach(b=>b.onclick=()=>{const pi=+b.dataset.ltoggle;st.script=st.script||{};st.script[pi]=!st.script[pi];save();$('#sec').innerHTML=renderSec(t,s);bindSec(t,s)});
   if(!synth)return;
   document.querySelectorAll('select[data-voice]').forEach(sel=>{fillVoices(sel);sel.onchange=()=>{chosenVoice=sel.value}});
-  document.querySelectorAll('[data-lreset]').forEach(b=>b.onclick=()=>{const pi=+b.dataset.lreset;st.plays[pi]=Math.max(0,(st.plays[pi]||0)-1);save();$('#lplays'+pi).textContent='Plays used: '+st.plays[pi]+' of '+lim;$('#lstatus'+pi).textContent='One more play allowed.'});
+  document.querySelectorAll('[data-lreset]').forEach(b=>b.onclick=()=>{const pi=+b.dataset.lreset;st.plays[pi]=Math.max(0,(st.plays[pi]||0)-1);save();$('#lplays'+pi).textContent='Times played: '+st.plays[pi];$('#lstatus'+pi).textContent='One more play allowed.'});
   document.querySelectorAll('[data-lpause]').forEach(b=>b.onclick=()=>{const pi=+b.dataset.lpause;if(playing===pi&&!paused){synth.pause();paused=true;$('#lstatus'+pi).textContent='Paused.';document.querySelector('[data-lplay="'+pi+'"]').textContent='Resume'}});
   document.querySelectorAll('[data-lstop]').forEach(b=>b.onclick=()=>{const pi=+b.dataset.lstop;if(playing===pi){stopAudio();$('#lstatus'+pi).textContent='Stopped.';markLine(pi,-1);document.querySelector('[data-lplay="'+pi+'"]').textContent='Play recording'}});
   document.querySelectorAll('[data-lplay]').forEach(b=>b.onclick=()=>{const pi=+b.dataset.lplay;
     if(playing===pi&&paused){synth.resume();paused=false;b.textContent='Play recording';$('#lstatus'+pi).textContent='Playing…';return}
     if(playing!==null){$('#lstatus'+pi).textContent='Another recording is playing. Stop it first.';return}
     if((st.plays[pi]||0)>=lim){$('#lstatus'+pi).textContent='Both plays used.'+(teacherUI()?' The teacher can allow another play.':'');return}
-    st.plays[pi]=(st.plays[pi]||0)+1;save();$('#lplays'+pi).textContent='Plays used: '+st.plays[pi]+' of '+lim;queueSync();
+    st.plays[pi]=(st.plays[pi]||0)+1;save();$('#lplays'+pi).textContent='Times played: '+st.plays[pi];queueSync();
     const rate=+document.querySelector('[data-rate="'+pi+'"]').value;speakScript(audioOf(s,pi),rate,pi)});
 }
 function markLine(pi,i){document.querySelectorAll('#lscript'+pi+' p').forEach(p=>p.classList.toggle('now',+p.dataset.line===i))}
