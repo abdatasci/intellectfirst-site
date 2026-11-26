@@ -29,7 +29,7 @@
       return 'Your teacher gives these marks.' + (ai ? ' To get a mark now, tap “' + ai.textContent.trim() + '” and answer out loud.' : '');
     }
     var c = cur();
-    if (c && c.st && c.st.marked) return 'This test is finished' + (c.st.tout ? ' (time ran out)' : '') + ', so answers can’t be changed. To try again, scroll down and tap “Retake this test”.';
+    if (c && c.st && c.st.marked) return 'This test is finished' + (c.st.tout ? ' (time ran out)' : '') + ', so answers can’t be changed. To try again, scroll down to the retake button.';
     return 'This answer is already checked, so it can’t be changed.';
   }
 
@@ -45,7 +45,7 @@
     if (c && c.st && c.st.marked && sec.querySelector('.opt,input.tx,[data-pick]')) {
       if (!has) {
         var p = document.createElement('p'); p.className = 'lknote';
-        p.textContent = '🔒 This test is finished' + (c.st.tout ? ' — time ran out' : '') + '. You can see your answers, but you can’t change them. To try again, scroll down and tap “Retake this test”.';
+        p.textContent = '🔒 This test is finished' + (c.st.tout ? ' — time ran out' : '') + '. You can see your answers, but you can’t change them. To try again, scroll down to the retake button.';
         sec.insertBefore(p, sec.firstChild);
       }
     } else if (has) has.remove();

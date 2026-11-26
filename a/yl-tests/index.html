@@ -933,7 +933,7 @@ const rtPct=x=>x.max?Math.round(x.tot/x.max*100):0;
 function rtLocal(){try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){}}
 function rtRemote(id){return (RT.remote&&RT.remote.tests&&RT.remote.tests[id])||null}
 function rtLocked(t){const st=ts(t.id);return !!(st.marked||st.handed||st.seen)}
-function rtApproved(t){const R=rtRemote(t.id);return !!(R&&R.ok&&R.ok===tAtt(ts(t.id)))}
+function rtApproved(t){if(tAtt(ts(t.id))<2)return true;const R=rtRemote(t.id);return !!(R&&R.ok&&R.ok===tAtt(ts(t.id)))}
 function startRetake(t){
   const st=ts(t.id),s=AD.sum(t),n=tAtt(st);
   const hist=(st.hist||[]).concat([{n,tot:s.tot,max:s.max,at:new Date().toISOString()}]);
@@ -1038,7 +1038,7 @@ renderLedger=function(){
   const rb=$('#resetbtn');if(rb)rb.remove();
   if(rtApproved(t)){
     acts.insertAdjacentHTML('beforeend','<button class="go" id="rtstart">Start your retake</button>');
-    acts.insertAdjacentHTML('afterend','<p class="rtmsg">Your teacher has approved a retake. Your score so far is kept as attempt '+att+'.</p>');
+    acts.insertAdjacentHTML('afterend','<p class="rtmsg">'+(att<2?'You can retake this test once. Your score so far is kept as attempt 1.':'Your teacher has approved a retake. Your score so far is kept as attempt '+att+'.')+'</p>');
     $('#rtstart').onclick=async()=>{if(!await uiConfirm('Start your retake now? Your answers are cleared and this score is kept as attempt '+att+'.','Start retake'))return;startRetake(t)};
     return;
   }
@@ -1168,4 +1168,4 @@ initRuntime();
 </script>
 </body>
 </html>
-<script src="/a/ielts/identity.js"></script><script src="/tests/deeplink.js?v=1"></script><script src="/tests/autosave.js?v=11"></script><script src="/tests/speakai.js?v=8"></script><script src="/tests/lockhint.js?v=1"></script></body></html>
+<script src="/a/ielts/identity.js"></script><script src="/tests/deeplink.js?v=1"></script><script src="/tests/autosave.js?v=12"></script><script src="/tests/speakai.js?v=9"></script><script src="/tests/lockhint.js?v=2"></script></body></html>
