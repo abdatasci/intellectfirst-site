@@ -32,15 +32,16 @@ export async function paymentsAhead(days = 7) {
     if (g === 'ind' || g === 'indn' || !(gr.dates || []).length) continue;
     const cls = classOf(g); if (!cls) continue;
     const size = +gr.pkg || (g === 'ielts' || g === 'st' ? 12 : 8), dates = [...gr.dates].sort(), ps = gr.ps || dates[0];
-    const fut = (future[cls.id] || []).filter(d => !dates.includes(d));
+    const att = Att[g] || {}, held = d => d < today || (d === today && Object.values(att).some(m => m && m[d]));   // a lesson counts once it has happened (today: once the register is in)
+    const fut = (future[cls.id] || []).filter(d => !(dates.includes(d) && held(d)));
     const members = Object.entries(S).filter(([, s]) => s.st === 'active' && !s.nofee && (s.gs && s.gs.length ? s.gs : [s.g]).includes(g));
-    const regular = [], groupDone = dates.filter(d => d >= ps).length;
+    const regular = [], groupDone = dates.filter(d => d >= ps && held(d)).length;
     const next = n => { const k = n % size; return n > 0 && k === 0 ? (fut[0] || today) : fut[size - k] || null; };   // full packages are paid; a finished one: the next lesson starts the new one
     const gDue = next(groupDone);
     for (const [id, s] of members) {
       const own = (s.xps || {})[g];
       if (own) {   // late joiner: own lessons (P/UA) since their own start
-        const mk = (Att[g] || {})[id] || {}, n = Object.keys(mk).filter(d => d >= own && (mk[d] === 'P' || mk[d] === 'UA')).length;
+        const mk = (Att[g] || {})[id] || {}, n = Object.keys(mk).filter(d => d >= own && held(d) && (mk[d] === 'P' || mk[d] === 'UA')).length;
         const d = own > today ? null : next(n);
         if (d && d <= end) items.push({ date: d, group: gr.n || cls.label, names: [{ n: s.n, paid: paidFor(id, d), amt: owed(id, d) }], own: `${n % size || (n ? size : 0)}/${size}` });
       } else regular.push([id, s]);
