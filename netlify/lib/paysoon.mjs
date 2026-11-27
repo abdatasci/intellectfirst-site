@@ -16,12 +16,14 @@ export async function paymentsAhead(days = 7) {
   const today = ymd(new Date()), end = addDays(today, days);
   const [G, S, Att, P, classes, CH, roster] = await Promise.all([coll('groups'), coll('students'), coll('attendance'), coll('payments'), doc('classes'), loadChanges(), doc('students')]);
   // timetable lessons still to come (today's lesson counts if its register is not taken yet)
+  const pend = ((await A().get('pending', { type: 'json' })) || []).filter(x => x.kind === 'class' && !x.done && x.set);
   const future = {};
   for (let i = 0; i <= days + 21; i++) {
     const d = addDays(today, i);
-    for (const l of lessonsOn(classes, d, CH)) if (!l.cancelled && !l.movedTo) (future[l.classId] = future[l.classId] || []).push(d);
+    const cl = pend.length ? classes.map(c => { const ch = pend.filter(x => x.classId === c.id && x.from <= d); return ch.length ? Object.assign({}, c, ...ch.map(x => x.set)) : c; }) : classes;   // timetable changes already planned
+    for (const l of lessonsOn(cl, d, CH)) if (!l.cancelled && !l.movedTo) (future[l.classId] = future[l.classId] || []).push(d);
   }
-  const classOf = g => classes.find(c => c.group === g) || classes.find(c => c.id === 'c-' + g);
+  const classOf = g => classes.find(c => c.id === 'c-' + g) || classes.find(c => c.group === g && !/\(individual/i.test(c.label || ''));
   const row = (id, d) => ((P[d.slice(0, 7)] || {}).rows || {})[id];
   const paidFor = (id, d) => { const r = row(id, d); return !!(r && +r.paid > 0 && (+r.paid >= (+r.due || 0) - (+r.disc || 0)) && r.d && r.d >= addDays(d, -10)); };
   const owed = (id, d) => { const r = row(id, d) || Object.values(P).map(m => (m.rows || {})[id]).filter(Boolean).pop(); return r ? (+r.due || 0) - (+r.disc || 0) : 0; };
@@ -61,6 +63,6 @@ function aheadText0(items, days) {
   if (!items.length) return `📅 Next ${days} days: no packages end and no payments fall due.`;
   const by = {}; items.forEach(x => (by[x.date] = by[x.date] || []).push(x));
   return `📅 Next ${days} days — payment due by:\n` + Object.keys(by).sort().map(d => `\n${DOW(d)} ${dm(d)}\n` + by[d].map(x =>
-    `• ${x.group}${x.done ? ` (${x.done} lessons done)` : x.own ? ` · own package ${x.own}` : ''}\n` + x.names.map(n => `   ${n.paid ? '✅' : '◻️'} ${n.n}${n.amt ? ' · ' + money(n.amt) : ''}`).join('\n')).join('\n')).join('\n') +
+    `• ${x.group}${x.done ? (x.done.split('/')[0] === x.done.split('/')[1] ? ' (package finished)' : ` (${x.done} lessons done)`) : x.own ? ` · own package ${x.own}` : ''}\n` + x.names.map(n => `   ${n.paid ? '✅' : '◻️'} ${n.n}${n.amt ? ' · ' + money(n.amt) : ''}`).join('\n')).join('\n')).join('\n') +
     '\n\n✅ already paid · ◻️ still to pay';
 }
