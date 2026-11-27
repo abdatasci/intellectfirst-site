@@ -51,6 +51,14 @@ export default async () => {
   }
   const changes = await loadChanges();
   const skip = await (await import('../lib/cancel.mjs')).cancelledSet().catch(() => null);
+  // packages: a reminder 7 and 3 days before the next payment date (lib/paysoon.mjs)
+  try {
+    const { packageReminders } = await import('../lib/paysoon.mjs');
+    const n = await packageReminders({ links, bySid, roster: students, note: addNote,
+      send: (chat, txt, kb) => tgToken() ? tgSend(chat, txt, kb ? { reply_markup: kb } : {}) : null,
+      button: kaspiReady() ? lang => ({ inline_keyboard: [[{ text: kaspiTexts(lang).btn, callback_data: 'kp:start' }]] }) : null });
+    if (n) console.log('package payment reminders', n);
+  } catch (e) { console.error('package reminders', e.message); }
   const due = dueReminders({ changes, students: [...students.map(s => s.uid || !bySid[s.id] ? s : { ...s, uid: bySid[s.id] }), ...priv], classes, homework, receipts, now, skip });
   if (!due.length) return new Response('nothing due');
   const sentKey = `bot/sent/${ymd(now).slice(0, 7)}`;

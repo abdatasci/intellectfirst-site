@@ -42,7 +42,8 @@ async function addAttempt(uid, attempt) {
   idx.push({ id: attempt.id, at: attempt.at, skill: attempt.skill, task: attempt.taskId, title: attempt.title,
     part: attempt.part, mock: attempt.mockId || null, band: attempt.result?.overall ?? null,
     criteria: attempt.result?.criteria ? Object.fromEntries(Object.entries(attempt.result.criteria).map(([k, v]) => [k, v.band])) : null,
-    words: attempt.words ?? null, score: attempt.score ?? null, total: attempt.total ?? null });
+    words: attempt.words ?? null, score: attempt.score ?? null, total: attempt.total ?? null,
+    saved: attempt.saved || undefined, late: attempt.late || undefined });
   await s.setJSON(`u/${uid}/index`, idx.slice(-500));
   const p = await getProfile(uid);
   if (p) { p.lastActive = attempt.at; p.attempts = (p.attempts || 0) + 1; await putProfile(uid, p); }
@@ -205,6 +206,23 @@ export default async (req) => {
 
   if (profile && await ensureTrial(uid, profile)) await putProfile(uid, profile);
   if (!profile?.role) return fail(403, 'activate');
+  // writing that is late, too short, or could not be marked (no full access, daily limit, AI error) is still kept:
+  // saved unmarked with the minutes it was late, so the student and the teacher always have it (27 Nov 2026)
+  if (path === 'keep' && method === 'POST') {
+    const body = await req.json().catch(() => ({}));
+    const task = TASKS.get(body.taskId);
+    if (!task) return fail(400, 'task');
+    const text = String(body.text || '');
+    if (!text.trim()) return fail(400, 'short');
+    const late = Math.max(0, Math.min(60 * 24 * 30, Math.round((Number(body.lateSecs) || 0) / 60)));
+    const why = ['late', 'short', 'members', 'quota', 'ai', 'offline'].includes(body.why) ? body.why : 'saved';
+    const attempt = { id: newId(), at: new Date().toISOString(), skill: 'writing', taskId: task.id, title: task.title, part: task.id.startsWith('T1') ? 1 : 2,
+      mockId: body.mockId ? String(body.mockId).slice(0, 40) : null, seconds: Number(body.seconds) || null, words: words(text), text: text.slice(0, 12000),
+      result: null, saved: why, late: late || null };
+    await addAttempt(uid, attempt);
+    return json({ attempt });
+  }
+
   // AI marking is part of full access (free accounts can still read the tasks and model answers)
   if (!isMember(profile) && (path === 'score' || path === 'speaking')) return fail(403, 'members');
 
@@ -222,7 +240,8 @@ export default async (req) => {
     catch (e) { console.error('scoring failed', e?.status, e?.message); return fail(502, 'ai', { detail: String(e?.message || e).slice(0, 200) }); }
     if (mode === 'live') return json({ result });
     const attempt = { id: newId(), at: new Date().toISOString(), skill: 'writing', taskId: task.id, title: task.title, part: result.part,
-      mockId: body.mockId ? String(body.mockId).slice(0, 40) : null, seconds: Number(body.seconds) || null, words: result.words, text: text.slice(0, 12000), result };
+      mockId: body.mockId ? String(body.mockId).slice(0, 40) : null, seconds: Number(body.seconds) || null, words: result.words, text: text.slice(0, 12000), result,
+      late: Math.max(0, Math.min(43200, Math.round((Number(body.lateSecs) || 0) / 60))) || null };
     await addAttempt(uid, attempt);
     return json({ attempt });
   }

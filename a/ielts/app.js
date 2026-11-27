@@ -274,6 +274,12 @@
     };
   }
 
+  // keep the writing on the server even when it can't be marked (late, short, no full access, daily limit, AI error)
+  async function keepWriting(taskId, text, extra) {
+    if (!String(text || '').trim()) return null;
+    try { return (await api('keep', { method: 'POST', body: Object.assign({ taskId: taskId, text: text }, extra || {}) })).attempt; } catch (e) { return null; }
+  }
+  function lateNote(a) { return a && a.late ? ' <span class="badge" style="background:#fbe3d6;color:#8a3b12">Late ' + a.late + ' min</span>' : ''; }
   function qPanel(t) {
     var p = partOf(t.id), extra = '';
     if (p === 1) extra = IELTSChart(t);
@@ -319,8 +325,9 @@
         await loadMe(); go('#/report/' + r.attempt.id);
       } catch (e) {
         b.disabled = false; b.textContent = 'Submit for full marking';
+        var kept = await keepWriting(id, ta.value, { seconds: secs, why: e.code === 'members' || e.code === 'quota' ? e.code : 'ai' });
         if (e.code === 'members') { lsSet(key, { text: ta.value, secs: secs }); return membersBox(b.parentNode); }
-        toast(e.code === 'quota' ? 'You have used today\'s full markings (' + (e.data.limit || '') + '). Try again tomorrow.' : 'Marking failed. Your text is saved; please try again.');
+        toast(e.code === 'quota' ? 'You have used today\'s full markings (' + (e.data.limit || '') + '). Your writing is saved for your teacher; try marking again tomorrow.' : kept ? 'Marking failed, but your writing is saved for your teacher. You can try marking again.' : 'Marking failed. Your text is saved on this device; please try again.');
       }
     };
   }
@@ -329,6 +336,13 @@
   function reportHtml(a, opts) {
     opts = opts || {};
     var r = a.result, t = task(a.taskId), n = critNames(a.part);
+    if (!r) {
+      var WHY = { late: 'It was handed in late.', short: 'It was too short to mark (under 20 words).', members: 'AI marking needs full access, so it was saved without a band.', quota: 'The daily marking limit was reached, so it was saved without a band.', ai: 'The AI marking did not work at that moment, so it was saved without a band.' };
+      return '<div class="report-head"><div class="big"><small>Band</small>–</div><div><div class="eyebrow" style="color:var(--gold-soft)">Writing Task ' + a.part + ' · ' + esc(a.title) + lateNote(a) + '</div><p style="margin-top:6px">Your writing is saved and your teacher can see it. ' + esc(WHY[a.saved] || '') + '</p></div></div>' +
+        '<section class="section"><h3>Your answer · ' + (a.words || 0) + ' words</h3><div class="essay-view" style="margin-top:8px">' + esc(a.text || '') + '</div>' +
+        (t ? '<details class="model"><summary>The question</summary><div>' + esc(t.prompt) + '</div>' + (a.part === 1 ? IELTSChart(t) : '') + '</details>' : '') + '</section>' +
+        (opts.teacher ? '' : '<div class="row" style="margin-top:22px"><a class="btn" href="#/write/' + a.taskId + '">Try this task again</a><a class="btn ghost" href="#/progress">My progress</a></div>');
+    }
     var h = '<div class="report-head"><div class="big"><small>Band</small>' + band(r.overall) + '</div><div><div class="eyebrow" style="color:var(--gold-soft)">Writing Task ' + a.part + ' · ' + esc(a.title) + '</div><p style="margin-top:6px">' + esc(r.summary || '') + '</p><p style="margin-top:6px;font-size:14px">' + a.words + ' words' + (a.seconds ? ' · ' + Math.round(a.seconds / 60) + ' min' : '') + ' · ' + when(a.at) + '</p></div></div>';
     h += '<div class="rcrit">' + Object.keys(n).map(function (k) { var c = r.criteria[k] || {}; return '<div class="card"><span class="tag">' + n[k] + '</span><div class="band">' + band(c.band) + '</div><p>' + esc(c.comment || '') + '</p></div>'; }).join('') + '</div>';
     if (r.strengths && r.strengths.length) h += '<section class="section"><h3>What went well</h3><ul class="list">' + r.strengths.map(function (s) { return '<li>' + esc(s) + '</li>'; }).join('') + '</ul></section>';
@@ -401,13 +415,22 @@
       if (finishing) return; finishing = true; clearInterval(tick);
       m.status = 'marking'; lsSet('ielts.mock', m);
       view.innerHTML = '<div class="panel" style="text-align:center"><h2>Marking your test</h2><p class="sub">Both tasks are being marked against the four criteria. This takes about 30 seconds.</p><span class="spin"></span></div>';
-      var secs = Math.min(m.dur, Math.floor((Date.now() - m.start) / 1000)), ids = {};
+      var secs = Math.min(m.dur, Math.floor((Date.now() - m.start) / 1000)), ids = m.ids || {};
+      // late: the student came back (or pressed Finish) after the 60 minutes were over; the writing is still kept
+      var lateSecs = Math.max(0, Math.floor((Date.now() - m.start) / 1000) - m.dur - 15);
       try {
         for (var p = 1; p <= 2; p++) {
-          var txt = m.texts[p] || '';
-          if (words(txt) < 20) continue;
-          var r = await api('score', { method: 'POST', body: { taskId: p === 1 ? m.t1 : m.t2, text: txt, mode: 'final', mockId: m.id, seconds: secs } });
-          ids[p] = r.attempt.id;
+          var txt = m.texts[p] || '', tid = p === 1 ? m.t1 : m.t2;
+          if (ids[p] || !txt.trim()) continue;
+          if (words(txt) < 20) { var k = await keepWriting(tid, txt, { mockId: m.id, seconds: secs, lateSecs: lateSecs, why: 'short' }); if (k) { ids[p] = k.id; m.ids = ids; lsSet('ielts.mock', m); } continue; }
+          var r;
+          try { r = await api('score', { method: 'POST', body: { taskId: tid, text: txt, mode: 'final', mockId: m.id, seconds: secs, lateSecs: lateSecs } }); }
+          catch (e) {
+            var kk = await keepWriting(tid, txt, { mockId: m.id, seconds: secs, lateSecs: lateSecs, why: e.code === 'members' || e.code === 'quota' ? e.code : 'ai' });
+            if (kk) { ids[p] = kk.id; m.ids = ids; lsSet('ielts.mock', m); continue; }
+            throw e;
+          }
+          ids[p] = r.attempt.id; m.ids = ids; lsSet('ielts.mock', m);
         }
         m.status = 'done'; m.ids = ids; lsSet('ielts.mock', null); lsSet('ielts.mocks.' + m.id, m);
         await loadMe(); go('#/mockreport/' + m.id);
@@ -424,10 +447,10 @@
     if (needAccount('#/progress')) return;
     var att = ((ME && ME.attempts) || []).filter(function (a) { return a.mock === mid; });
     var t1 = att.filter(function (a) { return a.part === 1; })[0], t2 = att.filter(function (a) { return a.part === 2; })[0];
-    var b1 = t1 ? t1.band : 0, b2 = t2 ? t2.band : 0, overall = half((b1 + 2 * b2) / 3);
+    var b1 = t1 ? t1.band : 0, b2 = t2 ? t2.band : 0, overall = typeof b1 === 'number' || typeof b2 === 'number' ? half(((b1 || 0) + 2 * (b2 || 0)) / 3) : null;
     view.innerHTML = '<div class="report-head"><div class="big"><small>Writing band</small>' + band(overall) + '</div><div><div class="eyebrow" style="color:var(--gold-soft)">Mock test · ' + when((t2 || t1 || {}).at) + '</div><p style="margin-top:6px">Task 1 scored ' + band(t1 ? b1 : null) + ' and Task 2 scored ' + band(t2 ? b2 : null) + '. In IELTS, Task 2 counts twice as much as Task 1.</p></div></div>' +
       '<div class="grid" style="margin-top:16px">' + [t1, t2].map(function (a, i) {
-        return a ? '<a class="card" href="#/report/' + a.id + '"><span class="tag">Task ' + (i + 1) + ' · ' + a.words + ' words</span><h3>' + esc(a.title) + '</h3><div style="font-family:var(--serif);font-size:34px;color:var(--navy);font-weight:700">' + band(a.band) + '</div><span class="go">Full report →</span></a>'
+        return a ? '<a class="card" href="#/report/' + a.id + '"><span class="tag">Task ' + (i + 1) + ' · ' + a.words + ' words' + (a.saved ? ' · not marked' : '') + lateNote(a) + '</span><h3>' + esc(a.title) + '</h3><div style="font-family:var(--serif);font-size:34px;color:var(--navy);font-weight:700">' + band(a.band) + '</div><span class="go">Full report →</span></a>'
           : '<div class="card dim"><span class="tag">Task ' + (i + 1) + '</span><h3>Not answered</h3><p>An unanswered task scores 0.</p></div>';
       }).join('') + '</div><div class="row" style="margin-top:22px"><a class="btn" href="#/mock">Take another mock</a><a class="btn ghost" href="#/progress">My progress</a></div>';
   }
@@ -469,7 +492,7 @@
     }).join('') + '</div></section>';
     h += '<section class="section"><h3>All work</h3>' + (att.length ? '<div class="tscroll" style="margin-top:8px"><table class="t"><thead><tr><th>Date</th><th>Task</th><th>Words / score</th><th>Band</th><th></th></tr></thead><tbody>' +
       att.slice().reverse().map(function (a) {
-        return '<tr><td>' + when(a.at) + '</td><td>' + (a.mock ? '<span class="badge">Mock</span> ' : '') + (a.skill === 'speaking' ? '<span class="badge ai">Speaking</span> ' + esc(a.title) : a.skill === 'listening' ? '<span class="badge lis">Listening</span> ' + esc(a.title) : a.skill === 'reading' ? '<span class="badge rea">Reading</span> ' + esc(a.title) : 'Task ' + a.part + ' · ' + esc(a.title)) + '</td><td>' + (a.total ? a.score + ' / ' + a.total : (a.words || '–')) + '</td><td><b>' + band(a.band) + '</b></td><td style="white-space:nowrap"><a href="' + base + a.id + '">Report</a> · <button class="linkbtn" data-del="' + a.id + '">Delete</button></td></tr>';
+        return '<tr><td>' + when(a.at) + '</td><td>' + (a.mock ? '<span class="badge">Mock</span> ' : '') + (a.skill === 'speaking' ? '<span class="badge ai">Speaking</span> ' + esc(a.title) : a.skill === 'listening' ? '<span class="badge lis">Listening</span> ' + esc(a.title) : a.skill === 'reading' ? '<span class="badge rea">Reading</span> ' + esc(a.title) : 'Task ' + a.part + ' · ' + esc(a.title)) + lateNote(a) + (a.saved ? ' <span class="badge">Saved · not marked</span>' : '') + '</td><td>' + (a.total ? a.score + ' / ' + a.total : (a.words || '–')) + '</td><td><b>' + band(a.band) + '</b></td><td style="white-space:nowrap"><a href="' + base + a.id + '">Report</a> · <button class="linkbtn" data-del="' + a.id + '">Delete</button></td></tr>';
       }).join('') + '</tbody></table></div>' : '<div class="empty" style="margin-top:8px">No marked work yet. <a href="#/writing">Start with a writing task</a>.</div>') + '</section>';
     return h;
   }
