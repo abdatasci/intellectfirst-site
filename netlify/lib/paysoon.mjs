@@ -43,10 +43,10 @@ export async function paymentsAhead(days = 7) {
       if (own) {   // late joiner: own lessons (P/UA) since their own start
         const mk = (Att[g] || {})[id] || {}, n = Object.keys(mk).filter(d => d >= own && held(d) && (mk[d] === 'P' || mk[d] === 'UA')).length;
         const d = own > today ? null : next(n);
-        if (d && d <= end) items.push({ date: d, group: gr.n || cls.label, names: [{ n: s.n, paid: paidFor(id, d), amt: owed(id, d) }], own: `${n % size || (n ? size : 0)}/${size}` });
+        if (d && d <= end) items.push({ date: d, group: gr.n || cls.label, names: [{ id, n: s.n, paid: paidFor(id, d), amt: owed(id, d) }], own: `${n % size || (n ? size : 0)}/${size}` });
       } else regular.push([id, s]);
     }
-    if (gDue && gDue <= end && regular.length) items.push({ date: gDue, group: gr.n || cls.label, names: regular.map(([id, s]) => ({ n: s.n, paid: paidFor(id, gDue), amt: owed(id, gDue) })), done: `${groupDone % size || (groupDone ? size : 0)}/${size}` });
+    if (gDue && gDue <= end && regular.length) items.push({ date: gDue, group: gr.n || cls.label, names: regular.map(([id, s]) => ({ id, n: s.n, paid: paidFor(id, gDue), amt: owed(id, gDue) })), done: `${groupDone % size || (groupDone ? size : 0)}/${size}` });
   }
   // monthly payers with a due day (website roster)
   for (const s of roster) {
@@ -55,6 +55,40 @@ export async function paymentsAhead(days = 7) {
     items.push({ date: p.dueDate, group: 'Monthly', names: [{ n: `${s.first} ${s.last}`.trim(), paid: false, amt: p.fee }] });
   }
   return items.sort((a, b) => a.date.localeCompare(b.date) || a.group.localeCompare(b.group));
+}
+
+/* Students and parents: a reminder 7 days and 3 days before the payment date of their next package (Telegram + website).
+   Once a day (10:00–13:00 Kostanay); monthly payers keep their own reminders. A 3-day reminder already sent by the
+   monthly payment line for the same date is not repeated. */
+const PTX = {
+  en: (f, g, a, d, n) => `💳 Hi ${f}! Your ${g} package finishes soon. The next payment${a ? ' of ' + a : ''} is due on ${d} (in ${n} days). Please pay before the lesson. Thank you!`,
+  ru: (f, g, a, d, n) => `💳 Здравствуйте, ${f}! Скоро заканчивается абонемент группы «${g}». Следующая оплата${a ? ' (' + a + ')' : ''} — до ${d} (через ${n} ${n === 3 ? 'дня' : 'дней'}). Пожалуйста, оплатите до занятия. Спасибо!`,
+  kk: (f, g, a, d, n) => `💳 Сәлеметсіз бе, ${f}! «${g}» тобының абонементі жақында аяқталады. Келесі төлем${a ? ' (' + a + ')' : ''} — ${d} күнге дейін (${n} күннен кейін). Рақмет!`
+};
+export async function packageReminders({ links, bySid, roster, send, note, button }) {
+  const now = new Date(), h = (now.getUTCHours() + 5) % 24; if (h < 10 || h >= 13) return 0;
+  const today = ymd(now), store = getStore({ name: 'school', consistency: 'strong' }), key = 'bot/paysoon-sent/' + today.slice(0, 7);
+  const sent = (await store.get(key, { type: 'json' })) || {};
+  let n = 0;
+  for (const it of await paymentsAhead(7)) {
+    if (it.group === 'Monthly') continue;
+    const days = Math.round((Date.parse(it.date) - Date.parse(today)) / 86400000); if (days !== 7 && days !== 3) continue;
+    for (const s of it.names) {
+      if (s.paid || !s.id) continue;
+      const k = `${s.id}|${it.date}|${days}`; if (sent[k]) continue;
+      const r = roster.find(x => x.id === s.id);
+      if (days === 3 && r && ((r.pay || {}).dueDates || {})[it.date.slice(0, 7)] === it.date) { sent[k] = 'monthly'; continue; }
+      const uids = [bySid[s.id], links['sid:' + s.id] ? 'sid:' + s.id : null].filter(Boolean), first = (r && r.first) || String(s.n).split(' ')[0];
+      for (const u of uids) {
+        const l = links[u], lang = PTX[l?.lang] ? l.lang : 'ru', txt = PTX[lang](first, it.group, s.amt ? money(s.amt) : '', `${DOW(it.date)} ${dm(it.date)}`, days);
+        if (l && l.chatId) { try { await send(l.chatId, txt, button ? button(lang) : undefined); n++; } catch (e) { console.error('package reminder', s.id, e.message); } }
+        if (!u.startsWith('sid:')) await note(u, { kind: 'payBefore', text: PTX[l ? lang : 'en'](first, it.group, s.amt ? money(s.amt) : '', `${DOW(it.date)} ${dm(it.date)}`, days) }).catch(() => {});
+      }
+      sent[k] = new Date().toISOString();
+    }
+  }
+  await store.setJSON(key, sent);
+  return n;
 }
 
 export function aheadText(items, days = 7, max = 2600) {
