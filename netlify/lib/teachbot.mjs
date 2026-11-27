@@ -294,11 +294,13 @@ export async function sendSchoolDay(chatId, p) {
 export async function sendTodo(chatId, p, only) {
   const { openTasks } = await import('./tasks.mjs');
   let t = await openTasks(); if (only) t = t.filter(x => x.kind === only);
-  if (!t.length) return tgSend(chatId, only === 'payment' ? '💳 No overdue payments and no receipts waiting. 👍' : '📋 Nothing waiting — all done. 👍', { reply_markup: kbFor(p) });
+  let ahead = '';   // 💳 Payments due: also who pays in the coming week (director and manager)
+  if (only === 'payment') { try { const { paymentsAhead, aheadText } = await import('./paysoon.mjs'); ahead = '\n\n' + aheadText(await paymentsAhead(7)); } catch (e) { console.error('payments ahead', e.message); } }
+  if (!t.length) return tgSend(chatId, (only === 'payment' ? '💳 No overdue payments and no receipts waiting. 👍' : '📋 Nothing waiting — all done. 👍') + ahead, { reply_markup: kbFor(p) });
   const ICON = { attendance: '📋 Registers', reschedule: '🔁 Make-up lessons & covers', payment: '💳 Payments', accounts: '👤 Accounts & feedback' }, by = {};
   t.forEach(x => (by[x.kind] = by[x.kind] || []).push(x));
   const body = Object.keys(by).map(k => `${ICON[k] || k} (${by[k].length})\n` + by[k].slice(0, 10).map(x => '• ' + x.text.replace(/^[^:]+: /, '')).join('\n') + (by[k].length > 10 ? `\n… and ${by[k].length - 10} more` : '')).join('\n\n');
-  return tgSend(chatId, `${only === 'payment' ? '💳 Payments due' : '📋 To-do'} · ${t.length}\n\n${body}\n\nOpen: intellectfirst.com/me/#/admin`, { reply_markup: kbFor(p) });
+  return tgSend(chatId, `${only === 'payment' ? '💳 Payments due' : '📋 To-do'} · ${t.length}\n\n${body}${ahead}\n\nOpen: intellectfirst.com/me/#/admin`, { reply_markup: kbFor(p) });
 }
 /** 📆 This week: the next 7 days, compact. */
 export async function sendWeek(chatId, p) {

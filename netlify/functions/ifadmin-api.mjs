@@ -316,6 +316,7 @@ export default async (req) => {
       const k = (await getStore({ name: 'school', consistency: 'strong' }).get('lockKeys', { type: 'json' })) || {};
       return json({ ks: !!k.ks, kt: !!k.kt });
     }
+    if (path === 'paysoon' && method === 'GET') { const P = await import('../lib/paysoon.mjs'), it = await P.paymentsAhead(+url.searchParams.get('days') || 7); return json({ items: it, text: P.aheadText(it) }); }
     if (path === 'alerts' && method === 'GET') {
       const today = /^\d{4}-\d{2}-\d{2}$/.test(url.searchParams.get('date') || '') ? url.searchParams.get('date') : new Date(Date.now() + 5 * 3600e3).toISOString().slice(0, 10);
       const [G, S, Att, P] = await Promise.all(['groups', 'students', 'attendance', 'payments'].map(getColl));
