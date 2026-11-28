@@ -1025,13 +1025,13 @@
     view.innerHTML = '<p style="margin-top:30px"><span class="spin"></span></p>';
     var cl = (await api('classroom')).classes || [];
     var h = '<section class="hero" style="padding-bottom:6px"><div class="eyebrow">IF Classroom</div><h1>' + (staff() ? 'Teach online and present' : 'Your online lessons') + '</h1><p class="lead">' +
-      (staff() ? 'Start a video lesson for any of your classes, and present your lesson slides from here.' : 'Join your class video lesson at lesson time. Your teacher opens the room first.') + '</p></section>';
+      (staff() ? 'Start a live lesson for any of your classes: the video call and your slides on one page, and every student sees the slide you show.' : 'Join your class video lesson at lesson time. Your teacher opens the room first.') + '</p></section>';
     var online = '<h3 style="margin:' + (staff() ? '34px' : '18px') + ' 0 10px">Online lessons</h3>' + (cl.length ? (staff()
-      ? '<p class="small" style="margin-bottom:10px">Opens a Jitsi video room for the class in a new tab. Share this tab from the call to present your slides.</p><div class="mrows">' + cl.map(function (c) {
-          return '<div class="mrow"><div><b>' + esc(c.label) + '</b><small>' + esc(c.schedule || (/individual/i.test(c.label) ? 'Timetable not set yet' + (role() === 'admin' ? ' · add it in Admin → Classes' : '') : '')) + '</small></div><a class="btn sm" target="_blank" rel="noopener" href="' + esc(meetUrl(c)) + '">Start ↗</a><button class="btn ghost sm" data-copy="' + esc('https://meet.jit.si/' + c.meet) + '">Copy link</button></div>';
+      ? '<p class="small" style="margin-bottom:10px"><b>Live lesson</b> puts the video call and your slides on one page: students see the slide you show, click by click — no screen sharing needed.</p><div class="mrows">' + cl.map(function (c) {
+          return '<div class="mrow"><div><b>' + esc(c.label) + '</b><small>' + esc(c.schedule || (/individual/i.test(c.label) ? 'Timetable not set yet' + (role() === 'admin' ? ' · add it in Admin → Classes' : '') : '')) + '</small></div><a class="btn sm" href="#/room/' + esc(c.id) + '">▶ Live lesson</a><a class="btn ghost sm" target="_blank" rel="noopener" href="' + esc(meetUrl(c)) + '">Call only ↗</a><button class="btn ghost sm" data-copy="' + esc('https://meet.jit.si/' + c.meet) + '">Copy link</button></div>';
         }).join('') + '</div>'
       : '<div class="grid">' + cl.map(function (c) {
-          return '<div class="card"><span class="tag">' + esc(c.schedule || 'Online room') + '</span><h3>' + esc(c.label) + '</h3><p>Video lesson room for your class.</p><div class="row" style="margin-top:10px"><a class="btn sm" target="_blank" rel="noopener" href="' + esc(meetUrl(c)) + '">Join lesson ↗</a></div></div>';
+          return '<div class="card"><span class="tag">' + esc(c.schedule || 'Online room') + '</span><h3>' + esc(c.label) + '</h3><p>Video lesson room for your class.</p><div class="row" style="margin-top:10px"><a class="btn sm" href="#/room/' + esc(c.id) + '">▶ Join live lesson</a><a class="btn ghost sm" target="_blank" rel="noopener" href="' + esc(meetUrl(c)) + '">Call only ↗</a></div></div>';
         }).join('') + '</div>')
       : '<div class="empty">' + (staff() ? 'No classes are linked to your account yet.' : 'Your class is not linked yet. Ask the school to check your phone number.') + '</div>');
     var allowed = staff() ? null : studentBooks();
@@ -1067,11 +1067,20 @@
       $('#uf').onsubmit = async function (ev) { ev.preventDefault(); try { await api('materials/unlock', { method: 'POST', body: { code: $('#uc').value } }); CKEY = null; toast('Slides unlocked'); vPresent(id); } catch (e) { err(ev.target, 'That code did not work.'); } };
       return;
     }
-    var bk = bookOf(d.book), n = Math.min(Math.max(1, +(lsGet('ifc:pos:' + id) || 1)), d.slides), cache = {}, want = 0;
+    var bk = bookOf(d.book);
     view.innerHTML = '<div class="pres" id="pres"><div class="pvbar"><a class="btn ghost sm" href="#/classroom/' + d.book + '">← Lessons</a><div class="ptitle"><small>' + esc(bk ? bk.title : '') + ' · ' + esc(d.unit) + '</small><b>' + esc(d.title) + '</b></div>' +
-      '<span class="spacer"></span><button class="btn ghost sm" id="pg" title="All slides (G)">Slides</button><button class="btn ghost sm" id="pf" title="Full screen (F)">' + (staff() ? 'Present' : 'Full screen') + ' ⛶</button></div>' +
-      '<div class="pstage" id="pst"><canvas id="pc" width="' + d.w + '" height="' + d.h + '"></canvas><button class="pnav l" id="pp" aria-label="Previous">‹</button><button class="pnav r" id="pn" aria-label="Next">›</button><div class="pcount" id="pk"></div></div>' +
-      '<div class="pgrid" id="pgd" hidden>' + Array.from({ length: d.slides }, function (_, i) { return '<button data-go="' + (i + 1) + '">' + (i + 1) + '</button>'; }).join('') + '</div></div>';
+      '<span class="spacer"></span><button class="btn ghost sm" id="pg" title="All slides (G)">Slides</button><button class="btn ghost sm" id="pf" title="Full screen (F)">' + (staff() ? 'Present' : 'Full screen') + ' ⛶</button></div>' + stageHtml(d) + '</div>';
+    mountDeck(d, key, { start: +(lsGet('ifc:pos:' + id) || 1) });
+  }
+  function stageHtml(d) {
+    return '<div class="pstage" id="pst"><canvas id="pc" width="' + d.w + '" height="' + d.h + '"></canvas><button class="pnav l" id="pp" aria-label="Previous">‹</button><button class="pnav r" id="pn" aria-label="Next">›</button><div class="pcount" id="pk"></div></div>' +
+      '<div class="pgrid" id="pgd" hidden>' + Array.from({ length: d.slides }, function (_, i) { return '<button data-go="' + (i + 1) + '">' + (i + 1) + '</button>'; }).join('') + '</div>';
+  }
+  /** Draws a slide deck into #pc (with click animations). opts.start: first slide; opts.onMove(n, s): after every move;
+      opts.follow: no controls of its own (a student in a live lesson) — the page calls .set(n, s). Returns { set, stop }. */
+  async function mountDeck(d, key, opts) {
+    opts = opts || {};
+    var id = d.id, n = Math.min(Math.max(1, opts.start || 1), d.slides), cache = {}, want = 0, live = true;
     var cv = $('#pc'), cx = cv.getContext('2d'), wm = VIEWER ? (VIEWER.name + ' · ' + VIEWER.email) : 'IF Academy';
     cv.oncontextmenu = function (e) { e.preventDefault(); };
     // click animations: base image per slide + one patch per click (steps.json: {slide: [[x, y], ...]})
@@ -1121,7 +1130,7 @@
       i = Math.min(Math.max(1, i), d.slides);
       return queue(async function () {
         var wantS = end ? stepsOf(i).length : 0;
-        n = i; s = wantS; want = n; lsSet('ifc:pos:' + id, n);
+        n = i; s = wantS; want = n; if (!opts.follow) lsSet('ifc:pos:' + id, n); moved();
         $('#pk').textContent = n + ' / ' + d.slides;
         ox.clearRect(0, 0, d.w, d.h); ox.drawImage(fr, 0, 0);
         try { await compose(i, wantS); if (want !== i) return; await present(fade === false ? 0 : 260); }
@@ -1139,21 +1148,42 @@
         try {
           var bm = await img(n + '-' + k);
           ox.clearRect(0, 0, d.w, d.h); ox.drawImage(fr, 0, 0);
-          fx.drawImage(bm, p[0], p[1]); s = k;
+          fx.drawImage(bm, p[0], p[1]); s = k; moved();
           await present(220);
         } catch (e) { toast('Could not load the next step'); }
       });
     }
     function back() {
-      if (s > 0) { var i = n, k = s - 1; queue(async function () { await compose(i, k); s = k; await present(0); }); }
+      if (s > 0) { var i = n, k = s - 1; queue(async function () { await compose(i, k); s = k; moved(); await present(0); }); }
       else if (n > 1) show(n - 1, true, false);
+    }
+    function moved() { var pk = document.getElementById('pk'); if (pk) pk.textContent = n + ' / ' + d.slides; if (opts.onMove) opts.onMove(n, s); }
+    /* a student in a live lesson: go straight to the teacher's slide and click */
+    function set(i, k) {
+      i = Math.min(Math.max(1, i | 0), d.slides);
+      return queue(async function () {
+        if (!live) return;
+        var st = stepsOf(i), kk = Math.min(Math.max(0, k | 0), st.length);
+        ox.clearRect(0, 0, d.w, d.h); ox.drawImage(fr, 0, 0);
+        n = i; s = kk; want = i; moved();
+        try { await compose(i, kk); await present(i === n ? 220 : 0); } catch (e) {}
+        [i + 1, i + 2].forEach(function (x) { if (x <= d.slides) slide(x).catch(function () {}); });
+        st.forEach(function (_, x) { img(i + '-' + (x + 1)).catch(function () {}); });
+      });
+    }
+    if (opts.follow) {
+      ['pp', 'pn', 'pg'].forEach(function (x) { var el = document.getElementById(x); if (el) el.hidden = true; });
+      var pf0 = document.getElementById('pf'), st0 = document.getElementById('pst');
+      if (pf0 && !opts.noFs) pf0.onclick = function () { if (document.fullscreenElement) document.exitFullscreen(); else (st0.requestFullscreen || st0.webkitRequestFullscreen).call(st0); };
+      set(n, 0);
+      return { set: set, stop: function () { live = false; } };
     }
     $('#pp').onclick = back; $('#pn').onclick = fwd;
     cv.onclick = function (e) { var r = cv.getBoundingClientRect(); if (e.clientX - r.left < r.width / 3) back(); else fwd(); };
-    $('#pg').onclick = function () { $('#pgd').hidden = !$('#pgd').hidden; };
+    if ($('#pg')) $('#pg').onclick = function () { $('#pgd').hidden = !$('#pgd').hidden; };
     $('#pgd').onclick = function (e) { var b = e.target.closest('[data-go]'); if (b) { $('#pgd').hidden = true; show(+b.dataset.go); } };
-    var stage = $('#pres');
-    $('#pf').onclick = function () { if (document.fullscreenElement) document.exitFullscreen(); else (stage.requestFullscreen || stage.webkitRequestFullscreen).call(stage); };
+    var stage = $('#pres') || $('#pst');
+    if ($('#pf') && !opts.noFs) $('#pf').onclick = function () { if (document.fullscreenElement) document.exitFullscreen(); else (stage.requestFullscreen || stage.webkitRequestFullscreen).call(stage); };
     document.onkeydown = function (e) {
       if (!document.getElementById('pc') || /input|textarea/i.test(e.target.tagName)) return;
       if (['ArrowRight', 'ArrowDown', 'PageDown', ' ', 'Enter'].indexOf(e.key) >= 0) { e.preventDefault(); fwd(); }
@@ -1164,6 +1194,83 @@
     var tx = null; cv.addEventListener('touchstart', function (e) { tx = e.touches[0].clientX; }, { passive: true });
     cv.addEventListener('touchend', function (e) { if (tx == null) return; var dx = e.changedTouches[0].clientX - tx; if (Math.abs(dx) > 40) { if (dx < 0) fwd(); else back(); } tx = null; });
     show(n, false, false);
+    return { set: function (i, k) { show(i).then(function () { var go = Math.min(k | 0, stepsOf(n).length); for (var x = 0; x < go; x++) fwd(); }); }, stop: function () { live = false; document.onkeydown = null; }, now: function () { return [n, s]; } };
+  }
+
+
+  /* ---------- IF Live Lesson: the video call and the lesson slides on one page (like a webinar room) ----------
+     The teacher picks a deck and moves through it; every student's slides follow (Ably channel class:<room>, rewind 1
+     so late joiners land on the current slide). Video: JaaS embedded when set up, otherwise the call opens in its own window. */
+  var ROOM = null;
+  function loadJs(src) { return new Promise(function (ok, no) { if (document.querySelector('script[src="' + src + '"]')) return ok(); var t = document.createElement('script'); t.src = src; t.onload = ok; t.onerror = no; document.head.appendChild(t); }); }
+  function leaveRoom() { if (!ROOM) return; try { ROOM.deck && ROOM.deck.stop(); } catch (e) {} try { ROOM.client && ROOM.client.close(); } catch (e) {} try { ROOM.jitsi && ROOM.jitsi.dispose(); } catch (e) {} ROOM = null; }
+  async function vRoom(classId, deckId) {
+    setNav('classroom'); if (!role()) return go('#/');
+    leaveRoom();
+    view.innerHTML = '<p style="margin-top:30px"><span class="spin"></span></p>';
+    var L; try { L = await api('classroom/live?class=' + encodeURIComponent(classId)); } catch (e) { view.innerHTML = '<div class="empty" style="margin-top:30px">This online room was not found. <a href="#/classroom">Back</a></div>'; return; }
+    var c = L.class, teach = L.teacher, idx = await lessonsIndex(), R = ROOM = { deck: null, id: null, client: null, ch: null, jitsi: null };
+    var bkOfClass = (ME.books || []).filter(function (b) { return b.id === c.bookId; })[0];
+    var decks = idx.decks.slice(), mineFirst = decks.filter(function (d) { return bkOfClass && bookOf(d.book) && bookOf(d.book).title === bkOfClass.title; });
+    view.innerHTML = '<div class="room"><div class="rmain"><div class="pvbar"><a class="btn ghost sm" href="#/classroom">← IF Classroom</a><div class="ptitle"><small>Live lesson</small><b>' + esc(c.label) + '</b></div><span class="spacer"></span>' +
+      (teach ? '<select class="inp sm" id="rdeck" style="max-width:340px"><option value="">Choose lesson slides…</option>' + groupOptions(decks, mineFirst) + '</select>' : '<span class="tag" id="rstate">Waiting for the teacher’s slides…</span>') +
+      '<button class="btn ghost sm" id="pf" title="Full screen (F)">⛶</button></div><div id="rslides"><div class="empty" style="padding:60px 10px">' + (teach ? 'Choose the lesson slides above. Every student in the room sees the slide you show, click by click.' : 'The slides appear here when your teacher starts presenting.') + '</div></div>' +
+      '<p class="small" id="rsync" style="margin-top:8px"></p></div><aside class="rvideo" id="rvideo"></aside></div>';
+    // video
+    var rv = $('#rvideo');
+    if (L.video) {
+      rv.innerHTML = '<div id="jaas" class="jaas"></div>';
+      try {
+        await loadJs('https://8x8.vc/' + L.video.appId + '/external_api.js');
+        R.jitsi = new JitsiMeetExternalAPI(L.video.domain, { roomName: L.video.room, jwt: L.video.jwt, parentNode: $('#jaas'), width: '100%', height: '100%',
+          configOverwrite: { prejoinConfig: { enabled: false }, disableDeepLinking: true }, userInfo: { displayName: (ME.profile && ME.profile.name) || '' } });
+      } catch (e) { rv.innerHTML = videoFallback(c); }
+    } else rv.innerHTML = videoFallback(c);
+    rv.querySelectorAll('[data-pop]').forEach(function (b) { b.onclick = function () { window.open(meetUrl(c), 'ifmeet', 'popup,width=520,height=760,left=' + Math.max(0, screen.availWidth - 540) + ',top=40'); }; });
+    rv.querySelectorAll('[data-copy]').forEach(function (b) { b.onclick = function () { (navigator.clipboard ? navigator.clipboard.writeText(b.dataset.copy) : Promise.reject()).then(function () { toast('Link copied'); }, function () { prompt('Copy this link', b.dataset.copy); }); }; });
+    // slides
+    var key = null; try { key = await contentKey(); } catch (e) {}
+    async function open(id, n, k) {
+      var d = idx.decks.filter(function (x) { return x.id === id; })[0]; if (!d) return;
+      if (!d.plain && !key) { $('#rslides').innerHTML = '<div class="empty" style="padding:40px 10px">' + (teach ? 'Unlock the lesson slides once in <a href="#/present/' + d.id + '">IF Classroom</a>, then come back.' : 'These slides are not open yet. Please tell your teacher.') + '</div>'; return; }
+      if (R.deck) R.deck.stop();
+      R.id = id; $('#rslides').innerHTML = stageHtml(d);
+      if (!teach) { var st = $('#rstate'); if (st) st.textContent = d.unit + ' · ' + d.title; }
+      R.deck = await mountDeck(d, key, teach ? { start: n || 1, noFs: true, onMove: function (i, x) { lsSet('ifc:pos:' + id, i); publish(i, x); } } : { start: n || 1, follow: true, noFs: true });
+      if (!teach && k) R.deck.set(n, k);
+    }
+    var last = 0, timer = null;
+    function publish(i, x) {
+      if (!R.ch) return;
+      var send = function () { last = Date.now(); R.ch.publish('state', { deck: R.id, n: i, s: x }).catch(function () {}); };
+      clearTimeout(timer); if (Date.now() - last > 120) send(); else timer = setTimeout(send, 120);
+    }
+    if (L.token) {
+      try {
+        await loadJs('/live/vendor/ably.min.js');
+        var A = window.AblyPubSub || window.Ably, o = { authCallback: function (p, cb) { api('classroom/live?class=' + encodeURIComponent(classId)).then(function (x) { cb(null, x.token); }, function (e) { cb(String(e), null); }); }, echoMessages: false, disconnectedRetryTimeout: 2000 };
+        R.client = A.createClient ? A.createClient(o) : new A.Realtime(o);
+        R.ch = R.client.channels.get(L.channel, teach ? undefined : { params: { rewind: '1' } });
+        R.client.connection.on(function (x) { var el = $('#rsync'); if (el && ROOM === R) el.textContent = x.current === 'connected' ? (teach ? '● Live: students see the slide you show.' : '● Live: your slides follow the teacher.') : 'Reconnecting…'; });
+        if (!teach) R.ch.subscribe('state', function (m) { var v = m.data || {}; if (ROOM !== R || !v.deck) return; if (v.deck !== R.id) open(v.deck, v.n, v.s); else if (R.deck) R.deck.set(v.n, v.s); });
+        else R.ch.presence.enter({ teacher: true }).catch(function () {});
+      } catch (e) { $('#rsync').textContent = 'Live sync is not available right now — students can still follow on the shared screen.'; }
+    } else $('#rsync').textContent = teach ? 'Live sync needs the Ably key (the same one as IF Live).' : '';
+    if (teach) {
+      var sel = $('#rdeck'); sel.onchange = function () { if (sel.value) { open(sel.value, 1); history.replaceState(null, '', location.pathname + location.search + '#/room/' + classId + '/' + sel.value); } };
+      if (deckId) { sel.value = deckId; open(deckId, +(lsGet('ifc:pos:' + deckId) || 1)); }
+    }
+    $('#pf').onclick = function () { var st = $('#pst') || $('.room'); if (document.fullscreenElement) document.exitFullscreen(); else (st.requestFullscreen || st.webkitRequestFullscreen).call(st); };
+  }
+  function groupOptions(decks, first) {
+    var by = {}, order = [];
+    first.concat(decks).forEach(function (d) { var b = d.book; if (!by[b]) { by[b] = []; order.push(b); } if (by[b].indexOf(d) < 0) by[b].push(d); });
+    return order.map(function (b) { var bk = bookOf(b); return '<optgroup label="' + esc(bk ? bk.title : b) + '">' + by[b].map(function (d) { return '<option value="' + esc(d.id) + '">' + esc(d.unit + ' · ' + d.title) + '</option>'; }).join('') + '</optgroup>'; }).join('');
+  }
+  function videoFallback(c) {
+    return '<div class="rcall"><div class="eyebrow">Video call</div><h3>Join the class call</h3><p class="small">The call opens in a small window next to the slides. Keep this page open: the slides here follow the teacher.</p>' +
+      '<button class="btn" data-pop>🎥 Open video call</button><button class="btn ghost sm" style="margin-top:8px" data-copy="' + esc('https://meet.jit.si/' + c.meet) + '">Copy call link</button>' +
+      (staff() ? '<p class="small" style="margin-top:14px;opacity:.8">To show the call inside this page, add a free Jitsi as a Service key (jaas.8x8.vc) in Netlify: JAAS_APP_ID, JAAS_KID, JAAS_PRIVATE_KEY.</p>' : '') + '</div>';
   }
 
   /* ---------- admin ---------- */
@@ -2379,7 +2486,7 @@
     var hq = location.hash.split('?');
     if (hq.length > 1) { try { var nx = new URLSearchParams(hq.slice(1).join('?')).get('next'); if (nx && /^\/(?![\/\\])/.test(nx)) sessionStorage.setItem('if.next', nx); } catch (e) {} history.replaceState(null, '', location.pathname + location.search + hq[0]); }
     var parts = hq[0].replace(/^#\/?/, '').split('/');
-    hideRec();
+    hideRec(); if (parts[0] !== 'room') leaveRoom();
     try {
       switch (parts[0]) {
         case '': return vProfile();
@@ -2398,6 +2505,7 @@
         case 'admin': return vAdmin(parts[1]);
         case 'classroom': return vClassroom(parts[1]);
         case 'present': return vPresent(parts[1]);
+        case 'room': return vRoom(parts[1], parts[2]);
         case 'assistant': return vAssistant();
         case 'upgrade': return vUpgrade();
         case 'results': return vResults();
