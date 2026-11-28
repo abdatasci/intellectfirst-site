@@ -21,6 +21,7 @@ import { tellClass } from '../lib/hwsend.mjs';
 import { tier, isMember, TRACKS, paidActive, accessUntil, TRIAL_DAYS, ensureTrial } from '../lib/access.mjs';
 import seed from '../lib/school-seed.json';
 import ckey from '../lib/content-key.json';
+import { ablyToken, jaasToken } from '../lib/classlive.mjs';
 import { loadStudents, saveStudents, loadAttendance, setAppLevel } from '../lib/students.mjs';
 import { migrate as runMigrations } from '../lib/migrate.mjs';
 import { openTasks, dismissTask } from '../lib/tasks.mjs';
@@ -1071,7 +1072,7 @@ export default async (req) => {
     const k = await storeKeyFrom(b.code);
     return k ? json({ key: k }) : fail(403, 'code');
   }
-  if (path === 'classroom' && method === 'GET') {
+  if ((path === 'classroom' || path === 'classroom/live') && method === 'GET') {
     if (!profile) return fail(403, 'profile');
     let mine = [];
     if (isStaff(profile.role)) mine = await classesForTeacher(profile);
@@ -1092,6 +1093,15 @@ export default async (req) => {
     // the catch-all "Individual (local / native teacher)" groups are not a class anyone teaches together: each student has a row
     mine = mine.filter(c => !(SOLO_RX.test(c.label || '') && /^individual\b/i.test(c.label || '') && !(c.studentIds || []).length && !(c.uids || []).length));
     mine.sort((a, b) => (/individual/i.test(a.label) - /individual/i.test(b.label)) || String(a.label).localeCompare(String(b.label)));
+    if (path === 'classroom/live') {
+      // one class's live lesson: an Ably token for the slide sync (staff publish, students listen) and, when JaaS is set up, a video token
+      const c = mine.find(x => x.id === url.searchParams.get('class'));
+      if (!c) return fail(404, 'missing');
+      const staffNow = isStaff(profile.role), ch = 'class:' + c.meet;
+      const token = ablyToken((staffNow ? 'teach-' : 'stu-') + user.id, { [ch]: staffNow ? ['publish', 'subscribe', 'presence'] : ['subscribe', 'presence'] });
+      const video = jaasToken({ room: c.meet, name: profile.name, email: profile.email, id: user.id, moderator: staffNow });
+      return json({ class: { id: c.id, label: c.label, bookId: c.bookId || '', meet: c.meet }, channel: ch, token, video, teacher: staffNow });
+    }
     return json({ classes: mine.map(c => ({ id: c.id, label: c.label, schedule: c.schedule || '', room: c.room || '', bookId: c.bookId || '', teacherId: c.teacherId || '', meet: c.meet })) });
   }
 

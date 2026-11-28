@@ -309,3 +309,17 @@ input,textarea,[contenteditable]{caret-color:currentColor}
 .lvpick .lvo span{display:block;border-radius:14px;padding:10px 13px;height:100%}
 .lvpick .lvo input:checked+span small{color:#e9e3d6!important}.lvpick .lvo input:checked+span::before{content:""}
 .lvpick .ns{grid-column:1/-1}
+/* IF Live Lesson: slides + video call on one page */
+.room{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:16px;margin-top:16px;align-items:start}
+.room .rmain{min-width:0}
+.rvideo{position:sticky;top:12px;background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;min-height:300px}
+.rvideo .jaas{height:min(78vh,720px)}
+.rvideo .rcall{padding:22px}
+.rvideo .rcall .btn{display:block;width:100%;text-align:center}
+.room:fullscreen{background:#0b1f3a;padding:12px;margin:0;grid-template-columns:minmax(0,1fr) 340px}
+.room:fullscreen .pvbar{display:none}
+.pstage:fullscreen{display:flex;align-items:center;justify-content:center;background:#000;border-radius:0}
+.pstage:fullscreen canvas{max-height:100vh;width:auto;max-width:100%}
+@media (max-width:1000px){.room{grid-template-columns:1fr}.rvideo{position:static}.rvideo .jaas{height:56vh}}
+.room .pvbar .ptitle{min-width:160px;flex:0 1 auto}
+.room .pvbar select{flex:1 1 220px}
